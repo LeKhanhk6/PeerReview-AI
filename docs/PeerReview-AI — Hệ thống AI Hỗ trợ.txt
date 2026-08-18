@@ -1,0 +1,113 @@
+PeerReview-AI — Hệ thống AI Hỗ trợ Chấm Chéo, Phản Biện & Đánh Giá Tương Tác Nhóm trong Lớp Học Đổi Mới
+Ý tưởng cốt lõi: Nền tảng AI giải quyết bài toán "làm việc nhóm và đánh giá đồng đẳng" (Peer-review) trong các môn học dự án ở trường phổ thông & đại học.
+Phân tích đóng góp cá nhân: AI tích hợp vào không gian làm việc nhóm (docs, chat, slide) để theo dõi mức độ tham gia thực sự của từng thành viên, phát hiện tình trạng "gánh team" hay "dựa dẫm".
+AI Moderation for Peer Review: Khi học sinh/sinh viên chấm bài và viết phản biện cho nhóm bạn, AI sẽ phân tích văn bản (NLP) để đánh giá chất lượng lời nhận xét (có mang tính xây dựng không, có đúng tiêu chí rubric không, có tiêu cực/đả kích không) và gợi ý cách cải thiện lời nhận xét.
+AI Synthesis: Tóm tắt hàng chục ý kiến phản biện của cả lớp thành một bản báo cáo điểm mạnh/điểm yếu ngắn gọn cho giáo viên.
+Công nghệ AI (Bảng C): Vietnamese NLP / LLM fine-tuned (Phân tích cảm xúc, đánh giá chất lượng phản biện theo Rubric, tóm tắt văn bản).
+ khung Đề án dự thi chi tiết cho dự án PeerReview-AI (Hệ thống AI Hỗ trợ Đánh giá Đồng đẳng & Tương tác Nhóm Học đường), được thiết kế chuẩn cấu trúc dành cho Bảng C (Bảng Giải pháp/Ý tưởng AI xuất sắc).
+TÊN DỰ ÁN: PeerReview-AI
+Hệ Thống AI Tối Ưu Đánh Giá Đồng Đẳng & Phát Triển Năng Lực Phản Biện Trong Môi Trường Giáo Dục
+1. BÀI TOÁN THỰC TẾ & NHU CẦU THỊ TRƯỜNG (Problem Statement)
+1.1. Bối cảnh & Thực trạng
+Xu hướng giáo dục mới: Chương trình GDPT 2018 và giáo dục Đại học chuyển dịch mạnh mẽ sang hình thức Học theo dự án (Project-Based Learning - PBL) và làm việc nhóm, lấy học sinh/sinh viên làm trung tâm.
+Gia tăng hoạt động đánh giá chéo (Peer Review): Việc học sinh chấm bài, viết phản biện cho nhau là phương pháp cốt lõi giúp phát triển tư duy phản biện (Critical Thinking) và năng lực tự học.
+1.2. 3 "Điểm đau" (Pain Points) lớn nhất hiện nay
+Dựa dẫm & Thiếu công bằng khi làm việc nhóm: Hiện tượng "gánh team" hoặc "free-rider" (không làm nhưng vẫn có điểm) rất phổ biến. Giáo viên chỉ thấy sản phẩm cuối cùng, không đánh giá được tiến trình và đóng góp thực sự của từng thành viên.
+Chất lượng phản biện kém & Tiêu cực: Học sinh/sinh viên chưa biết cách viết nhận xét mang tính xây dựng. Các lời nhận xét thường hời hợt ("Bài làm tốt", "Slide đẹp") hoặc mang cảm xúc cảm tính, đả kích cá nhân.
+Giáo viên quá tải (Burnout): Một lớp học 40–50 học sinh (hoặc lớp học phần 100+ sinh viên) tạo ra hàng trăm nhận xét chéo. Giáo viên không thể đọc hết để kiểm soát chất lượng phản biện hay tổng hợp điểm chính xác.
+2. GIẢI PHÁP PEERREVIEW-AI (Solution Overview)
+PeerReview-AI là nền tảng SaaS tích hợp AI đóng vai trò như một "Trợ lý sư phạm thông minh", đồng hành cùng Giáo viên và Học sinh trong toàn bộ vòng đời làm việc nhóm và đánh giá đồng đẳng.
+Các tính năng cốt lõi:
+AI Group-Contribution Tracker (Đánh giá đóng góp nhóm): Phân tích nhật ký chỉnh sửa văn bản, lịch sử trao đổi, phân công nhiệm vụ để đưa ra chỉ số đóng góp thực tế (Contribution Score) của từng thành viên.
+AI Peer-Review Mentor (Cố vấn phản biện realtime): Trong khi học sinh viết nhận xét cho nhóm bạn, AI sẽ phân tích văn bản theo thời gian thực (Real-time NLP) để đưa ra gợi ý giúp nhận xét đúng trọng tâm Rubric, lịch sự và mang tính xây dựng.
+AI Synthesis & Rubric Analytics (Tóm tắt & Phân tích tổng hợp): Tự động gom nhóm hàng trăm phản biện thành các cụm chủ đề (Điểm mạnh, Điểm cần cải thiện, Câu hỏi hay nhất), giúp giáo viên nắm bắt bức tranh toàn cảnh lớp học trong 30 giây.
+3. KIẾN TRÚC CÔNG NGHỆ AI (AI Architecture & Tech Stack)
+Kiến trúc AI của PeerReview-AI được thiết kế gồm 3 mô-đun chính xử lý tiếng Việt chuyên sâu:
+[Người dùng: Giáo viên / Học sinh]
+        │
+        ▼
+[Giao diện App/Web (React / Flutter)]
+        │
+        ▼
+[Backend Service (FastAPI / Python)]
+        │
+        ├─── Module 1: AI Group-Contribution Engine (Data Mining & Log Analysis)
+        │
+        ├─── Module 2: Real-time Peer-Review Assistant (NLP & Fine-tuned LLM)
+        │
+        └─── Module 3: AI Synthesis & Analytics Engine (Clustering & Summarization)
+
+Chi tiết các Mô-đun AI:
+Mô-đun 1: AI Group-Contribution Engine
+Nhiệm vụ: Phân tích mức độ tham gia của từng cá nhân trong nhóm.
+Mô hình & Thuật toán:
+Git/Doc Log Mining: Phân tích lượng đóng góp nội dung, thời gian hoạt động.
+Graph Neural Network (GNN) / Social Network Analysis (SNA): Mô hình hóa tương tác giữa các thành viên (ai trả lời ai, ai phân công công việc) để phát hiện vai trò thực tế (Leader, Contributor, Passive member).
+Mô-đun 2: Real-time Peer-Review Assistant (Cốt lõi)
+Nhiệm vụ: Phân tích & Gợi ý cải thiện nhận xét phản biện theo tiêu chí Rubric.
+Mô hình & Công nghệ:
+Fine-tuned Vietnamese LLM (PhoGPT / Gemma-Vietnamese / Llama-3-Vietnamese): Được huấn luyện trên bộ dữ liệu Rubric Giáo dục và các mẫu phản biện chuẩn (Constructive Feedback Dataset).
+Sentiment Analysis & Toxicity Classifier: Phát hiện ngôn từ tiêu cực, đả kích hoặc thiếu tôn trọng.
+Rubric-Matching Classifier: Phân loại nhận xét thuộc tiêu chí nào trong Rubric (Nội dung, Hình thức, Sáng tạo) và đo lường độ sâu chuyên môn (Depth score: Surface vs. Deep feedback).
+Mô-đun 3: AI Synthesis & Analytics Engine
+Nhiệm vụ: Tóm tắt và phân nhóm nhận xét cho Giáo viên.
+Mô hình & Công nghệ:
+BERTopic / Sentence-Transformers (Vietnamese-SBERT): Phân cụm các ý kiến trùng lặp.
+Abstractive Summarization: Tổng hợp các điểm chính và đưa ra đề xuất mức điểm trung bình cộng có trọng số (Weighted Peer Score).
+4. TÍNH BẢO MẬT & ĐẠO ĐỨC AI (AI Ethics & Privacy)
+Bảo mật danh tính (Double-Blind Review): AI tự động che/mã hóa thông tin cá nhân (Anonymization) để đảm bảo đánh giá chéo hoàn toàn khách quan, không bị ảnh hưởng bởi mối quan hệ cá nhân.
+An toàn dữ liệu: Dữ liệu bài làm và nhận xét của học sinh được lưu trữ bảo mật, tuân thủ các quy định về dữ liệu giáo dục.
+Không làm thay người: AI không thay thế giáo viên cho điểm, AI chỉ đóng vai trò phân tích, cảnh báo và đưa ra gợi ý tham khảo (Human-in-the-loop).
+5. LỘ TRÌNH PHÁT TRIỂN & TÁC ĐỘNG XÃ HỘI (Impact & Roadmap)
+Giai đoạn 1 (MVP - Hiện tại): Thử nghiệm tại các lớp học phần Đại học và THPT chuyên (quy mô 500-1,000 người dùng).
+Giai đoạn 2: Tích hợp trực tiếp vào các hệ thống LMS phổ biến tại Việt Nam (Moodle, Canvas, Google Classroom).
+Tác động xã hội: Thúc đẩy năng lực tự học, làm việc nhóm và tư duy phản biện — các kỹ năng cốt lõi của công dân toàn cầu thế kỷ 21 theo định hướng GDPT 2018
+6 CÁCH THỨC HOẠT ĐỘNG THỰC TẾ (User Workflow)
+Góc nhìn Học sinh / Sinh viên (Khi làm nhóm & Đánh giá bạn)
+Bước 1: Làm bài nhóm trên nền tảng.
+Cả nhóm cùng vào làm bài (viết nội dung, phân công công việc). AI sẽ chạy ngầm ở phía sau để đếm: Ai viết bao nhiêu chữ, ai phân công việc cho ai, ai chỉnh sửa phần nào.
+Bước 2: Nộp bài & Đọc bài của nhóm bạn.
+Sau khi nộp bài, hệ thống sẽ tự động giao bài của Nhóm B cho Nhóm A nhận xét (hoàn toàn giấu tên để không bị nể nả hay tư thù).
+Bước 3: Viết phản biện (Có AI hướng dẫn ngay lập tức - Real-time).
+Nếu học sinh gõ nhận xét qua loa: "Bài này dở quá, slide xấu"
+ AI lập tức hiện ô gợi ý màu vàng: "Nhận xét này chưa mang tính xây dựng. Hãy chỉ rõ đoạn nào chưa hay và gợi ý cách sửa theo tiêu chí Rubric của thầy cô."
+Học sinh sửa lại theo gợi ý AI: "Phần 2 trình bày còn thiếu số liệu thực tế, nhóm nên bổ sung biểu đồ để thuyết phục hơn"  AI báo xanh (Đạt chuẩn).
+ Góc nhìn Giáo viên (Khi chấm bài & Quản lý lớp)
+Bước 1: Giao bài & Đặt Rubric (Tiêu chí chấm). Giáo viên nhập đề bài và tải lên bảng Rubric chấm điểm đơn giản.
+Bước 2: Xem báo cáo "Minh bạch đóng góp nhóm" (Xóa nạn gánh team).
+Giáo viên mở màn hình quản lý lên sẽ thấy ngay một biểu đồ:
+Bạn A: Đóng góp 65% nội dung (Leader / Gánh team).
+Bạn B: Đóng góp 30% nội dung.
+Bạn C: Đóng góp 5% (Chỉ vào đọc, không viết gì AI cảnh báo "Free-rider/Dựa dẫm").
+Bước 3: Xem AI Tóm tắt phản biện cả lớp.
+Thay vì phải ngồi đọc 200 câu nhận xét của học sinh, AI gom lại thành 3 dòng tóm tắt:
+Ưu điểm chu,ng các nhóm khen: Slide thiết kế đẹp, phần 1 nội dung rất rõ ràng.
+Nhược điểm chung các nhóm góp ý: Thiếu trích dẫn nguồn tài liệu, phần kết luận quá ngắn.
+Giáo viên chỉ cần duyệt lại và bấm "Xác nhận điểm" trong 1 phút.
+7. TỔNG HỢP CÁC TÍNH NĂNG CỐT LÕI (Core Features)
+STT
+Tên tính năng
+Chức năng chính
+AI làm nhiệm vụ gì?
+1
+Chấm điểm đóng góp cá nhân (Contribution Tracker)
+Đo lường mức độ làm việc thực sự của từng bạn trong nhóm.
+AI phân tích nhật ký chỉnh sửa văn bản, thời gian hoạt động để tính % đóng góp thực tế.
+2
+Cố vấn phản biện Real-time (AI Peer-Review Mentor)
+Hướng dẫn học sinh viết nhận xét hay, lịch sử và đúng trọng tâm bài học.
+AI (NLP) đọc câu văn học sinh đang gõ, phát hiện thái độ tiêu cực/hời hợt và gợi ý câu từ chuẩn mực theo Rubric.
+3
+Đánh giá giấu tên 2 chiều (Double-Blind Review)
+Giấu tên người chấm và người được chấm để đảm bảo khách quan.
+AI tự động lọc bỏ các thông tin cá nhân (tên, lớp, ID) xuất hiện trong file bài làm hoặc lời nhận xét.
+4
+Tổng hợp & Tóm tắt phản biện (Review Summarizer)
+Gom hàng trăm ý kiến nhận xét của cả lớp thành bản tóm tắt ngắn gọn cho Giáo viên.
+AI phân cụm các ý kiến trùng lặp (Clustering) và tóm tắt thành các nhóm Điểm mạnh / Điểm yếu chính.
+5
+Báo cáo cảnh báo sớm (Teacher Analytics)
+Cảnh báo cho giáo viên những nhóm đang có xung đột hoặc cá nhân không làm bài.
+AI phát hiện các bất thường trong tương tác nhóm để gửi thông báo riêng cho giáo viên can thiệp sớm.
+
+

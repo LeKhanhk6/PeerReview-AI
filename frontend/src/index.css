@@ -1,0 +1,9 @@
+@import "tailwindcss";
+
+/* Định nghĩa các biến CSS tùy chỉnh nếu cần */
+@theme {
+  --color-primary: #3b82f6;
+  /* Blue 500 */
+  --color-secondary: #10b981;
+  /* Emerald 500 */
+}

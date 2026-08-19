@@ -96,6 +96,7 @@ CREATE TABLE group_members (
     UNIQUE(group_id, user_id)
 );
 
+
 CREATE TABLE activity_logs (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     group_id UUID REFERENCES groups(id) ON DELETE CASCADE,
@@ -112,6 +113,36 @@ CREATE TABLE contribution_metrics (
     contribution_score DECIMAL(5,2), -- % Đóng góp
     classification VARCHAR(50), -- VD: High Contributor, Potential Free-rider
     calculated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+-- ==============================================================================
+-- BỔ SUNG VÀO NHÓM 4: HOẠT ĐỘNG NHÓM (Workspace)
+-- ==============================================================================
+
+CREATE TABLE tasks (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    group_id UUID REFERENCES groups(id) ON DELETE CASCADE,
+    assignee_id UUID REFERENCES users(id) ON DELETE SET NULL,
+    title VARCHAR(255) NOT NULL,
+    status VARCHAR(50) DEFAULT 'TODO', -- TODO, IN_PROGRESS, DONE
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    completed_at TIMESTAMP WITH TIME ZONE
+);
+
+CREATE TABLE group_discussions (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    group_id UUID REFERENCES groups(id) ON DELETE CASCADE,
+    user_id UUID REFERENCES users(id) ON DELETE CASCADE,
+    message TEXT NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+CREATE TABLE group_files (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    group_id UUID REFERENCES groups(id) ON DELETE CASCADE,
+    uploaded_by UUID REFERENCES users(id) ON DELETE SET NULL,
+    file_name VARCHAR(255) NOT NULL,
+    file_url TEXT NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
 -- ==============================================================================
@@ -167,9 +198,10 @@ CREATE TABLE review_criteria (
 -- 7. NHÓM TÍCH HỢP AI (AI Mentor & Summarization)
 -- ==============================================================================
 
+
 CREATE TABLE ai_requests (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    review_id UUID REFERENCES reviews(id) ON DELETE CASCADE,
+    review_assignment_id UUID REFERENCES review_assignments(id) ON DELETE CASCADE,
     student_text TEXT NOT NULL,
     requested_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );

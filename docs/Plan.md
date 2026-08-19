@@ -46,38 +46,38 @@ Deploy + Documentation
 
 ## TASK 01.1 — GitHub Repository
 
-- [ ]  Create Repository.
+- [x]  Create Repository.
 - [ ]  README.
-- [ ]  `.gitignore`.
-- [ ]  Branch strategy.
-- [ ]  Commit convention.
+- [x]  `.gitignore`.
+- [x]  Branch strategy.
+- [x]  Commit convention.
 
 ## TASK 01.2 — Frontend
 
-- [ ]  React + Vite.
-- [ ]  React Router.
-- [ ]  Axios.
-- [ ]  TailwindCSS.
-- [ ]  Folder structure.
-- [ ]  Common components.
+- [x]  React + Vite.
+- [x]  React Router.
+- [x]  Axios.
+- [x]  TailwindCSS.
+- [x]  Folder structure.
+- [x]  Common components.
 
 ## TASK 01.3 — Backend
 
-- [ ]  Node.js.
-- [ ]  Express.
-- [ ]  dotenv.
-- [ ]  CORS.
-- [ ]  JWT.
-- [ ]  API structure.
-- [ ]  `.env`.
+- [x]  Node.js.
+- [x]  Express.
+- [x]  dotenv.
+- [x]  CORS.
+- [x]  JWT.
+- [x]  API structure.
+- [x]  `.env`.
 
 ## TASK 01.4 — AI Service
 
-- [ ]  Define AI API contract.
-- [ ]  Define Request schema.
-- [ ]  Define Response schema.
-- [ ]  Define authentication between Backend and AI Service.
-- [ ]  Define AI error handling.
+- [x]  Define AI API contract.
+- [x]  Define Request schema.
+- [x]  Define Response schema.
+- [x]  Define authentication between Backend and AI Service.
+- [x]  Define AI error handling.
 
 ---
 
@@ -85,13 +85,13 @@ Deploy + Documentation
 
 ## TASK 02.1 — Database
 
-- [ ]  Create PostgreSQL.
-- [ ]  Create tables.
-- [ ]  Primary Keys.
-- [ ]  Foreign Keys.
-- [ ]  Constraints.
-- [ ]  Indexes.
-- [ ]  Seed data.
+- [x]  Create PostgreSQL.
+- [x]  Create tables.
+- [x]  Primary Keys.
+- [x]  Foreign Keys.
+- [x]  Constraints.
+- [x]  Indexes.
+- [x]  Seed data.
 
 ## TASK 02.2 — ERD
 
@@ -126,12 +126,12 @@ Thiết kế đầy đủ:
 
 ## TASK 03.1 — Authentication
 
-- [ ]  Login.
-- [ ]  Logout.
-- [ ]  JWT.
-- [ ]  Password hashing.
-- [ ]  Token expiration.
-- [ ]  Current user.
+- [x]  Login.
+- [x]  Logout.
+- [x]  JWT.
+- [x]  Password hashing.
+- [x]  Token expiration.
+- [x]  Current user.
 
 ## TASK 03.2 — Authorization
 
@@ -280,11 +280,10 @@ Reviewer không biết Submitter.
 
 Submitter không biết Reviewer.
 
-Không hiển thị:
-
-- Name.
-- Student ID.
-- Class.
+Không hiển thị ở Frontend VÀ bắt buộc phải sanitize (loại bỏ) ở cấp độ API Backend trước khi trả về dữ liệu: 
+- Name. 
+- Student ID. 
+- Class. 
 - Group identity.
 
 ---
@@ -348,7 +347,7 @@ AI kiểm tra:
 - Rubric Alignment.
 - Specificity.
 - Toxicity/Negative language.
-
+*Lưu ý kỹ thuật:* Frontend bắt buộc phải áp dụng kỹ thuật Debounce (chờ người dùng ngừng gõ khoảng 1-1.5 giây mới gọi API) để tránh gọi API liên tục làm sập server Backend.
 ## TASK 09.3 — AI Response
 ```
 Status
@@ -761,6 +760,17 @@ GET    /api/groups/:id
 POST   /api/groups
 POST   /api/groups/:id/members
 DELETE /api/groups/:id/members/:userId
+```
+
+## Group Workspace (Mới)
+```
+GET    /api/groups/:id/tasks
+POST   /api/groups/:id/tasks
+PUT    /api/tasks/:taskId
+GET    /api/groups/:id/discussions
+POST   /api/groups/:id/discussions
+GET    /api/groups/:id/files
+POST   /api/groups/:id/files
 ```
 ## Activity
 ```

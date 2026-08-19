@@ -1,6 +1,9 @@
 export const authorizeRoles = (...allowedRoles) => {
-    if (allowedRoles.length === 0) {
-        throw new Error('authorizeRoles requires at least one allowed role');
+    if (
+        allowedRoles.length === 0 ||
+        allowedRoles.some(role => typeof role !== 'string' || !role.trim())
+    ) {
+        throw new Error('authorizeRoles requires at least one valid role string');
     }
 
     return (req, res, next) => {

@@ -66,6 +66,7 @@ async function seed() {
         console.log('Seed done: Created STUDENT, ADMIN, TEACHER');
     } catch (error) {
         console.error('Seed error:', error);
+        process.exitCode = 1;
     } finally {
         await pool.end();
     }

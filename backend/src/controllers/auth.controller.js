@@ -13,7 +13,13 @@ export const login = async (req, res) => {
             return res.status(400).json({ message: 'Email and password are required' });
         }
         
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         const normalizedEmail = email.trim().toLowerCase();
+        
+        if (!emailRegex.test(normalizedEmail)) {
+            return res.status(400).json({ message: 'Invalid email format' });
+        }
+        
         const data = await authService.loginUser(normalizedEmail, password);
         
         return res.status(200).json({ message: 'Login successful', ...data });

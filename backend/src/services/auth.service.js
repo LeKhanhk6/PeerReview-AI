@@ -2,8 +2,12 @@ import pool from '../config/db.js';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 
-const JWT_SECRET = process.env.JWT_SECRET || 'your_jwt_secret_here';
+const JWT_SECRET = process.env.JWT_SECRET;
 const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '24h';
+
+if (!JWT_SECRET) {
+    throw new Error('FATAL ERROR: JWT_SECRET is not defined in environment variables.');
+}
 
 export const loginUser = async (email, password) => {
     // Tìm user và role name
@@ -15,7 +19,9 @@ export const loginUser = async (email, password) => {
     `;
     const result = await pool.query(query, [email]);
     if (result.rows.length === 0) {
-        throw new Error('Invalid email or password');
+        const error = new Error('Invalid email or password');
+        error.status = 401;
+        throw error;
     }
 
     const user = result.rows[0];
@@ -23,7 +29,9 @@ export const loginUser = async (email, password) => {
     // Kiểm tra password
     const isMatch = await bcrypt.compare(password, user.password_hash);
     if (!isMatch) {
-        throw new Error('Invalid email or password');
+        const error = new Error('Invalid email or password');
+        error.status = 401;
+        throw error;
     }
 
     // Tạo token
@@ -54,7 +62,9 @@ export const getUserById = async (userId) => {
     `;
     const result = await pool.query(query, [userId]);
     if (result.rows.length === 0) {
-        throw new Error('User not found');
+        const error = new Error('User not found');
+        error.status = 404;
+        throw error;
     }
     return result.rows[0];
 };

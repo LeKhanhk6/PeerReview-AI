@@ -10,7 +10,8 @@ export const login = async (req, res) => {
         const data = await authService.loginUser(email, password);
         res.status(200).json({ message: 'Login successful', ...data });
     } catch (error) {
-        res.status(401).json({ message: error.message });
+        const status = error.status || 500;
+        res.status(status).json({ message: error.message || 'Internal Server Error' });
     }
 };
 
@@ -28,6 +29,7 @@ export const getMe = async (req, res) => {
         const user = await authService.getUserById(userId);
         res.status(200).json({ user });
     } catch (error) {
-        res.status(404).json({ message: error.message });
+        const status = error.status || 500;
+        res.status(status).json({ message: error.message || 'Internal Server Error' });
     }
 };

@@ -50,4 +50,11 @@ export const getMe = async (req, res) => {
     }
 };
 
+// FOR TESTING RBAC ONLY
+export const adminOnly = (req, res) => {
+    return res.status(200).json({ message: 'Welcome Admin!' });
+};
 
+export const staffOnly = (req, res) => {
+    return res.status(200).json({ message: 'Welcome Staff!' });
+};

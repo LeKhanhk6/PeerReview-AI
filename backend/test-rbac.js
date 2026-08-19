@@ -1,7 +1,3 @@
-import jwt from 'jsonwebtoken';
-import dotenv from 'dotenv';
-dotenv.config();
-
 async function runTests() {
     console.log("--- BẮT ĐẦU TEST RBAC ---");
     const baseUrl = 'http://localhost:5000/api/auth';
@@ -49,6 +45,12 @@ async function runTests() {
         });
         assertStatus(res.status, 403, 'STUDENT -> ADMIN endpoint -> 403');
 
+        // 3.5. TEACHER -> ADMIN endpoint -> 403
+        res = await fetch(`${baseUrl}/admin-only`, {
+            headers: { 'Authorization': `Bearer ${teacherToken}` }
+        });
+        assertStatus(res.status, 403, 'TEACHER -> ADMIN endpoint -> 403');
+
         // 4. ADMIN -> ADMIN endpoint -> 200
         res = await fetch(`${baseUrl}/admin-only`, {
             headers: { 'Authorization': `Bearer ${adminToken}` }
@@ -73,13 +75,11 @@ async function runTests() {
         });
         assertStatus(res.status, 200, 'TEACHER -> Multiple-role endpoint -> 200');
 
+        console.log("--- KẾT THÚC TEST RBAC ---");
     } catch(e) {
         console.error("❌ Test failed:", e.message);
-        process.exit(1);
+        process.exitCode = 1;
     }
-
-    console.log("--- KẾT THÚC TEST RBAC ---");
-    process.exit(0);
 }
 
 runTests();

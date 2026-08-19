@@ -3,7 +3,7 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import { connectDB } from './config/db.js';
 import authRoutes from './routes/auth.routes.js';
-
+import assignmentRoutes from './routes/assignments.routes.js';
 dotenv.config();
 
 const app = express();
@@ -18,6 +18,7 @@ connectDB();
 
 // Routes
 app.use('/api/auth', authRoutes);
+app.use('/api/assignments', assignmentRoutes);
 
 // API Test cơ bản
 app.get('/api/health', (req, res) => {
@@ -28,3 +29,4 @@ app.get('/api/health', (req, res) => {
 app.listen(PORT, () => {
     console.log(`Server đang chạy tại http://localhost:${PORT}`);
 });
+

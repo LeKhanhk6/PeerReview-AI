@@ -1,0 +1,148 @@
+import pool from '../config/db.js';
+
+// --- EXISTENCE & OWNERSHIP CHECKS ---
+
+export const getClassOwnershipInfo = async (classId) => {
+    const query = 'SELECT id, teacher_id FROM classes WHERE id = $1';
+    const result = await pool.query(query, [classId]);
+    return result.rows[0];
+};
+
+export const getAssignmentOwnershipInfo = async (assignmentId) => {
+    const query = `
+        SELECT a.id, c.teacher_id 
+        FROM assignments a
+        JOIN classes c ON a.class_id = c.id
+        WHERE a.id = $1
+    `;
+    const result = await pool.query(query, [assignmentId]);
+    return result.rows[0];
+};
+
+// --- CRUD OPERATIONS ---
+
+export const getAllAssignments = async (user, classId) => {
+    let query = '';
+    const values = [];
+
+    if (user.role === 'ADMIN') {
+        query = 'SELECT id, class_id, title, description, requirements, deadline, created_at FROM assignments';
+        if (classId) {
+            query += ' WHERE class_id = $1';
+            values.push(classId);
+        }
+    } else if (user.role === 'TEACHER') {
+        query = `
+            SELECT a.id, a.class_id, a.title, a.description, a.requirements, a.deadline, a.created_at 
+            FROM assignments a 
+            JOIN classes c ON a.class_id = c.id 
+            WHERE c.teacher_id = $1
+        `;
+        values.push(user.userId);
+        if (classId) {
+            query += ' AND a.class_id = $2';
+            values.push(classId);
+        }
+    } else if (user.role === 'STUDENT') {
+        // ASSUMPTION: Student được xác định thuộc Class thông qua Group Membership
+        query = `
+            SELECT DISTINCT a.id, a.class_id, a.title, a.description, a.requirements, a.deadline, a.created_at 
+            FROM assignments a 
+            JOIN groups g ON a.class_id = g.class_id 
+            JOIN group_members gm ON g.id = gm.group_id 
+            WHERE gm.user_id = $1
+        `;
+        values.push(user.userId);
+        if (classId) {
+            query += ' AND a.class_id = $2';
+            values.push(classId);
+        }
+    } else {
+        const error = new Error('Unsupported role');
+        error.status = 403;
+        throw error;
+    }
+
+    query += ' ORDER BY created_at DESC';
+    const result = await pool.query(query, values);
+    return result.rows;
+};
+
+export const getAssignmentById = async (id, user) => {
+    let query = '';
+    const values = [id];
+
+    if (user.role === 'ADMIN') {
+        query = 'SELECT * FROM assignments WHERE id = $1';
+    } else if (user.role === 'TEACHER') {
+        query = `
+            SELECT a.* FROM assignments a 
+            JOIN classes c ON a.class_id = c.id 
+            WHERE a.id = $1 AND c.teacher_id = $2
+        `;
+        values.push(user.userId);
+    } else if (user.role === 'STUDENT') {
+        query = `
+            SELECT DISTINCT a.* FROM assignments a 
+            JOIN groups g ON a.class_id = g.class_id 
+            JOIN group_members gm ON g.id = gm.group_id 
+            WHERE a.id = $1 AND gm.user_id = $2
+        `;
+        values.push(user.userId);
+    } else {
+        const error = new Error('Unsupported role');
+        error.status = 403;
+        throw error;
+    }
+
+    const result = await pool.query(query, values);
+    if (result.rows.length === 0) {
+        const error = new Error('Assignment not found or you do not have permission to access it');
+        error.status = 404;
+        throw error;
+    }
+    return result.rows[0];
+};
+
+export const createAssignment = async (assignmentData) => {
+    const { class_id, title, description, requirements, deadline } = assignmentData;
+    const query = `
+        INSERT INTO assignments (class_id, title, description, requirements, deadline)
+        VALUES ($1, $2, $3, $4, $5)
+        RETURNING id, class_id, title, description, requirements, deadline, created_at;
+    `;
+    const values = [class_id, title, description, requirements, deadline];
+    const result = await pool.query(query, values);
+    return result.rows[0];
+};
+
+export const updateAssignment = async (id, assignmentData) => {
+    const { title, description, requirements, deadline } = assignmentData;
+    const query = `
+        UPDATE assignments
+        SET title = $1, description = $2, requirements = $3, deadline = $4
+        WHERE id = $5
+        RETURNING id, class_id, title, description, requirements, deadline, created_at;
+    `;
+    const values = [title, description, requirements, deadline, id];
+    const result = await pool.query(query, values);
+
+    if (result.rowCount === 0) {
+        const error = new Error('Assignment not found');
+        error.status = 404;
+        throw error;
+    }
+    return result.rows[0];
+};
+
+export const deleteAssignment = async (id) => {
+    const query = 'DELETE FROM assignments WHERE id = $1 RETURNING id;';
+    const result = await pool.query(query, [id]);
+
+    if (result.rowCount === 0) {
+        const error = new Error('Assignment not found');
+        error.status = 404;
+        throw error;
+    }
+    return true;
+};

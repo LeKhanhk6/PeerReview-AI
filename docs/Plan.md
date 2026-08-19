@@ -149,14 +149,21 @@ API phải kiểm tra Role.
 
 ## TASK 04.1 — Assignment
 
-- [ ]  Create.
-- [ ]  View.
-- [ ]  Edit.
-- [ ]  Delete.
+- [ ]  Create (Check Teacher Class Ownership).
+- [ ]  View (Role-based filtering: Admin xem tất cả, Teacher/Student xem theo lớp).
+- [ ]  Edit (Check Teacher Class Ownership).
+- [ ]  Delete (Check Teacher Class Ownership).
+- [ ]  Input Validation (UUID, Title, Deadline).
 - [ ]  Deadline.
 - [ ]  Description.
 - [ ]  Requirements.
 - [ ]  Attachment.
+
+Reason:
+Đảm bảo an toàn dữ liệu và phân quyền nghiệp vụ chính xác. Tránh việc Teacher tạo/sửa/xóa bài tập của lớp người khác, và giới hạn dữ liệu trả về trong API GET theo Role của người dùng.
+
+Impact:
+Thay đổi logic bên trong Service và Controller của Assignment API. Không ảnh hưởng đến Database schema hiện tại.
 
 ## TASK 04.2 — Rubric
 

@@ -53,15 +53,16 @@ Trước khi đề xuất hoặc triển khai bất kỳ chức năng nào, ph�
 Thứ tự ưu tiên:
 
 1. `Plan.md`
+
+2.`Bổ sung.md`
+
+3. `Database.md`
     
-2. `Database.md`
+4. `PeerReview-AI — Development Plan.md`
     
-3. `PeerReview-AI — Development Plan.md`
+5. `PeerReview-AI — Hệ thống AI Hỗ trợ.txt`
     
-4. `PeerReview-AI — Hệ thống AI Hỗ trợ.txt`
-    
-5. Các quyết định mới đã được tôi xác nhận trong cuộc trò chuyện.
-    
+6. Quy tắc code (Các quyết định mới đã được tôi xác nhận trong cuộc trò chuyện)
 
 ## Quy tắc quan trọng
 

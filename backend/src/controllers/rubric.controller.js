@@ -56,10 +56,12 @@ export const saveRubric = async (req, res) => {
             return res.status(404).json({ message: 'Assignment not found' });
         }
 
-        if (user.role === 'STUDENT') {
-            return res.status(403).json({ message: 'Forbidden: Students cannot create or update rubrics' });
-        } else if (user.role === 'TEACHER' && assignmentInfo.teacher_id !== user.userId) {
-            return res.status(403).json({ message: 'Forbidden: You do not manage this assignment' });
+        if (user.role === 'TEACHER') {
+            if (assignmentInfo.teacher_id !== user.userId) {
+                return res.status(403).json({ message: 'Forbidden: You do not manage this assignment' });
+            }
+        } else if (user.role !== 'ADMIN') {
+            return res.status(403).json({ message: 'Forbidden: Only Teacher and Admin can manage rubrics' });
         }
         // ADMIN được đi tiếp
 
@@ -80,7 +82,7 @@ export const saveRubric = async (req, res) => {
             if (!isValidOptionalString(c.description)) {
                 return res.status(400).json({ message: 'Criteria description must be a string' });
             }
-            if (typeof c.weight !== 'number' || isNaN(c.weight) || c.weight <= 0) {
+            if (typeof c.weight !== 'number' || !Number.isFinite(c.weight) || c.weight <= 0) {
                 return res.status(400).json({ message: 'Each criteria must have a valid positive numeric weight' });
             }
             totalWeight += c.weight;

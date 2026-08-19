@@ -8,17 +8,20 @@ if (!JWT_SECRET) {
 
 export const verifyToken = (req, res, next) => {
     const authHeader = req.headers.authorization;
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    if (!authHeader) {
         return res.status(401).json({ message: 'No token provided, authorization denied' });
     }
 
-    const token = authHeader.split(' ')[1];
+    const [scheme, token] = authHeader.split(' ');
+    if (scheme !== 'Bearer' || !token) {
+        return res.status(401).json({ message: 'Invalid authorization format' });
+    }
 
     try {
         const decoded = jwt.verify(token, JWT_SECRET);
         req.user = decoded; // { userId, role }
-        next();
+        return next();
     } catch (error) {
-        res.status(401).json({ message: 'Token is not valid' });
+        return res.status(401).json({ message: 'Token is not valid' });
     }
 };

@@ -25,6 +25,12 @@ export const loginUser = async (email, password) => {
     }
 
     const user = result.rows[0];
+
+    if (!user.role) {
+        const error = new Error('User role is not assigned');
+        error.status = 403;
+        throw error;
+    }
     
     // Kiểm tra password
     const isMatch = await bcrypt.compare(password, user.password_hash);

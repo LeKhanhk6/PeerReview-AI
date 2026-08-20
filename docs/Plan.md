@@ -192,7 +192,7 @@ Thay đổi logic bên trong Service và Controller của Assignment API. Không
 
 ## TASK 05.1.2 — Group Leadership
 
-- [ ]  Assign/Change Leader.
+- [ ]  Assign/Change Leader (Role: ADMIN, TEACHER only. STUDENT is not allowed).
 
 ## TASK 05.2 — Workspace
 

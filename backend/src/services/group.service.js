@@ -262,6 +262,53 @@ export const removeMember = async (groupId, userId, currentUser) => {
     return true;
 };
 
+export const assignLeader = async (groupId, targetUserId, currentUser) => {
+    // 1. Get Group Info
+    const groupInfo = await getGroupOwnershipInfo(groupId);
+    if (!groupInfo) {
+        const error = new Error('Group not found');
+        error.status = 404;
+        throw error;
+    }
+
+    // 2. Authorization
+    if (currentUser.role === 'TEACHER' && groupInfo.teacher_id !== currentUser.userId) {
+        const error = new Error('Forbidden: You do not manage this class');
+        error.status = 403;
+        throw error;
+    }
+
+    const client = await pool.connect();
+    try {
+        await client.query('BEGIN');
+
+        // 3. Check membership
+        const memberCheck = await client.query('SELECT 1 FROM group_members WHERE group_id = $1 AND user_id = $2', [groupId, targetUserId]);
+        if (memberCheck.rows.length === 0) {
+            const error = new Error('Group member not found');
+            error.status = 404;
+            throw error;
+        }
+
+        // 4. Update
+        await client.query('UPDATE group_members SET is_leader = false WHERE group_id = $1', [groupId]);
+        await client.query('UPDATE group_members SET is_leader = true WHERE group_id = $1 AND user_id = $2', [groupId, targetUserId]);
+
+        await client.query('COMMIT');
+
+        return {
+            group_id: groupId,
+            user_id: targetUserId,
+            is_leader: true
+        };
+    } catch (error) {
+        await client.query('ROLLBACK');
+        throw error;
+    } finally {
+        client.release();
+    }
+};
+
 export const studentJoinGroup = async (groupId, studentId) => {
     const groupCheck = await pool.query('SELECT id, class_id FROM groups WHERE id = $1', [groupId]);
     if (groupCheck.rows.length === 0) {

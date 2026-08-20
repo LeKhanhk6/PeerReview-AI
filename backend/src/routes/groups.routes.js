@@ -16,6 +16,7 @@ router.get('/:id', groupController.getById);
 router.post('/', authorizeRoles('TEACHER', 'ADMIN'), groupController.create);
 router.post('/:id/members', authorizeRoles('TEACHER', 'ADMIN'), groupController.addMember);
 router.delete('/:id/members/:userId', authorizeRoles('TEACHER', 'ADMIN'), groupController.removeMember);
+router.put('/:id/leader', authorizeRoles('TEACHER', 'ADMIN'), groupController.assignLeader);
 
 // STUDENT
 router.post('/:id/join', authorizeRoles('STUDENT'), groupController.joinGroup);

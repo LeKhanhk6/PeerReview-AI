@@ -142,3 +142,24 @@ export const leaveGroup = async (req, res) => {
         return res.status(status).json({ message: error.message });
     }
 };
+
+export const assignLeader = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { user_id } = req.body;
+        const currentUser = req.user;
+
+        if (!isValidUUID(id)) {
+            return res.status(400).json({ message: 'Invalid group ID format' });
+        }
+        if (!user_id || !isValidUUID(user_id)) {
+            return res.status(400).json({ message: 'Valid user_id UUID is required' });
+        }
+
+        const result = await groupService.assignLeader(id, user_id, currentUser);
+        return res.status(200).json(result);
+    } catch (error) {
+        const status = error.status || 500;
+        return res.status(status).json({ message: error.message });
+    }
+};

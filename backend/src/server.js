@@ -25,7 +25,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/assignments', assignmentRoutes);
 app.use('/api/rubrics', rubricRoutes);
 app.use('/api/groups', groupRoutes);
-app.use('/api/groups', activityRoutes); // Mount activity routes under /api/groups
+app.use('/api', activityRoutes); // Mount activity routes under /api (matching workspace)
 app.use('/api', workspaceRoutes);
 
 // API Test cơ bản

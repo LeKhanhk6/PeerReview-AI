@@ -1,17 +1,5 @@
 import * as workspaceService from '../services/workspace.service.js';
-
-// Regex kiểm tra UUID
-const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
-
-// Helper kiểm tra URL hợp lệ
-const isValidHttpUrl = (value) => {
-    try {
-        const url = new URL(value);
-        return url.protocol === 'http:' || url.protocol === 'https:';
-    } catch {
-        return false;
-    }
-};
+import { isValidUUID, isValidHttpUrl } from '../utils/validation.util.js';
 
 // ==========================================
 // TASK MANAGEMENT
@@ -21,7 +9,7 @@ export const getTasks = async (req, res) => {
     try {
         const { id: groupId } = req.params;
         
-        if (!uuidRegex.test(groupId)) {
+        if (!isValidUUID(groupId)) {
             return res.status(400).json({ message: 'Invalid group ID format' });
         }
 
@@ -43,7 +31,7 @@ export const createTask = async (req, res) => {
         const { id: groupId } = req.params;
         const { title, status, assignee_id } = req.body;
 
-        if (!uuidRegex.test(groupId)) {
+        if (!isValidUUID(groupId)) {
             return res.status(400).json({ message: 'Invalid group ID format' });
         }
 
@@ -60,7 +48,7 @@ export const createTask = async (req, res) => {
             return res.status(400).json({ message: 'Invalid Task Status' });
         }
 
-        if (assignee_id !== undefined && assignee_id !== null && !uuidRegex.test(assignee_id)) {
+        if (assignee_id !== undefined && assignee_id !== null && !isValidUUID(assignee_id)) {
             return res.status(400).json({ message: 'Invalid assignee_id format' });
         }
 
@@ -94,7 +82,7 @@ export const updateTask = async (req, res) => {
     try {
         const { taskId } = req.params;
 
-        if (!uuidRegex.test(taskId)) {
+        if (!isValidUUID(taskId)) {
             return res.status(400).json({ message: 'Invalid task ID format' });
         }
 
@@ -143,7 +131,7 @@ export const updateTask = async (req, res) => {
         }
 
         if (assignee_id !== undefined) {
-            if (assignee_id !== null && !uuidRegex.test(assignee_id)) {
+            if (assignee_id !== null && !isValidUUID(assignee_id)) {
                 return res.status(400).json({ message: 'Invalid assignee_id format' });
             }
             if (assignee_id !== null) {
@@ -175,7 +163,7 @@ export const deleteTask = async (req, res) => {
     try {
         const { taskId } = req.params;
 
-        if (!uuidRegex.test(taskId)) {
+        if (!isValidUUID(taskId)) {
             return res.status(400).json({ message: 'Invalid task ID format' });
         }
 
@@ -210,7 +198,7 @@ export const getDiscussions = async (req, res) => {
     try {
         const { id: groupId } = req.params;
 
-        if (!uuidRegex.test(groupId)) {
+        if (!isValidUUID(groupId)) {
             return res.status(400).json({ message: 'Invalid group ID format' });
         }
 
@@ -232,7 +220,7 @@ export const createDiscussion = async (req, res) => {
         const { id: groupId } = req.params;
         const { message } = req.body;
 
-        if (!uuidRegex.test(groupId)) {
+        if (!isValidUUID(groupId)) {
             return res.status(400).json({ message: 'Invalid group ID format' });
         }
 
@@ -268,7 +256,7 @@ export const getFiles = async (req, res) => {
     try {
         const { id: groupId } = req.params;
 
-        if (!uuidRegex.test(groupId)) {
+        if (!isValidUUID(groupId)) {
             return res.status(400).json({ message: 'Invalid group ID format' });
         }
 
@@ -290,7 +278,7 @@ export const createFile = async (req, res) => {
         const { id: groupId } = req.params;
         const { file_name, file_url } = req.body;
 
-        if (!uuidRegex.test(groupId)) {
+        if (!isValidUUID(groupId)) {
             return res.status(400).json({ message: 'Invalid group ID format' });
         }
 

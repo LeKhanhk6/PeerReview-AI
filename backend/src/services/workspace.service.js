@@ -1,5 +1,6 @@
 import pool from '../config/db.js';
 import { logActivity } from './activity.service.js';
+import { ACTIVITY_TYPES } from '../utils/constants.js';
 
 // ==========================================
 // AUTHORIZATION HELPERS
@@ -87,9 +88,9 @@ export const createTask = async (groupId, userId, taskData) => {
     
     const task = result.rows[0];
     
-    await logActivity(groupId, userId, 'CREATE', `Created task "${title}"`);
+    await logActivity(groupId, userId, ACTIVITY_TYPES.TASK_CREATE, `Created task "${title}"`);
     if (assignee_id) {
-        await logActivity(groupId, userId, 'ASSIGN', `Assigned task "${title}"`);
+        await logActivity(groupId, userId, ACTIVITY_TYPES.TASK_ASSIGN, `Assigned task "${title}"`);
     }
     
     return task;
@@ -141,16 +142,16 @@ export const updateTask = async (taskId, userId, updateData) => {
     if (task) {
         const groupId = task.group_id;
         if (updateData.title !== undefined) {
-            await logActivity(groupId, userId, 'EDIT', `Updated task title to "${updateData.title}"`);
+            await logActivity(groupId, userId, ACTIVITY_TYPES.TASK_UPDATE, `Updated task title to "${updateData.title}"`);
         }
         if (updateData.assignee_id !== undefined) {
-            await logActivity(groupId, userId, 'ASSIGN', `Changed assignee for task "${task.title}"`);
+            await logActivity(groupId, userId, ACTIVITY_TYPES.TASK_ASSIGN, `Changed assignee for task "${task.title}"`);
         }
         if (updateData.status !== undefined) {
             if (updateData.status === 'DONE') {
-                await logActivity(groupId, userId, 'COMPLETE', `Completed task "${task.title}"`);
+                await logActivity(groupId, userId, ACTIVITY_TYPES.TASK_COMPLETE, `Completed task "${task.title}"`);
             } else {
-                await logActivity(groupId, userId, 'EDIT', `Changed status of task "${task.title}" to ${updateData.status}`);
+                await logActivity(groupId, userId, ACTIVITY_TYPES.TASK_UPDATE, `Changed status of task "${task.title}" to ${updateData.status}`);
             }
         }
     }
@@ -166,7 +167,7 @@ export const deleteTask = async (taskId, userId) => {
     
     const task = result.rows[0];
     if (task) {
-        await logActivity(task.group_id, userId, 'DELETE', `Deleted task "${task.title}"`);
+        await logActivity(task.group_id, userId, ACTIVITY_TYPES.TASK_DELETE, `Deleted task "${task.title}"`);
     }
     
     return task || null;
@@ -207,7 +208,7 @@ export const createDiscussion = async (groupId, userId, message) => {
     `, [groupId, userId, message]);
     
     const discussion = result.rows[0];
-    await logActivity(groupId, userId, 'DISCUSSION_POST', 'Posted a new discussion message');
+    await logActivity(groupId, userId, ACTIVITY_TYPES.DISCUSSION_POST, 'Posted a new discussion message');
     
     return discussion;
 };
@@ -234,7 +235,7 @@ export const createFile = async (groupId, userId, fileName, fileUrl) => {
     `, [groupId, userId, fileName, fileUrl]);
     
     const file = result.rows[0];
-    await logActivity(groupId, userId, 'FILE_UPLOAD', `Uploaded file "${fileName}"`);
+    await logActivity(groupId, userId, ACTIVITY_TYPES.FILE_UPLOAD, `Uploaded file "${fileName}"`);
     
     return file;
 };

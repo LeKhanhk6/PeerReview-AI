@@ -106,6 +106,8 @@ CREATE TABLE activity_logs (
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
+CREATE INDEX idx_activity_logs_group_created ON activity_logs(group_id, created_at DESC);
+
 CREATE TABLE contribution_metrics (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     group_id UUID REFERENCES groups(id) ON DELETE CASCADE,

@@ -20,3 +20,12 @@ export const isValidOptionalString = (str) => {
     if (str === undefined || str === null) return true;
     return typeof str === 'string';
 };
+
+export const isValidHttpUrl = (value) => {
+    try {
+        const url = new URL(value);
+        return url.protocol === 'http:' || url.protocol === 'https:';
+    } catch {
+        return false;
+    }
+};

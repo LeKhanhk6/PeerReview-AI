@@ -1,29 +1,32 @@
 import * as activityService from '../services/activity.service.js';
 import * as workspaceService from '../services/workspace.service.js';
-
-const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+import { isValidUUID } from '../utils/validation.util.js';
+import { PAGINATION } from '../utils/constants.js';
 
 export const getActivities = async (req, res) => {
     try {
         const { id: groupId } = req.params;
         let { page, limit } = req.query;
 
-        if (!uuidRegex.test(groupId)) {
+        if (!isValidUUID(groupId)) {
             return res.status(400).json({ message: 'Invalid group ID format' });
         }
 
         // Validate access
         await workspaceService.checkWorkspaceAccess(groupId, req.user);
 
-        limit = parseInt(limit, 10) || 50;
-        page = parseInt(page, 10) || 1;
-        if (limit <= 0 || limit > 100) limit = 50;
+        limit = Number.isInteger(+limit) ? +limit : PAGINATION.DEFAULT_LIMIT;
+        if (limit <= 0 || limit > PAGINATION.MAX_LIMIT) limit = PAGINATION.DEFAULT_LIMIT;
+
+        page = Number.isInteger(+page) ? +page : 1;
         if (page <= 0) page = 1;
+        if (page > PAGINATION.MAX_PAGE) page = PAGINATION.MAX_PAGE;
+
         const offset = (page - 1) * limit;
 
         const activities = await activityService.getGroupActivities(groupId, limit, offset);
         
-        res.status(200).json(activities);
+        res.status(200).json({ data: activities });
     } catch (error) {
         if (error.statusCode) {
             return res.status(error.statusCode).json({ message: error.message });

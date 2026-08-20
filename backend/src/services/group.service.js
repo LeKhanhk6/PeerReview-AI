@@ -26,12 +26,12 @@ export const getAllGroups = async (user, classId) => {
     const values = [];
 
     const baseSelect = `
-        SELECT g.id, g.class_id, g.name, g.created_at, 
+        SELECT g.id, g.class_id, c.name as class_name, g.name, g.created_at, 
         (SELECT count(*)::int FROM group_members WHERE group_id = g.id) as member_count
     `;
 
     if (user.role === 'ADMIN') {
-        query = `${baseSelect} FROM groups g`;
+        query = `${baseSelect} FROM groups g JOIN classes c ON g.class_id = c.id`;
         if (classId) {
             query += ' WHERE g.class_id = $1';
             values.push(classId);
@@ -52,6 +52,7 @@ export const getAllGroups = async (user, classId) => {
         query = `
             ${baseSelect} 
             FROM groups g 
+            JOIN classes c ON g.class_id = c.id
             JOIN group_members gm ON g.id = gm.group_id 
             WHERE gm.user_id = $1
         `;
@@ -68,7 +69,16 @@ export const getAllGroups = async (user, classId) => {
 
     query += ' ORDER BY g.created_at DESC';
     const result = await pool.query(query, values);
-    return result.rows;
+    return result.rows.map(row => ({
+        id: row.id,
+        name: row.name,
+        class: {
+            id: row.class_id,
+            name: row.class_name
+        },
+        created_at: row.created_at,
+        member_count: row.member_count
+    }));
 };
 
 export const getGroupById = async (id, user) => {
@@ -76,17 +86,18 @@ export const getGroupById = async (id, user) => {
     const values = [id];
 
     if (user.role === 'ADMIN') {
-        query = 'SELECT g.* FROM groups g WHERE g.id = $1';
+        query = 'SELECT g.*, c.name as class_name FROM groups g JOIN classes c ON g.class_id = c.id WHERE g.id = $1';
     } else if (user.role === 'TEACHER') {
         query = `
-            SELECT g.* FROM groups g 
+            SELECT g.*, c.name as class_name FROM groups g 
             JOIN classes c ON g.class_id = c.id 
             WHERE g.id = $1 AND c.teacher_id = $2
         `;
         values.push(user.userId);
     } else if (user.role === 'STUDENT') {
         query = `
-            SELECT g.* FROM groups g 
+            SELECT g.*, c.name as class_name FROM groups g 
+            JOIN classes c ON g.class_id = c.id
             JOIN group_members gm ON g.id = gm.group_id 
             WHERE g.id = $1 AND gm.user_id = $2
         `;
@@ -117,15 +128,23 @@ export const getGroupById = async (id, user) => {
 
     // Fetch members
     const membersQuery = `
-        SELECT u.id, u.full_name, u.email, gm.joined_at 
+        SELECT u.id, u.full_name, u.email, gm.is_leader, gm.joined_at 
         FROM group_members gm
         JOIN users u ON gm.user_id = u.id
         WHERE gm.group_id = $1
     `;
     const membersResult = await pool.query(membersQuery, [id]);
-    group.members = membersResult.rows;
 
-    return group;
+    return {
+        id: group.id,
+        name: group.name,
+        class: {
+            id: group.class_id,
+            name: group.class_name
+        },
+        created_at: group.created_at,
+        members: membersResult.rows
+    };
 };
 
 export const createGroup = async (classId, name) => {

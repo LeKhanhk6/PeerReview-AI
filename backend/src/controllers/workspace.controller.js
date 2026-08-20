@@ -79,7 +79,7 @@ export const createTask = async (req, res) => {
             assignee_id: assignee_id ?? null
         };
 
-        const newTask = await workspaceService.createTask(groupId, taskData);
+        const newTask = await workspaceService.createTask(groupId, req.user.userId, taskData);
         res.status(201).json(newTask);
     } catch (error) {
         if (error.statusCode) {
@@ -155,7 +155,7 @@ export const updateTask = async (req, res) => {
             updateData.assignee_id = assignee_id;
         }
 
-        const updatedTask = await workspaceService.updateTask(taskId, updateData);
+        const updatedTask = await workspaceService.updateTask(taskId, req.user.userId, updateData);
         if (!updatedTask) {
             return res.status(404).json({ message: 'Task not found' });
         }
@@ -186,7 +186,7 @@ export const deleteTask = async (req, res) => {
 
         await workspaceService.checkWorkspaceAccess(taskInfo.group_id, req.user);
         
-        const deletedTask = await workspaceService.deleteTask(taskId);
+        const deletedTask = await workspaceService.deleteTask(taskId, req.user.userId);
         if (!deletedTask) {
             return res.status(404).json({ message: 'Task not found' });
         }

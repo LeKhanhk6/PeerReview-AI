@@ -7,6 +7,7 @@ import assignmentRoutes from './routes/assignments.routes.js';
 import rubricRoutes from './routes/rubrics.routes.js';
 import groupRoutes from './routes/groups.routes.js';
 import workspaceRoutes from './routes/workspace.routes.js';
+import activityRoutes from './routes/activity.routes.js';
 dotenv.config();
 
 const app = express();
@@ -24,6 +25,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/assignments', assignmentRoutes);
 app.use('/api/rubrics', rubricRoutes);
 app.use('/api/groups', groupRoutes);
+app.use('/api/groups', activityRoutes); // Mount activity routes under /api/groups
 app.use('/api', workspaceRoutes);
 
 // API Test cơ bản

@@ -1,4 +1,5 @@
 import pool from '../config/db.js';
+import { logActivity } from './activity.service.js';
 
 // ==========================================
 // AUTHORIZATION HELPERS
@@ -75,7 +76,7 @@ export const getTasks = async (groupId) => {
     return result.rows;
 };
 
-export const createTask = async (groupId, taskData) => {
+export const createTask = async (groupId, userId, taskData) => {
     const { title, status = 'TODO', assignee_id } = taskData;
     
     const result = await pool.query(`
@@ -84,10 +85,17 @@ export const createTask = async (groupId, taskData) => {
         RETURNING id, group_id, assignee_id, title, status, created_at, completed_at
     `, [groupId, title, status, assignee_id ?? null]);
     
-    return result.rows[0];
+    const task = result.rows[0];
+    
+    await logActivity(groupId, userId, 'CREATE', `Created task "${title}"`);
+    if (assignee_id) {
+        await logActivity(groupId, userId, 'ASSIGN', `Assigned task "${title}"`);
+    }
+    
+    return task;
 };
 
-export const updateTask = async (taskId, updateData) => {
+export const updateTask = async (taskId, userId, updateData) => {
     const fields = [];
     const values = [];
     let queryIndex = 1;
@@ -128,15 +136,40 @@ export const updateTask = async (taskId, updateData) => {
     `;
 
     const result = await pool.query(query, values);
-    return result.rows[0] || null;
+    const task = result.rows[0];
+    
+    if (task) {
+        const groupId = task.group_id;
+        if (updateData.title !== undefined) {
+            await logActivity(groupId, userId, 'EDIT', `Updated task title to "${updateData.title}"`);
+        }
+        if (updateData.assignee_id !== undefined) {
+            await logActivity(groupId, userId, 'ASSIGN', `Changed assignee for task "${task.title}"`);
+        }
+        if (updateData.status !== undefined) {
+            if (updateData.status === 'DONE') {
+                await logActivity(groupId, userId, 'COMPLETE', `Completed task "${task.title}"`);
+            } else {
+                await logActivity(groupId, userId, 'EDIT', `Changed status of task "${task.title}" to ${updateData.status}`);
+            }
+        }
+    }
+    
+    return task || null;
 };
 
-export const deleteTask = async (taskId) => {
+export const deleteTask = async (taskId, userId) => {
     const result = await pool.query(`
         DELETE FROM tasks WHERE id = $1
-        RETURNING id
+        RETURNING id, title, group_id
     `, [taskId]);
-    return result.rows[0] || null;
+    
+    const task = result.rows[0];
+    if (task) {
+        await logActivity(task.group_id, userId, 'DELETE', `Deleted task "${task.title}"`);
+    }
+    
+    return task || null;
 };
 
 // Helper để check assignee có hợp lệ không
@@ -173,7 +206,10 @@ export const createDiscussion = async (groupId, userId, message) => {
         RETURNING id, group_id, user_id, message, created_at
     `, [groupId, userId, message]);
     
-    return result.rows[0];
+    const discussion = result.rows[0];
+    await logActivity(groupId, userId, 'DISCUSSION_POST', 'Posted a new discussion message');
+    
+    return discussion;
 };
 
 // ==========================================
@@ -197,5 +233,8 @@ export const createFile = async (groupId, userId, fileName, fileUrl) => {
         RETURNING id, group_id, uploaded_by, file_name, file_url, created_at
     `, [groupId, userId, fileName, fileUrl]);
     
-    return result.rows[0];
+    const file = result.rows[0];
+    await logActivity(groupId, userId, 'FILE_UPLOAD', `Uploaded file "${fileName}"`);
+    
+    return file;
 };

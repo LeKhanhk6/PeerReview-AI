@@ -5,6 +5,7 @@ import { connectDB } from './config/db.js';
 import authRoutes from './routes/auth.routes.js';
 import assignmentRoutes from './routes/assignments.routes.js';
 import rubricRoutes from './routes/rubrics.routes.js';
+import groupRoutes from './routes/groups.routes.js';
 dotenv.config();
 
 const app = express();
@@ -21,6 +22,7 @@ connectDB();
 app.use('/api/auth', authRoutes);
 app.use('/api/assignments', assignmentRoutes);
 app.use('/api/rubrics', rubricRoutes);
+app.use('/api/groups', groupRoutes);
 
 // API Test cơ bản
 app.get('/api/health', (req, res) => {

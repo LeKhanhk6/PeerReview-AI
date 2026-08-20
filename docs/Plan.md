@@ -149,15 +149,15 @@ API phải kiểm tra Role.
 
 ## TASK 04.1 — Assignment
 
-- [ ]  Create (Check Teacher Class Ownership).
-- [ ]  View (Role-based filtering: Admin xem tất cả, Teacher/Student xem theo lớp).
-- [ ]  Edit (Check Teacher Class Ownership).
-- [ ]  Delete (Check Teacher Class Ownership).
-- [ ]  Input Validation (UUID, Title, Deadline).
-- [ ]  Deadline.
-- [ ]  Description.
-- [ ]  Requirements.
-- [ ]  Attachment.
+- [x]  Create (Check Teacher Class Ownership).
+- [x]  View (Role-based filtering: Admin xem tất cả, Teacher/Student xem theo lớp).
+- [x]  Edit (Check Teacher Class Ownership).
+- [x]  Delete (Check Teacher Class Ownership).
+- [x]  Input Validation (UUID, Title, Deadline).
+- [x]  Deadline.
+- [x]  Description.
+- [x]  Requirements.
+- [x]  Attachment.
 
 Reason:
 Đảm bảo an toàn dữ liệu và phân quyền nghiệp vụ chính xác. Tránh việc Teacher tạo/sửa/xóa bài tập của lớp người khác, và giới hạn dữ liệu trả về trong API GET theo Role của người dùng.
@@ -167,26 +167,32 @@ Thay đổi logic bên trong Service và Controller của Assignment API. Không
 
 ## TASK 04.2 — Rubric
 
-- [ ]  Create Rubric.
-- [ ]  Add Criteria.
-- [ ]  Edit Criteria.
-- [ ]  Delete Criteria.
-- [ ]  Define weight/score.
-- [ ]  Define description.
+- [x]  Create Rubric.
+- [x]  Add Criteria.
+- [x]  Edit Criteria.
+- [x]  Delete Criteria.
+- [x]  Define weight/score.
+- [x]  Define description.
 
 ---
 
 # 5. PHASE 4 — Group Workspace + Activity Tracking
 
-## TASK 05.1 — Group
+## TASK 05.1 — Group Management Core
 
 - [ ]  Create Group.
 - [ ]  View Group.
-- [ ]  Join Group.
-- [ ]  Leave Group.
 - [ ]  Add Member.
 - [ ]  Remove Member.
-- [ ]  Assign Leader.
+
+## TASK 05.1.1 — Group Membership Self-Service
+
+- [ ]  Join Group.
+- [ ]  Leave Group.
+
+## TASK 05.1.2 — Group Leadership
+
+- [ ]  Assign/Change Leader.
 
 ## TASK 05.2 — Workspace
 

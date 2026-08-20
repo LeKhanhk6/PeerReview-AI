@@ -62,7 +62,7 @@ Thứ tự ưu tiên:
     
 5. `PeerReview-AI — Hệ thống AI Hỗ trợ.txt`
     
-6. Quy tắc code (Các quyết định mới đã được tôi xác nhận trong cuộc trò chuyện)
+6. `Quy tắc code.md` (Các quyết định mới đã được tôi xác nhận trong cuộc trò chuyện)
 
 ## Quy tắc quan trọng
 

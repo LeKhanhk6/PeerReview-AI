@@ -10,6 +10,7 @@ router.use(verifyToken);
 
 // Tất cả roles (đã được phân loại logic bên trong service)
 router.get('/', assignmentController.getAll);
+router.get('/:id/detail', assignmentController.getAssignmentDetail);
 router.get('/:id', assignmentController.getById);
 
 // Chỉ giáo viên và admin được thao tác (quyền sở hữu được kiểm tra trong Controller)

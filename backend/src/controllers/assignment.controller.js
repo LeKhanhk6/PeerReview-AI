@@ -40,6 +40,23 @@ export const getById = async (req, res) => {
     }
 };
 
+export const getAssignmentDetail = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const user = req.user;
+
+        if (!isValidUUID(id)) {
+            return res.status(400).json({ message: 'Invalid assignment ID format' });
+        }
+
+        const assignmentDetail = await assignmentService.getAssignmentDetailById(id, user);
+        return res.status(200).json(assignmentDetail);
+    } catch (error) {
+        const status = error.status || 500;
+        return res.status(status).json({ message: error.message });
+    }
+};
+
 export const create = async (req, res) => {
     try {
         const user = req.user;

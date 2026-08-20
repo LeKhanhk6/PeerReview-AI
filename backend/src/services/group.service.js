@@ -216,9 +216,9 @@ export const addMember = async (groupId, userId, currentUser) => {
 
     // 6. Insert Member
     const insertQuery = `
-        INSERT INTO group_members (group_id, user_id)
-        VALUES ($1, $2)
-        RETURNING group_id, user_id, joined_at;
+        INSERT INTO group_members (group_id, user_id, is_leader)
+        VALUES ($1, $2, false)
+        RETURNING group_id, user_id, is_leader, joined_at;
     `;
     const insertResult = await pool.query(insertQuery, [groupId, userId]);
     return insertResult.rows[0];

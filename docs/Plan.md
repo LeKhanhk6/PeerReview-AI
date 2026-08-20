@@ -217,14 +217,13 @@ Thay đổi logic bên trong Service và Controller của Assignment API. Không
   
   **Task Business Rules & Validations:**
   - `title`: required, không empty, max length 255.
-  - `description`: optional, có thể NULL, giới hạn độ dài theo DB.
   - `status`: Chỉ chấp nhận `TODO`, `IN_PROGRESS`, `DONE`. Áp dụng cho POST và PATCH.
   - `assignee_id`:
     - Có thể NULL.
     - Nếu khác NULL: User phải tồn tại, có role STUDENT, và là member của Group chứa Task.
 
   **PATCH Task Rules:**
-  - Whitelist fields: `title`, `description`, `status`, `assignee_id`.
+  - Whitelist fields: `title`, `status`, `assignee_id`.
   - Không cho phép update: `id`, `group_id`, `created_at`, `completed_at`, v.v.
   - Phải có ít nhất 1 field hợp lệ để update, nếu rỗng -> `400 Bad Request`.
   - Không dùng trực tiếp `Object.keys(req.body)` để build câu SQL (tránh SQL Injection/Dynamic SQL rủi ro).
@@ -258,7 +257,7 @@ Thay đổi logic bên trong Service và Controller của Assignment API. Không
   - **STUDENT:** Nếu là thành viên Group, được truy cập và thao tác Workspace của Group đó.
   - **TEACHER:** Nếu quản lý Class chứa Group, được truy cập và thao tác Workspace của Group đó.
   - **ADMIN:** Toàn quyền truy cập và thao tác mọi Workspace.
-  - **Ghi chú:** Chưa áp dụng quyền ownership trên từng record (vd: Student member có thể sửa/xóa Task của member khác).
+  - **MVP Permission Rule:** Sau khi vượt qua Workspace Access Check, mọi thành viên hợp lệ của Group đều có quyền CRUD Tasks. Không áp dụng record-level ownership (vd: Student có thể sửa/xóa task của người khác).
 
 #### 6. Database Schema Verification
   - **Bắt buộc trước khi code:** Kiểm tra chính xác schema của `tasks`, `group_discussions`, `group_files`. Xác nhận field names, NULL constraints, Defaults, và Foreign Keys. Không tự ý thay đổi DB schema.

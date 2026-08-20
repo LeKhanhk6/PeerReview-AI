@@ -19,6 +19,7 @@ const getReviewStatus = (review) => {
 
 export const getStudentDashboardData = async (userId, limit, offset, sortColumn, sortOrder) => {
     try {
+        console.time('dashboard_query');
         const countQuery = `
             SELECT COUNT(DISTINCT a.id) as total
             FROM assignments a
@@ -58,22 +59,23 @@ export const getStudentDashboardData = async (userId, limit, offset, sortColumn,
                 ) sv ON true
                 LEFT JOIN (
                     SELECT 
-                        submission_id, 
-                        bool_and(status = 'COMPLETED') as is_review_completed,
-                        MAX(id) as review_assignment_id
-                    FROM review_assignments
-                    GROUP BY submission_id
-                ) ra ON ra.submission_id = s.id
-                WHERE gm.user_id = $1
-                ORDER BY a.id
-            )
-            SELECT * FROM DashboardData
-            ORDER BY ${sortColumn === 'a.deadline' ? 'deadline' : 'assignment_created_at'} ${sortOrder}
-            LIMIT $2 OFFSET $3
-        `;
+                    submission_id, 
+                    COALESCE(bool_and(status = 'COMPLETED'), false) as is_review_completed,
+                    MAX(id) as review_assignment_id
+                FROM review_assignments
+                GROUP BY submission_id
+            ) ra ON ra.submission_id = s.id
+            WHERE gm.user_id = $1
+            ORDER BY a.id
+        )
+        SELECT * FROM DashboardData
+        ORDER BY ${sortColumn || 'deadline'} ${sortOrder || 'ASC'}
+        LIMIT $2 OFFSET $3
+    `;
 
-        const result = await pool.query(sortedQuery, [userId, limit, offset]);
-        const now = new Date();
+    const result = await pool.query(sortedQuery, [userId, limit, offset]);
+    console.timeEnd('dashboard_query');
+    const now = new Date();
 
         const mappedData = result.rows.map(row => {
             const deadline = new Date(row.deadline);

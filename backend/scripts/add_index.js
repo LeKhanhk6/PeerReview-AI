@@ -11,6 +11,20 @@ const addIndex = async () => {
         await pool.query(`
             CREATE INDEX IF NOT EXISTS idx_group_members_user
             ON group_members(user_id);
+            CREATE INDEX IF NOT EXISTS idx_group_members_user_group
+            ON group_members(user_id, group_id);
+        `);
+        console.log('Adding index to review_assignments...');
+        await pool.query(`
+            CREATE INDEX IF NOT EXISTS idx_review_assignments_submission
+            ON review_assignments(submission_id);
+        `);
+        console.log('Adding index to assignments and groups...');
+        await pool.query(`
+            CREATE INDEX IF NOT EXISTS idx_assignments_class
+            ON assignments(class_id);
+            CREATE INDEX IF NOT EXISTS idx_groups_class
+            ON groups(class_id);
         `);
         console.log('Index added successfully.');
     } catch (error) {

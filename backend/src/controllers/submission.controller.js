@@ -2,7 +2,10 @@ import * as submissionService from '../services/submission.service.js';
 
 export const getStudentDashboard = async (req, res, next) => {
     try {
-        const userId = req.user.id;
+        const userId = req.user?.id;
+        if (!userId) {
+            return res.status(401).json({ message: 'Unauthorized' });
+        }
         let { page = 1, limit = 20, sort = 'deadline' } = req.query;
 
         // Pagination fallback

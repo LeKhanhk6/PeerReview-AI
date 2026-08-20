@@ -220,19 +220,20 @@ export const getRubricByAssignmentId = async (assignmentId) => {
 };
 
 export const getAttachmentsByAssignmentId = async (assignmentId) => {
-    const query = 'SELECT id, file_name, file_url, file_type, file_size, created_at FROM assignment_attachments WHERE assignment_id = $1 ORDER BY created_at ASC LIMIT 50';
+    const query = 'SELECT id, file_name, file_url, file_type, file_size, created_at FROM assignment_attachments WHERE assignment_id = $1 ORDER BY created_at ASC LIMIT 50 OFFSET 0';
     const result = await pool.query(query, [assignmentId]);
     return result.rows;
 };
 
 export const getAssignmentDetailById = async (id, user) => {
     try {
-        console.time('assignment_detail');
+        console.time(`assignment_detail:${id}`);
         
-        // 1. Get basic assignment + check authorization
-        // Isolated Promise.all for graceful degradation of optional parts
-        const [assignment, rubric, attachments] = await Promise.all([
-            getAssignmentBasic(id, user), // This will throw 403 or 404 if invalid
+        // 1. Get basic assignment + check authorization (Fail-fast)
+        const assignment = await getAssignmentBasic(id, user); // This will throw 403 or 404 if invalid
+
+        // 2. Fetch optional parts with graceful degradation
+        const [rubric, attachments] = await Promise.all([
             getRubricByAssignmentId(id).catch(err => {
                 console.error('Error fetching rubric:', err);
                 return null;
@@ -243,18 +244,19 @@ export const getAssignmentDetailById = async (id, user) => {
             })
         ]);
 
-        const now = new Date();
-        const deadline = new Date(assignment.deadline);
+        const now = new Date().getTime();
+        const deadline = new Date(assignment.deadline).getTime();
         const is_overdue = deadline < now;
         const time_left_days = Math.max(0, Math.ceil((deadline - now) / 86400000));
         const deadline_status = is_overdue ? 'OVERDUE' : 'UPCOMING';
+        const assignment_status = is_overdue ? 'CLOSED' : 'ACTIVE';
         
         let total_criteria_weight = 0;
         if (rubric && rubric.criteria) {
             total_criteria_weight = rubric.criteria.reduce((sum, c) => sum + (parseFloat(c.weight) || 0), 0);
         }
 
-        console.timeEnd('assignment_detail');
+        console.timeEnd(`assignment_detail:${id}`);
 
         return {
             id: assignment.id,
@@ -265,7 +267,10 @@ export const getAssignmentDetailById = async (id, user) => {
             is_overdue,
             time_left_days,
             deadline_status,
+            assignment_status,
+            can_submit: !is_overdue,
             has_attachments: attachments.length > 0,
+            has_rubric: !!rubric,
             total_criteria_weight,
             criteria_count: rubric?.criteria?.length || 0,
             rubric,

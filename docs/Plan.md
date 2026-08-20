@@ -283,14 +283,14 @@ Thay đổi logic bên trong Service và Controller của Assignment API. Không
 
 Ghi nhận:
 
-- [ ]  Content creation.
-- [ ]  Content editing.
-- [ ]  Content deletion.
-- [ ]  Task assignment.
-- [ ]  Task completion.
-- [ ]  Discussion.
+- [x]  Content creation.
+- [x]  Content editing.
+- [x]  Content deletion.
+- [x]  Task assignment.
+- [x]  Task completion.
+- [x]  Discussion.
 - [ ]  Comment.
-- [ ]  Timestamp.
+- [x]  Timestamp.
 - [ ]  Version history.
 
 Flow:

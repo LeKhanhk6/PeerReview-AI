@@ -19,6 +19,44 @@ export const getClassOwnershipInfo = async (classId) => {
     return result.rows[0];
 };
 
+export const checkStudentCanJoinGroup = async (groupInfo, userId) => {
+    // User Existence and Role check
+    const userResult = await pool.query('SELECT id, role FROM users WHERE id = $1', [userId]);
+    if (userResult.rows.length === 0) {
+        const error = new Error('User not found');
+        error.status = 404;
+        throw error;
+    }
+    const targetUser = userResult.rows[0];
+    if (targetUser.role !== 'STUDENT') {
+        const error = new Error('Only users with STUDENT role can be added to a group');
+        error.status = 400;
+        throw error;
+    }
+
+    // Check duplicate membership in this group
+    const duplicateCheck = await pool.query('SELECT 1 FROM group_members WHERE group_id = $1 AND user_id = $2', [groupInfo.id, userId]);
+    if (duplicateCheck.rows.length > 0) {
+        const error = new Error('User is already a member of this group');
+        error.status = 409;
+        throw error;
+    }
+
+    // Check 1 Student = Max 1 Group per Class
+    const classGroupCheck = await pool.query(`
+        SELECT g.id 
+        FROM groups g
+        JOIN group_members gm ON g.id = gm.group_id
+        WHERE gm.user_id = $1 AND g.class_id = $2
+    `, [userId, groupInfo.class_id]);
+
+    if (classGroupCheck.rows.length > 0) {
+        const error = new Error('Student already belongs to another group in this class');
+        error.status = 409;
+        throw error;
+    }
+};
+
 // --- CRUD OPERATIONS ---
 
 export const getAllGroups = async (user, classId) => {
@@ -173,41 +211,8 @@ export const addMember = async (groupId, userId, currentUser) => {
         throw error;
     }
 
-    // 3. User Existence and Role check
-    const userResult = await pool.query('SELECT id, role FROM users WHERE id = $1', [userId]);
-    if (userResult.rows.length === 0) {
-        const error = new Error('User not found');
-        error.status = 404;
-        throw error;
-    }
-    const targetUser = userResult.rows[0];
-    if (targetUser.role !== 'STUDENT') {
-        const error = new Error('Only users with STUDENT role can be added to a group');
-        error.status = 400;
-        throw error;
-    }
-
-    // 4. Check duplicate membership in this group
-    const duplicateCheck = await pool.query('SELECT 1 FROM group_members WHERE group_id = $1 AND user_id = $2', [groupId, userId]);
-    if (duplicateCheck.rows.length > 0) {
-        const error = new Error('User is already a member of this group');
-        error.status = 409;
-        throw error;
-    }
-
-    // 5. Check 1 Student = Max 1 Group per Class
-    const classGroupCheck = await pool.query(`
-        SELECT g.id 
-        FROM groups g
-        JOIN group_members gm ON g.id = gm.group_id
-        WHERE gm.user_id = $1 AND g.class_id = $2
-    `, [userId, groupInfo.class_id]);
-
-    if (classGroupCheck.rows.length > 0) {
-        const error = new Error('Student already belongs to another group in this class');
-        error.status = 409;
-        throw error;
-    }
+    // 3. Common Membership Checks
+    await checkStudentCanJoinGroup(groupInfo, userId);
 
     // 6. Insert Member
     const insertQuery = `
@@ -254,5 +259,43 @@ export const removeMember = async (groupId, userId, currentUser) => {
     // 5. Delete Member
     const deleteQuery = 'DELETE FROM group_members WHERE group_id = $1 AND user_id = $2';
     await pool.query(deleteQuery, [groupId, userId]);
+    return true;
+};
+
+export const studentJoinGroup = async (groupId, studentId) => {
+    const groupCheck = await pool.query('SELECT id, class_id FROM groups WHERE id = $1', [groupId]);
+    if (groupCheck.rows.length === 0) {
+        const error = new Error('Group not found');
+        error.status = 404;
+        throw error;
+    }
+
+    await checkStudentCanJoinGroup(groupCheck.rows[0], studentId);
+
+    const insertQuery = `
+        INSERT INTO group_members (group_id, user_id, is_leader)
+        VALUES ($1, $2, false)
+        RETURNING group_id, user_id, is_leader, joined_at;
+    `;
+    const insertResult = await pool.query(insertQuery, [groupId, studentId]);
+    return insertResult.rows[0];
+};
+
+export const studentLeaveGroup = async (groupId, studentId) => {
+    const groupCheck = await pool.query('SELECT id FROM groups WHERE id = $1', [groupId]);
+    if (groupCheck.rows.length === 0) {
+        const error = new Error('Group not found');
+        error.status = 404;
+        throw error;
+    }
+
+    const memberCheck = await pool.query('SELECT 1 FROM group_members WHERE group_id = $1 AND user_id = $2', [groupId, studentId]);
+    if (memberCheck.rows.length === 0) {
+        const error = new Error('Group member not found');
+        error.status = 404;
+        throw error;
+    }
+
+    await pool.query('DELETE FROM group_members WHERE group_id = $1 AND user_id = $2', [groupId, studentId]);
     return true;
 };

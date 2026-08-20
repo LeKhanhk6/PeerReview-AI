@@ -108,3 +108,37 @@ export const removeMember = async (req, res) => {
         return res.status(status).json({ message: error.message });
     }
 };
+
+export const joinGroup = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const studentId = req.user.userId;
+
+        if (!isValidUUID(id)) {
+            return res.status(400).json({ message: 'Invalid group ID format' });
+        }
+
+        const newMember = await groupService.studentJoinGroup(id, studentId);
+        return res.status(201).json(newMember);
+    } catch (error) {
+        const status = error.status || 500;
+        return res.status(status).json({ message: error.message });
+    }
+};
+
+export const leaveGroup = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const studentId = req.user.userId;
+
+        if (!isValidUUID(id)) {
+            return res.status(400).json({ message: 'Invalid group ID format' });
+        }
+
+        await groupService.studentLeaveGroup(id, studentId);
+        return res.status(204).send();
+    } catch (error) {
+        const status = error.status || 500;
+        return res.status(status).json({ message: error.message });
+    }
+};

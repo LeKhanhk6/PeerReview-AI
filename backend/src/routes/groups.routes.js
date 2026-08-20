@@ -17,4 +17,8 @@ router.post('/', authorizeRoles('TEACHER', 'ADMIN'), groupController.create);
 router.post('/:id/members', authorizeRoles('TEACHER', 'ADMIN'), groupController.addMember);
 router.delete('/:id/members/:userId', authorizeRoles('TEACHER', 'ADMIN'), groupController.removeMember);
 
+// STUDENT
+router.post('/:id/join', authorizeRoles('STUDENT'), groupController.joinGroup);
+router.delete('/:id/leave', authorizeRoles('STUDENT'), groupController.leaveGroup);
+
 export default router;

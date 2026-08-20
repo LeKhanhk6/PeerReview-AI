@@ -180,32 +180,105 @@ Thay đổi logic bên trong Service và Controller của Assignment API. Không
 
 ## TASK 05.1 — Group Management Core
 
-- [ ]  Create Group.
-- [ ]  View Group.
-- [ ]  Add Member.
-- [ ]  Remove Member.
+- [x]  Create Group.
+- [x]  View Group.
+- [x]  Add Member.
+- [x]  Remove Member.
 
 ## TASK 05.1.1 — Group Membership Self-Service
 
-- [ ]  Join Group.
-- [ ]  Leave Group.
+- [x]  Join Group.
+- [x]  Leave Group.
 
 ## TASK 05.1.2 — Group Leadership
 
-- [ ]  Assign/Change Leader (Role: ADMIN, TEACHER only. STUDENT is not allowed).
+- [x]  Assign/Change Leader (Role: ADMIN, TEACHER only. STUDENT is not allowed).
 - **Business Rule:** Group được phép tồn tại mà không có Leader (Ví dụ: Group mới tạo). Nếu Leader bị remove hoặc tự Leave Group, `is_leader` sẽ không tự động chuyển sang thành viên khác. Teacher/Admin cần gọi API để chỉ định Leader mới.
 
-## TASK 05.2 — Workspace
+## TASK 05.2 — Group Workspace API
 
-- [ ]  Group information.
-- [ ]  Member list.
-- [ ]  Task list.
-- [ ]  File upload.
-- [ ]  File download.
-- [ ]  Discussion.
-- [ ]  Comment.
-- [ ]  Reply.
-- [ ]  Progress tracking.
+### Reuse Existing APIs
+
+- Group information.
+- Member list.
+- Group leader information.
+
+> Sử dụng lại `GET /api/groups/:id` đã triển khai trong TASK 05.1.
+
+### New Features
+
+### New Features
+
+#### 1. Task Management
+  - `GET /api/groups/:id/tasks`
+  - `POST /api/groups/:id/tasks`
+  - `PATCH /api/tasks/:taskId` (Partial update)
+  - `DELETE /api/tasks/:taskId`
+  
+  **Task Business Rules & Validations:**
+  - `title`: required, không empty, max length 255.
+  - `description`: optional, có thể NULL, giới hạn độ dài theo DB.
+  - `status`: Chỉ chấp nhận `TODO`, `IN_PROGRESS`, `DONE`. Áp dụng cho POST và PATCH.
+  - `assignee_id`:
+    - Có thể NULL.
+    - Nếu khác NULL: User phải tồn tại, có role STUDENT, và là member của Group chứa Task.
+
+  **PATCH Task Rules:**
+  - Whitelist fields: `title`, `description`, `status`, `assignee_id`.
+  - Không cho phép update: `id`, `group_id`, `created_at`, `completed_at`, v.v.
+  - Phải có ít nhất 1 field hợp lệ để update, nếu rỗng -> `400 Bad Request`.
+  - Không dùng trực tiếp `Object.keys(req.body)` để build câu SQL (tránh SQL Injection/Dynamic SQL rủi ro).
+
+  **PATCH/DELETE Task Flow:**
+  1. Validate `taskId` UUID.
+  2. Tìm Task theo `taskId`. Không tồn tại -> `404`.
+  3. Lấy `group_id` từ Task.
+  4. Chạy `checkWorkspaceAccess(group_id, currentUser)`.
+  5. Không có quyền -> `403`.
+  6. (Với PATCH): Validate update data và `assignee_id` nếu có.
+  7. Thực hiện Update/Delete -> Trả về `200` (PATCH) / `204` (DELETE).
+
+#### 2. Group Discussions
+  - `GET /api/groups/:id/discussions`
+  - `POST /api/groups/:id/discussions`
+  - **Validation:** `message` (hoặc `content` tuỳ DB) là required, không empty.
+  - **Lưu ý:** MVP chỉ hỗ trợ Discussion Level 1 (không Comment/Reply/Nested).
+
+#### 3. Group Files
+  - `GET /api/groups/:id/files`
+  - `POST /api/groups/:id/files`
+  - **File URL Rules:** `file_url` required, absolute URL hợp lệ (http/https).
+  - **Technical Limitation (MVP):** Chỉ lưu metadata/URL (`file_name`, `file_url`). KHÔNG triển khai binary file upload/download, Multer, S3.
+
+#### 4. JWT Identity Rules
+  - Các trường đại diện tác giả (vd: `user_id`, `uploaded_by`, `created_by`) PHẢI được lấy từ JWT Token (`req.user.userId`).
+  - Backend bỏ qua các giá trị User ID được client gửi trong Request Body.
+
+#### 5. Workspace Authorization Rules
+  - **STUDENT:** Nếu là thành viên Group, được truy cập và thao tác Workspace của Group đó.
+  - **TEACHER:** Nếu quản lý Class chứa Group, được truy cập và thao tác Workspace của Group đó.
+  - **ADMIN:** Toàn quyền truy cập và thao tác mọi Workspace.
+  - **Ghi chú:** Chưa áp dụng quyền ownership trên từng record (vd: Student member có thể sửa/xóa Task của member khác).
+
+#### 6. Database Schema Verification
+  - **Bắt buộc trước khi code:** Kiểm tra chính xác schema của `tasks`, `group_discussions`, `group_files`. Xác nhận field names, NULL constraints, Defaults, và Foreign Keys. Không tự ý thay đổi DB schema.
+
+#### 7. Route & Controller Responsibilities
+  - `workspace.routes.js`: Chỉ định tuyến endpoint, gắn `verifyToken`, gọi Controller.
+  - `workspace.controller.js`: Xử lý Validation UUID, Request body, gọi Service.
+
+#### 8. Empty List Behavior
+  - Nếu Group tồn tại nhưng chưa có dữ liệu (Task, Discussion, File): Trả về mảng rỗng `[]` và HTTP `200 OK`. Không trả `404`.
+
+### Derived Progress
+
+- [ ] Progress được tính dựa trên Task Status (`TODO`, `IN_PROGRESS`, `DONE`) (Frontend xử lý).
+
+### Out of Scope
+
+- Comment, Reply, Nested discussion.
+- Real file upload, Binary file download, External file storage.
+- Progress Tracking module riêng.
 
 ## TASK 05.3 — Activity Tracking
 
@@ -780,7 +853,8 @@ DELETE /api/groups/:id/members/:userId
 ```
 GET    /api/groups/:id/tasks
 POST   /api/groups/:id/tasks
-PUT    /api/tasks/:taskId
+PATCH  /api/tasks/:taskId
+DELETE /api/tasks/:taskId
 GET    /api/groups/:id/discussions
 POST   /api/groups/:id/discussions
 GET    /api/groups/:id/files

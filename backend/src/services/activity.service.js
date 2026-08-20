@@ -14,6 +14,7 @@ export const logActivity = async (groupId, userId, actionType, contentSummary) =
             groupId,
             userId,
             actionType,
+            timestamp: new Date().toISOString(),
             error: error.message
         });
         // Do not throw error to avoid breaking the main request
@@ -31,7 +32,10 @@ export const getGroupActivities = async (groupId, limit = 50, offset = 0) => {
             LIMIT $2 OFFSET $3
         `, [groupId, limit, offset]);
         return result.rows;
-    } catch (error) {
-        throw new Error('Failed to fetch activities');
+    } catch (err) {
+        const error = new Error('Failed to fetch activities');
+        error.statusCode = 500;
+        error.originalError = err;
+        throw error;
     }
 };

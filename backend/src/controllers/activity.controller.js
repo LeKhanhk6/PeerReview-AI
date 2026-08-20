@@ -15,18 +15,28 @@ export const getActivities = async (req, res) => {
         // Validate access
         await workspaceService.checkWorkspaceAccess(groupId, req.user);
 
-        limit = Number.isInteger(+limit) ? +limit : PAGINATION.DEFAULT_LIMIT;
-        if (limit <= 0 || limit > PAGINATION.MAX_LIMIT) limit = PAGINATION.DEFAULT_LIMIT;
+        const limitParsed = parseInt(limit, 10);
+        const pageParsed = parseInt(page, 10);
 
-        page = Number.isInteger(+page) ? +page : 1;
+        limit = Number.isInteger(limitParsed) ? limitParsed : PAGINATION.DEFAULT_LIMIT;
+        page = Number.isInteger(pageParsed) ? pageParsed : 1;
+        
+        if (limit <= 0) limit = PAGINATION.DEFAULT_LIMIT;
         if (page <= 0) page = 1;
-        if (page > PAGINATION.MAX_PAGE) page = PAGINATION.MAX_PAGE;
+
+        limit = Math.min(limit, PAGINATION.MAX_LIMIT);
+        page = Math.min(page, PAGINATION.MAX_PAGE);
 
         const offset = (page - 1) * limit;
 
         const activities = await activityService.getGroupActivities(groupId, limit, offset);
         
-        res.status(200).json({ data: activities });
+        res.status(200).json({
+            data: activities,
+            page,
+            limit,
+            hasNext: activities.length === limit // heuristic, not exact
+        });
     } catch (error) {
         if (error.statusCode) {
             return res.status(error.statusCode).json({ message: error.message });

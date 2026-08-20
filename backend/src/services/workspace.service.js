@@ -2,12 +2,23 @@ import pool from '../config/db.js';
 import { logActivity } from './activity.service.js';
 import { ACTIVITY_TYPES } from '../utils/constants.js';
 
+const executeQuery = async (queryText, params) => {
+    try {
+        return await pool.query(queryText, params);
+    } catch (err) {
+        const error = new Error('Database error occurred');
+        error.statusCode = 500;
+        error.originalError = err;
+        throw error;
+    }
+};
+
 // ==========================================
 // AUTHORIZATION HELPERS
 // ==========================================
 
 export const getGroupAccessInfo = async (groupId) => {
-    const result = await pool.query(`
+    const result = await executeQuery(`
         SELECT g.id, g.class_id, c.teacher_id
         FROM groups g
         JOIN classes c ON g.class_id = c.id
@@ -25,21 +36,18 @@ export const checkWorkspaceAccess = async (groupId, currentUser) => {
         throw error;
     }
 
-    // ADMIN luôn có quyền
     if (currentUser.role === 'ADMIN') {
         return groupInfo;
     }
 
-    // TEACHER: Kiểm tra teacher_id của class
     if (currentUser.role === 'TEACHER') {
         if (groupInfo.teacher_id === currentUser.userId) {
             return groupInfo;
         }
     }
 
-    // STUDENT: Kiểm tra xem có trong group_members không
     if (currentUser.role === 'STUDENT') {
-        const memberCheck = await pool.query(`
+        const memberCheck = await executeQuery(`
             SELECT 1 FROM group_members 
             WHERE group_id = $1 AND user_id = $2
         `, [groupId, currentUser.userId]);
@@ -54,9 +62,8 @@ export const checkWorkspaceAccess = async (groupId, currentUser) => {
     throw error;
 };
 
-// Lấy group_id từ taskId (dùng cho PATCH/DELETE task)
 export const getTaskGroupInfo = async (taskId) => {
-    const result = await pool.query(`
+    const result = await executeQuery(`
         SELECT group_id FROM tasks WHERE id = $1
     `, [taskId]);
     
@@ -68,7 +75,7 @@ export const getTaskGroupInfo = async (taskId) => {
 // ==========================================
 
 export const getTasks = async (groupId) => {
-    const result = await pool.query(`
+    const result = await executeQuery(`
         SELECT id, group_id, assignee_id, title, status, created_at, completed_at
         FROM tasks
         WHERE group_id = $1
@@ -80,7 +87,7 @@ export const getTasks = async (groupId) => {
 export const createTask = async (groupId, userId, taskData) => {
     const { title, status = 'TODO', assignee_id } = taskData;
     
-    const result = await pool.query(`
+    const result = await executeQuery(`
         INSERT INTO tasks (group_id, title, status, assignee_id)
         VALUES ($1, $2, $3, $4)
         RETURNING id, group_id, assignee_id, title, status, created_at, completed_at
@@ -101,11 +108,9 @@ export const updateTask = async (taskId, userId, updateData) => {
     const values = [];
     let queryIndex = 1;
 
-    // Cập nhật trạng thái completed_at nếu status đổi thành DONE
     if (updateData.status !== undefined) {
         fields.push(`status = $${queryIndex++}`);
         values.push(updateData.status);
-        
         if (updateData.status === 'DONE') {
             fields.push(`completed_at = COALESCE(completed_at, NOW())`);
         } else {
@@ -124,7 +129,7 @@ export const updateTask = async (taskId, userId, updateData) => {
     }
 
     if (fields.length === 0) {
-        return null; // Không có gì để update
+        return null; 
     }
 
     values.push(taskId);
@@ -136,23 +141,29 @@ export const updateTask = async (taskId, userId, updateData) => {
         RETURNING id, group_id, assignee_id, title, status, created_at, completed_at
     `;
 
-    const result = await pool.query(query, values);
+    const result = await executeQuery(query, values);
     const task = result.rows[0];
     
     if (task) {
         const groupId = task.group_id;
-        if (updateData.title !== undefined) {
-            await logActivity(groupId, userId, ACTIVITY_TYPES.TASK_UPDATE, `Updated task title to "${updateData.title}"`);
-        }
-        if (updateData.assignee_id !== undefined) {
-            await logActivity(groupId, userId, ACTIVITY_TYPES.TASK_ASSIGN, `Changed assignee for task "${task.title}"`);
-        }
+        const changes = [];
+        
+        if (updateData.title !== undefined) changes.push('title');
+        if (updateData.assignee_id !== undefined) changes.push('assignee');
         if (updateData.status !== undefined) {
-            if (updateData.status === 'DONE') {
-                await logActivity(groupId, userId, ACTIVITY_TYPES.TASK_COMPLETE, `Completed task "${task.title}"`);
-            } else {
-                await logActivity(groupId, userId, ACTIVITY_TYPES.TASK_UPDATE, `Changed status of task "${task.title}" to ${updateData.status}`);
-            }
+            changes.push(`status → ${updateData.status}`);
+        }
+
+        if (changes.length > 0) {
+            const isCompleted = updateData.status === 'DONE';
+            const actionType = isCompleted ? ACTIVITY_TYPES.TASK_COMPLETE : ACTIVITY_TYPES.TASK_UPDATE;
+            
+            await logActivity(
+                groupId, 
+                userId, 
+                actionType, 
+                `Updated task "${task.title}" (${changes.join(', ')})`
+            );
         }
     }
     
@@ -160,7 +171,7 @@ export const updateTask = async (taskId, userId, updateData) => {
 };
 
 export const deleteTask = async (taskId, userId) => {
-    const result = await pool.query(`
+    const result = await executeQuery(`
         DELETE FROM tasks WHERE id = $1
         RETURNING id, title, group_id
     `, [taskId]);
@@ -173,11 +184,10 @@ export const deleteTask = async (taskId, userId) => {
     return task || null;
 };
 
-// Helper để check assignee có hợp lệ không
 export const isAssigneeValid = async (groupId, assigneeId) => {
-    if (!assigneeId) return true; // NULL được phép
+    if (!assigneeId) return true;
     
-    const result = await pool.query(`
+    const result = await executeQuery(`
         SELECT 1 FROM group_members gm
         JOIN users u ON gm.user_id = u.id
         WHERE gm.group_id = $1 AND gm.user_id = $2 AND u.role = 'STUDENT'
@@ -191,7 +201,7 @@ export const isAssigneeValid = async (groupId, assigneeId) => {
 // ==========================================
 
 export const getDiscussions = async (groupId) => {
-    const result = await pool.query(`
+    const result = await executeQuery(`
         SELECT id, group_id, user_id, message, created_at
         FROM group_discussions
         WHERE group_id = $1
@@ -201,7 +211,7 @@ export const getDiscussions = async (groupId) => {
 };
 
 export const createDiscussion = async (groupId, userId, message) => {
-    const result = await pool.query(`
+    const result = await executeQuery(`
         INSERT INTO group_discussions (group_id, user_id, message)
         VALUES ($1, $2, $3)
         RETURNING id, group_id, user_id, message, created_at
@@ -218,7 +228,7 @@ export const createDiscussion = async (groupId, userId, message) => {
 // ==========================================
 
 export const getFiles = async (groupId) => {
-    const result = await pool.query(`
+    const result = await executeQuery(`
         SELECT id, group_id, uploaded_by, file_name, file_url, created_at
         FROM group_files
         WHERE group_id = $1
@@ -228,7 +238,7 @@ export const getFiles = async (groupId) => {
 };
 
 export const createFile = async (groupId, userId, fileName, fileUrl) => {
-    const result = await pool.query(`
+    const result = await executeQuery(`
         INSERT INTO group_files (group_id, uploaded_by, file_name, file_url)
         VALUES ($1, $2, $3, $4)
         RETURNING id, group_id, uploaded_by, file_name, file_url, created_at

@@ -106,7 +106,17 @@ CREATE TABLE activity_logs (
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
+-- activity logs
 CREATE INDEX idx_activity_logs_group_created ON activity_logs(group_id, created_at DESC);
+
+-- tasks
+CREATE INDEX idx_tasks_group_created ON tasks(group_id, created_at DESC);
+
+-- discussions
+CREATE INDEX idx_discussions_group_created ON group_discussions(group_id, created_at);
+
+-- files
+CREATE INDEX idx_files_group_created ON group_files(group_id, created_at DESC);
 
 CREATE TABLE contribution_metrics (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),

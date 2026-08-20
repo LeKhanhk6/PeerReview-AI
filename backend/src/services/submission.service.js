@@ -156,10 +156,9 @@ export const submitAssignment = async (assignmentId, userId, fileUrl) => {
     
     const { deadline, title, group_id: groupId } = authResult.rows[0];
     
-    // 2. Deadline Check
+    // 2. Deadline Check (Unified logic)
     const now = new Date();
-    const isLate = now > new Date(deadline);
-    const newStatus = isLate ? SUBMISSION_STATUS.LATE : SUBMISSION_STATUS.SUBMITTED;
+    const newStatus = getSubmissionStatus({ submitted_at: now }, deadline);
 
     const client = await pool.connect();
     try {
@@ -188,8 +187,8 @@ export const submitAssignment = async (assignmentId, userId, fileUrl) => {
             await client.query(updateSub, [newStatus, submissionId]);
         }
 
-        // 4. Max Version & Idempotency
-        const versionQuery = 'SELECT version_number, file_url FROM submission_versions WHERE submission_id = $1 ORDER BY version_number DESC LIMIT 1';
+        // 4. Max Version & Idempotency (Lock version row to prevent race condition completely)
+        const versionQuery = 'SELECT version_number, file_url FROM submission_versions WHERE submission_id = $1 ORDER BY version_number DESC LIMIT 1 FOR UPDATE';
         const versionResult = await client.query(versionQuery, [submissionId]);
         
         let newVersionNumber = 1;
@@ -243,6 +242,7 @@ export const submitAssignment = async (assignmentId, userId, fileUrl) => {
         };
     } catch (err) {
         await client.query('ROLLBACK');
+        console.error(`submit_assignment_failed:${assignmentId}`, err);
         const error = new Error(err.message || 'Failed to submit assignment');
         error.status = err.status || 500;
         error.originalError = err;

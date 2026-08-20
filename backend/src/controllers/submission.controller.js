@@ -74,8 +74,13 @@ export const submit = async (req, res, next) => {
             return res.status(400).json({ message: 'A valid file_url is required' });
         }
 
+        const allowedDomains = ['s3.amazonaws.com', 'firebaseapp.com', 'googleapis.com'];
+        if (!allowedDomains.some(d => file_url.includes(d))) {
+            return res.status(400).json({ message: 'file_url domain is not allowed' });
+        }
+
         const result = await submissionService.submitAssignment(assignmentId, userId, file_url);
-        return res.status(200).json(result);
+        return res.status(200).json({ data: result });
     } catch (error) {
         const status = error.status || 500;
         return res.status(status).json({ message: error.message });

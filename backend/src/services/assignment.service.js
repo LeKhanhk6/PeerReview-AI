@@ -189,61 +189,92 @@ export const getAssignmentBasic = async (id, user) => {
 };
 
 export const getRubricByAssignmentId = async (assignmentId) => {
-    const rubricQuery = 'SELECT id, description FROM rubrics WHERE assignment_id = $1';
-    const rubricResult = await pool.query(rubricQuery, [assignmentId]);
+    const query = `
+        SELECT r.id as rubric_id, r.description as rubric_description, 
+               rc.id as criteria_id, rc.name, rc.description as criteria_description, rc.weight
+        FROM rubrics r
+        LEFT JOIN rubric_criteria rc ON rc.rubric_id = r.id
+        WHERE r.assignment_id = $1
+        ORDER BY rc.created_at ASC
+    `;
+    const result = await pool.query(query, [assignmentId]);
     
-    if (rubricResult.rows.length === 0) return null;
+    if (result.rows.length === 0) return null;
     
-    const rubric = rubricResult.rows[0];
-    const criteriaQuery = 'SELECT id, name, description, weight FROM rubric_criteria WHERE rubric_id = $1 ORDER BY created_at ASC';
-    const criteriaResult = await pool.query(criteriaQuery, [rubric.id]);
+    const rubric = {
+        id: result.rows[0].rubric_id,
+        description: result.rows[0].rubric_description,
+        criteria: []
+    };
+
+    if (result.rows[0].criteria_id) {
+        rubric.criteria = result.rows.map(row => ({
+            id: row.criteria_id,
+            name: row.name,
+            description: row.criteria_description,
+            weight: row.weight
+        }));
+    }
     
-    rubric.criteria = criteriaResult.rows;
     return rubric;
 };
 
 export const getAttachmentsByAssignmentId = async (assignmentId) => {
-    const query = 'SELECT id, file_name, file_url, file_type, file_size FROM assignment_attachments WHERE assignment_id = $1 ORDER BY created_at ASC';
+    const query = 'SELECT id, file_name, file_url, file_type, file_size, created_at FROM assignment_attachments WHERE assignment_id = $1 ORDER BY created_at ASC LIMIT 50';
     const result = await pool.query(query, [assignmentId]);
     return result.rows;
 };
 
 export const getAssignmentDetailById = async (id, user) => {
-    // 1. Get basic assignment + check authorization
-    // Isolated Promise.all for graceful degradation of optional parts
-    const [assignment, rubric, attachments] = await Promise.all([
-        getAssignmentBasic(id, user), // This will throw 403 or 404 if invalid
-        getRubricByAssignmentId(id).catch(err => {
-            console.error('Error fetching rubric:', err);
-            return null;
-        }),
-        getAttachmentsByAssignmentId(id).catch(err => {
-            console.error('Error fetching attachments:', err);
-            return [];
-        })
-    ]);
+    try {
+        console.time('assignment_detail');
+        
+        // 1. Get basic assignment + check authorization
+        // Isolated Promise.all for graceful degradation of optional parts
+        const [assignment, rubric, attachments] = await Promise.all([
+            getAssignmentBasic(id, user), // This will throw 403 or 404 if invalid
+            getRubricByAssignmentId(id).catch(err => {
+                console.error('Error fetching rubric:', err);
+                return null;
+            }),
+            getAttachmentsByAssignmentId(id).catch(err => {
+                console.error('Error fetching attachments:', err);
+                return [];
+            })
+        ]);
 
-    const now = new Date();
-    const deadline = new Date(assignment.deadline);
-    const is_overdue = deadline < now;
-    const time_left_days = Math.max(0, Math.ceil((deadline - now) / 86400000));
-    
-    let total_criteria_weight = 0;
-    if (rubric && rubric.criteria) {
-        total_criteria_weight = rubric.criteria.reduce((sum, c) => sum + parseFloat(c.weight), 0);
+        const now = new Date();
+        const deadline = new Date(assignment.deadline);
+        const is_overdue = deadline < now;
+        const time_left_days = Math.max(0, Math.ceil((deadline - now) / 86400000));
+        const deadline_status = is_overdue ? 'OVERDUE' : 'UPCOMING';
+        
+        let total_criteria_weight = 0;
+        if (rubric && rubric.criteria) {
+            total_criteria_weight = rubric.criteria.reduce((sum, c) => sum + (parseFloat(c.weight) || 0), 0);
+        }
+
+        console.timeEnd('assignment_detail');
+
+        return {
+            id: assignment.id,
+            title: assignment.title,
+            description: assignment.description,
+            requirements: assignment.requirements,
+            deadline: assignment.deadline,
+            is_overdue,
+            time_left_days,
+            deadline_status,
+            has_attachments: attachments.length > 0,
+            total_criteria_weight,
+            criteria_count: rubric?.criteria?.length || 0,
+            rubric,
+            attachments
+        };
+    } catch (err) {
+        const error = new Error(err.message || 'Failed to fetch assignment detail');
+        error.status = err.status || 500;
+        error.originalError = err;
+        throw error;
     }
-
-    return {
-        id: assignment.id,
-        title: assignment.title,
-        description: assignment.description,
-        requirements: assignment.requirements,
-        deadline: assignment.deadline,
-        is_overdue,
-        time_left_days,
-        has_attachments: attachments.length > 0,
-        total_criteria_weight,
-        rubric,
-        attachments
-    };
 };

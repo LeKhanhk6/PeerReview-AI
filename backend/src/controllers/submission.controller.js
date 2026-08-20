@@ -53,3 +53,31 @@ export const getStudentDashboard = async (req, res, next) => {
         next(error);
     }
 };
+
+import { isValidUUID, isValidHttpUrl } from '../utils/validation.util.js';
+
+export const submit = async (req, res, next) => {
+    try {
+        const { assignmentId } = req.params;
+        const { file_url } = req.body;
+        const userId = req.user?.id;
+
+        if (!userId) {
+            return res.status(401).json({ message: 'Unauthorized' });
+        }
+
+        if (!isValidUUID(assignmentId)) {
+            return res.status(400).json({ message: 'Invalid assignment ID format' });
+        }
+
+        if (!file_url || !isValidHttpUrl(file_url)) {
+            return res.status(400).json({ message: 'A valid file_url is required' });
+        }
+
+        const result = await submissionService.submitAssignment(assignmentId, userId, file_url);
+        return res.status(200).json(result);
+    } catch (error) {
+        const status = error.status || 500;
+        return res.status(status).json({ message: error.message });
+    }
+};

@@ -133,3 +133,121 @@ export const getStudentDashboardData = async (userId, limit, offset, sortColumn,
         throw error;
     }
 };
+
+import { logActivity } from './activity.service.js';
+
+export const submitAssignment = async (assignmentId, userId, fileUrl) => {
+    // 1. Validation & Auth
+    const authQuery = `
+        SELECT a.id, a.deadline, a.title, g.id as group_id
+        FROM assignments a
+        JOIN groups g ON g.class_id = a.class_id
+        JOIN group_members gm ON gm.group_id = g.id
+        WHERE a.id = $1 AND gm.user_id = $2
+    `;
+    const authResult = await pool.query(authQuery, [assignmentId, userId]);
+    
+    if (authResult.rows.length === 0) {
+        const checkExists = await pool.query('SELECT id FROM assignments WHERE id = $1', [assignmentId]);
+        const error = new Error(checkExists.rows.length > 0 ? 'Forbidden access to this assignment' : 'Assignment not found');
+        error.status = checkExists.rows.length > 0 ? 403 : 404;
+        throw error;
+    }
+    
+    const { deadline, title, group_id: groupId } = authResult.rows[0];
+    
+    // 2. Deadline Check
+    const now = new Date();
+    const isLate = now > new Date(deadline);
+    const newStatus = isLate ? SUBMISSION_STATUS.LATE : SUBMISSION_STATUS.SUBMITTED;
+
+    const client = await pool.connect();
+    try {
+        await client.query('BEGIN');
+
+        // 3. Upsert Submission with FOR UPDATE to prevent race conditions
+        let submissionId;
+        const subQuery = 'SELECT id FROM submissions WHERE assignment_id = $1 AND group_id = $2 FOR UPDATE';
+        const subResult = await client.query(subQuery, [assignmentId, groupId]);
+        
+        if (subResult.rows.length === 0) {
+            const insertSub = `
+                INSERT INTO submissions (assignment_id, group_id, status, submitted_at)
+                VALUES ($1, $2, $3, NOW())
+                RETURNING id
+            `;
+            const insertResult = await client.query(insertSub, [assignmentId, groupId, newStatus]);
+            submissionId = insertResult.rows[0].id;
+        } else {
+            submissionId = subResult.rows[0].id;
+            const updateSub = `
+                UPDATE submissions
+                SET status = $1, submitted_at = NOW()
+                WHERE id = $2
+            `;
+            await client.query(updateSub, [newStatus, submissionId]);
+        }
+
+        // 4. Max Version & Idempotency
+        const versionQuery = 'SELECT version_number, file_url FROM submission_versions WHERE submission_id = $1 ORDER BY version_number DESC LIMIT 1';
+        const versionResult = await client.query(versionQuery, [submissionId]);
+        
+        let newVersionNumber = 1;
+        if (versionResult.rows.length > 0) {
+            const latest = versionResult.rows[0];
+            
+            // Check Idempotency: Ignore if same file_url
+            if (latest.file_url === fileUrl) {
+                await client.query('COMMIT');
+                return {
+                    message: 'Idempotency: Same file already submitted as the latest version.',
+                    submissionId,
+                    versionNumber: latest.version_number,
+                    status: newStatus
+                };
+            }
+            
+            if (latest.version_number >= 20) {
+                const error = new Error('Maximum submission versions (20) exceeded.');
+                error.status = 400;
+                throw error;
+            }
+            
+            newVersionNumber = latest.version_number + 1;
+        }
+
+        // 5. Insert new version
+        const insertVersion = `
+            INSERT INTO submission_versions (submission_id, version_number, file_url, created_at)
+            VALUES ($1, $2, $3, NOW())
+            RETURNING id, version_number, file_url, created_at
+        `;
+        const newVersionResult = await client.query(insertVersion, [submissionId, newVersionNumber, fileUrl]);
+        const versionData = newVersionResult.rows[0];
+
+        // 6. Activity Tracking
+        try {
+            await logActivity(groupId, userId, 'SUBMIT_ASSIGNMENT', `Submitted assignment "${title}" (version ${newVersionNumber})`);
+        } catch (logErr) {
+            console.error('Activity log failed during submission:', logErr);
+        }
+
+        await client.query('COMMIT');
+        
+        return {
+            message: 'Submission successful',
+            submissionId,
+            versionNumber: newVersionNumber,
+            status: newStatus,
+            versionData
+        };
+    } catch (err) {
+        await client.query('ROLLBACK');
+        const error = new Error(err.message || 'Failed to submit assignment');
+        error.status = err.status || 500;
+        error.originalError = err;
+        throw error;
+    } finally {
+        client.release();
+    }
+};

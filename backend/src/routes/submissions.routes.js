@@ -9,4 +9,7 @@ router.use(authenticate);
 // Student Dashboard API
 router.get('/me/dashboard', authorize('STUDENT'), submissionController.getStudentDashboard);
 
+// Submit Assignment API
+router.post('/assignments/:assignmentId', authorize('STUDENT'), submissionController.submit);
+
 export default router;

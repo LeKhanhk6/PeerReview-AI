@@ -312,12 +312,12 @@ Contribution Engine
 
 ## TASK 06.2 — Assignment Detail
 
-- [ ]  Title.
-- [ ]  Description.
-- [ ]  Requirements.
-- [ ]  Deadline.
-- [ ]  Rubric.
-- [ ]  Attachment.
+- [x]  Title.
+- [x]  Description.
+- [x]  Requirements.
+- [x]  Deadline.
+- [x]  Rubric.
+- [x]  Attachment.
 
 ## TASK 06.3 — Submit Assignment
 

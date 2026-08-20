@@ -193,6 +193,7 @@ Thay đổi logic bên trong Service và Controller của Assignment API. Không
 ## TASK 05.1.2 — Group Leadership
 
 - [ ]  Assign/Change Leader (Role: ADMIN, TEACHER only. STUDENT is not allowed).
+- **Business Rule:** Group được phép tồn tại mà không có Leader (Ví dụ: Group mới tạo). Nếu Leader bị remove hoặc tự Leave Group, `is_leader` sẽ không tự động chuyển sang thành viên khác. Teacher/Admin cần gọi API để chỉ định Leader mới.
 
 ## TASK 05.2 — Workspace
 

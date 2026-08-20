@@ -7,6 +7,11 @@ const addIndex = async () => {
             CREATE INDEX IF NOT EXISTS idx_submission_versions_submission_created
             ON submission_versions(submission_id, created_at DESC);
         `);
+        console.log('Adding index to group_members...');
+        await pool.query(`
+            CREATE INDEX IF NOT EXISTS idx_group_members_user
+            ON group_members(user_id);
+        `);
         console.log('Index added successfully.');
     } catch (error) {
         console.error('Error adding index:', error);

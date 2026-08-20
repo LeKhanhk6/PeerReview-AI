@@ -163,6 +163,7 @@ export const submitAssignment = async (assignmentId, userId, fileUrl) => {
     const client = await pool.connect();
     try {
         await client.query('BEGIN');
+        await client.query("SET LOCAL statement_timeout = '5s'");
 
         // 3. Upsert Submission with FOR UPDATE to prevent race conditions
         let submissionId;

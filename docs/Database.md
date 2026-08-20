@@ -67,6 +67,16 @@ CREATE TABLE rubrics (
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
+CREATE TABLE assignment_attachments (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    assignment_id UUID REFERENCES assignments(id) ON DELETE CASCADE,
+    file_name TEXT NOT NULL,
+    file_url TEXT NOT NULL,
+    file_type VARCHAR(50),
+    file_size INT,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
 CREATE TABLE rubric_criteria (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     rubric_id UUID REFERENCES rubrics(id) ON DELETE CASCADE,
@@ -373,6 +383,23 @@ Quản lý bài tập về nhà/đồ án và các tiêu chí đánh giá (Rubri
 - `description TEXT`: Mô tả tổng quan về khung chấm điểm.
     
 - `created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()`: Thời điểm tạo rubric.
+    
+
+### 🔹 Bảng `assignment_attachments` (Tệp đính kèm của bài tập)
+
+- `id UUID PRIMARY KEY DEFAULT uuid_generate_v4()`: Khóa chính.
+    
+- `assignment_id UUID REFERENCES assignments(id) ON DELETE CASCADE`: File đính kèm thuộc bài tập nào.
+    
+- `file_name TEXT NOT NULL`: Tên file gốc.
+    
+- `file_url TEXT NOT NULL`: Đường dẫn tới file.
+    
+- `file_type VARCHAR(50)`: Loại định dạng file (vd: pdf, docx).
+    
+- `file_size INT`: Kích thước file (bytes).
+    
+- `created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()`: Thời điểm upload file đính kèm.
     
 
 ### 🔹 Bảng `rubric_criteria` (Các tiêu chí chi tiết trong Rubric)

@@ -146,3 +146,104 @@ export const deleteAssignment = async (id) => {
     }
     return true;
 };
+
+// --- TASK 06.2 ASSIGNMENT DETAIL ---
+
+export const getAssignmentBasic = async (id, user) => {
+    let query = '';
+    const values = [id];
+
+    if (user.role === 'ADMIN') {
+        query = 'SELECT * FROM assignments WHERE id = $1';
+    } else if (user.role === 'TEACHER') {
+        query = `
+            SELECT a.* FROM assignments a 
+            JOIN classes c ON a.class_id = c.id 
+            WHERE a.id = $1 AND c.teacher_id = $2
+        `;
+        values.push(user.userId);
+    } else if (user.role === 'STUDENT') {
+        query = `
+            SELECT DISTINCT a.* FROM assignments a 
+            JOIN groups g ON a.class_id = g.class_id 
+            JOIN group_members gm ON g.id = gm.group_id 
+            WHERE a.id = $1 AND gm.user_id = $2
+        `;
+        values.push(user.userId);
+    } else {
+        const error = new Error('Unsupported role');
+        error.status = 403;
+        throw error;
+    }
+
+    const result = await pool.query(query, values);
+    if (result.rows.length === 0) {
+        // If the assignment exists in the db at all, but not for this user -> 403
+        // If it doesn't exist at all -> 404
+        const checkExists = await pool.query('SELECT id FROM assignments WHERE id = $1', [id]);
+        const error = new Error(checkExists.rows.length > 0 ? 'Forbidden access to this assignment' : 'Assignment not found');
+        error.status = checkExists.rows.length > 0 ? 403 : 404;
+        throw error;
+    }
+    return result.rows[0];
+};
+
+export const getRubricByAssignmentId = async (assignmentId) => {
+    const rubricQuery = 'SELECT id, description FROM rubrics WHERE assignment_id = $1';
+    const rubricResult = await pool.query(rubricQuery, [assignmentId]);
+    
+    if (rubricResult.rows.length === 0) return null;
+    
+    const rubric = rubricResult.rows[0];
+    const criteriaQuery = 'SELECT id, name, description, weight FROM rubric_criteria WHERE rubric_id = $1 ORDER BY created_at ASC';
+    const criteriaResult = await pool.query(criteriaQuery, [rubric.id]);
+    
+    rubric.criteria = criteriaResult.rows;
+    return rubric;
+};
+
+export const getAttachmentsByAssignmentId = async (assignmentId) => {
+    const query = 'SELECT id, file_name, file_url, file_type, file_size FROM assignment_attachments WHERE assignment_id = $1 ORDER BY created_at ASC';
+    const result = await pool.query(query, [assignmentId]);
+    return result.rows;
+};
+
+export const getAssignmentDetailById = async (id, user) => {
+    // 1. Get basic assignment + check authorization
+    // Isolated Promise.all for graceful degradation of optional parts
+    const [assignment, rubric, attachments] = await Promise.all([
+        getAssignmentBasic(id, user), // This will throw 403 or 404 if invalid
+        getRubricByAssignmentId(id).catch(err => {
+            console.error('Error fetching rubric:', err);
+            return null;
+        }),
+        getAttachmentsByAssignmentId(id).catch(err => {
+            console.error('Error fetching attachments:', err);
+            return [];
+        })
+    ]);
+
+    const now = new Date();
+    const deadline = new Date(assignment.deadline);
+    const is_overdue = deadline < now;
+    const time_left_days = Math.max(0, Math.ceil((deadline - now) / 86400000));
+    
+    let total_criteria_weight = 0;
+    if (rubric && rubric.criteria) {
+        total_criteria_weight = rubric.criteria.reduce((sum, c) => sum + parseFloat(c.weight), 0);
+    }
+
+    return {
+        id: assignment.id,
+        title: assignment.title,
+        description: assignment.description,
+        requirements: assignment.requirements,
+        deadline: assignment.deadline,
+        is_overdue,
+        time_left_days,
+        has_attachments: attachments.length > 0,
+        total_criteria_weight,
+        rubric,
+        attachments
+    };
+};

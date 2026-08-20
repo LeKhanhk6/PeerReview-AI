@@ -305,10 +305,10 @@ Contribution Engine
 
 ## TASK 06.1 — Student Dashboard
 
-- [ ]  Assignment list.
-- [ ]  Deadline.
-- [ ]  Submission status.
-- [ ]  Review status.
+- [x]  Assignment list.
+- [x]  Deadline.
+- [x]  Submission status.
+- [x]  Review status.
 
 ## TASK 06.2 — Assignment Detail
 

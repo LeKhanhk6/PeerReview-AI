@@ -9,4 +9,7 @@ router.use(authenticate);
 // Student: Get assignments they are supposed to review (Double-blind mapped)
 router.get('/assignments/:assignmentId/my-reviews', authorize('STUDENT'), reviewController.getMyReviewAssignments);
 
+// Student: Get detail of a specific review assignment (for grading screen)
+router.get('/my-reviews/:reviewAssignmentId', authorize('STUDENT'), reviewController.getReviewAssignmentDetail);
+
 export default router;

@@ -49,3 +49,34 @@ export const getMyReviewAssignments = async (req, res, next) => {
         next(error);
     }
 };
+
+export const getReviewAssignmentDetail = async (req, res, next) => {
+    const { reviewAssignmentId } = req.params;
+    const userId = req.user?.id;
+    
+    console.time(`review_detail:${reviewAssignmentId}:user:${userId}`);
+
+    try {
+        if (!userId) {
+            const error = new Error('Unauthorized');
+            error.statusCode = 401;
+            return next(error);
+        }
+
+        if (!isValidUUID(reviewAssignmentId)) {
+            const error = new Error('Invalid review assignment ID format');
+            error.statusCode = 400;
+            return next(error);
+        }
+
+        const detail = await reviewService.getReviewAssignmentDetail(reviewAssignmentId, userId);
+
+        return res.status(200).json({
+            data: detail
+        });
+    } catch (error) {
+        next(error);
+    } finally {
+        console.timeEnd(`review_detail:${reviewAssignmentId}:user:${userId}`);
+    }
+};

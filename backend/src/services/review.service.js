@@ -209,7 +209,8 @@ export const submitReview = async (reviewAssignmentId, userId, payload) => {
                 ra.id, 
                 ra.status, 
                 s.assignment_id, 
-                a.deadline
+                a.deadline,
+                (a.deadline < NOW()) as is_past_deadline
             FROM review_assignments ra
             JOIN submissions s ON s.id = ra.submission_id
             JOIN assignments a ON a.id = s.assignment_id
@@ -236,9 +237,8 @@ export const submitReview = async (reviewAssignmentId, userId, payload) => {
             throw error;
         }
 
-        // 3. Deadline check
-        const deadlineTime = new Date(assignmentRow.deadline).getTime();
-        if (Date.now() > deadlineTime) {
+        // 3. Deadline check (from DB)
+        if (assignmentRow.is_past_deadline) {
             const error = new Error('Review deadline has passed');
             error.statusCode = 400;
             throw error;
@@ -294,7 +294,22 @@ export const submitReview = async (reviewAssignmentId, userId, payload) => {
         // Normalize total score
         totalScore = Math.round(totalScore * 100) / 100;
 
-        // 5. Insert review
+        // 5. Update status (Conditional UPDATE to prevent last-mile race condition)
+        // DO THIS FIRST so we don't insert garbage if it fails
+        const updateRes = await client.query(`
+            UPDATE review_assignments
+            SET status = 'COMPLETED'
+            WHERE id = $1 AND status != 'COMPLETED'
+            RETURNING id
+        `, [reviewAssignmentId]);
+
+        if (updateRes.rowCount === 0) {
+            const error = new Error('Review already submitted');
+            error.statusCode = 400;
+            throw error;
+        }
+
+        // 6. Insert review
         const insertReviewRes = await client.query(`
             INSERT INTO reviews (review_assignment_id, overall_comment, total_score, submitted_at)
             VALUES ($1, $2, $3, NOW())
@@ -303,7 +318,7 @@ export const submitReview = async (reviewAssignmentId, userId, payload) => {
 
         const reviewId = insertReviewRes.rows[0].id;
 
-        // 6. Insert review criteria (Bulk insert for performance)
+        // 7. Insert review criteria (Bulk insert for performance)
         const insertParams = [reviewId];
         const insertValues = [];
         let paramIndex = 2;
@@ -320,20 +335,6 @@ export const submitReview = async (reviewAssignmentId, userId, payload) => {
         `;
         await client.query(bulkInsertQuery, insertParams);
 
-        // 7. Update status (Conditional UPDATE to prevent last-mile race condition)
-        const updateRes = await client.query(`
-            UPDATE review_assignments
-            SET status = 'COMPLETED'
-            WHERE id = $1 AND status != 'COMPLETED'
-            RETURNING id
-        `, [reviewAssignmentId]);
-
-        if (updateRes.rowCount === 0) {
-            const error = new Error('Review already submitted');
-            error.statusCode = 400;
-            throw error;
-        }
-
         await client.query('COMMIT');
 
         return {
@@ -344,6 +345,10 @@ export const submitReview = async (reviewAssignmentId, userId, payload) => {
     } catch (error) {
         if (transactionStarted) {
             await client.query('ROLLBACK');
+        }
+        if (error.code === '23505') {
+            error.statusCode = 400;
+            error.message = 'Review already submitted';
         }
         throw error;
     } finally {

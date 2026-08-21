@@ -86,9 +86,11 @@ export const getReviewAssignmentDetail = async (req, res, next) => {
 };
 
 export const submitReviewAssignment = async (req, res, next) => {
+    const { reviewAssignmentId } = req.params;
+    const userId = req.user?.id;
+    
+    console.time(`submit_review:${reviewAssignmentId}:user:${userId}`);
     try {
-        const { reviewAssignmentId } = req.params;
-        const userId = req.user?.id;
         const { overallComment, criteriaScores } = req.body;
 
         if (!userId) {
@@ -158,5 +160,7 @@ export const submitReviewAssignment = async (req, res, next) => {
         });
     } catch (error) {
         next(error);
+    } finally {
+        console.timeEnd(`submit_review:${reviewAssignmentId}:user:${userId}`);
     }
 };

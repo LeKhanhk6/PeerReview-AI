@@ -126,6 +126,7 @@ Thiết kế đầy đủ:
 
 ## TASK 03.1 — Authentication
 
+- [ ]  Register API (Backend only, STUDENT role only).
 - [x]  Login.
 - [x]  Logout.
 - [x]  JWT.
@@ -820,6 +821,9 @@ backend/
 
 ## Authentication
 ```
+POST /api/auth/register
+  - 201 Created: Đăng ký thành công.
+  - 400 Bad Request: Lỗi validation hoặc Duplicate Email (email already exists).
 POST /api/auth/login
 POST /api/auth/logout
 GET  /api/auth/me

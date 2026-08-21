@@ -9,6 +9,37 @@ if (!JWT_SECRET) {
     throw new Error('FATAL ERROR: JWT_SECRET is not defined in environment variables.');
 }
 
+export const registerUser = async (fullName, email, password) => {
+    // 1. Mã hoá mật khẩu
+    const passwordHash = await bcrypt.hash(password, 10);
+    
+    try {
+        // 2. Chèn vào DB (phòng tránh race condition, bỏ qua truy vấn SELECT trước khi INSERT)
+        // Lấy STUDENT role_id từ DB bằng subquery
+        const query = `
+            INSERT INTO users (full_name, email, password_hash, role_id)
+            VALUES (
+                $1, 
+                $2, 
+                $3, 
+                (SELECT id FROM roles WHERE name = 'STUDENT' LIMIT 1)
+            )
+            RETURNING id, email, created_at
+        `;
+        
+        const result = await pool.query(query, [fullName, email, passwordHash]);
+        return result.rows[0];
+    } catch (err) {
+        // Handle postgres unique violation error
+        if (err.code === '23505') {
+            const error = new Error('Email already exists');
+            error.status = 400; // 400 Bad Request
+            throw error;
+        }
+        throw err;
+    }
+};
+
 export const loginUser = async (email, password) => {
     // Tìm user và role name
     const query = `

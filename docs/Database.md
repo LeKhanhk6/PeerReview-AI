@@ -21,7 +21,7 @@ CREATE TABLE users (
     full_name VARCHAR(255) NOT NULL,
     email VARCHAR(255) UNIQUE NOT NULL,
     student_id VARCHAR(50) UNIQUE, -- Chỉ dành cho Student
-    password_hash VARCHAR(255), 
+    password_hash VARCHAR(255) NOT NULL, 
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );

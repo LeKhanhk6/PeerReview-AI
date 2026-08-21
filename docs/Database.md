@@ -187,6 +187,9 @@ CREATE TABLE submission_versions (
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
+-- submission versions
+CREATE INDEX idx_submission_versions_submission_created ON submission_versions(submission_id, created_at DESC);
+
 -- ==============================================================================
 -- 6. NHÓM ĐÁNH GIÁ ĐỒNG ĐẲNG (Review Assignment & Reviews)
 -- ==============================================================================

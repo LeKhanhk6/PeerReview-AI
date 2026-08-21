@@ -321,12 +321,12 @@ Contribution Engine
 
 ## TASK 06.3 — Submit Assignment
 
-- [ ]  Upload.
-- [ ]  Validate.
-- [ ]  Submit.
-- [ ]  Deadline validation.
-- [ ]  Save Submission.
-- [ ]  Save Version.
+- [x]  Upload.
+- [x]  Validate.
+- [x]  Submit.
+- [x]  Deadline validation.
+- [x]  Save Submission.
+- [x]  Save Version.
 
 ## TASK 06.4 — Submission History
 

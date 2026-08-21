@@ -12,4 +12,7 @@ router.get('/me/dashboard', authorize('STUDENT'), submissionController.getStuden
 // Submit Assignment API
 router.post('/assignments/:assignmentId', authorize('STUDENT'), submissionController.submit);
 
+// Submission History API
+router.get('/assignments/:assignmentId/submission-history', authorize('STUDENT'), submissionController.getSubmissionHistoryByAssignment);
+
 export default router;

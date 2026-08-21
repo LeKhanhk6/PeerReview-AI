@@ -252,3 +252,74 @@ export const submitAssignment = async (assignmentId, userId, fileUrl) => {
         client.release();
     }
 };
+
+export const getSubmissionHistoryByAssignment = async (assignmentId, userId, limit, offset) => {
+    try {
+        // 1. Validation & Auth (Fail-fast)
+        const authQuery = `
+            SELECT a.id, g.id as group_id
+            FROM assignments a
+            JOIN groups g ON g.class_id = a.class_id
+            JOIN group_members gm ON gm.group_id = g.id
+            WHERE a.id = $1 AND gm.user_id = $2
+        `;
+        const authResult = await pool.query(authQuery, [assignmentId, userId]);
+        
+        if (authResult.rows.length === 0) {
+            const checkExists = await pool.query('SELECT id FROM assignments WHERE id = $1', [assignmentId]);
+            const error = new Error(checkExists.rows.length > 0 ? 'Forbidden access to this assignment' : 'Assignment not found');
+            error.status = checkExists.rows.length > 0 ? 403 : 404;
+            throw error;
+        }
+        
+        // 2. Fetch history count
+        const countQuery = `
+            SELECT COUNT(sv.id) as total
+            FROM submission_versions sv
+            JOIN submissions s ON sv.submission_id = s.id
+            JOIN group_members gm ON s.group_id = gm.group_id
+            WHERE s.assignment_id = $1 AND gm.user_id = $2
+        `;
+        const countResult = await pool.query(countQuery, [assignmentId, userId]);
+        const total = parseInt(countResult.rows[0].total, 10);
+        
+        if (total === 0) {
+            return {
+                rows: [],
+                total: 0
+            };
+        }
+        
+        // 3. Fetch history data
+        const historyQuery = `
+            SELECT sv.version_number, sv.file_url, sv.created_at
+            FROM submission_versions sv
+            JOIN submissions s ON sv.submission_id = s.id
+            JOIN group_members gm ON s.group_id = gm.group_id
+            WHERE s.assignment_id = $1 AND gm.user_id = $2
+            ORDER BY sv.version_number DESC
+            LIMIT $3 OFFSET $4
+        `;
+        const historyResult = await pool.query(historyQuery, [assignmentId, userId, limit, offset]);
+        
+        // Enrich data with is_latest
+        const rows = historyResult.rows.map((row, index) => ({
+            version_number: row.version_number,
+            file_url: row.file_url,
+            created_at: row.created_at,
+            is_latest: offset === 0 && index === 0
+        }));
+        
+        return {
+            rows,
+            total
+        };
+    } catch (err) {
+        console.error(`getSubmissionHistoryByAssignment_failed:${assignmentId}`, err);
+        const error = new Error(err.message || 'Failed to get submission history');
+        error.statusCode = err.status || 500;
+        error.originalError = err;
+        throw error;
+    }
+};
+

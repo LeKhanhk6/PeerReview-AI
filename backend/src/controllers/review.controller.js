@@ -18,14 +18,18 @@ export const getMyReviewAssignments = async (req, res, next) => {
             return next(error);
         }
 
-        const page = parseInt(req.query.page, 10) || 1;
-        const limit = parseInt(req.query.limit, 10) || 10;
+        let page = parseInt(req.query.page, 10) || 1;
+        let limit = parseInt(req.query.limit, 10) || 10;
         
         if (page < 1 || limit < 1) {
             const error = new Error('Invalid pagination parameters');
             error.statusCode = 400;
             return next(error);
         }
+
+        // Clamp values to prevent DB stress
+        limit = Math.min(limit, 50);
+        page = Math.min(page, 1000);
 
         const offset = (page - 1) * limit;
 

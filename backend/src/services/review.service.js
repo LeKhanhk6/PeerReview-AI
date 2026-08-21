@@ -2,24 +2,7 @@ import pool from '../config/db.js';
 import { maskSubmissionEntity } from '../utils/masking.util.js';
 
 export const getMyReviewAssignments = async (assignmentId, userId, limit, offset) => {
-    // 1. Get total count
-    const countQuery = `
-        SELECT COUNT(*) as total
-        FROM review_assignments ra
-        JOIN submissions s ON s.id = ra.submission_id
-        WHERE s.assignment_id = $1
-        AND ra.reviewer_group_id IN (
-            SELECT group_id FROM group_members WHERE user_id = $2
-        )
-    `;
-    const countResult = await pool.query(countQuery, [assignmentId, userId]);
-    const total = parseInt(countResult.rows[0].total, 10);
-
-    if (total === 0) {
-        return { rows: [], total: 0 };
-    }
-
-    // 2. Fetch data
+    // Use COUNT(*) OVER() to avoid a separate query
     const query = `
         SELECT 
             ra.id as review_assignment_id,
@@ -28,7 +11,8 @@ export const getMyReviewAssignments = async (assignmentId, userId, limit, offset
             s.id as submission_id,
             sv.version_number,
             sv.created_at,
-            sv.file_url
+            sv.file_url,
+            COUNT(*) OVER() as full_count
         FROM review_assignments ra
         JOIN submissions s ON s.id = ra.submission_id
         JOIN LATERAL (
@@ -48,7 +32,13 @@ export const getMyReviewAssignments = async (assignmentId, userId, limit, offset
 
     const result = await pool.query(query, [assignmentId, userId, limit, offset]);
 
-    // 3. Apply masking at the SERVICE layer
+    if (result.rows.length === 0) {
+        return { rows: [], total: 0 };
+    }
+
+    const total = parseInt(result.rows[0].full_count, 10);
+
+    // Apply masking at the SERVICE layer
     // NEVER expose raw submission data or group identities
     const rows = result.rows.map(row => {
         const maskedSubmission = maskSubmissionEntity({
@@ -104,6 +94,7 @@ export const getReviewAssignmentDetail = async (reviewAssignmentId, userId) => {
     const result = await pool.query(query, [reviewAssignmentId, userId]);
 
     if (result.rows.length === 0) {
+        // Intentionally returning 404 for both not-found and unauthorized (Anti-enumeration pattern)
         const error = new Error('Review assignment not found or unauthorized');
         error.statusCode = 404;
         throw error;
@@ -111,9 +102,12 @@ export const getReviewAssignmentDetail = async (reviewAssignmentId, userId) => {
 
     const row = result.rows[0];
 
-    // 2. Fetch rubric
+    // 2. Fetch rubric and attachments
     const { getRubricAndCriteria } = await import('./rubric.service.js');
-    const rubricData = await getRubricAndCriteria(row.assignment_id);
+    const [rubricData, attachmentsRes] = await Promise.all([
+        getRubricAndCriteria(row.assignment_id),
+        pool.query(`SELECT id, file_name, file_url, file_size FROM assignment_attachments WHERE assignment_id = $1`, [row.assignment_id])
+    ]);
 
     // Trim teacher notes if any exist in the future (currently safe for MVP)
     const sanitizedRubric = rubricData ? {
@@ -127,31 +121,36 @@ export const getReviewAssignmentDetail = async (reviewAssignmentId, userId) => {
         }))
     } : null;
 
-    // 3. Fetch review data if COMPLETED
+    // 3. Fetch review data if COMPLETED (Optimized with JSON Aggregation)
     let review = null;
     let isEditable = true;
     if (row.review_status === 'COMPLETED') {
         isEditable = false;
-        const reviewRes = await pool.query(`
-            SELECT id, overall_comment, total_score, submitted_at
-            FROM reviews
-            WHERE review_assignment_id = $1
-        `, [reviewAssignmentId]);
+        const reviewQuery = `
+            SELECT 
+                r.id, 
+                r.overall_comment, 
+                r.total_score, 
+                r.submitted_at,
+                (
+                    SELECT json_agg(json_build_object(
+                        'criteriaId', rc.rubric_criteria_id,
+                        'score', rc.score,
+                        'comment', rc.comment
+                    ))
+                    FROM review_criteria rc
+                    WHERE rc.review_id = r.id
+                ) as scores
+            FROM reviews r
+            WHERE r.review_assignment_id = $1
+        `;
+        const reviewRes = await pool.query(reviewQuery, [reviewAssignmentId]);
         
         if (reviewRes.rows.length > 0) {
             const reviewData = reviewRes.rows[0];
-            const criteriaRes = await pool.query(`
-                SELECT rubric_criteria_id, score, comment
-                FROM review_criteria
-                WHERE review_id = $1
-            `, [reviewData.id]);
             
             review = {
-                scores: criteriaRes.rows.map(c => ({
-                    criteriaId: c.rubric_criteria_id,
-                    score: parseFloat(c.score),
-                    comment: c.comment
-                })),
+                scores: reviewData.scores || [],
                 comment: reviewData.overall_comment,
                 totalScore: parseFloat(reviewData.total_score),
                 submittedAt: reviewData.submitted_at
@@ -182,7 +181,13 @@ export const getReviewAssignmentDetail = async (reviewAssignmentId, userId) => {
         assignment: {
             title: row.assignment_title,
             description: row.assignment_description,
-            reviewDeadline: row.assignment_deadline
+            reviewDeadline: row.assignment_deadline,
+            attachments: attachmentsRes.rows.map(att => ({
+                id: att.id,
+                fileName: att.file_name,
+                fileUrl: att.file_url,
+                fileSize: att.file_size
+            }))
         },
         rubric: sanitizedRubric,
         review

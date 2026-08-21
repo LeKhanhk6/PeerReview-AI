@@ -104,8 +104,15 @@ export const submitReviewAssignment = async (req, res, next) => {
         }
 
         // Payload validations (Cheap fail-fast)
-        if (!overallComment || typeof overallComment !== 'string' || overallComment.trim().length === 0) {
+        const comment = typeof overallComment === 'string' ? overallComment.trim() : null;
+        if (!comment || comment.length === 0) {
             const error = new Error('overallComment is required');
+            error.statusCode = 400;
+            return next(error);
+        }
+
+        if (comment.length > 2000) {
+            const error = new Error('overallComment exceeds maximum length of 2000 characters');
             error.statusCode = 400;
             return next(error);
         }
@@ -144,7 +151,7 @@ export const submitReviewAssignment = async (req, res, next) => {
             }
         }
 
-        const result = await reviewService.submitReview(reviewAssignmentId, userId, { overallComment, criteriaScores });
+        const result = await reviewService.submitReview(reviewAssignmentId, userId, { overallComment: comment, criteriaScores });
 
         return res.status(200).json({
             data: result

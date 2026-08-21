@@ -386,28 +386,28 @@ Student xem:
 - Deadline.
 - Review status.
 
-## TASK 08.2 — Review Screen
+## TASK 08.2 — Review Screen [x]
 ```
 Anonymous Submission
-        ↓
+        +
 Rubric
-        ↓
+        +
 Score
-        ↓
+        +
 Comment
-        ↓
+        +
 AI Mentor
-        ↓
+        +
 Submit
 ```
-## TASK 08.3 — Validation
+## TASK 08.3 — Validation [x]
 
-- [ ]  Score validation.
-- [ ]  Required criteria.
-- [ ]  Required comment.
-- [ ]  No self-review.
-- [ ]  No duplicate review.
-- [ ]  Deadline validation.
+- [x]  Score validation.
+- [x]  Required criteria.
+- [x]  Required comment.
+- [x]  No self-review.
+- [x]  No duplicate review.
+- [x]  Deadline validation.
 
 ---
 

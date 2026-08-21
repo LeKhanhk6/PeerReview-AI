@@ -275,6 +275,11 @@ export const submitReview = async (reviewAssignmentId, userId, payload) => {
             // Optional: normalize score precision
             const score = Math.round(parseFloat(item.score) * 100) / 100;
             const itemComment = item.comment ? item.comment.trim() : null;
+            if (itemComment && itemComment.length > 1000) {
+                const error = new Error(`Comment for criteria ${item.criteriaId} exceeds maximum length of 1000 characters`);
+                error.statusCode = 400;
+                throw error;
+            }
 
             // total_score = SUM(score * weight / 100)
             totalScore += (score * weight) / 100;
@@ -294,24 +299,40 @@ export const submitReview = async (reviewAssignmentId, userId, payload) => {
             INSERT INTO reviews (review_assignment_id, overall_comment, total_score, submitted_at)
             VALUES ($1, $2, $3, NOW())
             RETURNING id, total_score
-        `, [reviewAssignmentId, overallComment.trim(), totalScore]);
+        `, [reviewAssignmentId, overallComment, totalScore]);
 
         const reviewId = insertReviewRes.rows[0].id;
 
-        // 6. Insert review criteria (bulk insert would be faster, but loop is fine for MVP small scale)
+        // 6. Insert review criteria (Bulk insert for performance)
+        const insertParams = [reviewId];
+        const insertValues = [];
+        let paramIndex = 2;
+        
         for (const ps of processedScores) {
-            await client.query(`
-                INSERT INTO review_criteria (review_id, rubric_criteria_id, score, comment)
-                VALUES ($1, $2, $3, $4)
-            `, [reviewId, ps.criteriaId, ps.score, ps.comment]);
+            insertValues.push(`($1, $${paramIndex}, $${paramIndex + 1}, $${paramIndex + 2})`);
+            insertParams.push(ps.criteriaId, ps.score, ps.comment);
+            paramIndex += 3;
         }
+        
+        const bulkInsertQuery = `
+            INSERT INTO review_criteria (review_id, rubric_criteria_id, score, comment)
+            VALUES ${insertValues.join(', ')}
+        `;
+        await client.query(bulkInsertQuery, insertParams);
 
-        // 7. Update status
-        await client.query(`
+        // 7. Update status (Conditional UPDATE to prevent last-mile race condition)
+        const updateRes = await client.query(`
             UPDATE review_assignments
             SET status = 'COMPLETED'
-            WHERE id = $1
+            WHERE id = $1 AND status != 'COMPLETED'
+            RETURNING id
         `, [reviewAssignmentId]);
+
+        if (updateRes.rowCount === 0) {
+            const error = new Error('Review already submitted');
+            error.statusCode = 400;
+            throw error;
+        }
 
         await client.query('COMMIT');
 

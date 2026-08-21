@@ -11,7 +11,7 @@ export const register = async (req, res) => {
             typeof email !== 'string' ||
             typeof password !== 'string'
         ) {
-            return res.status(400).json({ message: 'full_name, email, and password must be strings' });
+            return res.status(400).json({ error: { message: 'full_name, email, and password must be strings' } });
         }
 
         email = email.trim().toLowerCase();
@@ -19,20 +19,21 @@ export const register = async (req, res) => {
         // Format validation for Email
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         if (!emailRegex.test(email)) {
-            return res.status(400).json({ message: 'Invalid email format' });
+            return res.status(400).json({ error: { message: 'Invalid email format' } });
         }
 
         full_name = full_name.trim();
         if (full_name.length < 2 || full_name.length > 255) {
-            return res.status(400).json({ message: 'Full name must be between 2 and 255 characters' });
+            return res.status(400).json({ error: { message: 'Full name must be between 2 and 255 characters' } });
         }
 
-        if (password.trim().length < 6) {
-            return res.status(400).json({ message: 'Password must be at least 6 characters long' });
+        const normalizedPassword = password.trim();
+        if (normalizedPassword.length < 6) {
+            return res.status(400).json({ error: { message: 'Password must be at least 6 characters long' } });
         }
 
         // Gọi service xử lý logic DB
-        const user = await authService.registerUser(full_name, email, password);
+        const user = await authService.registerUser(full_name, email, normalizedPassword);
 
         // Logging
         console.info('User registered', { email: user.email, userId: user.id });
@@ -48,9 +49,9 @@ export const register = async (req, res) => {
         });
     } catch (error) {
         const status = error.status || 500;
-        console.error('Register error:', error);
+        console.error('Register error', { message: error.message, status });
         return res.status(status).json({
-            message: status === 500 ? 'Internal Server Error' : error.message
+            error: { message: status === 500 ? 'Internal Server Error' : error.message }
         });
     }
 };
@@ -65,24 +66,24 @@ export const login = async (req, res) => {
             !email.trim() ||
             !password
         ) {
-            return res.status(400).json({ message: 'Email and password are required' });
+            return res.status(400).json({ error: { message: 'Email and password are required' } });
         }
         
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         const normalizedEmail = email.trim().toLowerCase();
         
         if (!emailRegex.test(normalizedEmail)) {
-            return res.status(400).json({ message: 'Invalid email format' });
+            return res.status(400).json({ error: { message: 'Invalid email format' } });
         }
         
         const data = await authService.loginUser(normalizedEmail, password);
         
-        return res.status(200).json({ message: 'Login successful', ...data });
+        return res.status(200).json({ data });
     } catch (error) {
         const status = error.status || 500;
-        console.error('Login error:', error);
+        console.error('Login error', { message: error.message, status });
         return res.status(status).json({ 
-            message: status === 500 ? 'Internal Server Error' : error.message 
+            error: { message: status === 500 ? 'Internal Server Error' : error.message }
         });
     }
 };
@@ -90,23 +91,23 @@ export const login = async (req, res) => {
 export const logout = async (req, res) => {
     // JWT is stateless.
     // The client is responsible for removing the stored token.
-    return res.status(200).json({ message: 'Logout successful' });
+    return res.status(200).json({ data: { message: 'Logout successful' } });
 };
 
 export const getMe = async (req, res) => {
     try {
         const userId = req.user?.userId; 
         if (!userId) {
-            return res.status(401).json({ message: 'Unauthorized' });
+            return res.status(401).json({ error: { message: 'Unauthorized' } });
         }
         
         const user = await authService.getUserById(userId);
-        return res.status(200).json({ user });
+        return res.status(200).json({ data: { user } });
     } catch (error) {
         const status = error.status || 500;
-        console.error('GetMe error:', error);
+        console.error('GetMe error', { message: error.message, status });
         return res.status(status).json({ 
-            message: status === 500 ? 'Internal Server Error' : error.message 
+            error: { message: status === 500 ? 'Internal Server Error' : error.message }
         });
     }
 };

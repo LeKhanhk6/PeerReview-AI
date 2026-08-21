@@ -8,6 +8,7 @@ import rubricRoutes from './routes/rubrics.routes.js';
 import groupRoutes from './routes/groups.routes.js';
 import workspaceRoutes from './routes/workspace.routes.js';
 import submissionRoutes from './routes/submissions.routes.js';
+import reviewAssignmentRoutes from './routes/review-assignments.routes.js';
 dotenv.config();
 
 const app = express();
@@ -27,6 +28,7 @@ app.use('/api/rubrics', rubricRoutes);
 app.use('/api/groups', groupRoutes);
 app.use('/api', workspaceRoutes);
 app.use('/api/submissions', submissionRoutes);
+app.use('/api', reviewAssignmentRoutes);
 
 // API Test cơ bản
 app.get('/api/health', (req, res) => {

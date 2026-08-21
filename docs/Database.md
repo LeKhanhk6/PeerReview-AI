@@ -199,7 +199,8 @@ CREATE TABLE review_assignments (
     submission_id UUID REFERENCES submissions(id) ON DELETE CASCADE,
     reviewer_group_id UUID REFERENCES groups(id) ON DELETE CASCADE,
     status VARCHAR(50) DEFAULT 'PENDING',
-    assigned_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+    assigned_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    UNIQUE(submission_id, reviewer_group_id)
 );
 
 CREATE TABLE reviews (

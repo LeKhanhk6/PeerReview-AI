@@ -339,13 +339,13 @@ Contribution Engine
 
 # 7. PHASE 6 — Double-Blind Peer Assignment
 
-## TASK 07.1 — Submission Pool
+## TASK 07.1 — Submission Pool [x]
 ```
 Submitted Assignments
         ↓
 Submission Pool
 ```
-## TASK 07.2 — Assignment Algorithm
+## TASK 07.2 — Assignment Algorithm [x]
 
 Rules:
 

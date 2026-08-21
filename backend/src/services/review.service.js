@@ -313,10 +313,11 @@ export const submitReview = async (reviewAssignmentId, userId, payload) => {
         const insertReviewRes = await client.query(`
             INSERT INTO reviews (review_assignment_id, overall_comment, total_score, submitted_at)
             VALUES ($1, $2, $3, NOW())
-            RETURNING id, total_score
+            RETURNING id, total_score, submitted_at
         `, [reviewAssignmentId, overallComment, totalScore]);
 
-        const reviewId = insertReviewRes.rows[0].id;
+        const reviewRow = insertReviewRes.rows[0];
+        const reviewId = reviewRow.id;
 
         // 7. Insert review criteria (Bulk insert for performance)
         const insertParams = [reviewId];
@@ -340,7 +341,9 @@ export const submitReview = async (reviewAssignmentId, userId, payload) => {
         return {
             reviewId,
             totalScore,
-            status: 'COMPLETED'
+            status: 'COMPLETED',
+            submittedAt: reviewRow.submitted_at,
+            criteriaCount: processedScores.length
         };
     } catch (error) {
         if (transactionStarted) {

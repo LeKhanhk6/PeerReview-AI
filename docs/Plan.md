@@ -126,7 +126,7 @@ Thiết kế đầy đủ:
 
 ## TASK 03.1 — Authentication
 
-- [ ]  Register API (Backend only, STUDENT role only).
+- [x]  Register API (Backend only, STUDENT role only).
 - [x]  Login.
 - [x]  Logout.
 - [x]  JWT.

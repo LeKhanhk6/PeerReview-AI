@@ -53,10 +53,10 @@ export const getMyReviewAssignments = async (assignmentId, userId, limit, offset
     const rows = result.rows.map(row => {
         const maskedSubmission = maskSubmissionEntity({
             id: row.submission_id,
-            created_at: row.created_at,
-            version_number: row.version_number
+            created_at: row.created_at
+            // We intentionally do not pass version_number to strict double-blind
             // We intentionally do not pass file_url to masking to enforce proxy usage
-        });
+        }, assignmentId);
 
         return {
             id: row.review_assignment_id,

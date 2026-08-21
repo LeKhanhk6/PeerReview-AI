@@ -82,8 +82,63 @@ export const submit = async (req, res, next) => {
         const result = await submissionService.submitAssignment(assignmentId, userId, file_url);
         return res.status(200).json({ data: result });
     } catch (error) {
-        const status = error.status || 500;
-        return res.status(status).json({ message: error.message });
+        next(error);
+    }
+};
+
+export const getSubmissionHistoryByAssignment = async (req, res, next) => {
+    try {
+        const { assignmentId } = req.params;
+        const userId = req.user?.id;
+
+        if (!userId) {
+            return res.status(401).json({ message: 'Unauthorized' });
+        }
+
+        if (!isValidUUID(assignmentId)) {
+            return res.status(400).json({ message: 'Invalid assignment ID format' });
+        }
+
+        let { page = 1, limit = 10 } = req.query;
+        
+        const parsedLimit = parseInt(limit, 10);
+        limit = Number.isInteger(parsedLimit) && parsedLimit > 0 ? parsedLimit : 10;
+        limit = Math.max(1, Math.min(limit, 50));
+
+        const parsedPage = parseInt(page, 10);
+        page = Number.isInteger(parsedPage) && parsedPage > 0 ? parsedPage : 1;
+        page = Math.max(1, Math.min(page, 1000));
+        
+        const offset = (page - 1) * limit;
+
+        const { rows, total } = await submissionService.getSubmissionHistoryByAssignment(
+            assignmentId,
+            userId,
+            limit,
+            offset
+        );
+
+        if (total === 0) {
+            return res.status(200).json({
+                data: [],
+                page,
+                limit,
+                hasNext: false,
+                total: 0
+            });
+        }
+
+        const hasNext = offset + limit < total;
+
+        return res.status(200).json({
+            data: rows,
+            page,
+            limit,
+            hasNext,
+            total
+        });
+    } catch (error) {
+        next(error);
     }
 };
 

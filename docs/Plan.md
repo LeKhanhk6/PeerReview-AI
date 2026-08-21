@@ -360,7 +360,7 @@ Group A → Group B
 Group B → Group C
 Group C → Group A
 ```
-## TASK 07.3 — Anonymous Identity
+## TASK 07.3 — Anonymous Identity [x]
 
 Reviewer không biết Submitter.
 

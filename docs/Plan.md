@@ -330,8 +330,8 @@ Contribution Engine
 
 ## TASK 06.4 — Submission History
 
-- [ ]  Previous submissions.
-- [ ]  Submission time.
+- [x]  Previous submissions.
+- [x]  Submission time.
 - [ ]  Status.
 - [ ]  Feedback status.
 

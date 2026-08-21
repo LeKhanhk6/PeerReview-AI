@@ -32,11 +32,13 @@ export const generateReviewAssignments = async (assignmentId, userId, reviewsPer
 
     // 2. Get groups and their latest submission for this assignment (Submission Pool)
     const submissionsQuery = `
-        SELECT 
+        SELECT DISTINCT ON (s.group_id)
             s.id as submission_id,
             s.group_id
         FROM submissions s
+        JOIN submission_versions sv ON sv.submission_id = s.id
         WHERE s.assignment_id = $1
+        ORDER BY s.group_id, sv.version_number DESC
     `;
     const submissionsResult = await pool.query(submissionsQuery, [assignmentId]);
     
@@ -48,38 +50,38 @@ export const generateReviewAssignments = async (assignmentId, userId, reviewsPer
         };
     }
 
-    const groups = submissionsResult.rows.map(row => ({
+    const submissionPool = submissionsResult.rows.map(row => ({
         groupId: row.group_id,
         submissionId: row.submission_id
     }));
 
     // 3. Validate constraints
-    if (groups.length < 2) {
+    if (submissionPool.length < 2) {
         const error = new Error("Not enough submissions to perform peer review assignment.");
         error.statusCode = 400;
         throw error;
     }
 
-    if (groups.length <= reviewsPerGroup) {
-        const error = new Error(`Not enough groups (${groups.length}) to satisfy ${reviewsPerGroup} reviews per group.`);
+    if (submissionPool.length <= reviewsPerGroup) {
+        const error = new Error(`Not enough groups (${submissionPool.length}) to satisfy ${reviewsPerGroup} reviews per group.`);
         error.statusCode = 400;
         throw error;
     }
 
-    // 4. Shuffle groups to randomize assignment
-    shuffleArray(groups);
+    // 4. Shuffle submissionPool to randomize assignment
+    shuffleArray(submissionPool);
 
     // 5. Generate assignments (circular shift algorithm)
     const assignmentsToInsert = [];
-    const n = groups.length;
+    const n = submissionPool.length;
 
     // For shift = 1 to reviewsPerGroup
-    // group[i] reviews group[(i + shift) % n]
+    // pool[i] reviews pool[(i + shift) % n]
     for (let shift = 1; shift <= reviewsPerGroup; shift++) {
         for (let i = 0; i < n; i++) {
-            const reviewerGroup = groups[i].groupId;
+            const reviewerGroup = submissionPool[i].groupId;
             const targetIndex = (i + shift) % n;
-            const targetSubmission = groups[targetIndex].submissionId;
+            const targetSubmission = submissionPool[targetIndex].submissionId;
             
             assignmentsToInsert.push({
                 submission_id: targetSubmission,

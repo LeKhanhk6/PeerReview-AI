@@ -150,7 +150,7 @@ export const submitAssignment = async (assignmentId, userId, fileUrl) => {
     if (authResult.rows.length === 0) {
         const checkExists = await pool.query('SELECT id FROM assignments WHERE id = $1', [assignmentId]);
         const error = new Error(checkExists.rows.length > 0 ? 'Forbidden access to this assignment' : 'Assignment not found');
-        error.status = checkExists.rows.length > 0 ? 403 : 404;
+        error.statusCode = checkExists.rows.length > 0 ? 403 : 404;
         throw error;
     }
     
@@ -209,7 +209,7 @@ export const submitAssignment = async (assignmentId, userId, fileUrl) => {
             
             if (latest.version_number >= 20) {
                 const error = new Error('Maximum submission versions (20) exceeded.');
-                error.status = 400;
+                error.statusCode = 400;
                 throw error;
             }
             
@@ -245,7 +245,7 @@ export const submitAssignment = async (assignmentId, userId, fileUrl) => {
         await client.query('ROLLBACK');
         console.error(`submit_assignment_failed:${assignmentId}`, err);
         const error = new Error(err.message || 'Failed to submit assignment');
-        error.status = err.status || 500;
+        error.statusCode = err.statusCode || err.status || 500;
         error.originalError = err;
         throw error;
     } finally {
@@ -254,18 +254,19 @@ export const submitAssignment = async (assignmentId, userId, fileUrl) => {
 };
 
 export const getSubmissionHistoryByAssignment = async (assignmentId, userId, limit, offset) => {
-    console.time(`submission_history:${assignmentId}`);
+    const logTag = `submission_history:${assignmentId}:user:${userId}:l${limit}:o${offset}`;
+    console.time(logTag);
     try {
-        // 1. Validation & Auth (Fail-fast using EXISTS)
+        // 1. Validation & Auth (Fail-fast using EXISTS, optimized join level)
         const authQuery = `
-            SELECT a.id, g.id as group_id
+            SELECT 1
             FROM assignments a
-            JOIN groups g ON g.class_id = a.class_id
             WHERE a.id = $1
             AND EXISTS (
                 SELECT 1
-                FROM group_members gm
-                WHERE gm.group_id = g.id
+                FROM groups g
+                JOIN group_members gm ON gm.group_id = g.id
+                WHERE g.class_id = a.class_id
                 AND gm.user_id = $2
             )
         `;
@@ -274,41 +275,19 @@ export const getSubmissionHistoryByAssignment = async (assignmentId, userId, lim
         if (authResult.rows.length === 0) {
             const checkExists = await pool.query('SELECT id FROM assignments WHERE id = $1', [assignmentId]);
             const error = new Error(checkExists.rows.length > 0 ? 'Forbidden access to this assignment' : 'Assignment not found');
-            error.status = checkExists.rows.length > 0 ? 403 : 404;
+            error.statusCode = checkExists.rows.length > 0 ? 403 : 404;
             throw error;
         }
         
-        // 2. Fetch history count
-        const countQuery = `
-            SELECT COUNT(*) as total
-            FROM submission_versions sv
-            JOIN submissions s ON sv.submission_id = s.id
-            WHERE s.assignment_id = $1
-            AND EXISTS (
-                SELECT 1
-                FROM group_members gm
-                WHERE gm.group_id = s.group_id
-                AND gm.user_id = $2
-            )
-        `;
-        const countResult = await pool.query(countQuery, [assignmentId, userId]);
-        const total = parseInt(countResult.rows[0].total, 10);
-        
-        if (total === 0) {
-            return {
-                rows: [],
-                total: 0
-            };
-        }
-        
-        // 3. Fetch history data with Window Function for is_latest
+        // 2. Fetch history data with Window Functions for is_latest and total count
         const historyQuery = `
             SELECT 
                 sv.version_number, 
                 sv.file_url, 
                 sv.created_at,
+                COUNT(*) OVER(PARTITION BY s.id) as total,
                 CASE 
-                    WHEN sv.version_number = MAX(sv.version_number) OVER ()
+                    WHEN sv.version_number = MAX(sv.version_number) OVER (PARTITION BY s.id)
                     THEN true ELSE false
                 END as is_latest
             FROM submission_versions sv
@@ -325,18 +304,33 @@ export const getSubmissionHistoryByAssignment = async (assignmentId, userId, lim
         `;
         const historyResult = await pool.query(historyQuery, [assignmentId, userId, limit, offset]);
         
+        if (historyResult.rows.length === 0) {
+            return {
+                rows: [],
+                total: 0
+            };
+        }
+
+        const total = parseInt(historyResult.rows[0].total, 10);
+        
+        // Remove the 'total' property from each row to keep the output clean
+        const rows = historyResult.rows.map(row => {
+            const { total, ...rest } = row;
+            return rest;
+        });
+
         return {
-            rows: historyResult.rows,
+            rows,
             total
         };
     } catch (err) {
-        console.error(`getSubmissionHistoryByAssignment_failed:${assignmentId}`, err);
+        console.error(`${logTag}_failed`, err);
         const error = new Error(err.message || 'Failed to get submission history');
-        error.statusCode = err.status || 500;
+        error.statusCode = err.statusCode || err.status || 500;
         error.originalError = err;
         throw error;
     } finally {
-        console.timeEnd(`submission_history:${assignmentId}`);
+        console.timeEnd(logTag);
     }
 };
 

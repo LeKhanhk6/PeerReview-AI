@@ -84,3 +84,72 @@ export const getReviewAssignmentDetail = async (req, res, next) => {
         console.timeEnd(`review_detail:${reviewAssignmentId}:user:${userId}`);
     }
 };
+
+export const submitReviewAssignment = async (req, res, next) => {
+    try {
+        const { reviewAssignmentId } = req.params;
+        const userId = req.user?.id;
+        const { overallComment, criteriaScores } = req.body;
+
+        if (!userId) {
+            const error = new Error('Unauthorized');
+            error.statusCode = 401;
+            return next(error);
+        }
+
+        if (!isValidUUID(reviewAssignmentId)) {
+            const error = new Error('Invalid review assignment ID format');
+            error.statusCode = 400;
+            return next(error);
+        }
+
+        // Payload validations (Cheap fail-fast)
+        if (!overallComment || typeof overallComment !== 'string' || overallComment.trim().length === 0) {
+            const error = new Error('overallComment is required');
+            error.statusCode = 400;
+            return next(error);
+        }
+
+        if (!Array.isArray(criteriaScores) || criteriaScores.length === 0) {
+            const error = new Error('criteriaScores array is required');
+            error.statusCode = 400;
+            return next(error);
+        }
+
+        if (criteriaScores.length > 50) {
+            const error = new Error('Too many criteria scores');
+            error.statusCode = 400;
+            return next(error);
+        }
+
+        const uniqueIds = new Set();
+        for (const item of criteriaScores) {
+            if (!isValidUUID(item.criteriaId)) {
+                const error = new Error(`Invalid criteriaId format: ${item.criteriaId}`);
+                error.statusCode = 400;
+                return next(error);
+            }
+            if (uniqueIds.has(item.criteriaId)) {
+                const error = new Error(`Duplicate criteriaId found: ${item.criteriaId}`);
+                error.statusCode = 400;
+                return next(error);
+            }
+            uniqueIds.add(item.criteriaId);
+            
+            const score = parseFloat(item.score);
+            if (isNaN(score) || score < 0 || score > 100) {
+                const error = new Error(`Invalid score for criteria ${item.criteriaId}. Must be between 0 and 100.`);
+                error.statusCode = 400;
+                return next(error);
+            }
+        }
+
+        const result = await reviewService.submitReview(reviewAssignmentId, userId, { overallComment, criteriaScores });
+
+        return res.status(200).json({
+            data: result
+        });
+    } catch (error) {
+        next(error);
+    }
+};

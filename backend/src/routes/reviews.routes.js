@@ -12,4 +12,7 @@ router.get('/assignments/:assignmentId/my-reviews', authorize('STUDENT'), review
 // Student: Get detail of a specific review assignment (for grading screen)
 router.get('/my-reviews/:reviewAssignmentId', authorize('STUDENT'), reviewController.getReviewAssignmentDetail);
 
+// Student: Submit a peer review
+router.post('/my-reviews/:reviewAssignmentId/submit', authorize('STUDENT'), reviewController.submitReviewAssignment);
+
 export default router;

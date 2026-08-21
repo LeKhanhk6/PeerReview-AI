@@ -193,3 +193,139 @@ export const getReviewAssignmentDetail = async (reviewAssignmentId, userId) => {
         review
     };
 };
+
+export const submitReview = async (reviewAssignmentId, userId, payload) => {
+    const { overallComment, criteriaScores } = payload;
+    const client = await pool.connect();
+    let transactionStarted = false;
+
+    try {
+        await client.query('BEGIN');
+        transactionStarted = true;
+
+        // 1. Existence, ownership, and lock for race conditions (FOR UPDATE)
+        const checkQuery = `
+            SELECT 
+                ra.id, 
+                ra.status, 
+                s.assignment_id, 
+                a.deadline
+            FROM review_assignments ra
+            JOIN submissions s ON s.id = ra.submission_id
+            JOIN assignments a ON a.id = s.assignment_id
+            WHERE ra.id = $1
+            AND ra.reviewer_group_id IN (
+                SELECT group_id FROM group_members WHERE user_id = $2
+            )
+            FOR UPDATE OF ra
+        `;
+        const checkRes = await client.query(checkQuery, [reviewAssignmentId, userId]);
+
+        if (checkRes.rows.length === 0) {
+            const error = new Error('Review assignment not found or unauthorized');
+            error.statusCode = 404; // Anti-enumeration
+            throw error;
+        }
+
+        const assignmentRow = checkRes.rows[0];
+
+        // 2. Status check (Double-submit protection)
+        if (assignmentRow.status === 'COMPLETED') {
+            const error = new Error('Review already submitted');
+            error.statusCode = 400;
+            throw error;
+        }
+
+        // 3. Deadline check
+        const deadlineTime = new Date(assignmentRow.deadline).getTime();
+        if (Date.now() > deadlineTime) {
+            const error = new Error('Review deadline has passed');
+            error.statusCode = 400;
+            throw error;
+        }
+
+        // 4. DB Criteria check (completeness & validity)
+        const rubricRes = await client.query(`
+            SELECT rc.id, rc.weight
+            FROM rubric_criteria rc
+            JOIN rubrics r ON r.id = rc.rubric_id
+            WHERE r.assignment_id = $1
+        `, [assignmentRow.assignment_id]);
+
+        const dbCriteriaMap = new Map();
+        rubricRes.rows.forEach(row => dbCriteriaMap.set(row.id, parseFloat(row.weight)));
+
+        if (dbCriteriaMap.size !== criteriaScores.length) {
+            const error = new Error('Mismatch in number of criteria scores provided');
+            error.statusCode = 400;
+            throw error;
+        }
+
+        let totalScore = 0;
+        const processedScores = [];
+
+        for (const item of criteriaScores) {
+            if (!dbCriteriaMap.has(item.criteriaId)) {
+                const error = new Error(`Criteria ${item.criteriaId} does not belong to this assignment`);
+                error.statusCode = 400;
+                throw error;
+            }
+
+            const weight = dbCriteriaMap.get(item.criteriaId);
+            // Optional: normalize score precision
+            const score = Math.round(parseFloat(item.score) * 100) / 100;
+            const itemComment = item.comment ? item.comment.trim() : null;
+
+            // total_score = SUM(score * weight / 100)
+            totalScore += (score * weight) / 100;
+
+            processedScores.push({
+                criteriaId: item.criteriaId,
+                score,
+                comment: itemComment
+            });
+        }
+        
+        // Normalize total score
+        totalScore = Math.round(totalScore * 100) / 100;
+
+        // 5. Insert review
+        const insertReviewRes = await client.query(`
+            INSERT INTO reviews (review_assignment_id, overall_comment, total_score, submitted_at)
+            VALUES ($1, $2, $3, NOW())
+            RETURNING id, total_score
+        `, [reviewAssignmentId, overallComment.trim(), totalScore]);
+
+        const reviewId = insertReviewRes.rows[0].id;
+
+        // 6. Insert review criteria (bulk insert would be faster, but loop is fine for MVP small scale)
+        for (const ps of processedScores) {
+            await client.query(`
+                INSERT INTO review_criteria (review_id, rubric_criteria_id, score, comment)
+                VALUES ($1, $2, $3, $4)
+            `, [reviewId, ps.criteriaId, ps.score, ps.comment]);
+        }
+
+        // 7. Update status
+        await client.query(`
+            UPDATE review_assignments
+            SET status = 'COMPLETED'
+            WHERE id = $1
+        `, [reviewAssignmentId]);
+
+        await client.query('COMMIT');
+
+        return {
+            reviewId,
+            totalScore,
+            status: 'COMPLETED'
+        };
+    } catch (error) {
+        if (transactionStarted) {
+            await client.query('ROLLBACK');
+        }
+        throw error;
+    } finally {
+        client.release();
+    }
+};

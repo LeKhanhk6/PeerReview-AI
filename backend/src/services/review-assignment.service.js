@@ -38,7 +38,7 @@ export const generateReviewAssignments = async (assignmentId, userId, reviewsPer
         FROM submissions s
         JOIN submission_versions sv ON sv.submission_id = s.id
         WHERE s.assignment_id = $1
-        ORDER BY s.group_id, sv.version_number DESC
+        ORDER BY s.group_id, sv.version_number DESC, sv.created_at DESC
     `;
     const submissionsResult = await pool.query(submissionsQuery, [assignmentId]);
     
@@ -97,10 +97,10 @@ export const generateReviewAssignments = async (assignmentId, userId, reviewsPer
 
         // Handle duplicate runs (DELETE old ones before insert)
         const deleteOldQuery = `
-            DELETE FROM review_assignments 
-            WHERE submission_id IN (
-                SELECT id FROM submissions WHERE assignment_id = $1
-            )
+            DELETE FROM review_assignments ra
+            USING submissions s
+            WHERE ra.submission_id = s.id
+            AND s.assignment_id = $1
         `;
         await client.query(deleteOldQuery, [assignmentId]);
 
@@ -124,6 +124,7 @@ export const generateReviewAssignments = async (assignmentId, userId, reviewsPer
         }
 
         await client.query('COMMIT');
+        console.info(`review_assignment_generated:${assignmentId}:total=${assignmentsToInsert.length}`);
 
         // 7. Return summary
         return {

@@ -7,11 +7,15 @@ export const generateReviewAssignments = async (req, res, next) => {
         const userId = req.user?.id;
 
         if (!userId) {
-            return res.status(401).json({ message: 'Unauthorized' });
+            const error = new Error('Unauthorized');
+            error.statusCode = 401;
+            return next(error);
         }
 
         if (!isValidUUID(assignmentId)) {
-            return res.status(400).json({ message: 'Invalid assignment ID format' });
+            const error = new Error('Invalid assignment ID format');
+            error.statusCode = 400;
+            return next(error);
         }
 
         // Optionally allow teacher to specify custom reviews_per_group via body or query
@@ -21,8 +25,11 @@ export const generateReviewAssignments = async (req, res, next) => {
         if (reviewsPerGroup !== undefined) {
             parsedReviews = parseInt(reviewsPerGroup, 10);
             if (!Number.isInteger(parsedReviews) || parsedReviews < 1) {
-                return res.status(400).json({ message: 'Invalid reviewsPerGroup value' });
+                const error = new Error('Invalid reviewsPerGroup value');
+                error.statusCode = 400;
+                return next(error);
             }
+            parsedReviews = Math.min(parsedReviews, 10); // Clamp maximum to 10
         }
 
         const summary = await reviewAssignmentService.generateReviewAssignments(

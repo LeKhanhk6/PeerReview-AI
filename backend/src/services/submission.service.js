@@ -200,10 +200,10 @@ export const submitAssignment = async (assignmentId, userId, fileUrl) => {
             if (latest.file_url === fileUrl) {
                 await client.query('COMMIT');
                 return {
-                    message: 'Idempotency: Same file already submitted as the latest version.',
                     submissionId,
                     versionNumber: latest.version_number,
-                    status: newStatus
+                    status: newStatus,
+                    versionData: latest
                 };
             }
             
@@ -235,7 +235,6 @@ export const submitAssignment = async (assignmentId, userId, fileUrl) => {
         await client.query('COMMIT');
         
         return {
-            message: 'Submission successful',
             submissionId,
             versionNumber: newVersionNumber,
             status: newStatus,

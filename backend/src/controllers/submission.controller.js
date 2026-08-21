@@ -118,16 +118,6 @@ export const getSubmissionHistoryByAssignment = async (req, res, next) => {
             offset
         );
 
-        if (total === 0) {
-            return res.status(200).json({
-                data: [],
-                page,
-                limit,
-                hasNext: false,
-                total: 0
-            });
-        }
-
         const hasNext = offset + limit < total;
 
         return res.status(200).json({

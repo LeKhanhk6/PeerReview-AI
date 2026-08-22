@@ -450,7 +450,7 @@ Improvement
 
 # 10. PHASE 9 — Contribution Analytics
 
-## TASK 10.1 — Collect Contribution Data
+## TASK 10.1 — Collect Contribution Data [x]
 `activity_logs` (event-driven unified table)
 
 Includes:
@@ -467,7 +467,7 @@ Each event includes:
 - metadata (context)
 - created_at (time dimension)
 
-## TASK 10.2 — Contribution Calculation
+## TASK 10.2 — Contribution Calculation [x]
 `activity_logs`
    ↓
 `getGroupActivityStats(groupId, timeframe)`
@@ -494,7 +494,7 @@ Contribution Score
 - Apply cap per activity type (e.g. max 5 discussions/day)
 - Ignore rapid repeated spam actions
 
-## TASK 10.3 — Contribution Classification
+## TASK 10.3 — Contribution Classification [x]
 Based on Contribution Score:
 
 - High Contributor (> 80)
@@ -504,7 +504,7 @@ Based on Contribution Score:
 
 *(Threshold-based classification)*
 
-## TASK 10.4 — Teacher Analytics
+## TASK 10.4 — Teacher Analytics [x]
 Teacher can view:
 
 - Contribution Score per member
@@ -527,7 +527,7 @@ Future:
 - Behavioral Modeling
 # 11. PHASE 10 — Review Synthesis
 
-## TASK 11.1 — AI Synthesis (For Teacher)
+## TASK 11.1 — AI Synthesis (For Teacher) [x]
 Processing flow:
 `reviews` -> `hybrid sampling (top 100)` -> `chunking (50/chunk)` -> `summaries` -> `final synthesis`
 
@@ -544,40 +544,13 @@ Output JSON cuối cùng (MVP):
 ```
 *(Provides a high-level summary of peer reviews to solve the teacher's pain point. Teacher Validation is built-in.)*
 
-## TASK 11.2 — Topic / Clustering (Post-MVP)
-```
-Reviews
-   ↓
-Embeddings
-   ↓
-Topic Analysis
-   ↓
-Clustering
-```
-Có thể sử dụng:
-
-- Vietnamese-SBERT.
-- Sentence Transformers.
-- BERTopic.
-
-Đây là implementation option của AI Service, không phải requirement bắt buộc của Node.js Backend.
-
-## TASK 11.3 — Summarization
-Output:
-```
-Strengths
-Weaknesses
-Common Suggestions
-Important Questions
-```
-## TASK 11.4 — Teacher Validation
-
+## TASK 11.2 — Teacher Validation (Human-in-the-loop) [ ]
 Teacher có thể:
 
-- [ ]  View Summary.
-- [ ]  View source Reviews.
-- [ ]  Approve Summary.
-- [ ]  Correct/annotate Summary.
+- [ ] View Summary.
+- [ ] View source Reviews.
+- [ ] Approve Summary.
+- [ ] Correct/annotate Summary.
 
 AI Summary **không tự động quyết định điểm cuối cùng**.
 # 12. PHASE 11 — Teacher Analytics + Early Warning

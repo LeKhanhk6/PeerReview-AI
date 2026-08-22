@@ -5,6 +5,8 @@ const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
 
 import crypto from 'crypto';
 
+const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+
 // Concurrency limit helper
 const pLimit = async (funcs, limit) => {
     const results = [];
@@ -98,7 +100,10 @@ const callProvider = async (prompt, requestId, customTimeout = null, retries = 1
                     message: `Provider responded with status: ${response.status}`,
                     stage: "callProvider"
                 });
-                if (attempt < retries) continue;
+                if (attempt < retries) {
+                    await sleep(300 * (attempt + 1));
+                    continue;
+                }
                 return null;
             }
 
@@ -106,7 +111,10 @@ const callProvider = async (prompt, requestId, customTimeout = null, retries = 1
             
             const text = data?.candidates?.[0]?.content?.parts?.[0]?.text;
             if (!text || typeof text !== 'string') {
-                if (attempt < retries) continue;
+                if (attempt < retries) {
+                    await sleep(300 * (attempt + 1));
+                    continue;
+                }
                 return null;
             }
             
@@ -117,7 +125,10 @@ const callProvider = async (prompt, requestId, customTimeout = null, retries = 1
             } else {
                 console.error("AI Service Error", { requestId, message: error.message, stage: "callProvider" });
             }
-            if (attempt < retries) continue;
+            if (attempt < retries) {
+                await sleep(300 * (attempt + 1));
+                continue;
+            }
             return null;
         } finally {
             clearTimeout(timeoutId);
@@ -189,7 +200,7 @@ const CACHE_TTL = 1000 * 60 * 60; // 1 hour
  */
 export const synthesizeReviews = async (assignmentId, timeframeKey, reviews, totalReviews, reviewsUsed, requestId) => {
     try {
-        const hashStr = crypto.createHash('md5').update(reviews.join('')).digest('hex');
+        const hashStr = crypto.createHash('md5').update(reviews.join('||')).digest('hex');
         const cacheKey = `${assignmentId}_${timeframeKey}_${hashStr}`;
         const cached = synthesisCache.get(cacheKey);
         if (cached && (Date.now() - cached.timestamp < CACHE_TTL)) {
@@ -262,15 +273,15 @@ ${JSON.stringify(chunkSummaries)}
 `;
         const rawFinal = await callProvider(finalPrompt, requestId, 15000);
         if (!rawFinal) {
-            throw new Error("Final synthesis failed or timed out.");
+            throw new Error("Final synthesis failed: Provider returned null or timed out after retries.");
         }
 
         let cleanText = rawFinal.replace(/```json/gi, '').replace(/```/g, '').trim();
         let parsed = {};
         try {
             parsed = JSON.parse(cleanText);
-        } catch {
-            parsed = {};
+        } catch (err) {
+            throw new Error(`Final synthesis failed: JSON parse error (${err.message}). Raw output: ${cleanText.substring(0, 100)}...`);
         }
         
         const finalData = {

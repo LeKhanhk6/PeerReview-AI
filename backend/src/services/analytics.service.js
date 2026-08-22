@@ -406,6 +406,12 @@ export const getClassContributions = async (currentUser, classId) => {
     return result;
 };
 
+const NO_DATA_REASONS = Object.freeze({
+    NO_REVIEWS: "NO_REVIEWS",
+    NO_COMPLETED_REVIEWS: "NO_COMPLETED_REVIEWS",
+    NO_ASSIGNMENTS: "NO_ASSIGNMENTS"
+});
+
 const getTrimmedMean = (arr) => {
     if (!arr || arr.length === 0) return 0;
     if (arr.length < 10) return arr.reduce((a,b)=>a+b,0) / arr.length;
@@ -538,12 +544,15 @@ export const getAssignmentReviewAnalytics = async (currentUser, assignmentId) =>
         if (hasData) {
             const recomputed = 0.4 * avgRubric + 0.3 * avgFeedback + 0.3 * avgVariance;
             if (Math.abs(recomputed - avgReviewQuality) > 0.01) {
-                console.warn("[analytics][quality_mismatch]", {
+                console.warn(JSON.stringify({
+                    level: "warn",
+                    tag: "analytics",
+                    code: "QUALITY_MISMATCH",
                     assignmentId,
                     reviewerGroupId: reviewer.groupId,
                     expected: avgReviewQuality,
                     recomputed
-                });
+                }));
             }
             breakdown = {
                 rubric: round2(avgRubric),
@@ -552,13 +561,17 @@ export const getAssignmentReviewAnalytics = async (currentUser, assignmentId) =>
             };
         }
         
+        const completionRatePctValue = reviewer.assignedCount === 0 ? null : round2(Math.max(0, Math.min(100, completionRate)));
+        const completionRateReason = reviewer.assignedCount === 0 ? NO_DATA_REASONS.NO_ASSIGNMENTS : null;
+        
         return {
             groupId: reviewer.groupId,
             hasData,
-            hasDataReason: hasData ? null : "NO_COMPLETED_REVIEWS",
+            hasDataReason: hasData ? null : NO_DATA_REASONS.NO_COMPLETED_REVIEWS,
             assignedCount: reviewer.assignedCount,
             completedCount: reviewer.completedCount,
-            completionRatePct: round2(Math.max(0, Math.min(100, completionRate))),
+            completionRatePct: completionRatePctValue,
+            completionRateReason,
             averageScoreGiven: hasData ? round2(averageScoreGiven) : null,
             qualityScore: hasData ? round2(avgReviewQuality) : null,
             calibratedQuality: hasData ? round2(avgReviewQuality * (0.5 + 0.5 * confidence)) : null,
@@ -589,11 +602,14 @@ export const getAssignmentReviewAnalytics = async (currentUser, assignmentId) =>
         if (a.calibratedQuality !== b.calibratedQuality) {
             return (a.calibratedQuality || 0) - (b.calibratedQuality || 0);
         }
-        return (a.groupId || '').localeCompare(b.groupId || '');
+        return (a.groupId || '').localeCompare(b.groupId || '', undefined, { numeric: true });
     });
 
     return {
         metricsVersion: "v1",
+        scoring: {
+            weights: { rubric: 0.4, feedback: 0.3, variance: 0.3 }
+        },
         assignmentId,
         totalReviewers: result.length,
         reviewers: result
@@ -730,25 +746,36 @@ export const getClassReviewAnalytics = async (currentUser, classId) => {
         const hasData = allScores.length > 0;
         let medianScore = 0;
         let scoreStdDev = 0;
+        let p10Score = 0;
+        let p90Score = 0;
         
         if (hasData) {
             const sortedScores = [...allScores].sort((a,b) => a-b);
             const mid = Math.floor(sortedScores.length / 2);
             medianScore = sortedScores.length % 2 !== 0 ? sortedScores[mid] : (sortedScores[mid - 1] + sortedScores[mid]) / 2;
             
+            p10Score = sortedScores[Math.floor(sortedScores.length * 0.1)];
+            p90Score = sortedScores[Math.floor(sortedScores.length * 0.9)];
+            
             const meanScore = allScores.reduce((a,b)=>a+b, 0) / allScores.length;
             const variance = allScores.reduce((acc, val) => acc + Math.pow(val - meanScore, 2), 0) / allScores.length;
             scoreStdDev = Math.sqrt(variance);
         }
         
+        const completionRatePctValue = totalAssigned === 0 ? null : round2(Math.max(0, Math.min(100, reviewCompletionRate)));
+        const completionRateReason = totalAssigned === 0 ? NO_DATA_REASONS.NO_ASSIGNMENTS : null;
+        
         result.push({
             assignmentId,
             hasData,
-            hasDataReason: hasData ? null : "NO_COMPLETED_REVIEWS",
-            reviewCompletionRatePct: round2(Math.max(0, Math.min(100, reviewCompletionRate))),
+            hasDataReason: hasData ? null : NO_DATA_REASONS.NO_COMPLETED_REVIEWS,
+            reviewCompletionRatePct: completionRatePctValue,
+            reviewCompletionRateReason: completionRateReason,
             averageScore: hasData ? round2(averageScore) : null,
             medianScore: hasData ? round2(medianScore) : null,
-            sampleSize: hasData ? allScores.length : 0,
+            p10Score: hasData ? round2(p10Score) : null,
+            p90Score: hasData ? round2(p90Score) : null,
+            scoreSampleSize: hasData ? allScores.length : 0,
             scoreStdDev: hasData ? round2(scoreStdDev) : null,
             qualityScore: hasData ? round2(avgReviewQuality) : null,
             hasLowQualityReview
@@ -757,6 +784,9 @@ export const getClassReviewAnalytics = async (currentUser, classId) => {
 
     return {
         metricsVersion: "v1",
+        scoring: {
+            weights: { rubric: 0.4, feedback: 0.3, variance: 0.3 }
+        },
         classId,
         assignments: result
     };

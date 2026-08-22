@@ -409,6 +409,7 @@ export const getClassContributions = async (currentUser, classId) => {
 const NO_DATA_REASONS = Object.freeze({
     NO_REVIEWS: "NO_REVIEWS",
     NO_COMPLETED_REVIEWS: "NO_COMPLETED_REVIEWS",
+    HAS_PENDING_REVIEWS: "HAS_PENDING_REVIEWS",
     NO_ASSIGNMENTS: "NO_ASSIGNMENTS"
 });
 
@@ -544,15 +545,17 @@ export const getAssignmentReviewAnalytics = async (currentUser, assignmentId) =>
         if (hasData) {
             const recomputed = 0.4 * avgRubric + 0.3 * avgFeedback + 0.3 * avgVariance;
             if (Math.abs(recomputed - avgReviewQuality) > 0.01) {
-                console.warn(JSON.stringify({
-                    level: "warn",
-                    tag: "analytics",
-                    code: "QUALITY_MISMATCH",
-                    assignmentId,
-                    reviewerGroupId: reviewer.groupId,
-                    expected: avgReviewQuality,
-                    recomputed
-                }));
+                if (Math.random() < 0.1) {
+                    console.warn(JSON.stringify({
+                        level: "warn",
+                        tag: "analytics",
+                        code: "QUALITY_MISMATCH",
+                        assignmentId,
+                        reviewerGroupId: reviewer.groupId,
+                        expected: avgReviewQuality,
+                        recomputed
+                    }));
+                }
             }
             breakdown = {
                 rubric: round2(avgRubric),
@@ -564,17 +567,22 @@ export const getAssignmentReviewAnalytics = async (currentUser, assignmentId) =>
         const completionRatePctValue = reviewer.assignedCount === 0 ? null : round2(Math.max(0, Math.min(100, completionRate)));
         const completionRateReason = reviewer.assignedCount === 0 ? NO_DATA_REASONS.NO_ASSIGNMENTS : null;
         
+        let hasDataReason = null;
+        if (!hasData) {
+            hasDataReason = reviewer.assignedCount > 0 ? NO_DATA_REASONS.HAS_PENDING_REVIEWS : NO_DATA_REASONS.NO_ASSIGNMENTS;
+        }
+
         return {
             groupId: reviewer.groupId,
             hasData,
-            hasDataReason: hasData ? null : NO_DATA_REASONS.NO_COMPLETED_REVIEWS,
+            hasDataReason,
             assignedCount: reviewer.assignedCount,
             completedCount: reviewer.completedCount,
             completionRatePct: completionRatePctValue,
             completionRateReason,
             averageScoreGiven: hasData ? round2(averageScoreGiven) : null,
             qualityScore: hasData ? round2(avgReviewQuality) : null,
-            calibratedQuality: hasData ? round2(avgReviewQuality * (0.5 + 0.5 * confidence)) : null,
+            trustedQuality: hasData ? round2(avgReviewQuality * (0.5 + 0.5 * confidence)) : null,
             confidenceScore: round2(confidence),
             breakdown,
             isLowQuality,
@@ -589,24 +597,26 @@ export const getAssignmentReviewAnalytics = async (currentUser, assignmentId) =>
     result.forEach(r => {
         const biasRaw = r.averageScoreGiven - globalAverageScore;
         const scoreRange = 100; // Assuming MAX=100 MIN=0
-        const biasScore = r.completedCount > 0 && scoreRange > 0 ? biasRaw / scoreRange : 0;
-        r.biasScoreNormalized = round2(biasScore);
-        r.isLenient = biasScore > 0.2;
-        r.isHarsh = biasScore < -0.2;
+        const bias = r.completedCount > 0 && scoreRange > 0 ? biasRaw / scoreRange : 0;
+        const biasScoreNormalized = Math.max(-1, Math.min(1, bias));
+        r.biasScoreNormalized = round2(biasScoreNormalized);
+        r.isLenient = biasScoreNormalized > 0.2;
+        r.isHarsh = biasScoreNormalized < -0.2;
     });
 
     result.sort((a, b) => {
         if (a.isLowQuality !== b.isLowQuality) {
             return a.isLowQuality ? -1 : 1;
         }
-        if (a.calibratedQuality !== b.calibratedQuality) {
-            return (a.calibratedQuality || 0) - (b.calibratedQuality || 0);
+        if (a.trustedQuality !== b.trustedQuality) {
+            return (a.trustedQuality || 0) - (b.trustedQuality || 0);
         }
         return (a.groupId || '').localeCompare(b.groupId || '', undefined, { numeric: true });
     });
 
     return {
         metricsVersion: "v1",
+        generatedAt: new Date().toISOString(),
         scoring: {
             weights: { rubric: 0.4, feedback: 0.3, variance: 0.3 }
         },
@@ -744,15 +754,26 @@ export const getClassReviewAnalytics = async (currentUser, classId) => {
         const avgReviewQuality = getTrimmedMean(allQualities);
         
         const hasData = allScores.length > 0;
+        const hasEnoughData = allScores.length >= 10;
         let medianScore = 0;
         let scoreStdDev = 0;
+        let q1Score = 0;
+        let q3Score = 0;
         let p10Score = 0;
         let p90Score = 0;
+        let iqr = 0;
+        let isUniformScoring = false;
+        
+        let scoreDistribution = { "0-20": 0, "20-40": 0, "40-60": 0, "60-80": 0, "80-100": 0 };
         
         if (hasData) {
             const sortedScores = [...allScores].sort((a,b) => a-b);
             const mid = Math.floor(sortedScores.length / 2);
             medianScore = sortedScores.length % 2 !== 0 ? sortedScores[mid] : (sortedScores[mid - 1] + sortedScores[mid]) / 2;
+            
+            q1Score = sortedScores[Math.floor(sortedScores.length * 0.25)];
+            q3Score = sortedScores[Math.floor(sortedScores.length * 0.75)];
+            iqr = q3Score - q1Score;
             
             p10Score = sortedScores[Math.floor(sortedScores.length * 0.1)];
             p90Score = sortedScores[Math.floor(sortedScores.length * 0.9)];
@@ -760,23 +781,44 @@ export const getClassReviewAnalytics = async (currentUser, classId) => {
             const meanScore = allScores.reduce((a,b)=>a+b, 0) / allScores.length;
             const variance = allScores.reduce((acc, val) => acc + Math.pow(val - meanScore, 2), 0) / allScores.length;
             scoreStdDev = Math.sqrt(variance);
+            isUniformScoring = scoreStdDev === 0;
+            
+            allScores.forEach(s => {
+                const s100 = (s / 100) * 100; // assuming scale 100
+                if (s100 <= 20) scoreDistribution["0-20"]++;
+                else if (s100 <= 40) scoreDistribution["20-40"]++;
+                else if (s100 <= 60) scoreDistribution["40-60"]++;
+                else if (s100 <= 80) scoreDistribution["60-80"]++;
+                else scoreDistribution["80-100"]++;
+            });
         }
         
         const completionRatePctValue = totalAssigned === 0 ? null : round2(Math.max(0, Math.min(100, reviewCompletionRate)));
         const completionRateReason = totalAssigned === 0 ? NO_DATA_REASONS.NO_ASSIGNMENTS : null;
         
+        let hasDataReason = null;
+        if (!hasData) {
+            hasDataReason = totalAssigned > 0 ? NO_DATA_REASONS.HAS_PENDING_REVIEWS : NO_DATA_REASONS.NO_ASSIGNMENTS;
+        }
+        
         result.push({
             assignmentId,
             hasData,
-            hasDataReason: hasData ? null : NO_DATA_REASONS.NO_COMPLETED_REVIEWS,
+            hasDataReason,
             reviewCompletionRatePct: completionRatePctValue,
             reviewCompletionRateReason: completionRateReason,
             averageScore: hasData ? round2(averageScore) : null,
             medianScore: hasData ? round2(medianScore) : null,
-            p10Score: hasData ? round2(p10Score) : null,
-            p90Score: hasData ? round2(p90Score) : null,
+            q1Score: hasEnoughData ? round2(q1Score) : null,
+            q3Score: hasEnoughData ? round2(q3Score) : null,
+            iqr: hasEnoughData ? round2(iqr) : null,
+            p10Score: hasEnoughData ? round2(p10Score) : null,
+            p90Score: hasEnoughData ? round2(p90Score) : null,
+            percentileSampleSize: hasData ? allScores.length : 0,
             scoreSampleSize: hasData ? allScores.length : 0,
             scoreStdDev: hasData ? round2(scoreStdDev) : null,
+            isUniformScoring,
+            scoreDistribution: hasData ? scoreDistribution : null,
             qualityScore: hasData ? round2(avgReviewQuality) : null,
             hasLowQualityReview
         });
@@ -784,6 +826,7 @@ export const getClassReviewAnalytics = async (currentUser, classId) => {
 
     return {
         metricsVersion: "v1",
+        generatedAt: new Date().toISOString(),
         scoring: {
             weights: { rubric: 0.4, feedback: 0.3, variance: 0.3 }
         },

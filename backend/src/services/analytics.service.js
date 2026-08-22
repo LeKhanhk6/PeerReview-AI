@@ -473,12 +473,15 @@ export const getAssignmentReviewAnalytics = async (currentUser, assignmentId) =>
             }
             
             let feedbackScore = 0;
-            if (row.overall_comment) {
-                feedbackScore = Math.min(1, row.overall_comment.length / 100);
+            if (row.overall_comment && row.overall_comment.length >= 20) {
+                feedbackScore = Math.min(1, Math.max(0, (row.overall_comment.length - 20) / 80));
             }
             
             const std = parseFloat(row.score_stddev) || 0;
-            const varianceScore = std / 50;
+            const MAX_SCORE = 100;
+            const MIN_SCORE = 0;
+            const maxStd = (MAX_SCORE - MIN_SCORE) / 2;
+            const varianceScore = maxStd > 0 ? Math.min(1, std / maxStd) : 0;
             
             const quality = (0.4 * rubricScore) + (0.3 * feedbackScore) + (0.3 * varianceScore);
             reviewer.qualities.push(quality);
@@ -486,7 +489,7 @@ export const getAssignmentReviewAnalytics = async (currentUser, assignmentId) =>
     });
 
     const result = Array.from(reviewerMap.values()).map(reviewer => {
-        const completionRate = reviewer.assignedCount > 0 ? reviewer.completedCount / reviewer.assignedCount : 0;
+        const completionRate = reviewer.assignedCount > 0 ? (reviewer.completedCount / reviewer.assignedCount) * 100 : 0;
         let averageScoreGiven = 0;
         let avgReviewQuality = 0;
         
@@ -505,6 +508,16 @@ export const getAssignmentReviewAnalytics = async (currentUser, assignmentId) =>
             isLowQuality: reviewer.completedCount > 0 ? avgReviewQuality < 0.3 : false
         };
     });
+
+    const totalAssignmentScores = result.reduce((acc, r) => acc + (r.averageScoreGiven * r.completedCount), 0);
+    const totalAssignmentCompleted = result.reduce((acc, r) => acc + r.completedCount, 0);
+    const globalAverageScore = totalAssignmentCompleted > 0 ? totalAssignmentScores / totalAssignmentCompleted : 0;
+
+    result.forEach(r => {
+        r.relativeScoreBias = r.completedCount > 0 ? round2(r.averageScoreGiven - globalAverageScore) : 0;
+    });
+
+    result.sort((a, b) => a.avgReviewQuality - b.avgReviewQuality);
 
     return {
         assignmentId,
@@ -589,12 +602,15 @@ export const getClassReviewAnalytics = async (currentUser, classId) => {
             }
             
             let feedbackScore = 0;
-            if (row.overall_comment) {
-                feedbackScore = Math.min(1, row.overall_comment.length / 100);
+            if (row.overall_comment && row.overall_comment.length >= 20) {
+                feedbackScore = Math.min(1, Math.max(0, (row.overall_comment.length - 20) / 80));
             }
             
             const std = parseFloat(row.score_stddev) || 0;
-            const varianceScore = std / 50;
+            const MAX_SCORE = 100;
+            const MIN_SCORE = 0;
+            const maxStd = (MAX_SCORE - MIN_SCORE) / 2;
+            const varianceScore = maxStd > 0 ? Math.min(1, std / maxStd) : 0;
             
             const quality = (0.4 * rubricScore) + (0.3 * feedbackScore) + (0.3 * varianceScore);
             reviewer.qualities.push(quality);
@@ -615,20 +631,21 @@ export const getClassReviewAnalytics = async (currentUser, classId) => {
             totalCompleted += reviewer.completedCount;
             
             if (reviewer.completedCount > 0) {
-                const avgScore = reviewer.scoresGiven.reduce((a,b)=>a+b, 0) / reviewer.completedCount;
-                const avgQuality = reviewer.qualities.reduce((a,b)=>a+b, 0) / reviewer.completedCount;
+                const sumS = reviewer.scoresGiven.reduce((a,b)=>a+b, 0);
+                const sumQ = reviewer.qualities.reduce((a,b)=>a+b, 0);
                 
-                sumScores += avgScore;
-                sumQualities += avgQuality;
-                reviewersWithCompleted++;
+                sumScores += sumS;
+                sumQualities += sumQ;
+                reviewersWithCompleted += reviewer.completedCount;
                 
+                const avgQuality = sumQ / reviewer.completedCount;
                 if (avgQuality < 0.3) {
                     hasLowQualityReview = true;
                 }
             }
         });
         
-        const reviewCompletionRate = totalAssigned > 0 ? totalCompleted / totalAssigned : 0;
+        const reviewCompletionRate = totalAssigned > 0 ? (totalCompleted / totalAssigned) * 100 : 0;
         const averageScore = reviewersWithCompleted > 0 ? sumScores / reviewersWithCompleted : 0;
         const avgReviewQuality = reviewersWithCompleted > 0 ? sumQualities / reviewersWithCompleted : 0;
         

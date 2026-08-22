@@ -451,54 +451,78 @@ Improvement
 # 10. PHASE 9 — Contribution Analytics
 
 ## TASK 10.1 — Collect Contribution Data
-```
-ActivityLog
-Editing History
-Task Assignment
-Task Completion
-Discussion
-Interaction
-```
+`activity_logs` (event-driven unified table)
+
+Includes:
+- SUBMISSION_CREATED / RESUBMITTED / LATE
+- REVIEW_SUBMITTED
+- TASK_COMPLETED
+- DISCUSSION_CREATED
+- FILE_UPLOADED
+...
+
+Each event includes:
+- target_id (anti-spam)
+- metadata (context)
+- created_at (time dimension)
+
 ## TASK 10.2 — Contribution Calculation
-```
-Activity Data
-      ↓
-Contribution Engine
-      ↓
+`activity_logs`
+   ↓
+`getGroupActivityStats(groupId, timeframe)`
+   ↓
+Aggregation:
+  - COUNT(*) → total actions
+  - COUNT(DISTINCT target_id) → unique actions
+   ↓
+Normalization:
+  - Normalize by timeframe (per day/week)
+  - Optional: normalize by group size
+  - Scale to 0–100
+   ↓
+Apply weights:
+  - submission: 5
+  - review: 4
+  - task: 3
+  - discussion: 1
+   ↓
 Contribution Score
-```
+
+### Anti-spam logic
+- Use DISTINCT target_id
+- Apply cap per activity type (e.g. max 5 discussions/day)
+- Ignore rapid repeated spam actions
+
 ## TASK 10.3 — Contribution Classification
-```
-High Contributor
-Normal Contributor
-Low Contributor
-Potential Free-rider
-```
+Based on Contribution Score:
+
+- High Contributor (> 80)
+- Normal Contributor (50–80)
+- Low Contributor (20–50)
+- Potential Free-rider (< 20)
+
+*(Threshold-based classification)*
+
 ## TASK 10.4 — Teacher Analytics
+Teacher can view:
 
-Teacher xem:
-
-- Contribution Score.
-- Activity count.
-- Editing history.
-- Task completion.
-- Member comparison.
-- Potential Free-rider.
+- Contribution Score per member
+- Activity breakdown (by type)
+- Unique vs total actions
+- Activity timeline
+- Member comparison (ranking)
+- Potential Free-rider detection
 
 ### MVP
-Sử dụng:
-```
 Rule-based / Weighted Algorithm ONLY
-```
-### Post-MVP
 
-Có thể nghiên cứu:
-```
+### Post-MVP
 Rule-based + AI (quality adjustment ONLY)
-SNA (Social Network Analysis)
-GNN (Graph Neural Networks)
-Advanced Behavioral Modeling
-```
+
+Future:
+- SNA
+- GNN
+- Behavioral Modeling
 # 11. PHASE 10 — Review Synthesis
 
 ## TASK 11.1 — Collect Reviews

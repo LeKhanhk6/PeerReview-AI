@@ -10,6 +10,7 @@ import workspaceRoutes from './routes/workspace.routes.js';
 import submissionRoutes from './routes/submissions.routes.js';
 import reviewAssignmentRoutes from './routes/review-assignments.routes.js';
 import reviewRoutes from './routes/reviews.routes.js';
+import contributionRoutes from './routes/contribution.routes.js';
 dotenv.config();
 
 const app = express();
@@ -31,6 +32,7 @@ app.use('/api', workspaceRoutes);
 app.use('/api/submissions', submissionRoutes);
 app.use('/api', reviewAssignmentRoutes);
 app.use('/api', reviewRoutes);
+app.use('/api/groups', contributionRoutes);
 
 // API Test cơ bản
 app.get('/api/health', (req, res) => {

@@ -459,6 +459,7 @@ Includes:
 - TASK_COMPLETED
 - DISCUSSION_CREATED
 - FILE_UPLOADED
+- CONTENT_EDITED (với metadata: { wordCount })
 ...
 
 Each event includes:
@@ -507,11 +508,12 @@ Based on Contribution Score:
 Teacher can view:
 
 - Contribution Score per member
-- Activity breakdown (by type)
+- Contribution Percent (%)
+- Activity breakdown (by type, includes weight and effective score)
 - Unique vs total actions
 - Activity timeline
 - Member comparison (ranking)
-- Potential Free-rider detection
+- Potential Free-rider detection (with automated Alerts)
 
 ### MVP
 Rule-based / Weighted Algorithm ONLY
@@ -525,14 +527,19 @@ Future:
 - Behavioral Modeling
 # 11. PHASE 10 — Review Synthesis
 
-## TASK 11.1 — Collect Reviews
+## TASK 11.1 — AI Synthesis (For Teacher)
+Input: All reviews of an assignment.
+Output (MVP):
+```json
+{
+  "strengths": [],
+  "weaknesses": [],
+  "suggestions": []
+}
 ```
-Review 1
-Review 2
-...
-Review N
-```
-## TASK 11.2 — Topic / Clustering
+*(Provides a high-level summary of all peer reviews to solve the teacher's pain point of manual reading)*
+
+## TASK 11.2 — Topic / Clustering (Post-MVP)
 ```
 Reviews
    ↓

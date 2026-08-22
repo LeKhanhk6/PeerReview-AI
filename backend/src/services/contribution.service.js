@@ -1,3 +1,4 @@
+import pool from '../config/db.js';
 import { getGroupActivityStats } from './activity.service.js';
 import { CONTRIBUTION_WEIGHTS, CONTRIBUTION_CAPS, CONTRIBUTION_THRESHOLDS } from '../utils/constants.js';
 
@@ -8,11 +9,30 @@ import { CONTRIBUTION_WEIGHTS, CONTRIBUTION_CAPS, CONTRIBUTION_THRESHOLDS } from
  * @returns {Promise<Array>} List of member contribution reports.
  */
 export const calculateGroupContributions = async (groupId, timeframe) => {
-    // 1. Fetch raw stats
-    const stats = await getGroupActivityStats(groupId, timeframe);
+    // 1. Fetch raw stats and all members
+    const [stats, membersRes] = await Promise.all([
+        getGroupActivityStats(groupId, timeframe),
+        pool.query('SELECT user_id FROM group_members WHERE group_id = $1', [groupId])
+    ]);
+
+    // Calculate days in timeframe for caps
+    let days = 30; // Default
+    if (timeframe && timeframe.from && timeframe.to) {
+        const ms = new Date(timeframe.to).getTime() - new Date(timeframe.from).getTime();
+        if (ms > 0) days = Math.max(1, Math.ceil(ms / (1000 * 60 * 60 * 24)));
+    }
 
     // 2. Aggregate raw scores per user
     const userScores = new Map();
+    
+    // Pre-fill with all members to avoid missing free-riders
+    for (const row of membersRes.rows) {
+        userScores.set(row.user_id, {
+            userId: row.user_id,
+            rawScore: 0,
+            breakdown: {}
+        });
+    }
     
     for (const stat of stats) {
         const userId = stat.user_id;
@@ -30,10 +50,11 @@ export const calculateGroupContributions = async (groupId, timeframe) => {
         const userData = userScores.get(userId);
         
         const weight = CONTRIBUTION_WEIGHTS[actionType] || 0;
-        const cap = CONTRIBUTION_CAPS[actionType] || Infinity;
+        const capPerDay = CONTRIBUTION_CAPS[actionType] || Infinity;
+        const totalCap = capPerDay === Infinity ? Infinity : capPerDay * days;
         
-        // Anti-spam: Apply cap per activity type
-        const effectiveActions = Math.min(uniqueActions, cap);
+        // Anti-spam: Apply cap per activity type based on timeframe
+        const effectiveActions = Math.min(uniqueActions, totalCap);
         const scoreEarned = effectiveActions * weight;
         
         userData.rawScore += scoreEarned;
@@ -41,6 +62,7 @@ export const calculateGroupContributions = async (groupId, timeframe) => {
             totalActions: parseInt(stat.total, 10),
             uniqueActions,
             effectiveActions,
+            weight,
             scoreEarned
         };
     }
@@ -49,17 +71,29 @@ export const calculateGroupContributions = async (groupId, timeframe) => {
     const members = Array.from(userScores.values());
     
     let maxRawScore = 0;
+    let totalGroupRawScore = 0;
     for (const member of members) {
         if (member.rawScore > maxRawScore) {
             maxRawScore = member.rawScore;
         }
+        totalGroupRawScore += member.rawScore;
     }
+
+    // Relative scaling bug fix: if maxRawScore is too low (e.g., group just started),
+    // don't inflate someone with 5 points to 100 points (HIGH_CONTRIBUTOR).
+    const MIN_RAW_SCORE_FOR_SCALE = 20; 
+    const scaleDenominator = Math.max(maxRawScore, MIN_RAW_SCORE_FOR_SCALE);
 
     // 4. Scoring & Classification
     const result = members.map(member => {
         let finalScore = 0;
-        if (maxRawScore > 0) {
-            finalScore = Math.round((member.rawScore / maxRawScore) * 100);
+        if (member.rawScore > 0) {
+            finalScore = Math.round((member.rawScore / scaleDenominator) * 100);
+        }
+        
+        let contributionPercent = 0;
+        if (totalGroupRawScore > 0) {
+            contributionPercent = Math.round((member.rawScore / totalGroupRawScore) * 100);
         }
 
         let classification = 'FREE_RIDER';
@@ -71,11 +105,18 @@ export const calculateGroupContributions = async (groupId, timeframe) => {
             classification = 'LOW_CONTRIBUTOR';
         }
 
+        const alerts = [];
+        if (classification === 'FREE_RIDER') {
+            alerts.push('Potential free-rider detected based on extremely low activity score.');
+        }
+
         return {
             userId: member.userId,
             rawScore: member.rawScore,
             finalScore,
+            contributionPercent,
             classification,
+            alerts,
             breakdown: member.breakdown
         };
     });

@@ -25,6 +25,7 @@ Nếu nhận xét tốt, hãy khích lệ. Nếu nhận xét tiêu cực, cộc 
 Nhận xét của sinh viên: "${text}"
 
 YÊU CẦU BẮT BUỘC: Chỉ trả về duy nhất 1 chuỗi JSON hợp lệ, KHÔNG CÓ BẤT KỲ VĂN BẢN NÀO KHÁC BÊN NGOÀI JSON (không markdown, không code block).
+Nếu không tuân thủ đúng format JSON, kết quả sẽ bị loại bỏ.
 Cấu trúc JSON yêu cầu:
 {
   "status": "GOOD" | "NEEDS_IMPROVEMENT" | "TOXIC",
@@ -47,7 +48,8 @@ const callProvider = async (prompt) => {
     }
 
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 5000); // Timeout 5s
+    const timeoutMs = parseInt(process.env.AI_TIMEOUT) || 5000;
+    const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
 
     try {
         const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`;
@@ -68,28 +70,31 @@ const callProvider = async (prompt) => {
             signal: controller.signal
         });
 
-        clearTimeout(timeoutId);
-
         if (!response.ok) {
-            console.error(`AI Service Error - Provider responded with status: ${response.status}`);
+            console.error("AI Service Error", {
+                message: `Provider responded with status: ${response.status}`,
+                stage: "callProvider"
+            });
             return null;
         }
 
         const data = await response.json();
         
-        if (data.candidates && data.candidates.length > 0) {
-            return data.candidates[0].content.parts[0].text;
+        const text = data?.candidates?.[0]?.content?.parts?.[0]?.text;
+        if (!text || typeof text !== 'string') {
+            return null;
         }
         
-        return null;
+        return text;
     } catch (error) {
-        clearTimeout(timeoutId);
         if (error.name === 'AbortError') {
-            console.error("AI Service Error - Timeout after 5s");
+            console.error("AI Service Error", { message: `Timeout after ${timeoutMs}ms`, stage: "callProvider" });
         } else {
-            console.error("AI Service Error - Failed to call provider");
+            console.error("AI Service Error", { message: error.message, stage: "callProvider" });
         }
         return null;
+    } finally {
+        clearTimeout(timeoutId);
     }
 };
 

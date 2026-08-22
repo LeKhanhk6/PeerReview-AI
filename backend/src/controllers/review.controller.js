@@ -178,36 +178,28 @@ export const analyzeReviewText = async (req, res, next) => {
         }
         
         const trimmedComment = comment.trim();
-        if (trimmedComment.length < 10) {
+        const sanitized = trimmedComment.replace(/<[^>]*>?/gm, '');
+        
+        if (sanitized.length < 10) {
             const error = new Error('Comment must be at least 10 characters long');
             error.statusCode = 400;
             return next(error);
         }
         
-        if (trimmedComment.length > 2000) {
+        if (sanitized.length > 2000) {
             const error = new Error('Comment must not exceed 2000 characters');
             error.statusCode = 400;
             return next(error);
         }
 
         // Call AI Service
-        const result = await aiService.analyzeComment(trimmedComment);
+        const result = await aiService.analyzeComment(sanitized);
         
         return res.status(200).json({
             data: result
         });
     } catch (error) {
-        // Safe logging without exposing raw error to client
-        console.error("ReviewController - analyzeReviewText error:", error.message);
-        
-        // Return fallback directly to not break the UI
-        return res.status(200).json({
-            data: {
-                status: "UNKNOWN",
-                suggestion: "Không thể phân tích lúc này. Hãy tiếp tục đánh giá.",
-                reason: "Hệ thống AI đang bận hoặc gặp sự cố.",
-                improvement: ""
-            }
-        });
+        // Delegate unknown errors to central error middleware
+        next(error);
     }
 };

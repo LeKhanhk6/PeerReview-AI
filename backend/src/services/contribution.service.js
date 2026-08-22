@@ -106,8 +106,9 @@ export const calculateGroupContributions = async (groupId, timeframe) => {
         const activityTypesCount = Object.keys(member.breakdown).length;
 
         let classification = 'FREE_RIDER';
-        if (finalScore >= CONTRIBUTION_THRESHOLDS.HIGH && activityTypesCount >= 2) {
-            classification = 'HIGH_CONTRIBUTOR';
+        if (finalScore >= CONTRIBUTION_THRESHOLDS.HIGH) {
+            // Enforce diversity check: prevent spamming 1 activity type to get HIGH
+            classification = activityTypesCount >= 2 ? 'HIGH_CONTRIBUTOR' : 'NORMAL_CONTRIBUTOR';
         } else if (finalScore >= CONTRIBUTION_THRESHOLDS.NORMAL) {
             classification = 'NORMAL_CONTRIBUTOR';
         } else if (finalScore >= CONTRIBUTION_THRESHOLDS.LOW) {

@@ -5,6 +5,22 @@ const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
 
 import crypto from 'crypto';
 
+// Concurrency limit helper
+const pLimit = async (funcs, limit) => {
+    const results = [];
+    const executing = [];
+    for (const f of funcs) {
+        const p = Promise.resolve().then(() => f());
+        results.push(p);
+        const e = p.then(() => executing.splice(executing.indexOf(e), 1));
+        executing.push(e);
+        if (executing.length >= limit) {
+            await Promise.race(executing);
+        }
+    }
+    return Promise.all(results);
+};
+
 // Cấu trúc mặc định an toàn khi có lỗi
 const FALLBACK_RESPONSE = Object.freeze({
     status: "UNKNOWN",
@@ -45,62 +61,69 @@ Cấu trúc JSON yêu cầu:
  * @param {number} customTimeout - (Optional) Custom timeout in ms
  * @returns {Promise<string|null>} - Raw text trả về từ AI hoặc null nếu lỗi
  */
-const callProvider = async (prompt, requestId, customTimeout = null) => {
+const callProvider = async (prompt, requestId, customTimeout = null, retries = 1) => {
     if (!GEMINI_API_KEY) {
         console.error("AI Service Error", { requestId, message: "Missing GEMINI_API_KEY", stage: "callProvider" });
         return null;
     }
 
-    const controller = new AbortController();
     const timeoutMs = customTimeout || parseInt(process.env.AI_TIMEOUT) || 5000;
-    const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+    
+    for (let attempt = 0; attempt <= retries; attempt++) {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
 
-    try {
-        const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`;
-        
-        const response = await fetch(url, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                contents: [{
-                    parts: [{ text: prompt }]
-                }],
-                generationConfig: {
-                    responseMimeType: "application/json",
-                }
-            }),
-            signal: controller.signal
-        });
-
-        if (!response.ok) {
-            console.error("AI Service Error", {
-                requestId,
-                message: `Provider responded with status: ${response.status}`,
-                stage: "callProvider"
+        try {
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`;
+            
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    contents: [{
+                        parts: [{ text: prompt }]
+                    }],
+                    generationConfig: {
+                        responseMimeType: "application/json",
+                    }
+                }),
+                signal: controller.signal
             });
-            return null;
-        }
 
-        const data = await response.json();
-        
-        const text = data?.candidates?.[0]?.content?.parts?.[0]?.text;
-        if (!text || typeof text !== 'string') {
+            if (!response.ok) {
+                console.error("AI Service Error", {
+                    requestId,
+                    message: `Provider responded with status: ${response.status}`,
+                    stage: "callProvider"
+                });
+                if (attempt < retries) continue;
+                return null;
+            }
+
+            const data = await response.json();
+            
+            const text = data?.candidates?.[0]?.content?.parts?.[0]?.text;
+            if (!text || typeof text !== 'string') {
+                if (attempt < retries) continue;
+                return null;
+            }
+            
+            return text;
+        } catch (error) {
+            if (error.name === 'AbortError') {
+                console.error("AI Service Error", { requestId, message: `Timeout after ${timeoutMs}ms (attempt ${attempt + 1})`, stage: "callProvider" });
+            } else {
+                console.error("AI Service Error", { requestId, message: error.message, stage: "callProvider" });
+            }
+            if (attempt < retries) continue;
             return null;
+        } finally {
+            clearTimeout(timeoutId);
         }
-        
-        return text;
-    } catch (error) {
-        if (error.name === 'AbortError') {
-            console.error("AI Service Error", { requestId, message: `Timeout after ${timeoutMs}ms`, stage: "callProvider" });
-        } else {
-            console.error("AI Service Error", { requestId, message: error.message, stage: "callProvider" });
-        }
-        return null;
-    } finally {
-        clearTimeout(timeoutId);
     }
+    return null;
 };
 
 /**
@@ -166,15 +189,18 @@ const CACHE_TTL = 1000 * 60 * 60; // 1 hour
  */
 export const synthesizeReviews = async (assignmentId, timeframeKey, reviews, totalReviews, reviewsUsed, requestId) => {
     try {
-        const cacheKey = `${assignmentId}_${timeframeKey}_${reviewsUsed}`;
+        const hashStr = crypto.createHash('md5').update(reviews.join('')).digest('hex');
+        const cacheKey = `${assignmentId}_${timeframeKey}_${hashStr}`;
         const cached = synthesisCache.get(cacheKey);
         if (cached && (Date.now() - cached.timestamp < CACHE_TTL)) {
             console.log({ requestId, cacheKey, message: "cache hit" });
             return cached.data;
         }
 
+        // Cache eviction: remove oldest if exceeding limit
         if (synthesisCache.size > 1000) {
-            synthesisCache.clear();
+            const firstKey = synthesisCache.keys().next().value;
+            synthesisCache.delete(firstKey);
         }
 
         if (!reviews || reviews.length === 0) return null;
@@ -186,8 +212,8 @@ export const synthesizeReviews = async (assignmentId, timeframeKey, reviews, tot
             chunks.push(reviews.slice(i, i + chunkSize));
         }
         
-        // Parallel chunk synthesis
-        const chunkPromises = chunks.map(async (chunk) => {
+        // Parallel chunk synthesis with concurrency limit
+        const chunkFuncs = chunks.map(chunk => async () => {
             const prompt = `
 Dưới đây là một phần các nhận xét (reviews) của sinh viên về một bài tập. Hãy tóm tắt ngắn gọn các ý chính.
 Do not repeat ideas. Merge similar points. Sort by importance (most common first).
@@ -209,7 +235,7 @@ ${JSON.stringify(chunk)}
             return null;
         });
 
-        let chunkSummaries = (await Promise.all(chunkPromises)).filter(s => s);
+        let chunkSummaries = (await pLimit(chunkFuncs, 3)).filter(s => s);
         chunkSummaries = [...new Set(chunkSummaries)]; // Deduplicate summaries
         
         if (chunkSummaries.length === 0) throw new Error("Tất cả chunk đều thất bại.");

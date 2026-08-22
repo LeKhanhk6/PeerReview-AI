@@ -488,16 +488,15 @@ Teacher xem:
 ### MVP
 Sử dụng:
 ```
-Rule-based / Weighted Algorithm
-+
-AI Analysis
+Rule-based / Weighted Algorithm ONLY
 ```
 ### Post-MVP
 
 Có thể nghiên cứu:
 ```
-SNA
-GNN
+Rule-based + AI (quality adjustment ONLY)
+SNA (Social Network Analysis)
+GNN (Graph Neural Networks)
 Advanced Behavioral Modeling
 ```
 # 11. PHASE 10 — Review Synthesis

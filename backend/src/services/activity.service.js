@@ -1,21 +1,55 @@
 import pool from '../config/db.js';
+import crypto from 'crypto';
+import { ACTIVITY_TYPES } from '../utils/constants.js';
 
-const sanitizeMetadata = (metadata) => {
-    if (!metadata) return null;
+const METADATA_SCHEMA = {
+    [ACTIVITY_TYPES.SUBMISSION_CREATED]: ['assignmentId', 'isLate', 'version'],
+    [ACTIVITY_TYPES.SUBMISSION_RESUBMITTED]: ['assignmentId', 'isLate', 'version'],
+    [ACTIVITY_TYPES.SUBMISSION_LATE]: ['assignmentId', 'isLate', 'version'],
+    [ACTIVITY_TYPES.REVIEW_SUBMITTED]: ['scoreGiven', 'totalCriteria']
+};
+
+const sanitizeMetadata = (actionType, metadata) => {
+    if (!metadata || typeof metadata !== 'object') return null;
     try {
-        const str = JSON.stringify(metadata);
-        if (str.length > 1000) return {};
-        return metadata;
+        const allowedKeys = METADATA_SCHEMA[actionType];
+        let filteredMetadata = metadata;
+        
+        // Filter keys if schema exists
+        if (allowedKeys) {
+            filteredMetadata = {};
+            for (const key of allowedKeys) {
+                if (metadata[key] !== undefined) {
+                    filteredMetadata[key] = metadata[key];
+                }
+            }
+        }
+
+        const str = JSON.stringify(filteredMetadata);
+        if (str.length > 1000) {
+            // Safe truncation for MVP: just clear if it still exceeds 1KB after filtering
+            return {};
+        }
+        return filteredMetadata;
     } catch (e) {
         return {};
     }
 };
 
 export const logActivity = async ({ groupId, userId, actionType, targetId, metadata, contentSummary }) => {
+    const requestId = crypto.randomUUID();
     try {
         const upperActionType = actionType ? actionType.toUpperCase() : 'UNKNOWN';
-        const safeTargetId = targetId ? String(targetId).slice(0, 100) : null;
-        const safeMetadata = sanitizeMetadata(metadata);
+        if (!Object.values(ACTIVITY_TYPES).includes(upperActionType)) {
+            console.warn(`[ActivityLog] Unknown actionType: ${upperActionType}`, { requestId });
+        }
+
+        let safeTargetId = targetId ? String(targetId).slice(0, 100) : null;
+        if (safeTargetId && !safeTargetId.startsWith(upperActionType)) {
+            safeTargetId = `${upperActionType}_${safeTargetId}`.slice(0, 100);
+        }
+
+        const safeMetadata = sanitizeMetadata(upperActionType, metadata);
         const summary = contentSummary ? String(contentSummary).substring(0, 255) : '';
         
         const result = await pool.query(`
@@ -26,6 +60,7 @@ export const logActivity = async ({ groupId, userId, actionType, targetId, metad
         return result.rows[0];
     } catch (error) {
         console.error('Activity log failed', {
+            requestId,
             groupId,
             userId,
             actionType,
@@ -40,6 +75,12 @@ export const logActivity = async ({ groupId, userId, actionType, targetId, metad
 export const getGroupActivityStats = async (groupId, options = {}) => {
     try {
         const { from, to } = options;
+        
+        if (!from && !to) {
+            const error = new Error("Timeframe is required");
+            error.statusCode = 400;
+            throw error;
+        }
         
         let query = `
             SELECT user_id, action_type, COUNT(*) as total, COUNT(DISTINCT target_id) as unique_actions
@@ -58,7 +99,7 @@ export const getGroupActivityStats = async (groupId, options = {}) => {
             params.push(to);
         }
 
-        query += ` GROUP BY user_id, action_type`;
+        query += ` GROUP BY user_id, action_type ORDER BY user_id, action_type LIMIT 10000`;
 
         const result = await pool.query(query, params);
         return result.rows;

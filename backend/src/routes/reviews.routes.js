@@ -15,4 +15,7 @@ router.get('/my-reviews/:reviewAssignmentId', authorize('STUDENT'), reviewContro
 // Student: Submit a peer review
 router.post('/my-reviews/:reviewAssignmentId/submit', authorize('STUDENT'), reviewController.submitReviewAssignment);
 
+// Student: Analyze review comment with AI
+router.post('/analyze', authorize('STUDENT'), reviewController.analyzeReviewText);
+
 export default router;

@@ -1,4 +1,5 @@
 import * as reviewService from '../services/review.service.js';
+import * as aiService from '../services/ai.service.js';
 import { isValidUUID } from '../utils/validation.util.js';
 
 export const getMyReviewAssignments = async (req, res, next) => {
@@ -162,5 +163,51 @@ export const submitReviewAssignment = async (req, res, next) => {
         next(error);
     } finally {
         console.timeEnd(`submit_review:${reviewAssignmentId}:user:${userId}`);
+    }
+};
+
+export const analyzeReviewText = async (req, res, next) => {
+    try {
+        const { comment } = req.body;
+        
+        // Input validation
+        if (!comment || typeof comment !== 'string') {
+            const error = new Error('Comment is required and must be a string');
+            error.statusCode = 400;
+            return next(error);
+        }
+        
+        const trimmedComment = comment.trim();
+        if (trimmedComment.length < 10) {
+            const error = new Error('Comment must be at least 10 characters long');
+            error.statusCode = 400;
+            return next(error);
+        }
+        
+        if (trimmedComment.length > 2000) {
+            const error = new Error('Comment must not exceed 2000 characters');
+            error.statusCode = 400;
+            return next(error);
+        }
+
+        // Call AI Service
+        const result = await aiService.analyzeComment(trimmedComment);
+        
+        return res.status(200).json({
+            data: result
+        });
+    } catch (error) {
+        // Safe logging without exposing raw error to client
+        console.error("ReviewController - analyzeReviewText error:", error.message);
+        
+        // Return fallback directly to not break the UI
+        return res.status(200).json({
+            data: {
+                status: "UNKNOWN",
+                suggestion: "Không thể phân tích lúc này. Hãy tiếp tục đánh giá.",
+                reason: "Hệ thống AI đang bận hoặc gặp sự cố.",
+                improvement: ""
+            }
+        });
     }
 };

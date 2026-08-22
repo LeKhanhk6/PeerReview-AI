@@ -453,7 +453,10 @@ export const getAssignmentReviewAnalytics = async (currentUser, assignmentId) =>
                 assignedCount: 0,
                 completedCount: 0,
                 scoresGiven: [],
-                qualities: []
+                qualities: [],
+                rubricScores: [],
+                feedbackScores: [],
+                varianceScores: []
             });
         }
         
@@ -474,8 +477,9 @@ export const getAssignmentReviewAnalytics = async (currentUser, assignmentId) =>
             
             let feedbackScore = 0;
             if (row.overall_comment) {
-                const uniqueChars = new Set(row.overall_comment).size;
-                if (row.overall_comment.length >= 20 && uniqueChars >= 5) {
+                const words = row.overall_comment.trim().split(/\s+/);
+                const uniqueWords = new Set(words);
+                if (row.overall_comment.length >= 20 && words.length >= 3 && uniqueWords.size >= 3) {
                     feedbackScore = Math.min(1, Math.max(0, (row.overall_comment.length - 20) / 80));
                 }
             }
@@ -485,7 +489,7 @@ export const getAssignmentReviewAnalytics = async (currentUser, assignmentId) =>
             const MIN_SCORE = 0;
             const maxStd = (MAX_SCORE - MIN_SCORE) / 2;
             let varianceScore = 0;
-            if (totalCriteria <= 1) {
+            if (totalCriteria < 3) {
                 varianceScore = 0.5; // neutral
             } else if (maxStd > 0) {
                 varianceScore = Math.min(1, std / maxStd);
@@ -493,6 +497,9 @@ export const getAssignmentReviewAnalytics = async (currentUser, assignmentId) =>
             
             const quality = (0.4 * rubricScore) + (0.3 * feedbackScore) + (0.3 * varianceScore);
             reviewer.qualities.push(quality);
+            reviewer.rubricScores.push(rubricScore);
+            reviewer.feedbackScores.push(feedbackScore);
+            reviewer.varianceScores.push(varianceScore);
         }
     });
 
@@ -500,21 +507,30 @@ export const getAssignmentReviewAnalytics = async (currentUser, assignmentId) =>
         const completionRate = reviewer.assignedCount > 0 ? (reviewer.completedCount / reviewer.assignedCount) * 100 : 0;
         let averageScoreGiven = 0;
         let avgReviewQuality = 0;
-        const confidence = Math.min(1, reviewer.completedCount / 5);
+        let avgRubric = 0, avgFeedback = 0, avgVariance = 0;
+        const confidence = 1 - Math.exp(-reviewer.completedCount / 5);
         
         if (reviewer.completedCount > 0) {
             averageScoreGiven = reviewer.scoresGiven.reduce((a,b) => a+b, 0) / reviewer.completedCount;
             avgReviewQuality = reviewer.qualities.reduce((a,b) => a+b, 0) / reviewer.completedCount;
+            avgRubric = reviewer.rubricScores.reduce((a,b) => a+b, 0) / reviewer.completedCount;
+            avgFeedback = reviewer.feedbackScores.reduce((a,b) => a+b, 0) / reviewer.completedCount;
+            avgVariance = reviewer.varianceScores.reduce((a,b) => a+b, 0) / reviewer.completedCount;
         }
         
         return {
             groupId: reviewer.groupId,
             assignedCount: reviewer.assignedCount,
             completedCount: reviewer.completedCount,
-            completionRate: round2(completionRate),
+            completionRatePercent: round2(completionRate),
             averageScoreGiven: round2(averageScoreGiven),
-            avgReviewQuality: round2(avgReviewQuality),
-            confidence: round2(confidence),
+            qualityScore: round2(avgReviewQuality),
+            confidenceScore: round2(confidence),
+            breakdown: {
+                rubric: round2(avgRubric),
+                feedback: round2(avgFeedback),
+                variance: round2(avgVariance)
+            },
             isLowQuality: reviewer.completedCount > 0 ? avgReviewQuality < 0.3 : false
         };
     });
@@ -525,8 +541,9 @@ export const getAssignmentReviewAnalytics = async (currentUser, assignmentId) =>
 
     result.forEach(r => {
         const biasRaw = r.averageScoreGiven - globalAverageScore;
-        r.relativeScoreBias = r.completedCount > 0 ? round2(biasRaw) : 0;
-        const biasScore = r.completedCount > 0 ? biasRaw / (100 - 0) : 0; // Assuming MAX=100 MIN=0
+        const scoreRange = 100; // Assuming MAX=100 MIN=0
+        const biasScore = r.completedCount > 0 && scoreRange > 0 ? biasRaw / scoreRange : 0;
+        r.biasScoreNormalized = round2(biasScore);
         r.isLenient = biasScore > 0.2;
         r.isHarsh = biasScore < -0.2;
     });
@@ -535,7 +552,7 @@ export const getAssignmentReviewAnalytics = async (currentUser, assignmentId) =>
         if (a.isLowQuality !== b.isLowQuality) {
             return a.isLowQuality ? -1 : 1;
         }
-        return a.avgReviewQuality - b.avgReviewQuality;
+        return a.qualityScore - b.qualityScore;
     });
 
     return {
@@ -622,8 +639,9 @@ export const getClassReviewAnalytics = async (currentUser, classId) => {
             
             let feedbackScore = 0;
             if (row.overall_comment) {
-                const uniqueChars = new Set(row.overall_comment).size;
-                if (row.overall_comment.length >= 20 && uniqueChars >= 5) {
+                const words = row.overall_comment.trim().split(/\s+/);
+                const uniqueWords = new Set(words);
+                if (row.overall_comment.length >= 20 && words.length >= 3 && uniqueWords.size >= 3) {
                     feedbackScore = Math.min(1, Math.max(0, (row.overall_comment.length - 20) / 80));
                 }
             }
@@ -633,7 +651,7 @@ export const getClassReviewAnalytics = async (currentUser, classId) => {
             const MIN_SCORE = 0;
             const maxStd = (MAX_SCORE - MIN_SCORE) / 2;
             let varianceScore = 0;
-            if (totalCriteria <= 1) {
+            if (totalCriteria < 3) {
                 varianceScore = 0.5; // neutral
             } else if (maxStd > 0) {
                 varianceScore = Math.min(1, std / maxStd);
@@ -678,9 +696,9 @@ export const getClassReviewAnalytics = async (currentUser, classId) => {
         
         result.push({
             assignmentId,
-            reviewCompletionRate: round2(reviewCompletionRate),
+            reviewCompletionRatePercent: round2(reviewCompletionRate),
             averageScore: round2(averageScore),
-            avgReviewQuality: round2(avgReviewQuality),
+            qualityScore: round2(avgReviewQuality),
             hasLowQualityReview
         });
     });

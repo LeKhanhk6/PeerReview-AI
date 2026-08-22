@@ -15,4 +15,10 @@ router.get('/groups/:groupId/contribution', analyticsController.getGroupContribu
 // Class Contributions Overview (list of groups)
 router.get('/classes/:classId/contributions', analyticsController.getClassContributions);
 
+// Assignment Review Analytics (Core API)
+router.get('/assignments/:assignmentId/reviews', analyticsController.getAssignmentReviewAnalytics);
+
+// Class Review Analytics (Aggregation API)
+router.get('/classes/:classId/reviews', analyticsController.getClassReviewAnalytics);
+
 export default router;

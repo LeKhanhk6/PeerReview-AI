@@ -405,3 +405,241 @@ export const getClassContributions = async (currentUser, classId) => {
 
     return result;
 };
+
+export const getAssignmentReviewAnalytics = async (currentUser, assignmentId) => {
+    const isAdmin = currentUser.role === 'ADMIN';
+
+    const assignmentRes = await pool.query(`
+        SELECT c.teacher_id 
+        FROM assignments a
+        JOIN classes c ON a.class_id = c.id
+        WHERE a.id = $1
+    `, [assignmentId]);
+
+    if (assignmentRes.rowCount === 0) {
+        throw new AppError('Assignment not found', 404);
+    }
+    if (!isAdmin && assignmentRes.rows[0].teacher_id !== currentUser.userId) {
+        throw new AppError('Forbidden: You do not have access to this assignment', 403);
+    }
+
+    const criteriaRes = await pool.query(`
+        SELECT COUNT(*) as total_criteria
+        FROM rubric_criteria rc
+        JOIN rubrics r ON rc.rubric_id = r.id
+        WHERE r.assignment_id = $1
+    `, [assignmentId]);
+    const totalCriteria = parseInt(criteriaRes.rows[0].total_criteria, 10);
+
+    const reviewsRes = await pool.query(`
+        SELECT 
+            ra.reviewer_group_id,
+            ra.status,
+            r.overall_comment,
+            r.total_score,
+            (SELECT COUNT(*) FROM review_criteria rc WHERE rc.review_id = r.id) as criteria_scored,
+            (SELECT stddev_pop(rc.score) FROM review_criteria rc WHERE rc.review_id = r.id) as score_stddev
+        FROM review_assignments ra
+        JOIN submissions s ON ra.submission_id = s.id
+        LEFT JOIN reviews r ON r.review_assignment_id = ra.id
+        WHERE s.assignment_id = $1
+    `, [assignmentId]);
+
+    const reviewerMap = new Map();
+    reviewsRes.rows.forEach(row => {
+        if (!reviewerMap.has(row.reviewer_group_id)) {
+            reviewerMap.set(row.reviewer_group_id, {
+                groupId: row.reviewer_group_id,
+                assignedCount: 0,
+                completedCount: 0,
+                scoresGiven: [],
+                qualities: []
+            });
+        }
+        
+        const reviewer = reviewerMap.get(row.reviewer_group_id);
+        reviewer.assignedCount++;
+        
+        if (row.status === 'COMPLETED') {
+            reviewer.completedCount++;
+            
+            const totalScore = parseFloat(row.total_score) || 0;
+            reviewer.scoresGiven.push(totalScore);
+            
+            let rubricScore = 0;
+            if (totalCriteria > 0) {
+                const scored = parseInt(row.criteria_scored, 10) || 0;
+                rubricScore = Math.min(1, scored / totalCriteria);
+            }
+            
+            let feedbackScore = 0;
+            if (row.overall_comment) {
+                feedbackScore = Math.min(1, row.overall_comment.length / 100);
+            }
+            
+            const std = parseFloat(row.score_stddev) || 0;
+            const varianceScore = std / 50;
+            
+            const quality = (0.4 * rubricScore) + (0.3 * feedbackScore) + (0.3 * varianceScore);
+            reviewer.qualities.push(quality);
+        }
+    });
+
+    const result = Array.from(reviewerMap.values()).map(reviewer => {
+        const completionRate = reviewer.assignedCount > 0 ? reviewer.completedCount / reviewer.assignedCount : 0;
+        let averageScoreGiven = 0;
+        let avgReviewQuality = 0;
+        
+        if (reviewer.completedCount > 0) {
+            averageScoreGiven = reviewer.scoresGiven.reduce((a,b) => a+b, 0) / reviewer.completedCount;
+            avgReviewQuality = reviewer.qualities.reduce((a,b) => a+b, 0) / reviewer.completedCount;
+        }
+        
+        return {
+            groupId: reviewer.groupId,
+            assignedCount: reviewer.assignedCount,
+            completedCount: reviewer.completedCount,
+            completionRate: round2(completionRate),
+            averageScoreGiven: round2(averageScoreGiven),
+            avgReviewQuality: round2(avgReviewQuality),
+            isLowQuality: reviewer.completedCount > 0 ? avgReviewQuality < 0.3 : false
+        };
+    });
+
+    return {
+        assignmentId,
+        totalReviewers: result.length,
+        reviewers: result
+    };
+};
+
+export const getClassReviewAnalytics = async (currentUser, classId) => {
+    const isAdmin = currentUser.role === 'ADMIN';
+
+    const classRes = await pool.query(`SELECT teacher_id FROM classes WHERE id = $1`, [classId]);
+    if (classRes.rowCount === 0) {
+        throw new AppError('Class not found', 404);
+    }
+    if (!isAdmin && classRes.rows[0].teacher_id !== currentUser.userId) {
+        throw new AppError('Forbidden: You do not have access to this class', 403);
+    }
+
+    const criteriaRes = await pool.query(`
+        SELECT r.assignment_id, COUNT(rc.id) as total_criteria
+        FROM rubric_criteria rc
+        JOIN rubrics r ON rc.rubric_id = r.id
+        WHERE r.assignment_id IN (SELECT id FROM assignments WHERE class_id = $1)
+        GROUP BY r.assignment_id
+    `, [classId]);
+    
+    const criteriaMap = new Map();
+    criteriaRes.rows.forEach(row => {
+        criteriaMap.set(row.assignment_id, parseInt(row.total_criteria, 10));
+    });
+    
+    const reviewsRes = await pool.query(`
+        SELECT 
+            s.assignment_id,
+            ra.reviewer_group_id,
+            ra.status,
+            r.overall_comment,
+            r.total_score,
+            (SELECT COUNT(*) FROM review_criteria rc WHERE rc.review_id = r.id) as criteria_scored,
+            (SELECT stddev_pop(rc.score) FROM review_criteria rc WHERE rc.review_id = r.id) as score_stddev
+        FROM review_assignments ra
+        JOIN submissions s ON ra.submission_id = s.id
+        LEFT JOIN reviews r ON r.review_assignment_id = ra.id
+        WHERE s.assignment_id IN (SELECT id FROM assignments WHERE class_id = $1)
+    `, [classId]);
+    
+    const assignmentMap = new Map();
+    
+    reviewsRes.rows.forEach(row => {
+        if (!assignmentMap.has(row.assignment_id)) {
+            assignmentMap.set(row.assignment_id, {
+                assignmentId: row.assignment_id,
+                reviewers: new Map()
+            });
+        }
+        
+        const assignment = assignmentMap.get(row.assignment_id);
+        const reviewerMap = assignment.reviewers;
+        
+        if (!reviewerMap.has(row.reviewer_group_id)) {
+            reviewerMap.set(row.reviewer_group_id, {
+                assignedCount: 0,
+                completedCount: 0,
+                scoresGiven: [],
+                qualities: []
+            });
+        }
+        
+        const reviewer = reviewerMap.get(row.reviewer_group_id);
+        reviewer.assignedCount++;
+        
+        if (row.status === 'COMPLETED') {
+            reviewer.completedCount++;
+            reviewer.scoresGiven.push(parseFloat(row.total_score) || 0);
+            
+            const totalCriteria = criteriaMap.get(row.assignment_id) || 0;
+            let rubricScore = 0;
+            if (totalCriteria > 0) {
+                const scored = parseInt(row.criteria_scored, 10) || 0;
+                rubricScore = Math.min(1, scored / totalCriteria);
+            }
+            
+            let feedbackScore = 0;
+            if (row.overall_comment) {
+                feedbackScore = Math.min(1, row.overall_comment.length / 100);
+            }
+            
+            const std = parseFloat(row.score_stddev) || 0;
+            const varianceScore = std / 50;
+            
+            const quality = (0.4 * rubricScore) + (0.3 * feedbackScore) + (0.3 * varianceScore);
+            reviewer.qualities.push(quality);
+        }
+    });
+
+    const result = [];
+    assignmentMap.forEach((assignment, assignmentId) => {
+        let totalAssigned = 0;
+        let totalCompleted = 0;
+        let sumScores = 0;
+        let sumQualities = 0;
+        let reviewersWithCompleted = 0;
+        let hasLowQualityReview = false;
+        
+        assignment.reviewers.forEach(reviewer => {
+            totalAssigned += reviewer.assignedCount;
+            totalCompleted += reviewer.completedCount;
+            
+            if (reviewer.completedCount > 0) {
+                const avgScore = reviewer.scoresGiven.reduce((a,b)=>a+b, 0) / reviewer.completedCount;
+                const avgQuality = reviewer.qualities.reduce((a,b)=>a+b, 0) / reviewer.completedCount;
+                
+                sumScores += avgScore;
+                sumQualities += avgQuality;
+                reviewersWithCompleted++;
+                
+                if (avgQuality < 0.3) {
+                    hasLowQualityReview = true;
+                }
+            }
+        });
+        
+        const reviewCompletionRate = totalAssigned > 0 ? totalCompleted / totalAssigned : 0;
+        const averageScore = reviewersWithCompleted > 0 ? sumScores / reviewersWithCompleted : 0;
+        const avgReviewQuality = reviewersWithCompleted > 0 ? sumQualities / reviewersWithCompleted : 0;
+        
+        result.push({
+            assignmentId,
+            reviewCompletionRate: round2(reviewCompletionRate),
+            averageScore: round2(averageScore),
+            avgReviewQuality: round2(avgReviewQuality),
+            hasLowQualityReview
+        });
+    });
+
+    return result;
+};

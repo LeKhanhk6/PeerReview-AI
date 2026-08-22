@@ -17,3 +17,31 @@ export const getDashboardOverview = async (req, res, next) => {
         next(error);
     }
 };
+
+export const getGroupContribution = async (req, res, next) => {
+    try {
+        const { groupId } = req.params;
+        if (!isValidUUID(groupId)) {
+            throw new AppError('Invalid groupId format', 400);
+        }
+
+        const metrics = await analyticsService.getGroupContribution(req.user, groupId);
+        res.json({ data: metrics });
+    } catch (error) {
+        next(error);
+    }
+};
+
+export const getClassContributions = async (req, res, next) => {
+    try {
+        const { classId } = req.params;
+        if (!isValidUUID(classId)) {
+            throw new AppError('Invalid classId format', 400);
+        }
+
+        const metrics = await analyticsService.getClassContributions(req.user, classId);
+        res.json({ data: metrics });
+    } catch (error) {
+        next(error);
+    }
+};

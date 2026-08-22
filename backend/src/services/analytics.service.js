@@ -518,7 +518,9 @@ export const getAssignmentReviewAnalytics = async (currentUser, assignmentId) =>
         let averageScoreGiven = 0;
         let avgReviewQuality = 0;
         let avgRubric = 0, avgFeedback = 0, avgVariance = 0;
-        const confidence = 1 - Math.exp(-reviewer.completedCount / 5);
+        
+        const capped = Math.min(reviewer.completedCount, 20);
+        const confidence = 1 - Math.exp(-capped / 5);
         
         if (reviewer.completedCount > 0) {
             averageScoreGiven = getTrimmedMean(reviewer.scoresGiven);
@@ -536,7 +538,12 @@ export const getAssignmentReviewAnalytics = async (currentUser, assignmentId) =>
         if (hasData) {
             const recomputed = 0.4 * avgRubric + 0.3 * avgFeedback + 0.3 * avgVariance;
             if (Math.abs(recomputed - avgReviewQuality) > 0.01) {
-                console.warn(`[Quality mismatch] Expected ${avgReviewQuality}, got ${recomputed}`);
+                console.warn("[analytics][quality_mismatch]", {
+                    assignmentId,
+                    reviewerGroupId: reviewer.groupId,
+                    expected: avgReviewQuality,
+                    recomputed
+                });
             }
             breakdown = {
                 rubric: round2(avgRubric),
@@ -548,9 +555,10 @@ export const getAssignmentReviewAnalytics = async (currentUser, assignmentId) =>
         return {
             groupId: reviewer.groupId,
             hasData,
+            hasDataReason: hasData ? null : "NO_COMPLETED_REVIEWS",
             assignedCount: reviewer.assignedCount,
             completedCount: reviewer.completedCount,
-            completionRatePct: round2(completionRate),
+            completionRatePct: round2(Math.max(0, Math.min(100, completionRate))),
             averageScoreGiven: hasData ? round2(averageScoreGiven) : null,
             qualityScore: hasData ? round2(avgReviewQuality) : null,
             calibratedQuality: hasData ? round2(avgReviewQuality * (0.5 + 0.5 * confidence)) : null,
@@ -578,7 +586,10 @@ export const getAssignmentReviewAnalytics = async (currentUser, assignmentId) =>
         if (a.isLowQuality !== b.isLowQuality) {
             return a.isLowQuality ? -1 : 1;
         }
-        return a.qualityScore - b.qualityScore;
+        if (a.calibratedQuality !== b.calibratedQuality) {
+            return (a.calibratedQuality || 0) - (b.calibratedQuality || 0);
+        }
+        return (a.groupId || '').localeCompare(b.groupId || '');
     });
 
     return {
@@ -718,18 +729,27 @@ export const getClassReviewAnalytics = async (currentUser, classId) => {
         
         const hasData = allScores.length > 0;
         let medianScore = 0;
+        let scoreStdDev = 0;
+        
         if (hasData) {
             const sortedScores = [...allScores].sort((a,b) => a-b);
             const mid = Math.floor(sortedScores.length / 2);
             medianScore = sortedScores.length % 2 !== 0 ? sortedScores[mid] : (sortedScores[mid - 1] + sortedScores[mid]) / 2;
+            
+            const meanScore = allScores.reduce((a,b)=>a+b, 0) / allScores.length;
+            const variance = allScores.reduce((acc, val) => acc + Math.pow(val - meanScore, 2), 0) / allScores.length;
+            scoreStdDev = Math.sqrt(variance);
         }
         
         result.push({
             assignmentId,
             hasData,
-            reviewCompletionRatePct: round2(reviewCompletionRate),
+            hasDataReason: hasData ? null : "NO_COMPLETED_REVIEWS",
+            reviewCompletionRatePct: round2(Math.max(0, Math.min(100, reviewCompletionRate))),
             averageScore: hasData ? round2(averageScore) : null,
             medianScore: hasData ? round2(medianScore) : null,
+            sampleSize: hasData ? allScores.length : 0,
+            scoreStdDev: hasData ? round2(scoreStdDev) : null,
             qualityScore: hasData ? round2(avgReviewQuality) : null,
             hasLowQualityReview
         });

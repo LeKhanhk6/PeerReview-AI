@@ -408,7 +408,7 @@ export const getClassContributions = async (currentUser, classId) => {
 
 const getTrimmedMean = (arr) => {
     if (!arr || arr.length === 0) return 0;
-    if (arr.length < 3) return arr.reduce((a,b)=>a+b,0) / arr.length;
+    if (arr.length < 10) return arr.reduce((a,b)=>a+b,0) / arr.length;
     const sorted = [...arr].sort((a,b) => a-b);
     const trimCount = Math.floor(sorted.length * 0.1);
     const trimmed = sorted.slice(trimCount, sorted.length - trimCount);
@@ -529,22 +529,33 @@ export const getAssignmentReviewAnalytics = async (currentUser, assignmentId) =>
         }
         
         const isLowQuality = reviewer.completedCount > 0 ? avgReviewQuality < 0.3 : false;
-        const isRiskyReviewer = reviewer.completedCount > 0 ? (avgReviewQuality < 0.3 && confidence > 0.5) : false;
+        const isRiskyReviewer = reviewer.completedCount >= 5 && (avgReviewQuality < 0.3 && confidence > 0.5);
         
-        return {
-            groupId: reviewer.groupId,
-            assignedCount: reviewer.assignedCount,
-            completedCount: reviewer.completedCount,
-            completionRatePct: round2(completionRate),
-            averageScoreGiven: round2(averageScoreGiven),
-            qualityScore: round2(avgReviewQuality),
-            calibratedQuality: round2(avgReviewQuality * confidence),
-            confidenceScore: round2(confidence),
-            breakdown: {
+        const hasData = reviewer.completedCount > 0;
+        let breakdown = null;
+        if (hasData) {
+            const recomputed = 0.4 * avgRubric + 0.3 * avgFeedback + 0.3 * avgVariance;
+            if (Math.abs(recomputed - avgReviewQuality) > 0.01) {
+                console.warn(`[Quality mismatch] Expected ${avgReviewQuality}, got ${recomputed}`);
+            }
+            breakdown = {
                 rubric: round2(avgRubric),
                 feedback: round2(avgFeedback),
                 variance: round2(avgVariance)
-            },
+            };
+        }
+        
+        return {
+            groupId: reviewer.groupId,
+            hasData,
+            assignedCount: reviewer.assignedCount,
+            completedCount: reviewer.completedCount,
+            completionRatePct: round2(completionRate),
+            averageScoreGiven: hasData ? round2(averageScoreGiven) : null,
+            qualityScore: hasData ? round2(avgReviewQuality) : null,
+            calibratedQuality: hasData ? round2(avgReviewQuality * (0.5 + 0.5 * confidence)) : null,
+            confidenceScore: round2(confidence),
+            breakdown,
             isLowQuality,
             isRiskyReviewer
         };
@@ -705,11 +716,21 @@ export const getClassReviewAnalytics = async (currentUser, classId) => {
         const averageScore = getTrimmedMean(allScores);
         const avgReviewQuality = getTrimmedMean(allQualities);
         
+        const hasData = allScores.length > 0;
+        let medianScore = 0;
+        if (hasData) {
+            const sortedScores = [...allScores].sort((a,b) => a-b);
+            const mid = Math.floor(sortedScores.length / 2);
+            medianScore = sortedScores.length % 2 !== 0 ? sortedScores[mid] : (sortedScores[mid - 1] + sortedScores[mid]) / 2;
+        }
+        
         result.push({
             assignmentId,
+            hasData,
             reviewCompletionRatePct: round2(reviewCompletionRate),
-            averageScore: round2(averageScore),
-            qualityScore: round2(avgReviewQuality),
+            averageScore: hasData ? round2(averageScore) : null,
+            medianScore: hasData ? round2(medianScore) : null,
+            qualityScore: hasData ? round2(avgReviewQuality) : null,
             hasLowQualityReview
         });
     });

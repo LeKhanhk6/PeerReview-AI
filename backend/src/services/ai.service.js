@@ -166,11 +166,15 @@ const CACHE_TTL = 1000 * 60 * 60; // 1 hour
  */
 export const synthesizeReviews = async (assignmentId, timeframeKey, reviews, totalReviews, reviewsUsed, requestId) => {
     try {
-        const cacheKey = `${assignmentId}_${timeframeKey}`;
+        const cacheKey = `${assignmentId}_${timeframeKey}_${reviewsUsed}`;
         const cached = synthesisCache.get(cacheKey);
         if (cached && (Date.now() - cached.timestamp < CACHE_TTL)) {
-            console.log("Returning cached AI Synthesis for", cacheKey);
+            console.log({ requestId, cacheKey, message: "cache hit" });
             return cached.data;
+        }
+
+        if (synthesisCache.size > 1000) {
+            synthesisCache.clear();
         }
 
         if (!reviews || reviews.length === 0) return null;
@@ -182,8 +186,8 @@ export const synthesizeReviews = async (assignmentId, timeframeKey, reviews, tot
             chunks.push(reviews.slice(i, i + chunkSize));
         }
         
-        const chunkSummaries = [];
-        for (const chunk of chunks) {
+        // Parallel chunk synthesis
+        const chunkPromises = chunks.map(async (chunk) => {
             const prompt = `
 Dưới đây là một phần các nhận xét (reviews) của sinh viên về một bài tập. Hãy tóm tắt ngắn gọn các ý chính.
 Do not repeat ideas. Merge similar points. Sort by importance (most common first).
@@ -192,17 +196,21 @@ Chỉ trả về JSON với cấu trúc: {"summary": "..."}
 Reviews:
 ${JSON.stringify(chunk)}
             `;
-            // Synthesis có thể tốn thời gian hơn, cấp 15s cho mỗi chunk
-            const rawResponse = await callProvider(prompt, requestId, 15000);
+            // Synthesis chunk, 10s timeout
+            const rawResponse = await callProvider(prompt, requestId, 10000);
             if (rawResponse) {
                 try {
                     const parsed = JSON.parse(rawResponse.replace(/```json/gi, '').replace(/```/g, '').trim());
-                    if (parsed.summary) chunkSummaries.push(parsed.summary);
+                    return parsed.summary;
                 } catch(e) {
-                    // Ignore parse error cho chunk
+                    return null;
                 }
             }
-        }
+            return null;
+        });
+
+        let chunkSummaries = (await Promise.all(chunkPromises)).filter(s => s);
+        chunkSummaries = [...new Set(chunkSummaries)]; // Deduplicate summaries
         
         if (chunkSummaries.length === 0) throw new Error("Tất cả chunk đều thất bại.");
 
@@ -218,21 +226,34 @@ Cấu trúc JSON yêu cầu:
   "summary": "Tóm tắt chung 3-5 dòng",
   "strengths": ["Điểm mạnh 1", "Điểm mạnh 2"],
   "weaknesses": ["Điểm yếu phổ biến 1", "Điểm yếu phổ biến 2"],
-  "suggestions": ["Gợi ý khắc phục 1", "Gợi ý khắc phục 2"]
+  "suggestions": ["Gợi ý khắc phục 1", "Gợi ý khắc phục 2"],
+  "keywords": ["keyword1", "keyword2"],
+  "sentiment": "positive" // "positive", "negative", or "mixed"
 }
 
 Các tóm tắt:
 ${JSON.stringify(chunkSummaries)}
 `;
         const rawFinal = await callProvider(finalPrompt, requestId, 15000);
-        let cleanText = rawFinal ? rawFinal.replace(/```json/gi, '').replace(/```/g, '').trim() : '{}';
-        const parsed = JSON.parse(cleanText);
+        if (!rawFinal) {
+            throw new Error("Final synthesis failed or timed out.");
+        }
+
+        let cleanText = rawFinal.replace(/```json/gi, '').replace(/```/g, '').trim();
+        let parsed = {};
+        try {
+            parsed = JSON.parse(cleanText);
+        } catch {
+            parsed = {};
+        }
         
         const finalData = {
             summary: parsed.summary || "Không thể tạo bản tóm tắt.",
             strengths: Array.isArray(parsed.strengths) ? parsed.strengths : [],
             weaknesses: Array.isArray(parsed.weaknesses) ? parsed.weaknesses : [],
             suggestions: Array.isArray(parsed.suggestions) ? parsed.suggestions : [],
+            keywords: Array.isArray(parsed.keywords) ? parsed.keywords : [],
+            sentiment: parsed.sentiment || "mixed",
             totalReviews,
             reviewsUsed,
             confidence: totalReviews > 0 ? parseFloat(Math.min(1, reviewsUsed / totalReviews).toFixed(2)) : 0
@@ -249,6 +270,8 @@ ${JSON.stringify(chunkSummaries)}
             strengths: [],
             weaknesses: [],
             suggestions: [],
+            keywords: [],
+            sentiment: "mixed",
             totalReviews,
             reviewsUsed,
             confidence: 0

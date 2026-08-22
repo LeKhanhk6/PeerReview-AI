@@ -415,40 +415,36 @@ Submit
 # 9. PHASE 8 — AI Peer-Review Mentor
 
 ## TASK 09.1 — AI Integration
-```
-React
- ↓
-Node.js / Express
- ↓
-AI Service
- ↓
-AI API
-```
+
+- [ ] React
+- [x] Node.js / Express
+- [x] AI Service
+- [x] AI API
 ## TASK 09.2 — Real-time Analysis
 
 AI kiểm tra:
 
-- Constructiveness.
-- Relevance.
-- Tone.
-- Rubric Alignment.
-- Specificity.
-- Toxicity/Negative language.
-*Lưu ý kỹ thuật:* Frontend bắt buộc phải áp dụng kỹ thuật Debounce (chờ người dùng ngừng gõ khoảng 1-1.5 giây mới gọi API) để tránh gọi API liên tục làm sập server Backend.
-## TASK 09.3 — AI Response
+- [x] Constructiveness.
+- [x] Relevance.
+- [x] Tone.
+- [x] Rubric Alignment.
+- [x] Specificity.
+- [x] Toxicity/Negative language.
+- [ ] *Lưu ý kỹ thuật:* Frontend bắt buộc phải áp dụng kỹ thuật Debounce (chờ người dùng ngừng gõ khoảng 1-1.5 giây mới gọi API) để tránh gọi API liên tục làm sập server Backend.
+## TASK 09.3 — AI Response [x]
 ```
 Status
 Suggestion
 Reason
 Improvement
 ```
-## TASK 09.4 — AI Principles
+## TASK 09.4 — AI Principles [x]
 
-- [ ]  Human-in-the-loop.
-- [ ]  AI không tự chấm cuối.
-- [ ]  AI không tự Submit.
-- [ ]  AI không thay Teacher.
-- [ ]  API Key không expose.
+- [x]  Human-in-the-loop.
+- [x]  AI không tự chấm cuối.
+- [x]  AI không tự Submit.
+- [x]  AI không thay Teacher.
+- [x]  API Key không expose.
 
 ---
 

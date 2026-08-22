@@ -473,15 +473,23 @@ export const getAssignmentReviewAnalytics = async (currentUser, assignmentId) =>
             }
             
             let feedbackScore = 0;
-            if (row.overall_comment && row.overall_comment.length >= 20) {
-                feedbackScore = Math.min(1, Math.max(0, (row.overall_comment.length - 20) / 80));
+            if (row.overall_comment) {
+                const uniqueChars = new Set(row.overall_comment).size;
+                if (row.overall_comment.length >= 20 && uniqueChars >= 5) {
+                    feedbackScore = Math.min(1, Math.max(0, (row.overall_comment.length - 20) / 80));
+                }
             }
             
             const std = parseFloat(row.score_stddev) || 0;
             const MAX_SCORE = 100;
             const MIN_SCORE = 0;
             const maxStd = (MAX_SCORE - MIN_SCORE) / 2;
-            const varianceScore = maxStd > 0 ? Math.min(1, std / maxStd) : 0;
+            let varianceScore = 0;
+            if (totalCriteria <= 1) {
+                varianceScore = 0.5; // neutral
+            } else if (maxStd > 0) {
+                varianceScore = Math.min(1, std / maxStd);
+            }
             
             const quality = (0.4 * rubricScore) + (0.3 * feedbackScore) + (0.3 * varianceScore);
             reviewer.qualities.push(quality);
@@ -492,6 +500,7 @@ export const getAssignmentReviewAnalytics = async (currentUser, assignmentId) =>
         const completionRate = reviewer.assignedCount > 0 ? (reviewer.completedCount / reviewer.assignedCount) * 100 : 0;
         let averageScoreGiven = 0;
         let avgReviewQuality = 0;
+        const confidence = Math.min(1, reviewer.completedCount / 5);
         
         if (reviewer.completedCount > 0) {
             averageScoreGiven = reviewer.scoresGiven.reduce((a,b) => a+b, 0) / reviewer.completedCount;
@@ -505,6 +514,7 @@ export const getAssignmentReviewAnalytics = async (currentUser, assignmentId) =>
             completionRate: round2(completionRate),
             averageScoreGiven: round2(averageScoreGiven),
             avgReviewQuality: round2(avgReviewQuality),
+            confidence: round2(confidence),
             isLowQuality: reviewer.completedCount > 0 ? avgReviewQuality < 0.3 : false
         };
     });
@@ -514,10 +524,19 @@ export const getAssignmentReviewAnalytics = async (currentUser, assignmentId) =>
     const globalAverageScore = totalAssignmentCompleted > 0 ? totalAssignmentScores / totalAssignmentCompleted : 0;
 
     result.forEach(r => {
-        r.relativeScoreBias = r.completedCount > 0 ? round2(r.averageScoreGiven - globalAverageScore) : 0;
+        const biasRaw = r.averageScoreGiven - globalAverageScore;
+        r.relativeScoreBias = r.completedCount > 0 ? round2(biasRaw) : 0;
+        const biasScore = r.completedCount > 0 ? biasRaw / (100 - 0) : 0; // Assuming MAX=100 MIN=0
+        r.isLenient = biasScore > 0.2;
+        r.isHarsh = biasScore < -0.2;
     });
 
-    result.sort((a, b) => a.avgReviewQuality - b.avgReviewQuality);
+    result.sort((a, b) => {
+        if (a.isLowQuality !== b.isLowQuality) {
+            return a.isLowQuality ? -1 : 1;
+        }
+        return a.avgReviewQuality - b.avgReviewQuality;
+    });
 
     return {
         assignmentId,
@@ -602,15 +621,23 @@ export const getClassReviewAnalytics = async (currentUser, classId) => {
             }
             
             let feedbackScore = 0;
-            if (row.overall_comment && row.overall_comment.length >= 20) {
-                feedbackScore = Math.min(1, Math.max(0, (row.overall_comment.length - 20) / 80));
+            if (row.overall_comment) {
+                const uniqueChars = new Set(row.overall_comment).size;
+                if (row.overall_comment.length >= 20 && uniqueChars >= 5) {
+                    feedbackScore = Math.min(1, Math.max(0, (row.overall_comment.length - 20) / 80));
+                }
             }
             
             const std = parseFloat(row.score_stddev) || 0;
             const MAX_SCORE = 100;
             const MIN_SCORE = 0;
             const maxStd = (MAX_SCORE - MIN_SCORE) / 2;
-            const varianceScore = maxStd > 0 ? Math.min(1, std / maxStd) : 0;
+            let varianceScore = 0;
+            if (totalCriteria <= 1) {
+                varianceScore = 0.5; // neutral
+            } else if (maxStd > 0) {
+                varianceScore = Math.min(1, std / maxStd);
+            }
             
             const quality = (0.4 * rubricScore) + (0.3 * feedbackScore) + (0.3 * varianceScore);
             reviewer.qualities.push(quality);
@@ -623,7 +650,7 @@ export const getClassReviewAnalytics = async (currentUser, classId) => {
         let totalCompleted = 0;
         let sumScores = 0;
         let sumQualities = 0;
-        let reviewersWithCompleted = 0;
+        let totalReviewsCompleted = 0;
         let hasLowQualityReview = false;
         
         assignment.reviewers.forEach(reviewer => {
@@ -636,7 +663,7 @@ export const getClassReviewAnalytics = async (currentUser, classId) => {
                 
                 sumScores += sumS;
                 sumQualities += sumQ;
-                reviewersWithCompleted += reviewer.completedCount;
+                totalReviewsCompleted += reviewer.completedCount;
                 
                 const avgQuality = sumQ / reviewer.completedCount;
                 if (avgQuality < 0.3) {
@@ -646,8 +673,8 @@ export const getClassReviewAnalytics = async (currentUser, classId) => {
         });
         
         const reviewCompletionRate = totalAssigned > 0 ? (totalCompleted / totalAssigned) * 100 : 0;
-        const averageScore = reviewersWithCompleted > 0 ? sumScores / reviewersWithCompleted : 0;
-        const avgReviewQuality = reviewersWithCompleted > 0 ? sumQualities / reviewersWithCompleted : 0;
+        const averageScore = totalReviewsCompleted > 0 ? sumScores / totalReviewsCompleted : 0;
+        const avgReviewQuality = totalReviewsCompleted > 0 ? sumQualities / totalReviewsCompleted : 0;
         
         result.push({
             assignmentId,

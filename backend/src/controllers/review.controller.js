@@ -1,3 +1,4 @@
+import crypto from 'crypto';
 import * as reviewService from '../services/review.service.js';
 import * as aiService from '../services/ai.service.js';
 import { isValidUUID } from '../utils/validation.util.js';
@@ -180,8 +181,8 @@ export const analyzeReviewText = async (req, res, next) => {
         const trimmedComment = comment.trim();
         const sanitized = trimmedComment.replace(/<[^>]*>?/gm, '');
         
-        if (sanitized.length < 10) {
-            const error = new Error('Comment must be at least 10 characters long');
+        if (sanitized.length < 15) {
+            const error = new Error('Comment must be at least 15 characters long');
             error.statusCode = 400;
             return next(error);
         }
@@ -192,8 +193,10 @@ export const analyzeReviewText = async (req, res, next) => {
             return next(error);
         }
 
+        const requestId = crypto.randomUUID();
+
         // Call AI Service
-        const result = await aiService.analyzeComment(sanitized);
+        const result = await aiService.analyzeComment(sanitized, requestId);
         
         return res.status(200).json({
             data: result

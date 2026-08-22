@@ -3,13 +3,15 @@ config();
 
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
 
+import crypto from 'crypto';
+
 // Cấu trúc mặc định an toàn khi có lỗi
-const FALLBACK_RESPONSE = {
+const FALLBACK_RESPONSE = Object.freeze({
     status: "UNKNOWN",
     suggestion: "Không thể phân tích lúc này. Hãy tiếp tục đánh giá.",
     reason: "Hệ thống AI đang bận hoặc gặp sự cố.",
     improvement: ""
-};
+});
 
 /**
  * Xây dựng prompt ép AI trả về JSON với format nhất định
@@ -39,11 +41,12 @@ Cấu trúc JSON yêu cầu:
 /**
  * Gọi API Gemini với AbortController để xử lý timeout
  * @param {string} prompt - Prompt đã được build
+ * @param {string} requestId - UUID để tracing log
  * @returns {Promise<string|null>} - Raw text trả về từ AI hoặc null nếu lỗi
  */
-const callProvider = async (prompt) => {
+const callProvider = async (prompt, requestId) => {
     if (!GEMINI_API_KEY) {
-        console.error("AI Service Error - Missing GEMINI_API_KEY");
+        console.error("AI Service Error", { requestId, message: "Missing GEMINI_API_KEY", stage: "callProvider" });
         return null;
     }
 
@@ -72,6 +75,7 @@ const callProvider = async (prompt) => {
 
         if (!response.ok) {
             console.error("AI Service Error", {
+                requestId,
                 message: `Provider responded with status: ${response.status}`,
                 stage: "callProvider"
             });
@@ -88,9 +92,9 @@ const callProvider = async (prompt) => {
         return text;
     } catch (error) {
         if (error.name === 'AbortError') {
-            console.error("AI Service Error", { message: `Timeout after ${timeoutMs}ms`, stage: "callProvider" });
+            console.error("AI Service Error", { requestId, message: `Timeout after ${timeoutMs}ms`, stage: "callProvider" });
         } else {
-            console.error("AI Service Error", { message: error.message, stage: "callProvider" });
+            console.error("AI Service Error", { requestId, message: error.message, stage: "callProvider" });
         }
         return null;
     } finally {
@@ -101,9 +105,10 @@ const callProvider = async (prompt) => {
 /**
  * Xử lý parse chuỗi JSON trả về an toàn
  * @param {string} rawResponse 
+ * @param {string} requestId 
  * @returns {object} - JSON đã parse hoặc Fallback
  */
-const parseResponse = (rawResponse) => {
+const parseResponse = (rawResponse, requestId) => {
     if (!rawResponse) return FALLBACK_RESPONSE;
 
     try {
@@ -111,15 +116,18 @@ const parseResponse = (rawResponse) => {
         let cleanText = rawResponse.replace(/```json/gi, '').replace(/```/g, '').trim();
         const parsed = JSON.parse(cleanText);
 
-        // Chuẩn hóa, đảm bảo các trường luôn tồn tại
+        const validStatus = ["GOOD", "NEEDS_IMPROVEMENT", "TOXIC"];
+        const statusVal = parsed.status ? parsed.status.toUpperCase() : "";
+
+        // Chuẩn hóa, đảm bảo các trường luôn tồn tại và đúng enum
         return {
-            status: parsed.status || FALLBACK_RESPONSE.status,
+            status: validStatus.includes(statusVal) ? statusVal : FALLBACK_RESPONSE.status,
             suggestion: parsed.suggestion || FALLBACK_RESPONSE.suggestion,
             reason: parsed.reason || FALLBACK_RESPONSE.reason,
             improvement: parsed.improvement || ""
         };
     } catch (error) {
-        console.error("AI Service Error - JSON parse fail");
+        console.error("AI Service Error", { requestId, message: "JSON parse fail", stage: "parseResponse" });
         return FALLBACK_RESPONSE;
     }
 };
@@ -127,15 +135,16 @@ const parseResponse = (rawResponse) => {
 /**
  * Hàm chính (Orchestrator) của service
  * @param {string} text 
+ * @param {string} requestId 
  * @returns {Promise<object>}
  */
-export const analyzeComment = async (text) => {
+export const analyzeComment = async (text, requestId) => {
     try {
         const prompt = buildPrompt(text);
-        const rawResponse = await callProvider(prompt);
-        return parseResponse(rawResponse);
+        const rawResponse = await callProvider(prompt, requestId);
+        return parseResponse(rawResponse, requestId);
     } catch (error) {
-        console.error("AI Service Error - Unexpected error in analyzeComment");
+        console.error("AI Service Error", { requestId, message: "Unexpected error in analyzeComment", stage: "analyzeComment" });
         return FALLBACK_RESPONSE;
     }
 };

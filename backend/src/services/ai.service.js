@@ -150,15 +150,29 @@ export const analyzeComment = async (text, requestId) => {
     }
 };
 
+// Simple in-memory cache for MVP
+const synthesisCache = new Map();
+const CACHE_TTL = 1000 * 60 * 60; // 1 hour
+
 /**
  * Phân tích và tổng hợp các review bằng AI với cơ chế Chunking.
+ * @param {string} assignmentId
+ * @param {string} timeframeKey
  * @param {Array<string>} reviews - Mảng các chuỗi nhận xét.
- * @param {number} totalReviewsAnalyzed - Tổng số review ban đầu.
+ * @param {number} totalReviews - Tổng số review ban đầu.
+ * @param {number} reviewsUsed - Số review thực tế đưa vào phân tích sau khi sample/filter.
  * @param {string} requestId - Trace ID.
  * @returns {Promise<object>} JSON chứa summary, strengths, weaknesses, suggestions, ...
  */
-export const synthesizeReviews = async (reviews, totalReviewsAnalyzed, requestId) => {
+export const synthesizeReviews = async (assignmentId, timeframeKey, reviews, totalReviews, reviewsUsed, requestId) => {
     try {
+        const cacheKey = `${assignmentId}_${timeframeKey}`;
+        const cached = synthesisCache.get(cacheKey);
+        if (cached && (Date.now() - cached.timestamp < CACHE_TTL)) {
+            console.log("Returning cached AI Synthesis for", cacheKey);
+            return cached.data;
+        }
+
         if (!reviews || reviews.length === 0) return null;
         
         // Chunking (50 reviews per chunk)
@@ -172,6 +186,7 @@ export const synthesizeReviews = async (reviews, totalReviewsAnalyzed, requestId
         for (const chunk of chunks) {
             const prompt = `
 Dưới đây là một phần các nhận xét (reviews) của sinh viên về một bài tập. Hãy tóm tắt ngắn gọn các ý chính.
+Do not repeat ideas. Merge similar points. Sort by importance (most common first).
 Chỉ trả về JSON với cấu trúc: {"summary": "..."}
 
 Reviews:
@@ -196,6 +211,7 @@ ${JSON.stringify(chunk)}
 Dưới đây là các phần tóm tắt nhận xét chấm chéo của sinh viên cho một bài tập.
 Hãy tổng hợp lại thành 1 JSON duy nhất mô tả tổng quan bài làm của nhóm, điểm mạnh, điểm yếu và gợi ý chung.
 
+Do not repeat ideas. Merge similar points. Sort lists by importance (most common first).
 YÊU CẦU BẮT BUỘC: Chỉ trả về duy nhất 1 chuỗi JSON hợp lệ.
 Cấu trúc JSON yêu cầu:
 {
@@ -212,22 +228,29 @@ ${JSON.stringify(chunkSummaries)}
         let cleanText = rawFinal ? rawFinal.replace(/```json/gi, '').replace(/```/g, '').trim() : '{}';
         const parsed = JSON.parse(cleanText);
         
-        return {
+        const finalData = {
             summary: parsed.summary || "Không thể tạo bản tóm tắt.",
             strengths: Array.isArray(parsed.strengths) ? parsed.strengths : [],
             weaknesses: Array.isArray(parsed.weaknesses) ? parsed.weaknesses : [],
             suggestions: Array.isArray(parsed.suggestions) ? parsed.suggestions : [],
-            totalReviewsAnalyzed,
-            confidence: parsed.summary ? 0.85 : 0.0 // Giả lập độ tin cậy cơ bản cho MVP
+            totalReviews,
+            reviewsUsed,
+            confidence: totalReviews > 0 ? parseFloat(Math.min(1, reviewsUsed / totalReviews).toFixed(2)) : 0
         };
+
+        synthesisCache.set(cacheKey, { timestamp: Date.now(), data: finalData });
+
+        return finalData;
     } catch (error) {
         console.error("AI Service Error", { requestId, message: "Error in synthesizeReviews", stage: "synthesizeReviews" });
         return {
             summary: "Lỗi khi tổng hợp bằng AI.",
+            reason: error.message,
             strengths: [],
             weaknesses: [],
             suggestions: [],
-            totalReviewsAnalyzed,
+            totalReviews,
+            reviewsUsed,
             confidence: 0
         };
     }

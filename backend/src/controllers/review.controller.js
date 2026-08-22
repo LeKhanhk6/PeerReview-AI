@@ -1,6 +1,7 @@
 import crypto from 'crypto';
 import * as reviewService from '../services/review.service.js';
 import * as aiService from '../services/ai.service.js';
+import * as assignmentService from '../services/assignment.service.js';
 import { isValidUUID } from '../utils/validation.util.js';
 
 export const getMyReviewAssignments = async (req, res, next) => {
@@ -60,31 +61,64 @@ export const generateAssignmentReviewSynthesis = async (req, res, next) => {
     try {
         const { assignmentId } = req.params;
 
+        const userId = req.user?.id;
+        const { from, to } = req.query;
+
         if (!isValidUUID(assignmentId)) {
             const error = new Error('Invalid assignment ID format');
             error.statusCode = 400;
             return next(error);
         }
 
-        const { reviewsText, totalAnalyzed } = await reviewService.getAssignmentReviewsForSynthesis(assignmentId);
+        // Validate Teacher Ownership
+        const ownership = await assignmentService.getAssignmentOwnershipInfo(assignmentId);
+        if (!ownership) {
+            const error = new Error('Assignment not found');
+            error.statusCode = 404;
+            return next(error);
+        }
+        if (req.user.role === 'TEACHER' && ownership.teacher_id !== userId) {
+            const error = new Error('Forbidden: You do not own this assignment');
+            error.statusCode = 403;
+            return next(error);
+        }
+
+        const requestId = crypto.randomUUID();
+        console.log({ requestId, assignmentId, action: 'generateSynthesis' });
+
+        const timeframe = (from || to) ? { from, to } : undefined;
+        const timeframeKey = `${from || 'all'}_${to || 'all'}`;
+
+        const { reviewsText, totalReviews, reviewsUsed } = await reviewService.getAssignmentReviewsForSynthesis(assignmentId, timeframe);
         
-        if (totalAnalyzed === 0) {
+        if (totalReviews < 5) {
             return res.status(200).json({
+                requestId,
                 data: {
-                    summary: "Chưa có nhận xét nào để tổng hợp.",
+                    summary: "Chưa có đủ dữ liệu để phân tích.",
+                    reason: "NOT_ENOUGH_REVIEWS",
                     strengths: [],
                     weaknesses: [],
                     suggestions: [],
-                    totalReviewsAnalyzed: 0,
+                    totalReviews,
+                    reviewsUsed: 0,
                     confidence: 0
                 }
             });
         }
 
-        const requestId = crypto.randomUUID();
-        const synthesis = await aiService.synthesizeReviews(reviewsText, totalAnalyzed, requestId);
+        // Controller-level timeout guard (20s)
+        const timeoutPromise = new Promise((_, reject) => 
+            setTimeout(() => reject(new Error('AI Synthesis Request Timeout')), 20000)
+        );
+
+        const synthesis = await Promise.race([
+            aiService.synthesizeReviews(assignmentId, timeframeKey, reviewsText, totalReviews, reviewsUsed, requestId),
+            timeoutPromise
+        ]);
 
         return res.status(200).json({
+            requestId,
             data: synthesis
         });
     } catch (error) {

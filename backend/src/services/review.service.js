@@ -381,8 +381,8 @@ export const submitReview = async (reviewAssignmentId, userId, payload) => {
  * @param {string} assignmentId 
  * @returns {Promise<Array<string>>} Mảng các chuỗi nhận xét gộp
  */
-export const getAssignmentReviewsForSynthesis = async (assignmentId) => {
-    const query = `
+export const getAssignmentReviewsForSynthesis = async (assignmentId, timeframe) => {
+    let query = `
         SELECT 
             r.overall_comment,
             r.submitted_at,
@@ -392,7 +392,18 @@ export const getAssignmentReviewsForSynthesis = async (assignmentId) => {
         JOIN submissions s ON s.id = ra.submission_id
         WHERE s.assignment_id = $1
     `;
-    const result = await pool.query(query, [assignmentId]);
+    const values = [assignmentId];
+
+    if (timeframe?.from) {
+        values.push(timeframe.from);
+        query += ` AND r.submitted_at >= $${values.length}`;
+    }
+    if (timeframe?.to) {
+        values.push(timeframe.to);
+        query += ` AND r.submitted_at <= $${values.length}`;
+    }
+
+    const result = await pool.query(query, values);
 
     let reviews = result.rows.map(r => {
         let text = '';
@@ -438,6 +449,7 @@ export const getAssignmentReviewsForSynthesis = async (assignmentId) => {
     
     return {
         reviewsText: reviews.map(r => r.text),
-        totalAnalyzed: totalAvailable // Hiển thị tổng số review thực tế có
+        totalReviews: totalAvailable,
+        reviewsUsed: reviews.length
     };
 };

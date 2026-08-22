@@ -253,18 +253,56 @@ CREATE TABLE ai_feedbacks (
 CREATE TABLE review_summaries (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     submission_id UUID UNIQUE REFERENCES submissions(id) ON DELETE CASCADE,
-    teacher_approved BOOLEAN DEFAULT FALSE,
+    status VARCHAR(50) NOT NULL DEFAULT 'DRAFT',
+    CONSTRAINT chk_review_summary_status CHECK (status IN ('DRAFT', 'REVIEWING', 'APPROVED')),
+    updated_by UUID REFERENCES users(id) ON DELETE SET NULL,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     generated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
 CREATE TABLE review_summary_items (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    summary_id UUID REFERENCES review_summaries(id) ON DELETE CASCADE,
-    topic_category VARCHAR(100) NOT NULL, -- VD: STRENGTHS, WEAKNESSES
+    summary_id UUID NOT NULL REFERENCES review_summaries(id) ON DELETE CASCADE,
+    topic_category VARCHAR(100) NOT NULL,
+    CONSTRAINT chk_summary_item_category CHECK (topic_category IN ('STRENGTHS', 'WEAKNESSES', 'SUGGESTIONS')),
     content TEXT NOT NULL,
-    frequency_count INT DEFAULT 1,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+    note TEXT,
+    frequency_count INT NOT NULL DEFAULT 1,
+    CONSTRAINT chk_frequency_count CHECK (frequency_count > 0),
+    is_teacher_edited BOOLEAN DEFAULT FALSE,
+    source_review_ids UUID[] NOT NULL DEFAULT '{}',
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
+
+CREATE OR REPLACE FUNCTION update_updated_at_column_summary()
+RETURNS TRIGGER AS $$
+BEGIN
+  NEW.updated_at = NOW();
+  RETURN NEW;
+END;
+$$ language 'plpgsql';
+
+CREATE TRIGGER update_summary_items_updated_at
+BEFORE UPDATE ON review_summary_items
+FOR EACH ROW
+WHEN (OLD IS DISTINCT FROM NEW)
+EXECUTE FUNCTION update_updated_at_column_summary();
+
+CREATE TRIGGER update_review_summaries_updated_at
+BEFORE UPDATE ON review_summaries
+FOR EACH ROW
+WHEN (OLD IS DISTINCT FROM NEW)
+EXECUTE FUNCTION update_updated_at_column_summary();
+
+-- Indexes cho review_summaries và review_summary_items
+CREATE INDEX idx_review_summaries_submission ON review_summaries(submission_id);
+CREATE INDEX idx_summary_items_summary ON review_summary_items(summary_id);
+CREATE INDEX idx_submissions_assignment ON submissions(assignment_id);
+CREATE INDEX idx_assignments_class ON assignments(class_id);
+CREATE INDEX idx_summary_items_source_reviews ON review_summary_items USING GIN (source_review_ids);
+CREATE INDEX idx_review_summaries_updated_by ON review_summaries(updated_by);
 
 -- ==============================================================================
 -- 8. NHÓM CẢNH BÁO VÀ THÔNG BÁO (Early Warnings & Notifications)
@@ -606,9 +644,15 @@ Quản lý việc tương tác với trợ lý AI để phân tích, hỗ trợ 
     
 - `submission_id UUID UNIQUE REFERENCES submissions(id) ON DELETE CASCADE`: Bản tổng hợp dành riêng cho bài nộp nào.
     
-- `teacher_approved BOOLEAN DEFAULT FALSE`: Giáo viên đã duyệt bảng tổng hợp này chưa (`TRUE`/`FALSE`).
+- `status VARCHAR(50) NOT NULL DEFAULT 'DRAFT'`: Trạng thái của bản tổng hợp (DRAFT, REVIEWING, APPROVED).
     
-- `generated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()`: Thời gian hệ thống tạo bản tổng hợp.
+- `CONSTRAINT chk_review_summary_status CHECK (status IN ('DRAFT', 'REVIEWING', 'APPROVED'))`: Ràng buộc trạng thái hợp lệ.
+    
+- `updated_by UUID REFERENCES users(id) ON DELETE SET NULL`: Người cập nhật/duyệt cuối cùng.
+    
+- `updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()`: Thời điểm cập nhật cuối cùng.
+    
+- `generated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()`: Thời gian hệ thống tạo bản tổng hợp ban đầu.
     
 
 ### 🔹 Bảng `review_summary_items` (Các mục chi tiết trong bản tổng hợp)
@@ -623,7 +667,13 @@ Quản lý việc tương tác với trợ lý AI để phân tích, hỗ trợ 
     
 - `frequency_count INT DEFAULT 1`: Số lần ý kiến này xuất hiện lặp lại từ nhiều reviewer khác nhau.
     
+- `is_teacher_edited BOOLEAN DEFAULT FALSE`: Cờ đánh dấu xem giáo viên đã chỉnh sửa mục này chưa, tránh việc AI tự động ghi đè.
+    
+- `source_review_ids UUID[] DEFAULT '{}'`: Danh sách các bản đánh giá (reviews) gốc đã được AI sử dụng để tổng hợp ra ý kiến này.
+    
 - `created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()`: Thời điểm tạo mục tổng hợp.
+    
+- `updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()`: Thời điểm cập nhật mục tổng hợp. Hệ thống có trigger tự động cập nhật trường này khi có sự thay đổi.
     
 
 ## 8. NHÓM CẢNH BÁO VÀ THÔNG BÁO (Early Warnings & Notifications)

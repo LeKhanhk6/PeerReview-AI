@@ -4,6 +4,8 @@ config();
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
 
 import crypto from 'crypto';
+import pool from '../config/db.js';
+import { SUMMARY_STATUS } from '../utils/constants.js';
 
 const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
@@ -313,6 +315,50 @@ ${JSON.stringify(chunkSummaries)}
             reviewsUsed,
             confidence: 0
         };
+    }
+};
+
+/**
+ * Cập nhật Summary Items từ kết quả AI
+ * @param {string} summaryId 
+ * @param {Array} itemsData 
+ */
+export const updateSummaryItemsAI = async (summaryId, itemsData) => {
+    const client = await pool.connect();
+    try {
+        await client.query('BEGIN');
+        
+        const summaryRes = await client.query(`
+            SELECT status FROM review_summaries WHERE id = $1 FOR UPDATE
+        `, [summaryId]);
+        
+        if (summaryRes.rowCount === 0) {
+            throw new Error('Summary not found');
+        }
+
+        if (summaryRes.rows[0].status === SUMMARY_STATUS.APPROVED) {
+             throw new Error('Cannot update AI items, summary is already approved');
+        }
+
+        // Thêm/cập nhật các items sinh ra từ AI, chỉ ghi đè những item chưa bị teacher edit
+        for (const item of itemsData) {
+            await client.query(`
+                UPDATE review_summary_items
+                SET content = $1, frequency_count = $2, source_review_ids = $3
+                WHERE summary_id = $4 
+                  AND topic_category = $5 
+                  AND is_teacher_edited = false
+            `, [item.content, item.frequency_count || 1, item.source_review_ids || '{}', summaryId, item.topic_category]);
+            
+            // Nếu MVP yêu cầu thêm mới nếu chưa có thì có thể mở rộng logic INSERT... ON CONFLICT ở đây
+        }
+        
+        await client.query('COMMIT');
+    } catch (error) {
+        await client.query('ROLLBACK');
+        throw error;
+    } finally {
+        client.release();
     }
 };
 

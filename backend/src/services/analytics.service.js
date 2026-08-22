@@ -600,8 +600,9 @@ export const getAssignmentReviewAnalytics = async (currentUser, assignmentId) =>
         const bias = r.completedCount > 0 && scoreRange > 0 ? biasRaw / scoreRange : 0;
         const biasScoreNormalized = Math.max(-1, Math.min(1, bias));
         r.biasScoreNormalized = round2(biasScoreNormalized);
-        r.isLenient = biasScoreNormalized > 0.2;
-        r.isHarsh = biasScoreNormalized < -0.2;
+        const EPS = 0.05;
+        r.isLenient = biasScoreNormalized > EPS;
+        r.isHarsh = biasScoreNormalized < -EPS;
     });
 
     result.sort((a, b) => {
@@ -763,7 +764,9 @@ export const getClassReviewAnalytics = async (currentUser, classId) => {
         let p90Score = 0;
         let iqr = 0;
         let isUniformScoring = false;
+        let isSingleBucket = false;
         
+        // TODO: dynamic buckets based on scoreRange
         let scoreDistribution = { "0-20": 0, "20-40": 0, "40-60": 0, "60-80": 0, "80-100": 0 };
         
         if (hasData) {
@@ -781,8 +784,9 @@ export const getClassReviewAnalytics = async (currentUser, classId) => {
             const meanScore = allScores.reduce((a,b)=>a+b, 0) / allScores.length;
             const variance = allScores.reduce((acc, val) => acc + Math.pow(val - meanScore, 2), 0) / allScores.length;
             scoreStdDev = Math.sqrt(variance);
-            isUniformScoring = scoreStdDev === 0;
+            isUniformScoring = scoreStdDev === 0 && allScores.length >= 3;
             
+            // TODO: dynamic buckets based on scoreRange
             allScores.forEach(s => {
                 const s100 = (s / 100) * 100; // assuming scale 100
                 if (s100 <= 20) scoreDistribution["0-20"]++;
@@ -791,6 +795,7 @@ export const getClassReviewAnalytics = async (currentUser, classId) => {
                 else if (s100 <= 80) scoreDistribution["60-80"]++;
                 else scoreDistribution["80-100"]++;
             });
+            isSingleBucket = Object.values(scoreDistribution).filter(v => v > 0).length === 1;
         }
         
         const completionRatePctValue = totalAssigned === 0 ? null : round2(Math.max(0, Math.min(100, reviewCompletionRate)));
@@ -800,6 +805,7 @@ export const getClassReviewAnalytics = async (currentUser, classId) => {
         if (!hasData) {
             hasDataReason = totalAssigned > 0 ? NO_DATA_REASONS.HAS_PENDING_REVIEWS : NO_DATA_REASONS.NO_ASSIGNMENTS;
         }
+        const avgReviewsPerReviewer = assignment.reviewers.length > 0 ? round2(totalCompleted / assignment.reviewers.length) : 0;
         
         result.push({
             assignmentId,
@@ -814,11 +820,16 @@ export const getClassReviewAnalytics = async (currentUser, classId) => {
             iqr: hasEnoughData ? round2(iqr) : null,
             p10Score: hasEnoughData ? round2(p10Score) : null,
             p90Score: hasEnoughData ? round2(p90Score) : null,
+            percentileAvailable: hasEnoughData,
+            percentileReason: hasData && !hasEnoughData ? "INSUFFICIENT_SAMPLE" : null,
             percentileSampleSize: hasData ? allScores.length : 0,
             scoreSampleSize: hasData ? allScores.length : 0,
             scoreStdDev: hasData ? round2(scoreStdDev) : null,
             isUniformScoring,
             scoreDistribution: hasData ? scoreDistribution : null,
+            isSingleBucket,
+            reviewerCount: assignment.reviewers.length,
+            avgReviewsPerReviewer,
             qualityScore: hasData ? round2(avgReviewQuality) : null,
             hasLowQualityReview
         });

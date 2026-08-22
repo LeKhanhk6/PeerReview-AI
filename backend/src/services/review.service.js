@@ -1,5 +1,7 @@
 import pool from '../config/db.js';
 import { maskSubmissionEntity } from '../utils/masking.util.js';
+import { logActivity } from './activity.service.js';
+import { ACTIVITY_TYPES } from '../utils/constants.js';
 
 export const getMyReviewAssignments = async (assignmentId, userId, limit, offset) => {
     // Use COUNT(*) OVER() to avoid a separate query
@@ -208,6 +210,7 @@ export const submitReview = async (reviewAssignmentId, userId, payload) => {
             SELECT 
                 ra.id, 
                 ra.status, 
+                ra.reviewer_group_id,
                 s.assignment_id, 
                 a.deadline,
                 (a.deadline < NOW()) as is_past_deadline
@@ -337,6 +340,20 @@ export const submitReview = async (reviewAssignmentId, userId, payload) => {
         await client.query(bulkInsertQuery, insertParams);
 
         await client.query('COMMIT');
+
+        // 8. Activity Tracking
+        try {
+            await logActivity({
+                groupId: assignmentRow.reviewer_group_id,
+                userId,
+                actionType: ACTIVITY_TYPES.REVIEW_SUBMITTED,
+                targetId: `${ACTIVITY_TYPES.REVIEW_SUBMITTED}_${reviewAssignmentId}`,
+                metadata: { scoreGiven: totalScore, totalCriteria: processedScores.length },
+                contentSummary: `Submitted a peer review (Score: ${totalScore})`
+            });
+        } catch (logErr) {
+            console.error('Activity log failed during review submission:', logErr);
+        }
 
         return {
             reviewId,

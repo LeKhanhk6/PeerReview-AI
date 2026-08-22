@@ -95,9 +95,21 @@ export const createTask = async (groupId, userId, taskData) => {
     
     const task = result.rows[0];
     
-    await logActivity(groupId, userId, ACTIVITY_TYPES.TASK_CREATE, `Created task "${title}"`);
+    await logActivity({
+        groupId, 
+        userId, 
+        actionType: ACTIVITY_TYPES.TASK_CREATE, 
+        targetId: `${ACTIVITY_TYPES.TASK_CREATE}_${task.id}`,
+        contentSummary: `Created task "${title}"`
+    });
     if (assignee_id) {
-        await logActivity(groupId, userId, ACTIVITY_TYPES.TASK_ASSIGN, `Assigned task "${title}"`);
+        await logActivity({
+            groupId, 
+            userId, 
+            actionType: ACTIVITY_TYPES.TASK_ASSIGN, 
+            targetId: `${ACTIVITY_TYPES.TASK_ASSIGN}_${task.id}`,
+            contentSummary: `Assigned task "${title}"`
+        });
     }
     
     return task;
@@ -158,12 +170,13 @@ export const updateTask = async (taskId, userId, updateData) => {
             const isCompleted = updateData.status === 'DONE';
             const actionType = isCompleted ? ACTIVITY_TYPES.TASK_COMPLETE : ACTIVITY_TYPES.TASK_UPDATE;
             
-            await logActivity(
+            await logActivity({
                 groupId, 
                 userId, 
                 actionType, 
-                `Updated task "${task.title}" (${changes.join(', ')})`
-            );
+                targetId: `${actionType}_${task.id}`,
+                contentSummary: `Updated task "${task.title}" (${changes.join(', ')})`
+            });
         }
     }
     
@@ -178,7 +191,13 @@ export const deleteTask = async (taskId, userId) => {
     
     const task = result.rows[0];
     if (task) {
-        await logActivity(task.group_id, userId, ACTIVITY_TYPES.TASK_DELETE, `Deleted task "${task.title}"`);
+        await logActivity({
+            groupId: task.group_id, 
+            userId, 
+            actionType: ACTIVITY_TYPES.TASK_DELETE, 
+            targetId: `${ACTIVITY_TYPES.TASK_DELETE}_${task.id}`,
+            contentSummary: `Deleted task "${task.title}"`
+        });
     }
     
     return task || null;
@@ -218,7 +237,13 @@ export const createDiscussion = async (groupId, userId, message) => {
     `, [groupId, userId, message]);
     
     const discussion = result.rows[0];
-    await logActivity(groupId, userId, ACTIVITY_TYPES.DISCUSSION_POST, 'Posted a new discussion message');
+    await logActivity({
+        groupId, 
+        userId, 
+        actionType: ACTIVITY_TYPES.DISCUSSION_POST, 
+        targetId: `${ACTIVITY_TYPES.DISCUSSION_POST}_${discussion.id}`,
+        contentSummary: 'Posted a new discussion message'
+    });
     
     return discussion;
 };
@@ -245,7 +270,13 @@ export const createFile = async (groupId, userId, fileName, fileUrl) => {
     `, [groupId, userId, fileName, fileUrl]);
     
     const file = result.rows[0];
-    await logActivity(groupId, userId, ACTIVITY_TYPES.FILE_UPLOAD, `Uploaded file "${fileName}"`);
+    await logActivity({
+        groupId, 
+        userId, 
+        actionType: ACTIVITY_TYPES.FILE_UPLOAD, 
+        targetId: `${ACTIVITY_TYPES.FILE_UPLOAD}_${file.id}`,
+        contentSummary: `Uploaded file "${fileName}"`
+    });
     
     return file;
 };

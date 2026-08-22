@@ -112,12 +112,20 @@ CREATE TABLE activity_logs (
     group_id UUID REFERENCES groups(id) ON DELETE CASCADE,
     user_id UUID REFERENCES users(id) ON DELETE CASCADE,
     action_type VARCHAR(100) NOT NULL, -- VD: CREATE, EDIT, COMMENT, SUBMIT
+    target_id VARCHAR(255), -- ID đối tượng (VD: submissionId, reviewId) hoặc '{actionType}_time' để tránh NULL
+    metadata JSONB, -- Context thêm (VD: {isLate, version})
     content_summary TEXT,
+    event_version INT DEFAULT 1, -- Đánh dấu schema version của event
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
 -- activity logs
 CREATE INDEX idx_activity_logs_group_created ON activity_logs(group_id, created_at DESC);
+CREATE INDEX idx_activity_group_user ON activity_logs(group_id, user_id);
+CREATE INDEX idx_activity_action_type ON activity_logs(action_type);
+CREATE INDEX idx_activity_created_at ON activity_logs(created_at);
+CREATE INDEX idx_activity_group_time ON activity_logs(group_id, created_at);
+CREATE INDEX idx_activity_group_action_time ON activity_logs(group_id, action_type, created_at);
 
 -- tasks
 CREATE INDEX idx_tasks_group_created ON tasks(group_id, created_at DESC);
@@ -460,6 +468,10 @@ Quản lý việc chia nhóm sinh viên, nhật ký hoạt động và tính to�
 - `user_id UUID REFERENCES users(id) ON DELETE CASCADE`: Thành viên thực hiện hành động.
     
 - `action_type VARCHAR(100) NOT NULL`: Loại hành động (Ví dụ: `CREATE`, `EDIT`, `COMMENT`, `SUBMIT`).
+
+- `target_id VARCHAR(255)`: Định danh đối tượng bị tác động để đếm unique actions (ví dụ: `submission_id`, `review_id`). Tránh NULL bằng cách dùng format `actionType_...`.
+
+- `metadata JSONB`: Lưu trữ context bổ sung cho analytics (Ví dụ: `{"isLate": false, "version": 2}`).
     
 - `content_summary TEXT`: Tóm tắt nội dung hành động đã làm.
     

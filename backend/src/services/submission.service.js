@@ -135,6 +135,7 @@ export const getStudentDashboardData = async (userId, limit, offset, sortColumn,
 };
 
 import { logActivity } from './activity.service.js';
+import { ACTIVITY_TYPES } from '../utils/constants.js';
 
 export const submitAssignment = async (assignmentId, userId, fileUrl) => {
     // 1. Validation & Auth
@@ -227,7 +228,18 @@ export const submitAssignment = async (assignmentId, userId, fileUrl) => {
 
         // 6. Activity Tracking
         try {
-            await logActivity(groupId, userId, 'SUBMIT_ASSIGNMENT', `Submitted assignment "${title}" (version ${newVersionNumber})`);
+            let actionType = ACTIVITY_TYPES.SUBMISSION_CREATED;
+            if (newStatus === SUBMISSION_STATUS.LATE) actionType = ACTIVITY_TYPES.SUBMISSION_LATE;
+            else if (newVersionNumber > 1) actionType = ACTIVITY_TYPES.SUBMISSION_RESUBMITTED;
+
+            await logActivity({
+                groupId, 
+                userId, 
+                actionType, 
+                targetId: `${actionType}_${submissionId}`,
+                metadata: { version: newVersionNumber, isLate: newStatus === SUBMISSION_STATUS.LATE },
+                contentSummary: `Submitted assignment "${title}" (version ${newVersionNumber})`
+            });
         } catch (logErr) {
             console.error('Activity log failed during submission:', logErr);
         }

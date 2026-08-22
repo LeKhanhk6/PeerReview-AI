@@ -45,5 +45,6 @@ export const CONTRIBUTION_CAPS = {
 export const CONTRIBUTION_THRESHOLDS = {
     HIGH: 80,
     NORMAL: 50,
-    LOW: 20
+    LOW: 20,
+    MIN_RAW_SCORE_FOR_SCALE: 20
 };

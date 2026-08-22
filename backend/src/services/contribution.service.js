@@ -58,13 +58,21 @@ export const calculateGroupContributions = async (groupId, timeframe) => {
         const scoreEarned = effectiveActions * weight;
         
         userData.rawScore += scoreEarned;
-        userData.breakdown[actionType] = {
-            totalActions: parseInt(stat.total, 10),
-            uniqueActions,
-            effectiveActions,
-            weight,
-            scoreEarned
-        };
+        if (!userData.breakdown[actionType]) {
+            userData.breakdown[actionType] = {
+                totalActions: 0,
+                uniqueActions: 0,
+                effectiveActions: 0,
+                weight,
+                scoreEarned: 0
+            };
+        }
+        
+        const bd = userData.breakdown[actionType];
+        bd.totalActions += parseInt(stat.total, 10);
+        bd.uniqueActions += uniqueActions;
+        bd.effectiveActions += effectiveActions;
+        bd.scoreEarned += scoreEarned;
     }
 
     // 3. Normalization (Scale to 0-100 relative to the highest contributor)
@@ -81,8 +89,7 @@ export const calculateGroupContributions = async (groupId, timeframe) => {
 
     // Relative scaling bug fix: if maxRawScore is too low (e.g., group just started),
     // don't inflate someone with 5 points to 100 points (HIGH_CONTRIBUTOR).
-    const MIN_RAW_SCORE_FOR_SCALE = 20; 
-    const scaleDenominator = Math.max(maxRawScore, MIN_RAW_SCORE_FOR_SCALE);
+    const scaleDenominator = Math.max(maxRawScore, CONTRIBUTION_THRESHOLDS.MIN_RAW_SCORE_FOR_SCALE || 20);
 
     // 4. Scoring & Classification
     const result = members.map(member => {
@@ -93,16 +100,23 @@ export const calculateGroupContributions = async (groupId, timeframe) => {
         
         let contributionPercent = 0;
         if (totalGroupRawScore > 0) {
-            contributionPercent = Math.round((member.rawScore / totalGroupRawScore) * 100);
+            contributionPercent = parseFloat(((member.rawScore / totalGroupRawScore) * 100).toFixed(2));
         }
 
+        const activityTypesCount = Object.keys(member.breakdown).length;
+
         let classification = 'FREE_RIDER';
-        if (finalScore >= CONTRIBUTION_THRESHOLDS.HIGH) {
+        if (finalScore >= CONTRIBUTION_THRESHOLDS.HIGH && activityTypesCount >= 2) {
             classification = 'HIGH_CONTRIBUTOR';
         } else if (finalScore >= CONTRIBUTION_THRESHOLDS.NORMAL) {
             classification = 'NORMAL_CONTRIBUTOR';
         } else if (finalScore >= CONTRIBUTION_THRESHOLDS.LOW) {
             classification = 'LOW_CONTRIBUTOR';
+        }
+
+        // Stricter Free-rider check
+        if (member.rawScore === 0 || (member.rawScore < 5 && activityTypesCount === 0)) {
+            classification = 'FREE_RIDER';
         }
 
         const alerts = [];

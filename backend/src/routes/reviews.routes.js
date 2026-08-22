@@ -18,4 +18,7 @@ router.post('/my-reviews/:reviewAssignmentId/submit', authorize('STUDENT'), revi
 // Student: Analyze review comment with AI
 router.post('/analyze', authorize('STUDENT'), reviewController.analyzeReviewText);
 
+// Teacher/Admin: Generate AI Synthesis of all reviews for an assignment
+router.get('/assignments/:assignmentId/reviews/synthesis', authorize('TEACHER', 'ADMIN'), reviewController.generateAssignmentReviewSynthesis);
+
 export default router;

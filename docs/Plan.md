@@ -528,16 +528,21 @@ Future:
 # 11. PHASE 10 — Review Synthesis
 
 ## TASK 11.1 — AI Synthesis (For Teacher)
-Input: All reviews of an assignment.
-Output (MVP):
+Processing flow:
+`reviews` -> `hybrid sampling (top 100)` -> `chunking (50/chunk)` -> `summaries` -> `final synthesis`
+
+Output JSON cuối cùng (MVP):
 ```json
 {
-  "strengths": [],
-  "weaknesses": [],
-  "suggestions": []
+  "summary": "Overall nhóm làm tốt...",
+  "strengths": ["..."],
+  "weaknesses": ["..."],
+  "suggestions": ["..."],
+  "totalReviewsAnalyzed": 100,
+  "confidence": 0.8
 }
 ```
-*(Provides a high-level summary of all peer reviews to solve the teacher's pain point of manual reading)*
+*(Provides a high-level summary of peer reviews to solve the teacher's pain point. Teacher Validation is built-in.)*
 
 ## TASK 11.2 — Topic / Clustering (Post-MVP)
 ```

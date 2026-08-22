@@ -375,3 +375,69 @@ export const submitReview = async (reviewAssignmentId, userId, payload) => {
         client.release();
     }
 };
+
+/**
+ * Lấy tất cả reviews của một bài tập, áp dụng Hybrid Sampling nếu quá nhiều.
+ * @param {string} assignmentId 
+ * @returns {Promise<Array<string>>} Mảng các chuỗi nhận xét gộp
+ */
+export const getAssignmentReviewsForSynthesis = async (assignmentId) => {
+    const query = `
+        SELECT 
+            r.overall_comment,
+            r.submitted_at,
+            (SELECT string_agg(rc.comment, ' ') FROM review_criteria rc WHERE rc.review_id = r.id AND rc.comment IS NOT NULL AND rc.comment != '') as criteria_comments
+        FROM reviews r
+        JOIN review_assignments ra ON ra.id = r.review_assignment_id
+        JOIN submissions s ON s.id = ra.submission_id
+        WHERE s.assignment_id = $1
+    `;
+    const result = await pool.query(query, [assignmentId]);
+
+    let reviews = result.rows.map(r => {
+        let text = '';
+        if (r.overall_comment) text += r.overall_comment + ' ';
+        if (r.criteria_comments) text += r.criteria_comments;
+        text = text.trim();
+        return {
+            text,
+            length: text.length,
+            submittedAt: new Date(r.submitted_at).getTime()
+        };
+    }).filter(r => r.text.length > 10); // Bỏ qua những review quá ngắn
+
+    const totalAvailable = reviews.length;
+    
+    // Hybrid Sampling: Nếu > 100, lấy top 100 (40 newest, 40 longest, 20 random)
+    if (reviews.length > 100) {
+        const selected = new Set();
+        
+        // 40 newest
+        reviews.sort((a, b) => b.submittedAt - a.submittedAt);
+        const newest = reviews.slice(0, 40);
+        newest.forEach(r => selected.add(r));
+        
+        // Loại bỏ những cái đã chọn để chọn longest
+        let remaining = reviews.filter(r => !selected.has(r));
+        
+        // 40 longest
+        remaining.sort((a, b) => b.length - a.length);
+        const longest = remaining.slice(0, 40);
+        longest.forEach(r => selected.add(r));
+        
+        // Loại tiếp để chọn random
+        remaining = reviews.filter(r => !selected.has(r));
+        
+        // 20 random
+        const shuffled = remaining.sort(() => 0.5 - Math.random());
+        const randoms = shuffled.slice(0, 20);
+        randoms.forEach(r => selected.add(r));
+        
+        reviews = Array.from(selected);
+    }
+    
+    return {
+        reviewsText: reviews.map(r => r.text),
+        totalAnalyzed: totalAvailable // Hiển thị tổng số review thực tế có
+    };
+};

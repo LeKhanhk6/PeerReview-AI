@@ -56,6 +56,42 @@ export const getMyReviewAssignments = async (req, res, next) => {
     }
 };
 
+export const generateAssignmentReviewSynthesis = async (req, res, next) => {
+    try {
+        const { assignmentId } = req.params;
+
+        if (!isValidUUID(assignmentId)) {
+            const error = new Error('Invalid assignment ID format');
+            error.statusCode = 400;
+            return next(error);
+        }
+
+        const { reviewsText, totalAnalyzed } = await reviewService.getAssignmentReviewsForSynthesis(assignmentId);
+        
+        if (totalAnalyzed === 0) {
+            return res.status(200).json({
+                data: {
+                    summary: "Chưa có nhận xét nào để tổng hợp.",
+                    strengths: [],
+                    weaknesses: [],
+                    suggestions: [],
+                    totalReviewsAnalyzed: 0,
+                    confidence: 0
+                }
+            });
+        }
+
+        const requestId = crypto.randomUUID();
+        const synthesis = await aiService.synthesizeReviews(reviewsText, totalAnalyzed, requestId);
+
+        return res.status(200).json({
+            data: synthesis
+        });
+    } catch (error) {
+        next(error);
+    }
+};
+
 export const getReviewAssignmentDetail = async (req, res, next) => {
     const { reviewAssignmentId } = req.params;
     const userId = req.user?.id;

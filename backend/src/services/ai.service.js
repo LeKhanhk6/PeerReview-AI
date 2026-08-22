@@ -42,16 +42,17 @@ Cấu trúc JSON yêu cầu:
  * Gọi API Gemini với AbortController để xử lý timeout
  * @param {string} prompt - Prompt đã được build
  * @param {string} requestId - UUID để tracing log
+ * @param {number} customTimeout - (Optional) Custom timeout in ms
  * @returns {Promise<string|null>} - Raw text trả về từ AI hoặc null nếu lỗi
  */
-const callProvider = async (prompt, requestId) => {
+const callProvider = async (prompt, requestId, customTimeout = null) => {
     if (!GEMINI_API_KEY) {
         console.error("AI Service Error", { requestId, message: "Missing GEMINI_API_KEY", stage: "callProvider" });
         return null;
     }
 
     const controller = new AbortController();
-    const timeoutMs = parseInt(process.env.AI_TIMEOUT) || 5000;
+    const timeoutMs = customTimeout || parseInt(process.env.AI_TIMEOUT) || 5000;
     const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
 
     try {
@@ -148,3 +149,87 @@ export const analyzeComment = async (text, requestId) => {
         return FALLBACK_RESPONSE;
     }
 };
+
+/**
+ * Phân tích và tổng hợp các review bằng AI với cơ chế Chunking.
+ * @param {Array<string>} reviews - Mảng các chuỗi nhận xét.
+ * @param {number} totalReviewsAnalyzed - Tổng số review ban đầu.
+ * @param {string} requestId - Trace ID.
+ * @returns {Promise<object>} JSON chứa summary, strengths, weaknesses, suggestions, ...
+ */
+export const synthesizeReviews = async (reviews, totalReviewsAnalyzed, requestId) => {
+    try {
+        if (!reviews || reviews.length === 0) return null;
+        
+        // Chunking (50 reviews per chunk)
+        const chunkSize = 50;
+        const chunks = [];
+        for (let i = 0; i < reviews.length; i += chunkSize) {
+            chunks.push(reviews.slice(i, i + chunkSize));
+        }
+        
+        const chunkSummaries = [];
+        for (const chunk of chunks) {
+            const prompt = `
+Dưới đây là một phần các nhận xét (reviews) của sinh viên về một bài tập. Hãy tóm tắt ngắn gọn các ý chính.
+Chỉ trả về JSON với cấu trúc: {"summary": "..."}
+
+Reviews:
+${JSON.stringify(chunk)}
+            `;
+            // Synthesis có thể tốn thời gian hơn, cấp 15s cho mỗi chunk
+            const rawResponse = await callProvider(prompt, requestId, 15000);
+            if (rawResponse) {
+                try {
+                    const parsed = JSON.parse(rawResponse.replace(/```json/gi, '').replace(/```/g, '').trim());
+                    if (parsed.summary) chunkSummaries.push(parsed.summary);
+                } catch(e) {
+                    // Ignore parse error cho chunk
+                }
+            }
+        }
+        
+        if (chunkSummaries.length === 0) throw new Error("Tất cả chunk đều thất bại.");
+
+        // Final Synthesis
+        const finalPrompt = `
+Dưới đây là các phần tóm tắt nhận xét chấm chéo của sinh viên cho một bài tập.
+Hãy tổng hợp lại thành 1 JSON duy nhất mô tả tổng quan bài làm của nhóm, điểm mạnh, điểm yếu và gợi ý chung.
+
+YÊU CẦU BẮT BUỘC: Chỉ trả về duy nhất 1 chuỗi JSON hợp lệ.
+Cấu trúc JSON yêu cầu:
+{
+  "summary": "Tóm tắt chung 3-5 dòng",
+  "strengths": ["Điểm mạnh 1", "Điểm mạnh 2"],
+  "weaknesses": ["Điểm yếu phổ biến 1", "Điểm yếu phổ biến 2"],
+  "suggestions": ["Gợi ý khắc phục 1", "Gợi ý khắc phục 2"]
+}
+
+Các tóm tắt:
+${JSON.stringify(chunkSummaries)}
+`;
+        const rawFinal = await callProvider(finalPrompt, requestId, 15000);
+        let cleanText = rawFinal ? rawFinal.replace(/```json/gi, '').replace(/```/g, '').trim() : '{}';
+        const parsed = JSON.parse(cleanText);
+        
+        return {
+            summary: parsed.summary || "Không thể tạo bản tóm tắt.",
+            strengths: Array.isArray(parsed.strengths) ? parsed.strengths : [],
+            weaknesses: Array.isArray(parsed.weaknesses) ? parsed.weaknesses : [],
+            suggestions: Array.isArray(parsed.suggestions) ? parsed.suggestions : [],
+            totalReviewsAnalyzed,
+            confidence: parsed.summary ? 0.85 : 0.0 // Giả lập độ tin cậy cơ bản cho MVP
+        };
+    } catch (error) {
+        console.error("AI Service Error", { requestId, message: "Error in synthesizeReviews", stage: "synthesizeReviews" });
+        return {
+            summary: "Lỗi khi tổng hợp bằng AI.",
+            strengths: [],
+            weaknesses: [],
+            suggestions: [],
+            totalReviewsAnalyzed,
+            confidence: 0
+        };
+    }
+};
+

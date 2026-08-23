@@ -845,3 +845,307 @@ export const getClassReviewAnalytics = async (currentUser, classId) => {
         assignments: result
     };
 };
+
+export const getCollaborationRisks = async (currentUser, classId) => {
+    const isAdmin = currentUser.role === 'ADMIN';
+
+    // 1. Validate ownership
+    const classRes = await pool.query(`SELECT teacher_id FROM classes WHERE id = $1`, [classId]);
+    if (classRes.rowCount === 0) {
+        throw new AppError('Class not found', 404);
+    }
+    if (!isAdmin && classRes.rows[0].teacher_id !== currentUser.userId) {
+        throw new AppError('Forbidden: You do not have access to this class', 403);
+    }
+
+    // 2. Fetch all data in parallel
+    const [
+        groupsRes,
+        membersRes,
+        activitiesRes,
+        tasksRes,
+        tasksCreatedRes,
+        assignmentsRes,
+        reviewsRes
+    ] = await Promise.all([
+        pool.query(`SELECT id, name, created_at FROM groups WHERE class_id = $1`, [classId]),
+        pool.query(`
+            SELECT gm.group_id, gm.user_id, u.full_name as name 
+            FROM group_members gm 
+            JOIN users u ON gm.user_id = u.id 
+            JOIN groups g ON gm.group_id = g.id 
+            WHERE g.class_id = $1
+        `, [classId]),
+        pool.query(`
+            SELECT al.group_id, al.user_id, COUNT(*) as action_count 
+            FROM activity_logs al 
+            JOIN groups g ON al.group_id = g.id 
+            WHERE g.class_id = $1 
+            GROUP BY al.group_id, al.user_id
+        `, [classId]),
+        pool.query(`
+            SELECT t.group_id, t.assignee_id, t.status 
+            FROM tasks t 
+            JOIN groups g ON t.group_id = g.id 
+            WHERE g.class_id = $1
+        `, [classId]),
+        pool.query(`
+            SELECT t.group_id, t.created_by as user_id, COUNT(*) as tasks_created
+            FROM tasks t
+            JOIN groups g ON t.group_id = g.id
+            WHERE g.class_id = $1
+            GROUP BY t.group_id, t.created_by
+        `, [classId]),
+        pool.query(`
+            SELECT id, title, deadline 
+            FROM assignments 
+            WHERE class_id = $1
+        `, [classId]),
+        pool.query(`
+            SELECT ra.reviewer_group_id as group_id, ra.status 
+            FROM review_assignments ra 
+            JOIN submissions s ON ra.submission_id = s.id 
+            JOIN assignments a ON s.assignment_id = a.id 
+            WHERE a.class_id = $1
+        `, [classId])
+    ]);
+
+    // 3. Process data in memory (O(1) lookup)
+    const groupsMap = new Map();
+    
+    groupsRes.rows.forEach(g => {
+        groupsMap.set(g.id, {
+            group: g,
+            members: new Map(),
+            totalActivities: 0,
+            totalTasks: 0,
+            completedTasks: 0,
+            totalReviews: 0,
+            completedReviews: 0
+        });
+    });
+
+    membersRes.rows.forEach(m => {
+        const groupData = groupsMap.get(m.group_id);
+        if (groupData) {
+            groupData.members.set(m.user_id, {
+                userId: m.user_id,
+                name: m.name,
+                totalActivities: 0,
+                tasksAssigned: 0,
+                tasksCompleted: 0,
+                tasksCreated: 0
+            });
+        }
+    });
+
+    activitiesRes.rows.forEach(a => {
+        const groupData = groupsMap.get(a.group_id);
+        if (groupData) {
+            const count = parseInt(a.action_count, 10);
+            groupData.totalActivities += count;
+            const member = groupData.members.get(a.user_id);
+            if (member) member.totalActivities = count;
+        }
+    });
+
+    tasksRes.rows.forEach(t => {
+        const groupData = groupsMap.get(t.group_id);
+        if (groupData) {
+            groupData.totalTasks++;
+            if (t.status === 'DONE') groupData.completedTasks++;
+            
+            if (t.assignee_id) {
+                const member = groupData.members.get(t.assignee_id);
+                if (member) {
+                    member.tasksAssigned++;
+                    if (t.status === 'DONE') member.tasksCompleted++;
+                }
+            }
+        }
+    });
+
+    tasksCreatedRes.rows.forEach(t => {
+        const groupData = groupsMap.get(t.group_id);
+        if (groupData) {
+            const member = groupData.members.get(t.user_id);
+            if (member) {
+                member.tasksCreated = parseInt(t.tasks_created, 10) || 0;
+            }
+        }
+    });
+
+    reviewsRes.rows.forEach(r => {
+        const groupData = groupsMap.get(r.group_id);
+        if (groupData) {
+            groupData.totalReviews++;
+            if (r.status === 'COMPLETED') groupData.completedReviews++;
+        }
+    });
+
+    const assignments = assignmentsRes.rows;
+    const now = new Date();
+    
+    let nearestDeadlineDays = Infinity;
+    let isReviewPhaseStarted = false;
+    assignments.forEach(a => {
+        const deadlineDate = new Date(a.deadline);
+        const diffDays = (deadlineDate - now) / (1000 * 60 * 60 * 24);
+        
+        if (diffDays <= 2 && diffDays > -30) {
+            if (diffDays < nearestDeadlineDays) nearestDeadlineDays = diffDays;
+        }
+        
+        if (now > deadlineDate) {
+            isReviewPhaseStarted = true;
+        }
+    });
+
+    // 4. Rule Engine
+    const riskTemplates = {
+        DEAD_GROUP: (groupName) => `Nhóm ${groupName} không có bất kỳ hoạt động nào`,
+        LOW_ACTIVITY: (name) => `${name} không có tương tác nào trong nhóm`,
+        LOW_CONTRIBUTION: (name) => `${name} có mức đóng góp quá thấp`,
+        UNBALANCED_CONTRIBUTION: (groupName) => `Phân chia công việc trong nhóm ${groupName} quá mất cân bằng`,
+        INCOMPLETE_TASKS: (groupName) => `Nhóm ${groupName} hoàn thành quá ít task trong khi sắp tới deadline`,
+        REVIEW_INACTIVITY_HIGH: (groupName) => `Nhóm ${groupName} chưa chấm chéo bài nào`,
+        REVIEW_INACTIVITY_MEDIUM: (groupName) => `Nhóm ${groupName} chậm trễ trong việc chấm chéo`
+    };
+
+    const rules = [
+        // 1. DEAD_GROUP
+        (g) => {
+            const ageInDays = (now - new Date(g.group.created_at)) / (1000 * 60 * 60 * 24);
+            if (g.totalActivities === 0 && ageInDays > 2) {
+                return { type: 'DEAD_GROUP', entity: 'GROUP', severity: 'HIGH', data: { ageInDays: round2(ageInDays) } };
+            }
+            return null;
+        },
+        // 2. LOW_ACTIVITY
+        (g) => {
+            if (g.isDeadGroup) return null;
+            if (g.totalActivities <= 5) return null;
+            
+            const results = [];
+            g.members.forEach(m => {
+                if (m.totalActivities === 0) {
+                    results.push({ type: 'LOW_ACTIVITY', entity: 'USER', severity: 'MEDIUM', userId: m.userId, userName: m.name, data: { groupActivities: g.totalActivities } });
+                }
+            });
+            return results;
+        },
+        // 3. LOW_CONTRIBUTION
+        (g) => {
+            if (g.isDeadGroup) return null;
+            
+            const results = [];
+            g.members.forEach(m => {
+                if (m.metrics && m.metrics.isFreeRider) {
+                    results.push({ type: 'LOW_CONTRIBUTION', entity: 'USER', severity: 'HIGH', userId: m.userId, userName: m.name, data: { contributionScore: m.metrics.contributionScore } });
+                }
+            });
+            return results;
+        },
+        // 4. UNBALANCED_CONTRIBUTION
+        (g) => {
+            if (g.isDeadGroup) return null;
+            if (g.members.size < 2 || g.totalTasks < 5) return null;
+            
+            let maxContribution = 0;
+            g.members.forEach(m => {
+                if (m.metrics && m.metrics.contributionScore > maxContribution) {
+                    maxContribution = m.metrics.contributionScore;
+                }
+            });
+            
+            if (maxContribution > 0.8) {
+                return { type: 'UNBALANCED_CONTRIBUTION', entity: 'GROUP', severity: 'MEDIUM', data: { maxContribution } };
+            }
+            return null;
+        },
+        // 5. INCOMPLETE_TASKS
+        (g) => {
+            if (g.isDeadGroup) return null;
+            if (g.totalTasks > 0 && nearestDeadlineDays <= 2) {
+                const completionRate = g.completedTasks / g.totalTasks;
+                if (completionRate < 0.3) {
+                    return { type: 'INCOMPLETE_TASKS', entity: 'GROUP', severity: 'HIGH', data: { completionRate: round2(completionRate), daysToDeadline: round2(nearestDeadlineDays) } };
+                }
+            }
+            return null;
+        },
+        // 6. REVIEW_INACTIVITY
+        (g) => {
+            if (g.totalReviews > 0 && isReviewPhaseStarted) {
+                const reviewCompletionRate = g.completedReviews / g.totalReviews;
+                if (reviewCompletionRate === 0) {
+                    return { type: 'REVIEW_INACTIVITY', entity: 'GROUP', severity: 'HIGH', data: { reviewCompletionRate: 0 } };
+                } else if (reviewCompletionRate < 0.5) {
+                    return { type: 'REVIEW_INACTIVITY', entity: 'GROUP', severity: 'MEDIUM', data: { reviewCompletionRate: round2(reviewCompletionRate) } };
+                }
+            }
+            return null;
+        }
+    ];
+
+    const formatRisk = (res, g) => {
+        let score = res.severity === 'HIGH' ? 0.9 : 0.6;
+        let description = "";
+        
+        switch (res.type) {
+            case 'DEAD_GROUP': description = riskTemplates.DEAD_GROUP(g.group.name); break;
+            case 'LOW_ACTIVITY': description = riskTemplates.LOW_ACTIVITY(res.userName); break;
+            case 'LOW_CONTRIBUTION': description = riskTemplates.LOW_CONTRIBUTION(res.userName); break;
+            case 'UNBALANCED_CONTRIBUTION': description = riskTemplates.UNBALANCED_CONTRIBUTION(g.group.name); break;
+            case 'INCOMPLETE_TASKS': description = riskTemplates.INCOMPLETE_TASKS(g.group.name); break;
+            case 'REVIEW_INACTIVITY': 
+                description = res.severity === 'HIGH' ? riskTemplates.REVIEW_INACTIVITY_HIGH(g.group.name) : riskTemplates.REVIEW_INACTIVITY_MEDIUM(g.group.name);
+                break;
+        }
+
+        return {
+            groupId: g.group.id,
+            userId: res.userId || null,
+            entityType: res.entity,
+            riskType: res.type,
+            severity: res.severity,
+            score,
+            description,
+            data: res.data || {}
+        };
+    };
+
+    const risks = [];
+    const uniqueRisks = new Set();
+
+    groupsMap.forEach(g => {
+        // Pre-calculate member metrics
+        const maxActivities = Math.max(0, ...Array.from(g.members.values()).map(m => m.totalActivities));
+        const maxTasksCreated = Math.max(0, ...Array.from(g.members.values()).map(m => m.tasksCreated));
+        
+        g.members.forEach(m => {
+            m.metrics = calculateContribution(m, maxActivities, maxTasksCreated);
+        });
+
+        // Determine if dead group
+        const ageInDays = (now - new Date(g.group.created_at)) / (1000 * 60 * 60 * 24);
+        g.isDeadGroup = (g.totalActivities === 0 && ageInDays > 2);
+
+        rules.forEach(rule => {
+            const results = rule(g);
+            const arr = Array.isArray(results) ? results : (results ? [results] : []);
+            
+            arr.forEach(res => {
+                const key = `${g.group.id}-${res.userId || 'group'}-${res.type}`;
+                if (!uniqueRisks.has(key)) {
+                    uniqueRisks.add(key);
+                    risks.push(formatRisk(res, g));
+                }
+            });
+        });
+    });
+
+    risks.sort((a, b) => b.score - a.score);
+
+    return risks;
+};

@@ -21,4 +21,7 @@ router.get('/assignments/:assignmentId/reviews', analyticsController.getAssignme
 // Class Review Analytics (Aggregation API)
 router.get('/classes/:classId/reviews', analyticsController.getClassReviewAnalytics);
 
+// Collaboration Risks / Early Warning
+router.get('/classes/:classId/collaboration-risks', analyticsController.getClassCollaborationRisks);
+
 export default router;

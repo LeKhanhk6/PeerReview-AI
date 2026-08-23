@@ -73,3 +73,17 @@ export const getClassReviewAnalytics = async (req, res, next) => {
         next(error);
     }
 };
+
+export const getClassCollaborationRisks = async (req, res, next) => {
+    try {
+        const { classId } = req.params;
+        if (!isValidUUID(classId)) {
+            throw new AppError('Invalid classId format', 400);
+        }
+
+        const risks = await analyticsService.getCollaborationRisks(req.user, classId);
+        res.json({ data: risks });
+    } catch (error) {
+        next(error);
+    }
+};

@@ -140,6 +140,15 @@ const callProvider = async (prompt, requestId, customTimeout = null, retries = 1
 };
 
 /**
+ * Xử lý tách chuỗi JSON khỏi các phần text rác bao quanh
+ */
+const extractJSON = (text) => {
+    if (!text) return "";
+    const match = text.match(/\{[\s\S]*\}/);
+    return match ? match[0] : text;
+};
+
+/**
  * Xử lý parse chuỗi JSON trả về an toàn
  * @param {string} rawResponse 
  * @param {string} requestId 
@@ -151,7 +160,12 @@ const parseResponse = (rawResponse, requestId) => {
     try {
         // Loại bỏ markdown code blocks nếu AI vẫn sinh ra
         let cleanText = rawResponse.replace(/```json/gi, '').replace(/```/g, '').trim();
-        const parsed = JSON.parse(cleanText);
+        cleanText = extractJSON(cleanText);
+        
+        let parsed = JSON.parse(cleanText);
+        if (typeof parsed !== "object" || parsed === null) {
+            parsed = {};
+        }
 
         const validStatus = ["GOOD", "NEEDS_IMPROVEMENT", "TOXIC"];
         const statusVal = parsed.status ? parsed.status.toUpperCase() : "";
@@ -164,7 +178,11 @@ const parseResponse = (rawResponse, requestId) => {
             improvement: parsed.improvement || ""
         };
     } catch (error) {
-        console.error("AI Service Error", { requestId, message: "JSON parse fail", stage: "parseResponse" });
+        console.error("AI_SYNTHESIS_PARSE_ERROR", { 
+            requestId, 
+            rawResponse: rawResponse?.slice(0, 300),
+            error: error.message 
+        });
         return FALLBACK_RESPONSE;
     }
 };
@@ -249,7 +267,10 @@ ${JSON.stringify(chunk)}
             const rawResponse = await callProvider(prompt, requestId, 10000);
             if (rawResponse) {
                 try {
-                    const parsed = JSON.parse(rawResponse.replace(/```json/gi, '').replace(/```/g, '').trim());
+                    let cleanText = rawResponse.replace(/```json/gi, '').replace(/```/g, '').trim();
+                    cleanText = extractJSON(cleanText);
+                    let parsed = JSON.parse(cleanText);
+                    if (typeof parsed !== "object" || parsed === null) parsed = {};
                     return parsed.summary;
                 } catch(e) {
                     return null;
@@ -290,16 +311,26 @@ ${JSON.stringify(chunkSummaries)}
         }
 
         let cleanText = rawFinal.replace(/```json/gi, '').replace(/```/g, '').trim();
+        cleanText = extractJSON(cleanText);
+        
         let parsed = {};
         try {
-            parsed = JSON.parse(cleanText) || {};
+            parsed = JSON.parse(cleanText);
+            if (typeof parsed !== "object" || parsed === null) {
+                parsed = {};
+            }
         } catch (err) {
-            console.error("AI Service JSON parse error", { requestId, message: err.message });
+            console.error("AI_SYNTHESIS_PARSE_ERROR", { 
+                requestId, 
+                rawResponse: rawFinal?.slice(0, 300), 
+                error: err.message 
+            });
             parsed = {};
         }
         
         const safeArray = (val) => Array.isArray(val) ? val : [];
         const cleanString = (val) => typeof val === "string" ? val.trim() : "";
+        const cleanArray = (arr) => safeArray(arr).map(item => cleanString(item)).filter(Boolean).slice(0, 5);
         
         const rawSentiment = cleanString(parsed.sentiment).toLowerCase();
         const allowedSentiment = ["positive", "neutral", "negative"];
@@ -307,11 +338,11 @@ ${JSON.stringify(chunkSummaries)}
 
         const finalData = {
             summary: cleanString(parsed.summary) || "Không thể tạo bản tóm tắt.",
-            strengths: safeArray(parsed.strengths).slice(0, 5),
-            weaknesses: safeArray(parsed.weaknesses).slice(0, 5),
-            suggestions: safeArray(parsed.suggestions).slice(0, 5),
-            importantQuestions: safeArray(parsed.important_questions).slice(0, 5),
-            keywords: safeArray(parsed.keywords).slice(0, 5),
+            strengths: cleanArray(parsed.strengths),
+            weaknesses: cleanArray(parsed.weaknesses),
+            suggestions: cleanArray(parsed.suggestions),
+            importantQuestions: cleanArray(parsed.important_questions),
+            keywords: cleanArray(parsed.keywords),
             sentiment: sentiment
         };
 

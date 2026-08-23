@@ -1,174 +1,112 @@
-# Cấu trúc & Chi tiết Frontend Screens dự kiến
+# UI/UX Design Specifications (Frontend Screens)
 
-Tài liệu này liệt kê danh sách và **mô tả chi tiết UI/UX** của toàn bộ các màn hình (Screens/Pages) cần xây dựng cho Frontend (React/Next.js/Vite) của dự án **PeerReview-AI**, giúp Designer và Developer dễ dàng nắm bắt cấu trúc để triển khai.
-
----
-
-## 1. 🔑 Auth & Public
-Các màn hình dành cho việc xác thực và người dùng chưa đăng nhập.
-
-### 1.1 `src/pages/auth/Login.tsx` (Đăng nhập)
-- **Layout:** Căn giữa màn hình (Centered form) hoặc Split screen (1 nửa form, 1 nửa hình ảnh minh họa).
-- **Components chính:**
-  - Form: Email, Password.
-  - Checkbox "Remember me".
-  - Link "Quên mật khẩu?".
-  - Nút "Đăng nhập" (Primary).
-  - Link "Chưa có tài khoản? Đăng ký".
-
-### 1.2 `src/pages/auth/Register.tsx` (Đăng ký)
-- **Layout:** Tương tự Login.
-- **Components chính:**
-  - Form: Họ tên, Email, Password, Confirm Password, Mã Sinh Viên (Tùy chọn).
-  - Nút "Đăng ký" (Primary).
-
-### 1.3 `src/pages/auth/ForgotPassword.tsx` (Quên mật khẩu)
-- **Layout:** Centered form.
-- **Components chính:** Ô nhập Email, Nút "Gửi link khôi phục".
-
-### 1.4 `src/pages/LandingPage.tsx` (Trang chủ giới thiệu)
-- **Layout:** Dạng One-page scrolling.
-- **Components chính:** Hero section (giới thiệu PeerReview-AI), Features (tính năng nổi bật), Footer.
-- **Action:** Nút "Bắt đầu ngay" dẫn tới trang Login/Register.
+Tài liệu này đóng vai trò là bản đặc tả thiết kế (Design Spec) dành riêng cho UI/UX Designer (triển khai trên Figma). Nó định nghĩa chi tiết những gì cần thiết kế trên giao diện, các luồng người dùng (User Flows), và những ràng buộc về UX để đảm bảo hệ thống sát với thực tế dữ liệu của Backend (chuẩn MVP).
 
 ---
 
-## 2. 👨‍🎓 Student Portal (Khu vực Sinh Viên)
-Khu vực dành riêng cho Sinh viên thực hiện các hoạt động học tập, làm nhóm và chấm chéo.
+## 1. Global UX & Design Guidelines
 
-### 2.1 Dashboard & Lớp học
-#### `src/pages/student/Dashboard.tsx` (Tổng quan Sinh viên)
-- **Layout:** Sidebar menu + Main content.
-- **Components chính:**
-  - **Welcome Banner:** Lời chào, tóm tắt tiến độ.
-  - **Todo List Widget:** Danh sách các việc cần làm khẩn cấp (Bài tập sắp hạn chót, Review đang pending).
-  - **My Classes Grid:** Danh sách các lớp dạng Card (Hiển thị tên môn, giảng viên, số lượng bài tập mới).
+Để đảm bảo tính nhất quán trên toàn bộ hệ thống, Designer cần chuẩn bị các UI Component dùng chung sau:
 
-#### `src/pages/student/ClassDetail.tsx` (Chi tiết Lớp học)
-- **Layout:** Page Header (Tên môn) + Tab Navigation.
-- **Tab 1 - Bài tập:** Danh sách Assignments (Timeline).
-- **Tab 2 - Mọi người:** Danh sách thành viên lớp.
-- **Tab 3 - Nhóm của tôi:** Thông tin nhóm hiện tại.
+### 1.1 Trạng thái UI cơ bản (UI States)
+- **Empty States**: Thiết kế các màn hình/khối rỗng có hình minh họa (Illustration) hoặc Icon + Text.
+  - Workspace cần rỗng theo từng Tab: "No tasks yet", "No messages yet", "No files uploaded", "No submissions yet".
+  - Bảng cảnh báo: "Tuyệt vời, không có vấn đề nào được phát hiện".
+- **Loading States**: Thiết kế hệ thống Skeleton Loader (khung xám tải trang) thay vì màn hình trắng. Cần có bản vẽ Partial Loading (ví dụ: Text load xong trước, khung ảnh load sau).
+- **Error States**: Thiết kế Toast Notification (thông báo nhỏ góc màn hình, tự tắt) cho lỗi nhẹ, và Full-page Error Message kèm nút "Thử lại" cho lỗi gián đoạn mạng.
 
-### 2.2 Không gian làm việc nhóm (Group Workspace)
-#### `src/pages/student/workspace/GroupDashboard.tsx` (Tổng quan nhóm)
-- **Layout:** Bảng điều khiển nhóm.
-- **Components chính:**
-  - **Member List:** Danh sách thành viên, chỉ định ai là Leader.
-  - **Group Stats:** Số lượng activity logs, mức độ đóng góp tạm tính.
-
-#### `src/pages/student/workspace/AssignmentSubmission.tsx` (Nộp bài)
-- **Layout:** Form Upload + Lịch sử.
-- **Components chính:**
-  - **File Uploader:** Khu vực kéo thả file (PDF, Zip).
-  - **Version History:** Danh sách các lần nộp bài (Thời gian, người nộp, file đính kèm). Có nút Download lại.
-
-#### `src/pages/student/workspace/DiscussionBoard.tsx` (Thảo luận)
-- **Layout:** Giống một khung Chat room.
-- **Components chính:** Message Feed, Ô nhập tin nhắn, Nút đính kèm file.
-
-### 2.3 Peer Review (Chấm chéo)
-#### `src/pages/student/review/MyReviewTasks.tsx` (Nhiệm vụ chấm)
-- **Layout:** Danh sách Card/Table.
-- **Components chính:** Liệt kê các bài của nhóm khác được phân công chấm (ẩn danh). Nút "Bắt đầu chấm" hoặc "Sửa điểm".
-
-#### `src/pages/student/review/ReviewGradingScreen.tsx` (Màn hình Chấm chéo - Quan trọng)
-- **Layout:** Split-screen (Trái: Đề/Bài nộp, Phải: Phiếu chấm).
-- **Bên Trái (PDF Viewer):** Render file PDF bài nộp của nhóm bạn (hoặc link download).
-- **Bên Phải (Rubric Form):**
-  - **Tiêu chí (Criteria):** Danh sách các tiêu chí chấm điểm, kéo thả thanh trượt hoặc chọn mức điểm.
-  - **Nhận xét (Comment):** Ô Textarea cho từng tiêu chí và cho tổng thể.
-  - **AI Mentor:** Nút "Nhờ AI gợi ý nhận xét", hiển thị popover text gợi ý từ AI.
-- **Action:** "Lưu nháp", "Nộp bảng điểm".
-
-#### `src/pages/student/review/ReviewFeedback.tsx` (Xem Feedback nhận được)
-- **Layout:** View-only Mode.
-- **Components chính:** Hiển thị điểm trung bình, đọc các nhận xét ẩn danh từ nhóm khác.
+### 1.2 UX Constraints (MVP)
+- **Data Limits**: Một số danh sách (như Cảnh báo Analytics) sẽ giới hạn 50 phần tử. Cần thiết kế nhãn nhỏ "Top 50 Risks only".
+- **Allowed Components**: Ưu tiên sử dụng Progress bars, Badges (Nhãn màu), Tables, và Simple Gauges (vòng cung đo % độ tự tin của AI).
+- **Avoid**: Tuyệt đối không vẽ các biểu đồ phức tạp (Line chart, Radar, Pie chart) để giữ đúng scope MVP.
+- **Accessibility**: Các trạng thái cảnh báo không chỉ dùng màu (Đỏ) mà bắt buộc phải đi kèm Icon (⚠️) để người mù màu dễ nhận biết.
 
 ---
 
-## 3. 👩‍🏫 Teacher Portal (Khu vực Giảng Viên)
-Khu vực quản lý và điều hành lớp học dành cho Giáo viên.
+## 2. Các luồng người dùng chính (Main User Flows)
 
-### 3.1 Quản lý Lớp & Sinh viên
-#### `src/pages/teacher/Dashboard.tsx`
-- **Layout:** Sidebar + Main Content.
-- **Components chính:** Báo cáo số liệu tổng quan (Số lớp, số bài tập chờ review), List các lớp đang dạy.
-
-#### `src/pages/teacher/ClassManager.tsx`
-- **Layout:** Table view.
-- **Components chính:** Nút "Tạo lớp mới", Bảng danh sách sinh viên, Nút "Import Excel", Xóa/Mời sinh viên.
-
-#### `src/pages/teacher/GroupManager.tsx`
-- **Layout:** Grid/List hiển thị các nhóm.
-- **Components chính:** Chức năng chia nhóm (Auto-random, Manual drag-drop), khóa nhóm.
-
-### 3.2 Quản lý Bài tập & Rubric
-#### `src/pages/teacher/assignment/AssignmentList.tsx`
-- **Layout:** Table view. Hiển thị Trạng thái (Mới, Đang nộp bài, Đang Review, Đã chốt điểm).
-
-#### `src/pages/teacher/assignment/CreateAssignment.tsx`
-- **Layout:** Wizard form (Nhiều bước).
-- **Steps:** 1. Thông tin chung (Tên, Hạn nộp) -> 2. Cài đặt Review (Hạn review, ẩn danh) -> 3. Chọn Rubric.
-
-#### `src/pages/teacher/assignment/RubricBuilder.tsx`
-- **Layout:** Trình kéo thả (Builder).
-- **Components chính:** Nút "Thêm Tiêu chí", form nhập tên tiêu chí, trọng số (%). Tự động tính tổng = 100%.
-
-### 3.3 Điều phối Peer Review
-#### `src/pages/teacher/review/ReviewEngineDashboard.tsx`
-- **Layout:** Màn hình cài đặt thuật toán.
-- **Components chính:** Chọn số lượng bài (N) mỗi nhóm phải chấm, nút "Chạy thuật toán Random". Hiển thị preview kết quả phân chia.
-
-#### `src/pages/teacher/review/ReviewProgress.tsx`
-- **Layout:** Bảng tiến độ.
-- **Components chính:** Danh sách nhóm, thanh Progress Bar (Đã chấm 2/3 bài), Nút "Nhắc nhở qua Email".
-
-### 3.4 Báo cáo & AI Analytics (Cảnh báo sớm)
-#### `src/pages/teacher/analytics/SubmissionAnalytics.tsx`
-- **Layout:** Data Table chuyên sâu. Hiển thị điểm số cuối cùng của toàn bộ lớp học, cho phép Export ra Excel.
-
-#### `src/pages/teacher/analytics/CollaborationRisks.tsx` (Early Warning)
-- **Layout:** Dashboard với các thẻ Cảnh báo.
-- **Components chính:** 
-  - Filter (DEAD_GROUP, LOW_CONTRIBUTION...).
-  - Risk Cards: Hiển thị tên nhóm/cá nhân, icon mức độ nghiêm trọng (Đỏ/Vàng), và mô tả (Ví dụ: "User A có mức đóng góp quá thấp"). Có nút xem chi tiết.
-
-#### `src/pages/teacher/analytics/ContributionDashboard.tsx`
-- **Layout:** Accordion / Master-detail.
-- **Components chính:** Bảng thống kê số lượng Message, Task hoàn thành, Contribution Score của từng sinh viên. Báo động đỏ với Free-riders.
-
-### 3.5 Teacher Validation (Duyệt kết quả)
-#### `src/pages/teacher/validation/ReviewValidationScreen.tsx`
-- **Layout:** Master-Detail (Bên trái: List bài nộp, Bên phải: Chi tiết).
-- **Components chính:**
-  - **AI Synthesis Card:** Hiển thị nhận xét tổng hợp từ AI, mức điểm AI đề xuất, độ tự tin, các câu hỏi cần chú ý.
-  - **Review History:** Các bài review gốc ẩn danh để giáo viên đối chiếu.
-  - **Finalize Form:** Ô input ghi đè điểm, Textarea nhận xét chốt của Giảng viên, nút "Approve & Finalize".
+- **Student Flow**: Đăng nhập → Student Dashboard → Click Bài tập (vào Assignment Detail) → Bấm "Enter Group Workspace" → Sử dụng các Tabs (Tasks/Chat/Files) → Nộp bài → Nhận thông báo chấm chéo → Vào Màn hình Grading để chấm điểm.
+- **Teacher Flow**: Đăng nhập → Teacher Dashboard → Click Lớp học (vào Class Detail Hub) → Mở xem Cảnh báo nhóm (Analytics) → Gửi tin nhắn cảnh báo → Mở Review Engine để phân công bài → Mở Màn hình AI Validation duyệt điểm cuối cùng.
 
 ---
 
-## 4. 👑 Admin Portal (Quản Trị Viên)
-Khu vực quản lý hệ thống tổng thể.
+## 3. Đặc tả chi tiết các màn hình (Screen Breakdown)
 
-### 4.1 `src/pages/admin/Dashboard.tsx`
-- **Components:** Các Widget thống kê (Tổng số User, Băng thông, Số lượng Class).
+### 👨‍🎓 Khu vực Sinh Viên (Student Screens)
 
-### 4.2 `src/pages/admin/UserManager.tsx`
-- **Components:** Bảng quản lý User. Đổi Role, Khóa tài khoản (Ban/Deactivate), Reset mật khẩu.
+#### 3.1 Student Dashboard
+- **Mục đích**: Trang chủ tổng quan cho Sinh viên.
+- **Layout & Components**:
+  - **Urgent Tasks Widget**: Nhấn mạnh các công việc/deadline sắp đến hạn (Dưới 2 ngày).
+  - **Assignment List/Grid**: Danh sách bài tập, hiển thị: Tên môn, Tên bài, Ngày hết hạn. Kèm theo Trạng thái Nộp bài (LATE, SUBMITTED) và Trạng thái Chấm chéo.
 
-### 4.3 `src/pages/admin/ClassManager.tsx`
-- **Components:** Xem danh sách toàn bộ các lớp trên server để monitor, phân công lại Giáo viên nếu cần.
+#### 3.2 Assignment Detail
+- **Mục đích**: Đọc đề bài và tiêu chí chấm điểm trước khi bắt đầu làm bài.
+- **Layout & Components**:
+  - Hạn nộp (Cần nhãn phân loại màu: Sắp đến hạn / Quá hạn).
+  - Khối Mô tả (Description) & Yêu cầu (Requirements).
+  - Khối File đính kèm (Danh sách file để tải về).
+  - Khối Bảng Rubric (Bảng Tiêu chí chấm điểm).
+- **Action quan trọng**: Cần một nút bấm to, nổi bật (Primary CTA) ghi rõ **"Enter Group Workspace"** (Vào không gian làm việc nhóm).
+
+#### 3.3 Group Workspace (Khu vực Làm việc Nhóm)
+- **Mục đích**: Không gian để thành viên nhóm tương tác.
+- **Layout**: Sử dụng Tab Navigation để chia rõ 4 công năng, tránh quá tải một màn hình.
+- **Các Tabs**:
+  - **Tab - Tasks (Công việc)**: Dạng bảng Kanban đơn giản (To Do, Done) hoặc List công việc. 
+  - **Tab - Discussion (Thảo luận)**: Giao diện Chat box (có ô nhập liệu, danh sách tin nhắn).
+  - **Tab - Files (Tài liệu)**: Giao diện danh sách file đính kèm nút Upload.
+  - **Tab - Submission (Nộp bài)**: (Xem chi tiết ở mục 3.4).
+
+#### 3.4 Assignment Submission (Nộp bài - Tab trong Workspace)
+- **Layout & Components**:
+  - Khối Upload File chính.
+  - **UX States**: Bắt buộc vẽ Progress bar (Thanh tiến trình) khi đang upload. Nút Submit phải mờ đi (disabled) khi đang tải.
+  - **Cảnh báo**: Nếu thời điểm nộp đã qua deadline, phải hiện rõ Badge đỏ "Late submission".
+  - **Lịch sử nộp**: Bảng/danh sách hiển thị các phiên bản (Version) đã từng nộp trước đó.
+
+#### 3.5 Review Grading Screen (Màn hình Chấm chéo)
+- **Mục đích**: Sinh viên chấm điểm cho nhóm khác.
+- **Layout**: Split-screen (Chia đôi màn hình). Bên Trái: Hiển thị file PDF/bài làm. Bên Phải: Phiếu chấm điểm (Rubric).
+- **Constraints (Ràng buộc UX)**:
+  - Bắt buộc nhập điểm cho TẤT CẢ tiêu chí thì Nút "Submit" mới được sáng lên.
+  - Các ô nhập điểm cần có range (Ví dụ chỉ cho nhập 0-10).
+  - Nút **"Request AI Mentor"**: Thiết kế một action nhỏ kèm icon ✨. Khi bấm vào hiện loading mờ, sau đó bung ra đoạn text gợi ý nhận xét từ AI.
 
 ---
 
-## 5. 🧩 Core Components (Dùng chung)
-Các thành phần UI dùng lại nhiều lần ở nhiều màn hình (UI Library).
+### 👨‍🏫 Khu vực Giảng Viên (Teacher Screens)
 
-- `Sidebar.tsx`: Thanh điều hướng dọc, đổi Menu tùy theo Role.
-- `Header.tsx`: Avatar, Profile Dropdown, Bell Notifications.
-- `RubricViewer.tsx`: Bảng hiển thị Tiêu chí chấm điểm dạng Read-only (cho SV xem đề) và Interactive (cho SV chấm).
-- `FileUploader.tsx`: Dropzone kéo thả file, hiển thị progress bar upload.
-- `PDFViewer.tsx`: Component nhúng iframe/pdf.js để đọc trực tiếp bài báo cáo mà không cần tải về.
-- `RiskBadge.tsx`: Nhãn hiển thị màu sắc theo độ nghiêm trọng của Risk (High = Đỏ, Medium = Cam).
-- `AIChatBubble.tsx`: Khung pop-up hoặc box mang phong cách AI (gradient border, có icon Sparkles ✨) dùng cho AI Mentor và AI Synthesis.
+#### 3.6 Teacher Dashboard & Class Detail
+- **Teacher Dashboard**: Màn hình hiển thị danh sách các lớp đang quản lý dưới dạng Card. Bấm vào một Lớp sẽ nhảy sang Class Detail.
+- **Teacher Class Detail (Central Hub)**: Đóng vai trò là trạm trung chuyển. Chứa các Dashboard Widgets hoặc Menu lớn dẫn tới: Danh sách bài tập, Analytics (Phân tích), Review Engine (Phân công chấm).
+
+#### 3.7 Review Engine & Progress (Điều phối chấm chéo)
+- **Mục đích**: Phân công bài tự động và theo dõi sinh viên chấm.
+- **Layout phải phản ánh 3 Trạng thái (Lifecycle)**:
+  - **State 1: Chưa chia bài (NOT_STARTED)**: Màn hình trống, nằm chính giữa là nút "Generate Review Assignments" (Bắt đầu chia bài).
+  - **State 2: Đã chia (GENERATED)**: Hiện Bảng Tiến độ chấm chéo của sinh viên (Ai xong, ai chưa). Bổ sung thêm nút "Nhắc nhở qua Email", và nút "Re-generate" (Chia lại nếu lỡ chia sai).
+  - **State 3: Khóa (LOCKED)**: Trạng thái chốt sổ. Các action button đều chuyển xám (disabled).
+
+#### 3.8 Class Analytics (Dashboard Cảnh báo)
+- **Layout**: Sử dụng Tab Navigation.
+- **Tab - Collaboration Risks (Cảnh báo sớm)**:
+  - Hiển thị danh sách các thẻ cảnh báo (Risk Cards). Cần có nhãn "Top 50 Risks only".
+  - **Thiết kế Card**: Dùng Badge màu đỏ (High Risk) hoặc màu Vàng (Medium Risk) + Icon (như ⚠️).
+  - **Dữ liệu trên Card**: Thể hiện Risk Type (DEAD_GROUP, LOW_CONTRIBUTION...). Tên sinh viên vi phạm.
+  - **Action Layer**: Thêm nút bấm nhỏ "Gửi tin nhắn cảnh báo" đặt ngay trên từng Card. Nút "Xem chi tiết".
+- **Tab - Contributions (Điểm đóng góp)**:
+  - Bảng danh sách chi tiết (Table).
+  - Thể hiện: Điểm cống hiến, Tỷ lệ công việc. Bổ sung nhãn cảnh báo (Free-Rider) nếu có. Người dùng có thể bấm xổ dọc (expand row) để xem chi tiết số lượng Message/Task.
+
+#### 3.9 Review Validation (Duyệt kết quả & AI Synthesis)
+- **Mục đích**: Xem AI tóm tắt các nhận xét của nhóm sinh viên, Giáo viên chốt điểm cuối.
+- **Layout**: Master-Detail. (Bên Trái: Danh sách các bài nộp của cả lớp, Bên Phải: Nội dung AI Synthesis & Khung Chốt điểm).
+- **Thiết kế phần AI Synthesis (Bên Phải)**:
+  - **Khối Tổng hợp AI**: Vẽ các mảng chữ tóm tắt Ưu điểm, Nhược điểm. Thêm điểm số AI đề xuất thật to (Ví dụ: 8.5/10).
+  - **UX Enhancement (Khai thác AI)**: 
+    - Gắn cảm xúc (Sentiment) bằng màu nền nhẹ (Xanh lá = Khen, Vàng = Trung lập, Đỏ = Chê).
+    - Danh sách các điểm nghi vấn (Important Questions) vẽ dưới dạng Checklist.
+    - **Highlight Mâu thuẫn**: Phải thiết kế vùng cảnh báo (Icon dấu chấm than/viền đỏ) nếu AI phát hiện các nhóm sinh viên chấm điểm cho nhau có độ lệch lớn (Mâu thuẫn kết quả).
+  - **Fallback State**: Lỡ AI chết, vẽ form báo lỗi chữ nhỏ "AI không thể tóm tắt lúc này" nhưng vẫn mở danh sách Review thô ở bên dưới để Giáo viên tự đọc và chấm thủ công.
+- **Khối Chốt điểm (Validation Action)**: Nằm ở dưới cùng (Sticky bottom). Gồm Input nhập điểm cuối cùng, Textarea ghi chú, và nút "Approve & Finalize".

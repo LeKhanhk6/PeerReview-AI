@@ -1,4 +1,15 @@
 import pool from '../config/db.js';
+import AppError from '../utils/AppError.js';
+
+const NOT_FOUND_MSG = 'Assignment not found or you do not have permission to access it';
+
+const validateId = (id, fieldName = 'ID') => {
+    const numericId = Number(id);
+    if (!Number.isInteger(numericId) || numericId <= 0) {
+        throw new AppError(`Invalid ${fieldName}`, 400);
+    }
+    return numericId;
+};
 
 // --- EXISTENCE & OWNERSHIP CHECKS ---
 
@@ -22,6 +33,10 @@ export const getAssignmentOwnershipInfo = async (assignmentId) => {
 // --- CRUD OPERATIONS ---
 
 export const getAllAssignments = async (user, classId) => {
+    if (!user || !user.role || !user.userId) {
+        throw new AppError('Invalid user context', 400);
+    }
+
     let query = '';
     const values = [];
 
@@ -44,7 +59,6 @@ export const getAllAssignments = async (user, classId) => {
             values.push(classId);
         }
     } else if (user.role === 'STUDENT') {
-        // ASSUMPTION: Student được xác định thuộc Class thông qua Group Membership
         query = `
             SELECT DISTINCT a.id, a.class_id, a.title, a.description, a.requirements, a.deadline, a.created_at 
             FROM assignments a 
@@ -58,9 +72,7 @@ export const getAllAssignments = async (user, classId) => {
             values.push(classId);
         }
     } else {
-        const error = new Error('Unsupported role');
-        error.status = 403;
-        throw error;
+        throw new AppError('Unsupported role', 403);
     }
 
     query += ' ORDER BY created_at DESC';
@@ -69,8 +81,13 @@ export const getAllAssignments = async (user, classId) => {
 };
 
 export const getAssignmentById = async (id, user) => {
+    const validId = validateId(id, 'assignment ID');
+    if (!user || !user.role || !user.userId) {
+        throw new AppError('Invalid user context', 400);
+    }
+
     let query = '';
-    const values = [id];
+    const values = [validId];
 
     if (user.role === 'ADMIN') {
         query = 'SELECT * FROM assignments WHERE id = $1';
@@ -90,59 +107,111 @@ export const getAssignmentById = async (id, user) => {
         `;
         values.push(user.userId);
     } else {
-        const error = new Error('Unsupported role');
-        error.status = 403;
-        throw error;
+        throw new AppError('Unsupported role', 403);
     }
 
     const result = await pool.query(query, values);
     if (result.rows.length === 0) {
-        const error = new Error('Assignment not found or you do not have permission to access it');
-        error.status = 404;
-        throw error;
+        throw new AppError(NOT_FOUND_MSG, 404);
     }
     return result.rows[0];
 };
 
-export const createAssignment = async (assignmentData) => {
+export const createAssignment = async (assignmentData, user) => {
+    if (!user || !user.role || !user.userId) {
+        throw new AppError('Invalid user context', 400);
+    }
+    if (user.role !== 'TEACHER') {
+        throw new AppError('Forbidden: Only teachers can create assignments', 403);
+    }
+
     const { class_id, title, description, requirements, deadline } = assignmentData;
+    const validClassId = validateId(class_id, 'class ID');
+    
+    if (!title || typeof title !== 'string' || title.trim() === '') {
+        throw new AppError('Valid title is required', 400);
+    }
+
+    // Verify ownership of the class
+    const classOwnership = await getClassOwnershipInfo(validClassId);
+    if (!classOwnership) {
+        throw new AppError('Class not found', 404);
+    }
+    if (classOwnership.teacher_id !== user.userId) {
+        throw new AppError('Forbidden: You do not manage this class', 403);
+    }
+
     const query = `
         INSERT INTO assignments (class_id, title, description, requirements, deadline)
         VALUES ($1, $2, $3, $4, $5)
         RETURNING id, class_id, title, description, requirements, deadline, created_at;
     `;
-    const values = [class_id, title, description, requirements, deadline];
+    const values = [validClassId, title.trim(), description, requirements, deadline];
     const result = await pool.query(query, values);
     return result.rows[0];
 };
 
-export const updateAssignment = async (id, assignmentData) => {
+export const updateAssignment = async (id, assignmentData, user) => {
+    const validId = validateId(id, 'assignment ID');
+    if (!user || !user.role || !user.userId) {
+        throw new AppError('Invalid user context', 400);
+    }
+    if (user.role !== 'TEACHER') {
+        throw new AppError('Forbidden: Only teachers can update assignments', 403);
+    }
+
+    // Check ownership
+    const assignmentOwnership = await getAssignmentOwnershipInfo(validId);
+    if (!assignmentOwnership) {
+        throw new AppError(NOT_FOUND_MSG, 404);
+    }
+    if (assignmentOwnership.teacher_id !== user.userId) {
+        throw new AppError(NOT_FOUND_MSG, 404);
+    }
+
     const { title, description, requirements, deadline } = assignmentData;
+    if (!title || typeof title !== 'string' || title.trim() === '') {
+        throw new AppError('Valid title is required', 400);
+    }
+
     const query = `
         UPDATE assignments
         SET title = $1, description = $2, requirements = $3, deadline = $4
         WHERE id = $5
         RETURNING id, class_id, title, description, requirements, deadline, created_at;
     `;
-    const values = [title, description, requirements, deadline, id];
+    const values = [title.trim(), description, requirements, deadline, validId];
     const result = await pool.query(query, values);
 
     if (result.rowCount === 0) {
-        const error = new Error('Assignment not found');
-        error.status = 404;
-        throw error;
+        throw new AppError(NOT_FOUND_MSG, 404);
     }
     return result.rows[0];
 };
 
-export const deleteAssignment = async (id) => {
+export const deleteAssignment = async (id, user) => {
+    const validId = validateId(id, 'assignment ID');
+    if (!user || !user.role || !user.userId) {
+        throw new AppError('Invalid user context', 400);
+    }
+    if (user.role !== 'TEACHER') {
+        throw new AppError('Forbidden: Only teachers can delete assignments', 403);
+    }
+
+    // Check ownership
+    const assignmentOwnership = await getAssignmentOwnershipInfo(validId);
+    if (!assignmentOwnership) {
+        throw new AppError(NOT_FOUND_MSG, 404);
+    }
+    if (assignmentOwnership.teacher_id !== user.userId) {
+        throw new AppError(NOT_FOUND_MSG, 404);
+    }
+
     const query = 'DELETE FROM assignments WHERE id = $1 RETURNING id;';
-    const result = await pool.query(query, [id]);
+    const result = await pool.query(query, [validId]);
 
     if (result.rowCount === 0) {
-        const error = new Error('Assignment not found');
-        error.status = 404;
-        throw error;
+        throw new AppError('Assignment not found', 404);
     }
     return true;
 };

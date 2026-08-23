@@ -1,4 +1,8 @@
 import pool from '../config/db.js';
+import AppError from '../utils/AppError.js';
+
+// --- CONSTANTS ---
+const NOT_FOUND_MSG = 'Group not found or you do not have permission to view it';
 
 // --- HELPER QUERIES ---
 
@@ -23,23 +27,17 @@ export const checkStudentCanJoinGroup = async (groupInfo, userId) => {
     // User Existence and Role check
     const userResult = await pool.query('SELECT id, role FROM users WHERE id = $1', [userId]);
     if (userResult.rows.length === 0) {
-        const error = new Error('User not found');
-        error.status = 404;
-        throw error;
+        throw new AppError('User not found', 404);
     }
     const targetUser = userResult.rows[0];
     if (targetUser.role !== 'STUDENT') {
-        const error = new Error('Only users with STUDENT role can be added to a group');
-        error.status = 400;
-        throw error;
+        throw new AppError('Only users with STUDENT role can be added to a group', 400);
     }
 
     // Check duplicate membership in this group
     const duplicateCheck = await pool.query('SELECT 1 FROM group_members WHERE group_id = $1 AND user_id = $2', [groupInfo.id, userId]);
     if (duplicateCheck.rows.length > 0) {
-        const error = new Error('User is already a member of this group');
-        error.status = 409;
-        throw error;
+        throw new AppError('User is already a member of this group', 409);
     }
 
     // Check 1 Student = Max 1 Group per Class
@@ -51,15 +49,17 @@ export const checkStudentCanJoinGroup = async (groupInfo, userId) => {
     `, [userId, groupInfo.class_id]);
 
     if (classGroupCheck.rows.length > 0) {
-        const error = new Error('Student already belongs to another group in this class');
-        error.status = 409;
-        throw error;
+        throw new AppError('Student already belongs to another group in this class', 409);
     }
 };
 
 // --- CRUD OPERATIONS ---
 
 export const getAllGroups = async (user, classId) => {
+    if (!user || !user.role || !user.userId) {
+        throw new AppError('Invalid user context', 400);
+    }
+    
     let query = '';
     const values = [];
 
@@ -100,9 +100,7 @@ export const getAllGroups = async (user, classId) => {
             values.push(classId);
         }
     } else {
-        const error = new Error('Unsupported role');
-        error.status = 403;
-        throw error;
+        throw new AppError('Unsupported role', 403);
     }
 
     query += ' ORDER BY g.created_at DESC';
@@ -119,79 +117,156 @@ export const getAllGroups = async (user, classId) => {
     }));
 };
 
+// IMPORTANT: Do NOT reorder authorization steps
+// Security invariant: group must be validated before membership
+const authorizeTeacher = (group, user) => {
+    if (group.teacher_id !== user.userId) {
+        throw new AppError(NOT_FOUND_MSG, 404);
+    }
+};
+
+const authorizeStudent = (members, user) => {
+    const isMember = members.some(m => m.id === user.userId);
+    if (!isMember) {
+        throw new AppError(NOT_FOUND_MSG, 404);
+    }
+};
+
+const validateId = (id, fieldName = 'ID') => {
+    const numericId = Number(id);
+    if (!Number.isInteger(numericId) || numericId <= 0) {
+        throw new AppError(`Invalid ${fieldName}`, 400);
+    }
+    return numericId;
+};
+
 export const getGroupById = async (id, user) => {
-    let query = '';
-    const values = [id];
-
-    if (user.role === 'ADMIN') {
-        query = 'SELECT g.*, c.name as class_name FROM groups g JOIN classes c ON g.class_id = c.id WHERE g.id = $1';
-    } else if (user.role === 'TEACHER') {
-        query = `
-            SELECT g.*, c.name as class_name FROM groups g 
-            JOIN classes c ON g.class_id = c.id 
-            WHERE g.id = $1 AND c.teacher_id = $2
-        `;
-        values.push(user.userId);
-    } else if (user.role === 'STUDENT') {
-        query = `
-            SELECT g.*, c.name as class_name FROM groups g 
-            JOIN classes c ON g.class_id = c.id
-            JOIN group_members gm ON g.id = gm.group_id 
-            WHERE g.id = $1 AND gm.user_id = $2
-        `;
-        values.push(user.userId);
-    } else {
-        const error = new Error('Unsupported role');
-        error.status = 403;
-        throw error;
+    // 1. Strict Input Validation
+    const groupId = validateId(id, 'group ID');
+    
+    if (!user || !user.role || !user.userId) {
+        throw new AppError('Invalid user context', 400);
+    }
+    
+    // 2. Fetch Group Data (Query 1)
+    const groupQuery = `
+        SELECT g.id, g.name, g.class_id, g.created_at, c.name as class_name, c.teacher_id 
+        FROM groups g 
+        JOIN classes c ON g.class_id = c.id 
+        WHERE g.id = $1
+    `;
+    const groupResult = await pool.query(groupQuery, [groupId]);
+    
+    // If group doesn't exist, throw immediately
+    if (groupResult.rows.length === 0) {
+        throw new AppError(NOT_FOUND_MSG, 404);
+    }
+    const group = groupResult.rows[0];
+    
+    // Validate Group Shape
+    if (!group || !group.id || !group.teacher_id) {
+        throw new AppError('Invalid group data structure from database', 500);
     }
 
-    const result = await pool.query(query, values);
-    if (result.rows.length === 0) {
-        // Group might exist but user doesn't have permission, or it might not exist at all.
-        // Check if group exists globally
-        const existCheck = await pool.query('SELECT id FROM groups WHERE id = $1', [id]);
-        if (existCheck.rows.length > 0) {
-            const error = new Error('Forbidden: You do not have permission to view this group');
-            error.status = 403;
-            throw error;
-        } else {
-            const error = new Error('Group not found');
-            error.status = 404;
-            throw error;
-        }
+    // Short-circuit authorization for TEACHER
+    if (user.role === 'TEACHER') {
+        authorizeTeacher(group, user);
     }
 
-    const group = result.rows[0];
-
-    // Fetch members
+    // 3. Fetch Members Data (Query 2)
     const membersQuery = `
-        SELECT u.id, u.full_name, u.email, gm.is_leader, gm.joined_at 
+        SELECT u.id, u.full_name, u.email, gm.is_leader, gm.joined_at, gm.group_id 
         FROM group_members gm
         JOIN users u ON gm.user_id = u.id
         WHERE gm.group_id = $1
     `;
-    const membersResult = await pool.query(membersQuery, [id]);
+    const membersResult = await pool.query(membersQuery, [groupId]);
+    
+    // 4. Deterministic Deduplication & Data Integrity Check
+    const deduplicatedMembers = [];
+    const memberMap = new Map();
+    for (const member of membersResult.rows) {
+        if (!member.id || typeof member.is_leader !== 'boolean') {
+            throw new AppError('Corrupted data: Group member missing required fields', 500);
+        }
+        if (member.group_id !== group.id) {
+            throw new AppError('Data inconsistency: Member group ID mismatch', 500);
+        }
+        
+        if (!memberMap.has(member.id)) {
+            memberMap.set(member.id, member);
+        } else {
+            const existing = memberMap.get(member.id);
+            if (existing.is_leader !== member.is_leader) {
+                throw new AppError('Corrupted membership data: Conflicting roles for the same user', 500);
+            }
+        }
+    }
+    for (const member of memberMap.values()) {
+        deduplicatedMembers.push({
+            id: member.id,
+            full_name: member.full_name,
+            email: member.email,
+            is_leader: member.is_leader,
+            joined_at: member.joined_at
+        });
+    }
 
+    // 5. Explicit Authorization for STUDENT
+    if (user.role === 'STUDENT') {
+        authorizeStudent(deduplicatedMembers, user);
+    } else if (user.role !== 'TEACHER' && user.role !== 'ADMIN') {
+        throw new AppError('Unsupported role', 403);
+    }
+
+    // 6. Normalize & Return
     return {
         id: group.id,
         name: group.name,
+        teacherId: group.teacher_id, // Normalized output
         class: {
             id: group.class_id,
             name: group.class_name
         },
         created_at: group.created_at,
-        members: membersResult.rows
+        members: deduplicatedMembers
     };
 };
 
-export const createGroup = async (classId, name) => {
+export const createGroup = async (classId, name, user) => {
+    const validClassId = validateId(classId, 'class ID');
+    if (!name || typeof name !== 'string' || name.trim() === '') {
+        throw new AppError('Valid group name is required', 400);
+    }
+    
+    if (!user || !user.role || !user.userId) {
+        throw new AppError('Invalid user context', 400);
+    }
+    
+    if (user.role !== 'TEACHER') {
+        throw new AppError('Forbidden: Only teachers can create groups', 403);
+    }
+    
+    const classCheck = await pool.query('SELECT teacher_id FROM classes WHERE id = $1', [validClassId]);
+    if (classCheck.rows.length === 0) {
+        throw new AppError('Class not found', 404);
+    }
+    if (classCheck.rows[0].teacher_id !== user.userId) {
+        throw new AppError('Forbidden: You do not manage this class', 403);
+    }
+    
+    // Group uniqueness rule: 1 class has max 1 group with the same name
+    const groupNameCheck = await pool.query('SELECT 1 FROM groups WHERE class_id = $1 AND name = $2', [validClassId, name.trim()]);
+    if (groupNameCheck.rows.length > 0) {
+        throw new AppError('A group with this name already exists in the class', 409);
+    }
+
     const query = `
         INSERT INTO groups (class_id, name)
         VALUES ($1, $2)
         RETURNING id, class_id, name, created_at;
     `;
-    const result = await pool.query(query, [classId, name]);
+    const result = await pool.query(query, [validClassId, name.trim()]);
     return result.rows[0];
 };
 

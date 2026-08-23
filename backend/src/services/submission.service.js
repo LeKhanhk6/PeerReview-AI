@@ -1,5 +1,8 @@
 import pool from '../config/db.js';
 import { SUBMISSION_STATUS, REVIEW_STATUS } from '../utils/submission.constants.js';
+import AppError from '../utils/AppError.js';
+import { logActivity } from './activity.service.js';
+import { ACTIVITY_TYPES } from '../utils/constants.js';
 
 const getSubmissionStatus = (submission, deadline) => {
     if (!submission) return SUBMISSION_STATUS.NOT_STARTED;
@@ -15,6 +18,14 @@ const getReviewStatus = (review) => {
     if (!review) return REVIEW_STATUS.NOT_REVIEWED;
     if (review.db_review_status !== 'COMPLETED') return REVIEW_STATUS.UNDER_REVIEW;
     return REVIEW_STATUS.REVIEWED;
+};
+
+const validateId = (id, fieldName = 'ID') => {
+    const numericId = Number(id);
+    if (!Number.isInteger(numericId) || numericId <= 0) {
+        throw new AppError(`Invalid ${fieldName}`, 400);
+    }
+    return numericId;
 };
 
 export const getStudentDashboardData = async (userId, limit, offset, sortColumn, sortOrder) => {
@@ -127,17 +138,18 @@ export const getStudentDashboardData = async (userId, limit, offset, sortColumn,
             total
         };
     } catch (err) {
-        const error = new Error('Failed to fetch student dashboard data');
-        error.statusCode = 500;
+        const error = new AppError('Failed to fetch student dashboard data', 500);
         error.originalError = err;
         throw error;
     }
 };
 
-import { logActivity } from './activity.service.js';
-import { ACTIVITY_TYPES } from '../utils/constants.js';
-
 export const submitAssignment = async (assignmentId, userId, fileUrl) => {
+    const validAssignmentId = validateId(assignmentId, 'assignment ID');
+    if (!fileUrl || typeof fileUrl !== 'string' || fileUrl.trim() === '') {
+        throw new AppError('Valid file URL is required', 400);
+    }
+    
     // 1. Validation & Auth
     const authQuery = `
         SELECT a.id, a.deadline, a.title, g.id as group_id
@@ -146,13 +158,11 @@ export const submitAssignment = async (assignmentId, userId, fileUrl) => {
         JOIN group_members gm ON gm.group_id = g.id
         WHERE a.id = $1 AND gm.user_id = $2
     `;
-    const authResult = await pool.query(authQuery, [assignmentId, userId]);
+    const authResult = await pool.query(authQuery, [validAssignmentId, userId]);
     
     if (authResult.rows.length === 0) {
-        const checkExists = await pool.query('SELECT id FROM assignments WHERE id = $1', [assignmentId]);
-        const error = new Error(checkExists.rows.length > 0 ? 'Forbidden access to this assignment' : 'Assignment not found');
-        error.statusCode = checkExists.rows.length > 0 ? 403 : 404;
-        throw error;
+        const checkExists = await pool.query('SELECT id FROM assignments WHERE id = $1', [validAssignmentId]);
+        throw new AppError(checkExists.rows.length > 0 ? 'Forbidden access to this assignment' : 'Assignment not found', checkExists.rows.length > 0 ? 403 : 404);
     }
     
     const { deadline, title, group_id: groupId } = authResult.rows[0];
@@ -209,9 +219,7 @@ export const submitAssignment = async (assignmentId, userId, fileUrl) => {
             }
             
             if (latest.version_number >= 20) {
-                const error = new Error('Maximum submission versions (20) exceeded.');
-                error.statusCode = 400;
-                throw error;
+                throw new AppError('Maximum submission versions (20) exceeded.', 400);
             }
             
             newVersionNumber = latest.version_number + 1;
@@ -255,8 +263,8 @@ export const submitAssignment = async (assignmentId, userId, fileUrl) => {
     } catch (err) {
         await client.query('ROLLBACK');
         console.error(`submit_assignment_failed:${assignmentId}`, err);
-        const error = new Error(err.message || 'Failed to submit assignment');
-        error.statusCode = err.statusCode || err.status || 500;
+        const status = err.status || err.statusCode || 500;
+        const error = new AppError(err.message || 'Failed to submit assignment', status);
         error.originalError = err;
         throw error;
     } finally {
@@ -265,7 +273,8 @@ export const submitAssignment = async (assignmentId, userId, fileUrl) => {
 };
 
 export const getSubmissionHistoryByAssignment = async (assignmentId, userId, limit, offset) => {
-    const logTag = `submission_history:${assignmentId}:user:${userId}:l${limit}:o${offset}`;
+    const validAssignmentId = validateId(assignmentId, 'assignment ID');
+    const logTag = `submission_history:${validAssignmentId}:user:${userId}:l${limit}:o${offset}`;
     console.time(logTag);
     try {
         // 1. Validation & Auth (Fail-fast using EXISTS, optimized join level)
@@ -281,13 +290,11 @@ export const getSubmissionHistoryByAssignment = async (assignmentId, userId, lim
                 AND gm.user_id = $2
             )
         `;
-        const authResult = await pool.query(authQuery, [assignmentId, userId]);
+        const authResult = await pool.query(authQuery, [validAssignmentId, userId]);
         
         if (authResult.rows.length === 0) {
-            const checkExists = await pool.query('SELECT id FROM assignments WHERE id = $1', [assignmentId]);
-            const error = new Error(checkExists.rows.length > 0 ? 'Forbidden access to this assignment' : 'Assignment not found');
-            error.statusCode = checkExists.rows.length > 0 ? 403 : 404;
-            throw error;
+            const checkExists = await pool.query('SELECT id FROM assignments WHERE id = $1', [validAssignmentId]);
+            throw new AppError(checkExists.rows.length > 0 ? 'Forbidden access to this assignment' : 'Assignment not found', checkExists.rows.length > 0 ? 403 : 404);
         }
         
         // 2. Fetch history data with Window Functions for is_latest and total count
@@ -313,7 +320,7 @@ export const getSubmissionHistoryByAssignment = async (assignmentId, userId, lim
             ORDER BY sv.version_number DESC, sv.created_at DESC
             LIMIT $3 OFFSET $4
         `;
-        const historyResult = await pool.query(historyQuery, [assignmentId, userId, limit, offset]);
+        const historyResult = await pool.query(historyQuery, [validAssignmentId, userId, limit, offset]);
         
         if (historyResult.rows.length === 0) {
             return {
@@ -336,8 +343,8 @@ export const getSubmissionHistoryByAssignment = async (assignmentId, userId, lim
         };
     } catch (err) {
         console.error(`${logTag}_failed`, err);
-        const error = new Error(err.message || 'Failed to get submission history');
-        error.statusCode = err.statusCode || err.status || 500;
+        const status = err.status || err.statusCode || 500;
+        const error = new AppError(err.message || 'Failed to get submission history', status);
         error.originalError = err;
         throw error;
     } finally {

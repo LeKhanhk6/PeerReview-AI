@@ -46,6 +46,10 @@ export const registerUser = async (fullName, email, password) => {
 };
 
 export const loginUser = async (email, password) => {
+    if (!email || !password) {
+        throw new AppError('Email and password are required', 400);
+    }
+
     // Tìm user và role name
     const query = `
         SELECT u.id, u.email, u.password_hash, u.full_name, u.student_id, r.name as role

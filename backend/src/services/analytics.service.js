@@ -859,15 +859,16 @@ export const getCollaborationRisks = async (currentUser, classId) => {
     }
 
     // 2. Fetch all data in parallel
-    const [
-        groupsRes,
-        membersRes,
-        activitiesRes,
-        tasksRes,
-        tasksCreatedRes,
-        assignmentsRes,
-        reviewsRes
-    ] = await Promise.all([
+    try {
+        const [
+            groupsRes,
+            membersRes,
+            activitiesRes,
+            tasksRes,
+            tasksCreatedRes,
+            assignmentsRes,
+            reviewsRes
+        ] = await Promise.all([
         pool.query(`SELECT id, name, created_at FROM groups WHERE class_id = $1`, [classId]),
         pool.query(`
             SELECT gm.group_id, gm.user_id, u.full_name as name 
@@ -1145,7 +1146,19 @@ export const getCollaborationRisks = async (currentUser, classId) => {
         });
     });
 
-    risks.sort((a, b) => b.score - a.score);
+        risks.sort((a, b) => b.score - a.score);
 
-    return risks;
+        const finalRisks = risks.slice(0, 50);
+
+        console.info("COLLAB_RISK_RESULT", {
+            classId,
+            totalRisks: finalRisks.length,
+            rawRisks: risks.length
+        });
+
+        return finalRisks;
+    } catch (err) {
+        console.error("COLLAB_RISK_ERROR", { classId, error: err.message });
+        return [];
+    }
 };

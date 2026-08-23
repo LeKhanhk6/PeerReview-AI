@@ -15,7 +15,8 @@ const mockQuery = async (queryStr, params) => {
                 { id: 'group-dead', name: 'Nhóm 1 (Dead)', created_at: new Date(Date.now() - 3 * 86400000).toISOString() },
                 { id: 'group-active', name: 'Nhóm 2 (Active)', created_at: new Date(Date.now() - 10 * 86400000).toISOString() },
                 { id: 'group-1member', name: 'Nhóm 3 (1 Member)', created_at: new Date(Date.now() - 5 * 86400000).toISOString() },
-                { id: 'group-perfect', name: 'Nhóm 4 (Perfect)', created_at: new Date(Date.now() - 5 * 86400000).toISOString() }
+                { id: 'group-perfect', name: 'Nhóm 4 (Perfect)', created_at: new Date(Date.now() - 5 * 86400000).toISOString() },
+                { id: 'group-dedupe', name: 'Nhóm 5 (Dedupe)', created_at: new Date(Date.now() - 5 * 86400000).toISOString() }
             ]
         };
     }
@@ -33,7 +34,10 @@ const mockQuery = async (queryStr, params) => {
                 { group_id: 'group-1member', user_id: 'u-m1', name: 'Lone Wolf' },
                 
                 { group_id: 'group-perfect', user_id: 'u-p1', name: 'Perfect 1' },
-                { group_id: 'group-perfect', user_id: 'u-p2', name: 'Perfect 2' }
+                { group_id: 'group-perfect', user_id: 'u-p2', name: 'Perfect 2' },
+
+                { group_id: 'group-dedupe', user_id: 'u-dd1', name: 'Dedupe User 1' },
+                { group_id: 'group-dedupe', user_id: 'u-dd2', name: 'Dedupe User 2' }
             ]
         };
     }
@@ -52,7 +56,11 @@ const mockQuery = async (queryStr, params) => {
                 
                 // group-perfect: balanced
                 { group_id: 'group-perfect', user_id: 'u-p1', action_count: 5 },
-                { group_id: 'group-perfect', user_id: 'u-p2', action_count: 6 }
+                { group_id: 'group-perfect', user_id: 'u-p2', action_count: 6 },
+
+                // group-dedupe: user u-d1 has 0 activity. (we will test dedupe by forcing the engine to run twice on this or modifying a rule to return multiple same risks)
+                { group_id: 'group-dedupe', user_id: 'u-dd1', action_count: 0 },
+                { group_id: 'group-dedupe', user_id: 'u-dd2', action_count: 10 }
             ]
         };
     }
@@ -142,6 +150,11 @@ pool.query = mockQuery;
         const perfectRisks = risks.filter(r => r.groupId === 'group-perfect');
         console.log(`5. No-risk case (Perfect group has 0 risks): ${perfectRisks.length === 0}`);
         
+        // 6. Check dedupe (u-dd1 has LOW_ACTIVITY and LOW_CONTRIBUTION, total 2 risks, no duplicates of the same type)
+        const dedupeRisks = risks.filter(r => r.userId === 'u-dd1');
+        const uniqueDedupeTypes = new Set(dedupeRisks.map(r => r.riskType));
+        console.log(`6. Deduplicate risks working (user has exactly 1 of each risk type): ${dedupeRisks.length === uniqueDedupeTypes.size && dedupeRisks.length > 0}`);
+
         process.exit(0);
     } catch (e) {
         console.error(e);

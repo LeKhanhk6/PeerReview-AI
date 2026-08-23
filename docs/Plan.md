@@ -585,7 +585,7 @@ Weaknesses
 Common Suggestions
 Important Questions
 ```
-## TASK 12.5 — Collaboration Risk
+## TASK 12.5 — Collaboration Risk [x]
 ```
 Low Activity
 Low Contribution

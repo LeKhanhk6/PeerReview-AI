@@ -1,15 +1,23 @@
 import pool from '../config/db.js';
 import { logActivity } from './activity.service.js';
 import { ACTIVITY_TYPES } from '../utils/constants.js';
+import AppError from '../utils/AppError.js';
+
+const validateId = (id, fieldName = 'ID') => {
+    const numericId = Number(id);
+    if (!Number.isInteger(numericId) || numericId <= 0) {
+        throw new AppError(`Invalid ${fieldName}`, 400);
+    }
+    return numericId;
+};
 
 const executeQuery = async (queryText, params) => {
     try {
         return await pool.query(queryText, params);
     } catch (err) {
-        const error = new Error('Database error occurred');
-        error.statusCode = 500;
-        error.originalError = err;
-        throw error;
+        if (err instanceof AppError) throw err;
+        console.error('Database error in workspace.service:', { message: err.message, stack: err.stack });
+        throw new AppError('Database error occurred', 500, { original: err.message });
     }
 };
 
@@ -18,22 +26,22 @@ const executeQuery = async (queryText, params) => {
 // ==========================================
 
 export const getGroupAccessInfo = async (groupId) => {
+    const validGroupId = validateId(groupId, 'group ID');
     const result = await executeQuery(`
         SELECT g.id, g.class_id, c.teacher_id
         FROM groups g
         JOIN classes c ON g.class_id = c.id
         WHERE g.id = $1
-    `, [groupId]);
+    `, [validGroupId]);
     
     return result.rows[0] || null;
 };
 
 export const checkWorkspaceAccess = async (groupId, currentUser) => {
-    const groupInfo = await getGroupAccessInfo(groupId);
+    const validGroupId = validateId(groupId, 'group ID');
+    const groupInfo = await getGroupAccessInfo(validGroupId);
     if (!groupInfo) {
-        const error = new Error('Group not found');
-        error.statusCode = 404;
-        throw error;
+        throw new AppError('Group not found', 404);
     }
 
     if (currentUser.role === 'ADMIN') {
@@ -50,22 +58,21 @@ export const checkWorkspaceAccess = async (groupId, currentUser) => {
         const memberCheck = await executeQuery(`
             SELECT 1 FROM group_members 
             WHERE group_id = $1 AND user_id = $2
-        `, [groupId, currentUser.userId]);
+        `, [validGroupId, currentUser.userId]);
         
         if (memberCheck.rows.length > 0) {
             return groupInfo;
         }
     }
 
-    const error = new Error('Forbidden: You do not have permission to access this workspace');
-    error.statusCode = 403;
-    throw error;
+    throw new AppError('Forbidden: You do not have permission to access this workspace', 403);
 };
 
 export const getTaskGroupInfo = async (taskId) => {
+    const validTaskId = validateId(taskId, 'task ID');
     const result = await executeQuery(`
         SELECT group_id FROM tasks WHERE id = $1
-    `, [taskId]);
+    `, [validTaskId]);
     
     return result.rows[0] || null;
 };
@@ -75,32 +82,38 @@ export const getTaskGroupInfo = async (taskId) => {
 // ==========================================
 
 export const getTasks = async (groupId) => {
+    const validGroupId = validateId(groupId, 'group ID');
     const result = await executeQuery(`
         SELECT id, group_id, assignee_id, title, status, created_at, completed_at
         FROM tasks
         WHERE group_id = $1
         ORDER BY created_at DESC
-    `, [groupId]);
+    `, [validGroupId]);
     return result.rows;
 };
 
 export const createTask = async (groupId, userId, taskData) => {
+    const validGroupId = validateId(groupId, 'group ID');
     const { title, status = 'TODO', assignee_id } = taskData;
+    
+    if (!title || typeof title !== 'string' || !title.trim()) {
+        throw new AppError('Title is required', 400);
+    }
     
     const result = await executeQuery(`
         INSERT INTO tasks (group_id, title, status, assignee_id)
         VALUES ($1, $2, $3, $4)
         RETURNING id, group_id, assignee_id, title, status, created_at, completed_at
-    `, [groupId, title, status, assignee_id ?? null]);
+    `, [validGroupId, title.trim(), status, assignee_id ?? null]);
     
     const task = result.rows[0];
     
     await logActivity({
-        groupId, 
+        groupId: validGroupId, 
         userId, 
         actionType: ACTIVITY_TYPES.TASK_CREATE, 
         targetId: `${ACTIVITY_TYPES.TASK_CREATE}_${task.id}`,
-        contentSummary: `Created task "${title}"`
+        contentSummary: `Created task "${title.trim()}"`
     });
     if (assignee_id) {
         await logActivity({
@@ -116,9 +129,14 @@ export const createTask = async (groupId, userId, taskData) => {
 };
 
 export const updateTask = async (taskId, userId, updateData) => {
+    const validTaskId = validateId(taskId, 'task ID');
     const fields = [];
     const values = [];
     let queryIndex = 1;
+
+    if (!updateData || Object.keys(updateData).length === 0) {
+        throw new AppError('No fields to update', 400);
+    }
 
     if (updateData.status !== undefined) {
         fields.push(`status = $${queryIndex++}`);
@@ -131,8 +149,11 @@ export const updateTask = async (taskId, userId, updateData) => {
     }
 
     if (updateData.title !== undefined) {
+        if (!updateData.title || typeof updateData.title !== 'string' || !updateData.title.trim()) {
+            throw new AppError('Title is required', 400);
+        }
         fields.push(`title = $${queryIndex++}`);
-        values.push(updateData.title);
+        values.push(updateData.title.trim());
     }
 
     if (updateData.assignee_id !== undefined) {
@@ -141,7 +162,7 @@ export const updateTask = async (taskId, userId, updateData) => {
     }
 
     if (fields.length === 0) {
-        return null; 
+        throw new AppError('No valid fields to update', 400);
     }
 
     values.push(taskId);
@@ -155,9 +176,11 @@ export const updateTask = async (taskId, userId, updateData) => {
 
     const result = await executeQuery(query, values);
     const task = result.rows[0];
+    if (!task) {
+        throw new AppError('Task not found', 404);
+    }
     
-    if (task) {
-        const groupId = task.group_id;
+    const groupId = task.group_id;
         const changes = [];
         
         if (updateData.title !== undefined) changes.push('title');
@@ -178,39 +201,42 @@ export const updateTask = async (taskId, userId, updateData) => {
                 contentSummary: `Updated task "${task.title}" (${changes.join(', ')})`
             });
         }
-    }
     
-    return task || null;
+    return task;
 };
 
 export const deleteTask = async (taskId, userId) => {
+    const validTaskId = validateId(taskId, 'task ID');
     const result = await executeQuery(`
         DELETE FROM tasks WHERE id = $1
         RETURNING id, title, group_id
-    `, [taskId]);
+    `, [validTaskId]);
     
     const task = result.rows[0];
-    if (task) {
-        await logActivity({
-            groupId: task.group_id, 
-            userId, 
-            actionType: ACTIVITY_TYPES.TASK_DELETE, 
-            targetId: `${ACTIVITY_TYPES.TASK_DELETE}_${task.id}`,
-            contentSummary: `Deleted task "${task.title}"`
-        });
+    if (!task) {
+        throw new AppError('Task not found', 404);
     }
+
+    await logActivity({
+        groupId: task.group_id, 
+        userId, 
+        actionType: ACTIVITY_TYPES.TASK_DELETE, 
+        targetId: `${ACTIVITY_TYPES.TASK_DELETE}_${task.id}`,
+        contentSummary: `Deleted task "${task.title}"`
+    });
     
-    return task || null;
+    return task;
 };
 
 export const isAssigneeValid = async (groupId, assigneeId) => {
+    const validGroupId = validateId(groupId, 'group ID');
     if (!assigneeId) return true;
     
     const result = await executeQuery(`
         SELECT 1 FROM group_members gm
         JOIN users u ON gm.user_id = u.id
         WHERE gm.group_id = $1 AND gm.user_id = $2 AND u.role = 'STUDENT'
-    `, [groupId, assigneeId]);
+    `, [validGroupId, assigneeId]);
     
     return result.rows.length > 0;
 };
@@ -220,21 +246,27 @@ export const isAssigneeValid = async (groupId, assigneeId) => {
 // ==========================================
 
 export const getDiscussions = async (groupId) => {
+    const validGroupId = validateId(groupId, 'group ID');
     const result = await executeQuery(`
         SELECT id, group_id, user_id, message, created_at
         FROM group_discussions
         WHERE group_id = $1
         ORDER BY created_at ASC
-    `, [groupId]);
+    `, [validGroupId]);
     return result.rows;
 };
 
 export const createDiscussion = async (groupId, userId, message) => {
+    const validGroupId = validateId(groupId, 'group ID');
+    if (!message || typeof message !== 'string' || !message.trim()) {
+        throw new AppError('Message is required', 400);
+    }
+
     const result = await executeQuery(`
         INSERT INTO group_discussions (group_id, user_id, message)
         VALUES ($1, $2, $3)
         RETURNING id, group_id, user_id, message, created_at
-    `, [groupId, userId, message]);
+    `, [validGroupId, userId, message.trim()]);
     
     const discussion = result.rows[0];
     await logActivity({
@@ -253,21 +285,26 @@ export const createDiscussion = async (groupId, userId, message) => {
 // ==========================================
 
 export const getFiles = async (groupId) => {
+    const validGroupId = validateId(groupId, 'group ID');
     const result = await executeQuery(`
         SELECT id, group_id, uploaded_by, file_name, file_url, created_at
         FROM group_files
         WHERE group_id = $1
         ORDER BY created_at DESC
-    `, [groupId]);
+    `, [validGroupId]);
     return result.rows;
 };
 
 export const createFile = async (groupId, userId, fileName, fileUrl) => {
+    const validGroupId = validateId(groupId, 'group ID');
+    if (!fileName || !fileUrl) {
+        throw new AppError('File name and URL are required', 400);
+    }
     const result = await executeQuery(`
         INSERT INTO group_files (group_id, uploaded_by, file_name, file_url)
         VALUES ($1, $2, $3, $4)
         RETURNING id, group_id, uploaded_by, file_name, file_url, created_at
-    `, [groupId, userId, fileName, fileUrl]);
+    `, [validGroupId, userId, fileName, fileUrl]);
     
     const file = result.rows[0];
     await logActivity({

@@ -2,8 +2,18 @@ import pool from '../config/db.js';
 import { maskSubmissionEntity } from '../utils/masking.util.js';
 import { logActivity } from './activity.service.js';
 import { ACTIVITY_TYPES } from '../utils/constants.js';
+import AppError from '../utils/AppError.js';
+
+const validateId = (id, fieldName = 'ID') => {
+    const numericId = Number(id);
+    if (!Number.isInteger(numericId) || numericId <= 0) {
+        throw new AppError(`Invalid ${fieldName}`, 400);
+    }
+    return numericId;
+};
 
 export const getMyReviewAssignments = async (assignmentId, userId, limit, offset) => {
+    const validAssignmentId = validateId(assignmentId, 'assignment ID');
     // Use COUNT(*) OVER() to avoid a separate query
     const query = `
         SELECT 
@@ -32,7 +42,7 @@ export const getMyReviewAssignments = async (assignmentId, userId, limit, offset
         LIMIT $3 OFFSET $4
     `;
 
-    const result = await pool.query(query, [assignmentId, userId, limit, offset]);
+    const result = await pool.query(query, [validAssignmentId, userId, limit, offset]);
 
     if (result.rows.length === 0) {
         return { rows: [], total: 0 };
@@ -65,6 +75,7 @@ export const getMyReviewAssignments = async (assignmentId, userId, limit, offset
 };
 
 export const getReviewAssignmentDetail = async (reviewAssignmentId, userId) => {
+    const validReviewAssignmentId = validateId(reviewAssignmentId, 'review assignment ID');
     // 1. Fetch assignment, submission, and check ownership in one query
     const query = `
         SELECT 
@@ -93,13 +104,11 @@ export const getReviewAssignmentDetail = async (reviewAssignmentId, userId) => {
         )
     `;
 
-    const result = await pool.query(query, [reviewAssignmentId, userId]);
+    const result = await pool.query(query, [validReviewAssignmentId, userId]);
 
     if (result.rows.length === 0) {
         // Intentionally returning 404 for both not-found and unauthorized (Anti-enumeration pattern)
-        const error = new Error('Review assignment not found or unauthorized');
-        error.statusCode = 404;
-        throw error;
+        throw new AppError('Review assignment not found or unauthorized', 404);
     }
 
     const row = result.rows[0];
@@ -146,7 +155,7 @@ export const getReviewAssignmentDetail = async (reviewAssignmentId, userId) => {
             FROM reviews r
             WHERE r.review_assignment_id = $1
         `;
-        const reviewRes = await pool.query(reviewQuery, [reviewAssignmentId]);
+        const reviewRes = await pool.query(reviewQuery, [validReviewAssignmentId]);
         
         if (reviewRes.rows.length > 0) {
             const reviewData = reviewRes.rows[0];
@@ -197,6 +206,7 @@ export const getReviewAssignmentDetail = async (reviewAssignmentId, userId) => {
 };
 
 export const submitReview = async (reviewAssignmentId, userId, payload) => {
+    const validReviewAssignmentId = validateId(reviewAssignmentId, 'review assignment ID');
     const { overallComment, criteriaScores } = payload;
     const client = await pool.connect();
     let transactionStarted = false;
@@ -223,28 +233,22 @@ export const submitReview = async (reviewAssignmentId, userId, payload) => {
             )
             FOR UPDATE OF ra
         `;
-        const checkRes = await client.query(checkQuery, [reviewAssignmentId, userId]);
+        const checkRes = await client.query(checkQuery, [validReviewAssignmentId, userId]);
 
         if (checkRes.rows.length === 0) {
-            const error = new Error('Review assignment not found or unauthorized');
-            error.statusCode = 404; // Anti-enumeration
-            throw error;
+            throw new AppError('Review assignment not found or unauthorized', 404); // Anti-enumeration
         }
 
         const assignmentRow = checkRes.rows[0];
 
         // 2. Status check (Double-submit protection)
         if (assignmentRow.status === 'COMPLETED') {
-            const error = new Error('Review already submitted');
-            error.statusCode = 400;
-            throw error;
+            throw new AppError('Review already submitted', 400);
         }
 
         // 3. Deadline check (from DB)
         if (assignmentRow.is_past_deadline) {
-            const error = new Error('Review deadline has passed');
-            error.statusCode = 400;
-            throw error;
+            throw new AppError('Review deadline has passed', 400);
         }
 
         // 4. DB Criteria check (completeness & validity)
@@ -259,9 +263,7 @@ export const submitReview = async (reviewAssignmentId, userId, payload) => {
         rubricRes.rows.forEach(row => dbCriteriaMap.set(row.id, parseFloat(row.weight)));
 
         if (dbCriteriaMap.size !== criteriaScores.length) {
-            const error = new Error('Mismatch in number of criteria scores provided');
-            error.statusCode = 400;
-            throw error;
+            throw new AppError('Mismatch in number of criteria scores provided', 400);
         }
 
         let totalScore = 0;
@@ -269,19 +271,21 @@ export const submitReview = async (reviewAssignmentId, userId, payload) => {
 
         for (const item of criteriaScores) {
             if (!dbCriteriaMap.has(item.criteriaId)) {
-                const error = new Error(`Criteria ${item.criteriaId} does not belong to this assignment`);
-                error.statusCode = 400;
-                throw error;
+                throw new AppError(`Criteria ${item.criteriaId} does not belong to this assignment`, 400);
             }
 
             const weight = dbCriteriaMap.get(item.criteriaId);
+            
+            const rawScore = parseFloat(item.score);
+            if (isNaN(rawScore) || rawScore < 0 || rawScore > weight) {
+                throw new AppError(`Invalid score for criteria ${item.criteriaId}. Score must be between 0 and its max weight (${weight})`, 400);
+            }
+
             // Optional: normalize score precision
-            const score = Math.round(parseFloat(item.score) * 100) / 100;
+            const score = Math.round(rawScore * 100) / 100;
             const itemComment = item.comment ? item.comment.trim() : null;
             if (itemComment && itemComment.length > 1000) {
-                const error = new Error(`Comment for criteria ${item.criteriaId} exceeds maximum length of 1000 characters`);
-                error.statusCode = 400;
-                throw error;
+                throw new AppError(`Comment for criteria ${item.criteriaId} exceeds maximum length of 1000 characters`, 400);
             }
 
             // total_score = SUM(score * weight / 100)
@@ -302,14 +306,12 @@ export const submitReview = async (reviewAssignmentId, userId, payload) => {
         const updateRes = await client.query(`
             UPDATE review_assignments
             SET status = 'COMPLETED'
-            WHERE id = $1 AND status != 'COMPLETED'
+            WHERE id = $1 AND status = 'PENDING'
             RETURNING id
-        `, [reviewAssignmentId]);
+        `, [validReviewAssignmentId]);
 
         if (updateRes.rowCount === 0) {
-            const error = new Error('Review already submitted');
-            error.statusCode = 400;
-            throw error;
+            throw new AppError('Review already submitted', 400);
         }
 
         // 6. Insert review
@@ -317,7 +319,7 @@ export const submitReview = async (reviewAssignmentId, userId, payload) => {
             INSERT INTO reviews (review_assignment_id, overall_comment, total_score, submitted_at)
             VALUES ($1, $2, $3, NOW())
             RETURNING id, total_score, submitted_at
-        `, [reviewAssignmentId, overallComment, totalScore]);
+        `, [validReviewAssignmentId, overallComment, totalScore]);
 
         const reviewRow = insertReviewRes.rows[0];
         const reviewId = reviewRow.id;
@@ -347,7 +349,7 @@ export const submitReview = async (reviewAssignmentId, userId, payload) => {
                 groupId: assignmentRow.reviewer_group_id,
                 userId,
                 actionType: ACTIVITY_TYPES.REVIEW_SUBMITTED,
-                targetId: `${ACTIVITY_TYPES.REVIEW_SUBMITTED}_${reviewAssignmentId}`,
+                targetId: `${ACTIVITY_TYPES.REVIEW_SUBMITTED}_${validReviewAssignmentId}`,
                 metadata: { scoreGiven: totalScore, totalCriteria: processedScores.length },
                 contentSummary: `Submitted a peer review (Score: ${totalScore})`
             });
@@ -367,8 +369,7 @@ export const submitReview = async (reviewAssignmentId, userId, payload) => {
             await client.query('ROLLBACK');
         }
         if (error.code === '23505') {
-            error.statusCode = 400;
-            error.message = 'Review already submitted';
+            throw new AppError('Review already submitted', 400);
         }
         throw error;
     } finally {
@@ -382,6 +383,7 @@ export const submitReview = async (reviewAssignmentId, userId, payload) => {
  * @returns {Promise<Array<string>>} Mảng các chuỗi nhận xét gộp
  */
 export const getAssignmentReviewsForSynthesis = async (assignmentId, timeframe) => {
+    const validAssignmentId = validateId(assignmentId, 'assignment ID');
     let query = `
         SELECT 
             r.overall_comment,
@@ -392,7 +394,7 @@ export const getAssignmentReviewsForSynthesis = async (assignmentId, timeframe) 
         JOIN submissions s ON s.id = ra.submission_id
         WHERE s.assignment_id = $1
     `;
-    const values = [assignmentId];
+    const values = [validAssignmentId];
 
     if (timeframe?.from) {
         values.push(timeframe.from);

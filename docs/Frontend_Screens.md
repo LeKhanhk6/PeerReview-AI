@@ -54,9 +54,13 @@ Khu vực quản lý và điều hành lớp học.
 - `src/pages/teacher/review/ReviewEngineDashboard.tsx` – Nơi Giảng viên ấn nút **"Generate Review Assignments"** để chạy thuật toán chia bài ẩn danh. 
 - `src/pages/teacher/review/ReviewProgress.tsx` – Màn hình theo dõi tiến độ chấm chéo (nhóm nào đã chấm, nhóm nào chưa).
 
-### 3.4 Báo cáo & AI Analytics - Tương ứng Phase 9
+### 3.4 Báo cáo & AI Analytics - Tương ứng Phase 11 & 12
 - `src/pages/teacher/analytics/SubmissionAnalytics.tsx` – Bảng điểm tổng hợp cuối cùng của sinh viên.
-- `src/pages/teacher/analytics/CollaborationRisks.tsx` – Cảnh báo từ AI về các nhóm có nguy cơ "free-rider" (ăn bám) hoặc xung đột nội bộ.
+- `src/pages/teacher/analytics/CollaborationRisks.tsx` – Màn hình Early Warning (Cảnh báo sớm) hiển thị các rủi ro làm việc nhóm (Dead Group, Low Activity, Free-rider, Unbalanced Contribution) phân tích on-the-fly từ Rule Engine.
+- `src/pages/teacher/analytics/ContributionDashboard.tsx` – Bảng dashboard chi tiết điểm đóng góp (Contribution Score) và tỷ lệ hoàn thành task của từng cá nhân trong các nhóm.
+
+### 3.5 Teacher Validation (Duyệt kết quả) - Tương ứng Phase 11
+- `src/pages/teacher/validation/ReviewValidationScreen.tsx` – Màn hình dành cho Giảng viên duyệt các bài chấm chéo. Tích hợp tính năng AI Synthesis (tổng hợp nhận xét tự động) và cho phép giáo viên ghi đè (override) điểm cuối cùng.
 
 ---
 

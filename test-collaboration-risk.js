@@ -155,6 +155,14 @@ pool.query = mockQuery;
         const uniqueDedupeTypes = new Set(dedupeRisks.map(r => r.riskType));
         console.log(`6. Deduplicate risks working (user has exactly 1 of each risk type): ${dedupeRisks.length === uniqueDedupeTypes.size && dedupeRisks.length > 0}`);
 
+        // 7. Check sorting
+        const sorted = [...risks].sort((a,b)=>b.score-a.score);
+        const isSorted = risks.every((r,i)=>r === sorted[i]);
+        console.log(`7. Sorting by score correct: ${isSorted}`);
+
+        // 8. Check max cap
+        console.log(`8. Max cap <= 50: ${risks.length <= 50}`);
+
         process.exit(0);
     } catch (e) {
         console.error(e);

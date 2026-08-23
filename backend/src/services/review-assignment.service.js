@@ -13,11 +13,24 @@ const validateId = (id, fieldName = 'ID') => {
 const REVIEWS_PER_GROUP = 2;
 
 /**
- * Shuffles an array in place (Fisher-Yates)
+ * Mulberry32 PRNG for deterministic random generation
  */
-function shuffleArray(array) {
+function mulberry32(a) {
+    return function() {
+      var t = a += 0x6D2B79F5;
+      t = Math.imul(t ^ (t >>> 15), t | 1);
+      t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    }
+}
+
+/**
+ * Shuffles an array in place deterministically using a seed
+ */
+function shuffleArray(array, seed) {
+    const random = mulberry32(seed);
     for (let i = array.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
+        const j = Math.floor(random() * (i + 1));
         [array[i], array[j]] = [array[j], array[i]];
     }
 }
@@ -89,8 +102,8 @@ export const generateReviewAssignments = async (assignmentId, userId, reviewsPer
         throw new AppError(`Not enough groups (${submissionPool.length}) to satisfy ${reviewsPerGroup} reviews per group.`, 400);
     }
 
-    // 4. Shuffle submissionPool to randomize assignment
-    shuffleArray(submissionPool);
+    // 4. Shuffle submissionPool to randomize assignment (Deterministic based on assignmentId)
+    shuffleArray(submissionPool, validAssignmentId);
 
     // 5. Generate assignments (circular shift algorithm)
     const assignmentsToInsert = [];
@@ -117,6 +130,7 @@ export const generateReviewAssignments = async (assignmentId, userId, reviewsPer
         await client.query('BEGIN');
 
         // Handle duplicate runs (DELETE old ones before insert)
+        // SHOULD NEVER RUN due to invariant check (Dynamic Membership Guard)
         const deleteOldQuery = `
             DELETE FROM review_assignments ra
             USING submissions s

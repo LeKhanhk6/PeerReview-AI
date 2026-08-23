@@ -304,14 +304,20 @@ export const submitReview = async (reviewAssignmentId, userId, payload) => {
         // 5. Update status (Conditional UPDATE to prevent last-mile race condition)
         // DO THIS FIRST so we don't insert garbage if it fails
         const updateRes = await client.query(`
-            UPDATE review_assignments
+            UPDATE review_assignments ra
             SET status = 'COMPLETED'
-            WHERE id = $1 AND status = 'PENDING'
-            RETURNING id
+            WHERE ra.id = $1 AND ra.status = 'PENDING'
+            AND EXISTS (
+                SELECT 1 FROM submissions s 
+                JOIN assignments a ON s.assignment_id = a.id
+                WHERE s.id = ra.submission_id 
+                AND a.deadline >= NOW()
+            )
+            RETURNING ra.id
         `, [validReviewAssignmentId]);
 
         if (updateRes.rowCount === 0) {
-            throw new AppError('Review already submitted', 400);
+            throw new AppError('Review already submitted or deadline has passed', 400);
         }
 
         // 6. Insert review

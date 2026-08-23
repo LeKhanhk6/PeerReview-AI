@@ -153,7 +153,7 @@ describe('Review Service (MVP)', () => {
                 .mockResolvedValueOnce() // BEGIN
                 .mockResolvedValueOnce({ rows: [{ ...defaultCheckRes.rows[0], status: 'COMPLETED' }] }); // It is now COMPLETED
 
-            await expect(submitReview(1, 'user1', validPayload)).rejects.toMatchObject({ status: 400, message: 'Review already submitted' });
+            await expect(submitReview(1, 'user1', validPayload)).rejects.toMatchObject({ status: 400, message: expect.stringContaining('Review already submitted') });
         });
 
         it('should validate Transaction Isolation (Concurrency Race Condition blocked deterministically)', async () => {
@@ -190,7 +190,7 @@ describe('Review Service (MVP)', () => {
 
             expect(results[0].status).toBe('fulfilled');
             expect(results[1].status).toBe('rejected');
-            expect(results[1].reason).toMatchObject({ status: 400, message: 'Review already submitted' });
+            expect(results[1].reason).toMatchObject({ status: 400, message: expect.stringContaining('Review already submitted') });
             expect(clientMock2.query).toHaveBeenCalledWith('ROLLBACK');
         });
     });

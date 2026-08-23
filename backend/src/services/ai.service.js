@@ -144,8 +144,12 @@ const callProvider = async (prompt, requestId, customTimeout = null, retries = 1
  */
 const extractJSON = (text) => {
     if (!text) return "";
-    const match = text.match(/\{[\s\S]*\}/);
-    return match ? match[0] : text;
+    const first = text.indexOf("{");
+    const last = text.lastIndexOf("}");
+    if (first !== -1 && last !== -1) {
+        return text.slice(first, last + 1);
+    }
+    return text;
 };
 
 /**
@@ -180,7 +184,7 @@ const parseResponse = (rawResponse, requestId) => {
     } catch (error) {
         console.error("AI_SYNTHESIS_PARSE_ERROR", { 
             requestId, 
-            rawResponse: rawResponse?.slice(0, 300),
+            rawResponse: rawResponse?.slice(0, 150),
             error: error.message 
         });
         return FALLBACK_RESPONSE;
@@ -322,7 +326,7 @@ ${JSON.stringify(chunkSummaries)}
         } catch (err) {
             console.error("AI_SYNTHESIS_PARSE_ERROR", { 
                 requestId, 
-                rawResponse: rawFinal?.slice(0, 300), 
+                rawResponse: rawFinal?.slice(0, 150), 
                 error: err.message 
             });
             parsed = {};

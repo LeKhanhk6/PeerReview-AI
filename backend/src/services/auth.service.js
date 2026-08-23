@@ -2,6 +2,7 @@ import pool from '../config/db.js';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import AppError from '../utils/AppError.js';
+import { mapDbError } from '../utils/dbError.util.js';
 
 const JWT_SECRET = process.env.JWT_SECRET;
 const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '24h';
@@ -38,10 +39,8 @@ export const registerUser = async (fullName, email, password) => {
         return result.rows[0];
     } catch (err) {
         // Handle postgres unique violation error
-        if (err.code === '23505') {
-            throw new AppError('Email already exists', 400);
-        }
-        throw err;
+        if (err instanceof AppError) throw err;
+        throw mapDbError(err, err.code === '23505' ? 'Email already exists' : null);
     }
 };
 

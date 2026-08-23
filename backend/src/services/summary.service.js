@@ -1,6 +1,8 @@
 import pool from '../config/db.js';
 import AppError from '../utils/AppError.js';
 import { SUMMARY_STATUS, ACTIVITY_TYPES } from '../utils/constants.js';
+import logger from '../utils/logger.util.js';
+import { mapDbError } from '../utils/dbError.util.js';
 
 const validateId = (id, fieldName = 'ID') => {
     const numericId = Number(id);
@@ -167,8 +169,12 @@ export const updateSummaryItem = async (currentUser, itemId, updates) => {
                 SET status = $1, updated_by = $2, updated_at = NOW()
                 WHERE id = $3 AND status = $4
             `, [SUMMARY_STATUS.REVIEWING, currentUser.userId, item.summary_id, SUMMARY_STATUS.DRAFT]);
-            if (updateStatusRes.rowCount === 0) {
-                console.warn(`Summary ${item.summary_id} status was already updated to REVIEWING or another state`);
+            if (item.status !== SUMMARY_STATUS.DRAFT) {
+                logger.warn({
+                    event: 'summary_item_status_ignored',
+                    summaryId: item.summary_id,
+                    message: `Summary ${item.summary_id} status was already updated to REVIEWING or another state`
+                });
             }
         }
 
@@ -192,7 +198,8 @@ export const updateSummaryItem = async (currentUser, itemId, updates) => {
         };
     } catch (error) {
         await client.query('ROLLBACK');
-        throw error;
+        if (error instanceof AppError) throw error;
+        throw mapDbError(error, error.code === '55P03' ? 'The summary is currently being updated by another teacher. Please try again.' : null);
     } finally {
         client.release();
     }
@@ -263,10 +270,8 @@ export const approveReviewSummary = async (currentUser, submissionId) => {
         };
     } catch (error) {
         await client.query('ROLLBACK');
-        if (error.code === '55P03') {
-            throw new AppError('The summary is currently being updated by another teacher. Please try again.', 409);
-        }
-        throw error;
+        if (error instanceof AppError) throw error;
+        throw mapDbError(error, error.code === '55P03' ? 'The summary is currently being updated by another teacher. Please try again.' : null);
     } finally {
         client.release();
     }

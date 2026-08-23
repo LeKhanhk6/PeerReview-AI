@@ -1,5 +1,6 @@
 import pool from '../config/db.js';
 import AppError from '../utils/AppError.js';
+import logger from '../utils/logger.util.js';
 
 const validateId = (id, fieldName = 'ID') => {
     const numericId = Number(id);
@@ -159,7 +160,7 @@ export const generateReviewAssignments = async (assignmentId, userId, reviewsPer
         }
 
         await client.query('COMMIT');
-        console.info(`review_assignment_generated:${validAssignmentId}:total=${assignmentsToInsert.length}`);
+        logger.info({ event: 'review_assignment_generated', assignmentId: validAssignmentId, total: assignmentsToInsert.length });
 
         // 7. Return summary
         return {
@@ -169,7 +170,7 @@ export const generateReviewAssignments = async (assignmentId, userId, reviewsPer
         };
     } catch (err) {
         await client.query('ROLLBACK');
-        console.error(`generateReviewAssignments_failed:${validAssignmentId}`, err);
+        logger.error({ event: 'generateReviewAssignments_failed', assignmentId: validAssignmentId, error: err.message });
         if (err instanceof AppError) throw err;
         throw new AppError(err.message || 'Failed to generate review assignments', 500, { original: err.message });
     } finally {

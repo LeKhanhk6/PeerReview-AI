@@ -138,10 +138,51 @@ Test AI không bao giờ được tin API từ Google.
 - `workspace.service.js`, `activity.service.js`, `submission.service.js`.
 
 **[4] BATCH 3: Review Engine**
-- `review-assignment.service.js`, `review.service.js`, `contribution.service.js`.
+- `review-assignment.service.js` ✅ COMPLETED (93.33% Coverage)
+- `review.service.js` ✅ COMPLETED (84.28% Coverage)
+- `contribution.service.js` (Pending)
+
+### 7.7. review.service.js (BATCH 3 - HARD GATE V2)
+- **Status**: ✅ COMPLETED (12/12 Test Cases Passed)
+- **Coverage**: `Lines: 84.28%`
+- **Key Vulnerabilities Tested & Fixed**:
+  - Double-Submit Race Condition (Transaction Isolation): Bắn 2 luồng `Promise.all` cùng lúc, sử dụng `FOR UPDATE` và `WHERE status = 'PENDING'` chặn đứng luồng thứ 2.
+  - Deadline Race Condition: Vá lỗ hổng sát giờ deadline bằng `EXISTS (SELECT ... WHERE a.deadline >= NOW())` ngay trong truy vấn `UPDATE`, triệt tiêu khả năng nộp bài trễ dù đã vượt qua khâu check ban đầu.
+  - Idempotency Guarantee: Chạy tuần tự gọi 2 lần `submitReview` để đảm bảo lỗi văng ra là chuẩn 400 (Review already submitted) chứ không sinh duplicate.
+  - Deep Rollback (No Partial Writes): Giả lập DB crash ngay khúc cuối (Bulk Insert criteria scores) -> Khẳng định không có record `reviews` nào bị sót lại nhờ `ROLLBACK`.
+  - Non-Reversible Masking: Đảm bảo toàn bộ Submission ra ngoài frontend đều bọc qua `publicId` hash một chiều (vd: `A7F2BC`), ngăn dò ngược lại `group_id` hay `submission_id` thực tế. Lột sạch cả `file_url` gốc, chỉ trả proxy endpoint `/api/v1/submissions/.../download`.
+  - Score Integrity: Bắn score âm, score lố weight max, hoặc text `NaN` -> Văng lỗi 400.
+  - Hybrid Sampling Degradation: Hàm bốc mẫu cho AI (`getAssignmentReviewsForSynthesis`) vượt mượt mà qua các case `total < 100`, `total = 100` và `total = 1000`.
+
+### 7.8. review-assignment.service.js (BATCH 3 - HARD GATE V2)
+- **Status**: ✅ COMPLETED (5/5 Test Cases Passed)
+- **Coverage**: `Lines: 93.33%`
+- **Key Vulnerabilities Tested & Fixed**:
+  - Algorithm Determinism (Fairness Bias Fix): Thay thế `Math.random()` bằng hàm `mulberry32` PRNG có seed, đảm bảo kết quả shuffle có thể tái tạo (reproducible) để truy vết và xử lý khiếu nại.
+  - No Self-Review Invariant: Xác nhận toàn bộ n group phân bổ 2 bài/nhóm tuyệt đối không có nhóm nào được phân bài của chính mình.
+  - Dynamic Membership Guard (Immutability): Chặn đứng việc gọi `generateReviewAssignments` khi hệ thống đã có assignments rồi -> Tránh sinh ra Orphan assignments hoặc phá hủy logic. Đã vô hiệu hóa logic `DELETE` cũ để ngăn chặn việc lỡ tay xóa nhầm data production.
+  - Transaction Rollback Guard: Bắn lỗi giả lập khi Bulk Insert assignments để chứng minh lệnh DELETE assignments cũ bị thu hồi an toàn.
 
 **[5] BATCH 4: AI & Synthesis**
-- `ai.service.js`, `summary.service.js`.
+- `ai.service.js` ✅ COMPLETED (79.87% Coverage)
+- `summary.service.js` ✅ COMPLETED (66.26% Coverage)
+
+### 7.9. ai.service.js (BATCH 4 - STAFF-LEVEL RESILIENCE)
+- **Status**: ✅ COMPLETED (7/7 Test Cases Passed)
+- **Coverage**: `Lines: 79.87%`
+- **Key Vulnerabilities Tested & Fixed**:
+  - Retry Storm Prevention: Tích hợp Exponential Backoff (`retryWithBackoff`) và Error Classification (không retry trên 4xx, chỉ retry trên 5xx hoặc Timeout).
+  - Memory Explosion Guard: Kiểm tra dung lượng Response trả về từ AI bằng `Buffer.byteLength`. Nếu vượt mức 1MB (`MAX_RESPONSE_SIZE`), huỷ giao dịch và kích hoạt Fallback để chống OOM.
+  - Timeout Hard Cancel: Áp dụng `AbortController` chính xác để chém đứt Connection đang treo với Gemini Provider.
+  - Partial Update Guard: Bất kỳ Chunk nào sụp đổ cũng không làm hỏng toàn bộ pipeline, và DB Update Transaction hoàn toàn nằm riêng lẻ ở bước cuối (`updateSummaryItemsAI`), triệt tiêu Partial DB Write.
+  - Teacher Overwrite Race Condition: Ràng buộc kiên quyết cờ `is_teacher_edited = false` trong câu query UPDATE để đảm bảo AI Job không chèn đè lên chỉnh sửa của Teacher.
+
+### 7.10. summary.service.js (BATCH 4 - COLLABORATION LOCKING)
+- **Status**: ✅ COMPLETED (5/5 Test Cases Passed)
+- **Coverage**: `Lines: 66.26%`
+- **Key Vulnerabilities Tested & Fixed**:
+  - Optimistic Locking: Cập nhật hàm edit summary item `WHERE id = $3 AND updated_at <= $4::timestamp` xử lý bài toán lệch nhịp precision (clock drift) giữa Node.js Date và PostgreSQL Time.
+  - Pessimistic Locking (`NOWAIT`): Lệnh `FOR UPDATE NOWAIT` sẽ nổ ra `55P03` (Lock Not Available) khi 2 giáo viên cùng duyệt. Hàm đã map chuẩn lỗi này sang `409 Conflict`.
 
 ---
 
@@ -157,3 +198,53 @@ Test AI không bao giờ được tin API từ Google.
   - DB crash (500) and Transaction Integrity (crash at INSERT).
   - Invalid DB shape response crash handling.
   - External dependency crash (`bcrypt`, `jwt`).
+
+### 7.2. group.service.js
+- **Status**: ✅ COMPLETED (48/48 Test Cases Passed)
+- **Coverage**: `Lines: 80%+`
+- **Key Vulnerabilities Tested & Fixed**:
+  - Auth Leakage: Ngăn chặn triệt để lộ lọt ID hoặc tên nhóm với các truy vấn trái phép (Luôn throw 404 thay vì 403 để không bị dò ID).
+  - Data Structure: Xác thực kiểu dữ liệu ID (`NaN`, rỗng, object).
+  - Role-based Access: Teacher (owner vs non-owner) và Student membership checking.
+
+### 7.3. assignment.service.js
+- **Status**: ✅ COMPLETED (16/16 Test Cases Passed)
+- **Coverage**: `Lines: 95%+`
+- **Key Vulnerabilities Tested & Fixed**:
+  - Time-based Logic: Chặn nộp bài trễ hạn, sử dụng Fake Timers `jest.useFakeTimers()` triệt để.
+  - Auth Ownership: Xác thực Teacher có thực sự quản lý Class không, chặn đứng leak dữ liệu lớp học khác.
+  - Mock Architecture: Chuyển sang mô hình dynamic import và ESM mock (`jest.unstable_mockModule`) cho toàn bộ project.
+
+### 7.4. submission.service.js
+- **Status**: ✅ COMPLETED (13/13 Test Cases Passed)
+- **Coverage**: `Lines: 100%`
+- **Key Vulnerabilities Tested & Fixed**:
+  - Concurrency/Race Conditions: Xử lý Promise.all mô phỏng đụng độ lưu trữ, đảm bảo `FOR UPDATE` lock chạy đúng.
+  - Partial Failures: Bắt chính xác lỗi giữa transaction và `ROLLBACK` an toàn, không bị treo DB.
+  - Idempotency & Limits: Ngăn chặn spam nộp bài (Giới hạn tối đa 20 versions).
+
+### 7.5. rubric.service.js
+- **Status**: ✅ COMPLETED (21/21 Test Cases Passed)
+- **Coverage**: `Lines: 91.66%`, `Branches: 83.95%`
+- **Key Vulnerabilities Tested & Fixed**:
+  - Short-circuit Validation: Ngăn chặn input rác (mảng rỗng, sai kiểu dữ liệu) ngay từ đầu để tránh hit DB.
+  - Transaction Leak Guard: Test đảm bảo không hề có `COMMIT` lọt ra ngoài khi bị lỗi mid-transaction (criteria insert fail).
+  - Driver & Data Corruption Bug: Bắt dính DB trả về `null` hoặc array rỗng do lỗi driver hoặc data hỏng, không gây crash ngầm (silent crash).
+  - Floating Point Integrity: Áp dụng `Math.round(val * 100) / 100` để check trọng số tổng chuẩn xác tuyệt đối `100`.
+
+### 7.6. workspace.service.js (BATCH 2)
+- **Status**: ✅ COMPLETED (15/15 Test Cases Passed)
+- **Coverage**: `Lines: ~80%`
+- **Key Vulnerabilities Tested & Fixed**:
+  - Auth Leakage Deep Test: Chặn triệt để (ném 403) nếu user cố tình update task/files nằm ngoài group họ thuộc về.
+  - Side-effect Isolation: Test giả lập lỗi từ hàm `logActivity`. Khẳng định rằng dù `logActivity` bắn lỗi, toàn bộ flow tạo task (`createTask`) vẫn thành công và không bị gián đoạn.
+  - Concurrency Test: Giả lập Promise.all race condition với `updateTask`. `expect` chính xác giá trị hợp lệ cuối cùng trong tập hợp trạng thái.
+  - Patch Validation: Chặn đứng thao tác `PATCH {}` (payload rỗng) với AppError 400. Toàn bộ tham số đầu vào được validate qua `validateId`.
+
+### 7.7. activity.service.js (BATCH 2)
+- **Status**: ✅ COMPLETED (9/9 Test Cases Passed)
+- **Coverage**: `Lines: ~80%`
+- **Key Vulnerabilities Tested & Fixed**:
+  - Fire-and-Forget Resilience: `logActivity` được test cơ chế âm thầm bắt lỗi, ghi structured `console.error` `{ message, status }`, và không throw làm crash tiến trình chính.
+  - GET Fallback: `getGroupActivities` và `getGroupActivityStats` được giả lập DB crash. Thay vì quăng 500, service sẽ an toàn fallback trả về array trống `[]`.
+  - Pagination Boundary (Clamp): `limit` truyền vào được kẹp an toàn `(max 1000)`. Test tính toán chuẩn xác cờ `hasNext` thay vì ném thô array rows.

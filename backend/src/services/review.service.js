@@ -3,6 +3,8 @@ import { maskSubmissionEntity } from '../utils/masking.util.js';
 import { logActivity } from './activity.service.js';
 import { ACTIVITY_TYPES } from '../utils/constants.js';
 import AppError from '../utils/AppError.js';
+import logger from '../utils/logger.util.js';
+import { mapDbError } from '../utils/dbError.util.js';
 
 const validateId = (id, fieldName = 'ID') => {
     const numericId = Number(id);
@@ -360,7 +362,11 @@ export const submitReview = async (reviewAssignmentId, userId, payload) => {
                 contentSummary: `Submitted a peer review (Score: ${totalScore})`
             });
         } catch (logErr) {
-            console.error('Activity log failed during review submission:', logErr);
+            logger.error({ 
+                event: 'activity_log_error', 
+                message: 'Activity log failed during review submission', 
+                error: logErr.message 
+            });
         }
 
         return {
@@ -374,10 +380,8 @@ export const submitReview = async (reviewAssignmentId, userId, payload) => {
         if (transactionStarted) {
             await client.query('ROLLBACK');
         }
-        if (error.code === '23505') {
-            throw new AppError('Review already submitted', 400);
-        }
-        throw error;
+        if (error instanceof AppError) throw error;
+        throw mapDbError(error, error.code === '23505' ? 'Review already submitted' : null);
     } finally {
         client.release();
     }

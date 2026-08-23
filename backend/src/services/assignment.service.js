@@ -1,5 +1,6 @@
 import pool from '../config/db.js';
 import AppError from '../utils/AppError.js';
+import logger from '../utils/logger.util.js';
 
 const NOT_FOUND_MSG = 'Assignment not found or you do not have permission to access it';
 
@@ -296,7 +297,8 @@ export const getAttachmentsByAssignmentId = async (assignmentId) => {
 
 export const getAssignmentDetailById = async (id, user) => {
     try {
-        console.time(`assignment_detail:${id}`);
+        const validId = validateId(id, 'assignment ID');
+        logger.info({ event: 'assignment_detail_start', assignmentId: validId });
         
         // 1. Get basic assignment + check authorization (Fail-fast)
         const assignment = await getAssignmentBasic(id, user); // This will throw 403 or 404 if invalid
@@ -304,11 +306,11 @@ export const getAssignmentDetailById = async (id, user) => {
         // 2. Fetch optional parts with graceful degradation
         const [rubric, attachments] = await Promise.all([
             getRubricByAssignmentId(id).catch(err => {
-                console.error('Error fetching rubric:', err);
+                logger.error({ event: 'rubric_fetch_error', assignmentId: id, error: err.message });
                 return null;
             }),
             getAttachmentsByAssignmentId(id).catch(err => {
-                console.error('Error fetching attachments:', err);
+                logger.error({ event: 'attachments_fetch_error', assignmentId: id, error: err.message });
                 return [];
             })
         ]);
@@ -325,7 +327,7 @@ export const getAssignmentDetailById = async (id, user) => {
             total_criteria_weight = rubric.criteria.reduce((sum, c) => sum + (parseFloat(c.weight) || 0), 0);
         }
 
-        console.timeEnd(`assignment_detail:${id}`);
+        logger.info({ event: 'assignment_detail_end', assignmentId: validId });
 
         return {
             id: assignment.id,

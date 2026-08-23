@@ -19,6 +19,8 @@ const app = express();
 const PORT = process.env.PORT || 5000;
 
 // Cấu hình Middleware
+import { requestIdMiddleware } from './middleware/requestId.middleware.js';
+app.use(requestIdMiddleware);
 app.use(cors());
 app.use(express.json());
 

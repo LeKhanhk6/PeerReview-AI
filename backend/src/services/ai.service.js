@@ -7,8 +7,9 @@ import crypto from 'crypto';
 import pool from '../config/db.js';
 import { SUMMARY_STATUS } from '../utils/constants.js';
 import AppError from '../utils/AppError.js';
-
-const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+import logger from '../utils/logger.util.js';
+import { retryWithBackoff } from '../utils/retry.util.js';
+import cacheInstance from '../providers/cache.provider.js';
 
 // Concurrency limit helper
 const pLimit = async (funcs, limit) => {
@@ -65,91 +66,77 @@ Cấu trúc JSON yêu cầu:
 const callProvider = async (prompt, requestId, customTimeout = null, maxRetries = 3) => {
     const apiKey = process.env.GEMINI_API_KEY;
     if (!apiKey) {
-        console.error("AI Service Error", { requestId, message: "Missing GEMINI_API_KEY", stage: "callProvider" });
+        logger.error({ requestId, message: "Missing GEMINI_API_KEY", stage: "callProvider" });
         return null;
     }
 
     const timeoutMs = customTimeout || parseInt(process.env.AI_TIMEOUT) || 5000;
     const MAX_RESPONSE_SIZE = 1048576; // 1MB Limit
     
-    for (let attempt = 0; attempt <= maxRetries; attempt++) {
+    const fetchCall = async () => {
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
 
         try {
             const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
-            
             const response = await fetch(url, {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    contents: [{
-                        parts: [{ text: prompt }]
-                    }],
-                    generationConfig: {
-                        responseMimeType: "application/json",
-                    }
+                    contents: [{ parts: [{ text: prompt }] }],
+                    generationConfig: { responseMimeType: "application/json" }
                 }),
                 signal: controller.signal
             });
 
             if (!response.ok) {
-                console.error("AI Service Error", {
-                    requestId,
-                    message: `Provider responded with status: ${response.status}`,
-                    stage: "callProvider"
-                });
-
-                // Error Classification: DO NOT retry on 4xx (except 429 Too Many Requests)
-                if (response.status >= 400 && response.status < 500 && response.status !== 429) {
-                    return null;
-                }
-
-                if (attempt < maxRetries) {
-                    // Exponential backoff: 300ms, 600ms, 1200ms...
-                    await sleep(300 * Math.pow(2, attempt));
-                    continue;
-                }
-                return null;
+                const err = new Error(`Provider responded with status: ${response.status}`);
+                err.status = response.status;
+                throw err;
             }
 
             const data = await response.json();
-            
             const text = data?.candidates?.[0]?.content?.parts?.[0]?.text;
             if (!text || typeof text !== 'string') {
-                if (attempt < maxRetries) {
-                    await sleep(300 * Math.pow(2, attempt));
-                    continue;
-                }
-                return null;
+                throw new Error('Invalid response structure');
             }
 
-            // Memory Protection Guard (Bytes, not String Length)
             const byteSize = Buffer.byteLength(text, 'utf8');
             if (byteSize > MAX_RESPONSE_SIZE) {
-                console.error("AI_SYNTHESIS_OOM_GUARD", { requestId, message: `Response exceeded max size limit (${byteSize} bytes)` });
-                return null; // Return null to trigger fallback
+                const err = new Error(`Response exceeded max size limit (${byteSize} bytes)`);
+                err.code = 'OOM_GUARD';
+                throw err;
             }
             
             return text;
         } catch (error) {
             if (error.name === 'AbortError') {
-                console.error("AI Service Error", { requestId, message: `Timeout after ${timeoutMs}ms (attempt ${attempt + 1})`, stage: "callProvider" });
-            } else {
-                console.error("AI Service Error", { requestId, message: error.message, stage: "callProvider" });
+                error.message = `Timeout after ${timeoutMs}ms`;
+                error.status = 504;
             }
-            if (attempt < maxRetries) {
-                await sleep(300 * Math.pow(2, attempt));
-                continue;
-            }
-            return null;
+            throw error;
         } finally {
             clearTimeout(timeoutId);
         }
+    };
+
+    try {
+        return await retryWithBackoff(fetchCall, {
+            retries: maxRetries,
+            baseDelay: 300,
+            logger,
+            requestId,
+            context: 'callProvider',
+            shouldRetry: (err) => {
+                if (err.code === 'OOM_GUARD') return false;
+                if (err.status >= 400 && err.status < 500 && err.status !== 429) return false;
+                return true;
+            }
+        });
+    } catch (error) {
+        logger.error({ requestId, event: 'ai_service_error', error: error.message, stage: 'callProvider' });
+        return null;
     }
-    return null;
 };
 
 /**
@@ -195,13 +182,28 @@ const parseResponse = (rawResponse, requestId) => {
             improvement: parsed.improvement || ""
         };
     } catch (error) {
-        console.error("AI_SYNTHESIS_PARSE_ERROR", { 
+        logger.error({ 
+            event: 'AI_SYNTHESIS_PARSE_ERROR',
             requestId, 
             rawResponse: rawResponse?.slice(0, 150),
             error: error.message 
         });
         return FALLBACK_RESPONSE;
     }
+};
+
+/**
+ * Sanitize student input for AI prompt to prevent injection/excessive tokens.
+ * @param {string} text
+ * @returns {string}
+ */
+const sanitizeInput = (text) => {
+    if (!text) return "";
+    // Truncate to 1000 characters
+    let safeText = text.substring(0, 1000);
+    // Remove weird tokens or excessive spaces
+    safeText = safeText.replace(/[^\w\s\.,!?áàảãạăắằẳẵặâấầẩẫậéèẻẽẹêếềểễệíìỉĩịóòỏõọôốồổỗộơớờởỡợúùủũụưứừửữựýỳỷỹỵđÁÀẢÃẠĂẮẰẲẴẶÂẤẦẨẪẬÉÈẺẼẸÊẾỀỂỄỆÍÌỈĨỊÓÒỎÕỌÔỐỒỔỖỘƠỚỜỞỠỢÚÙỦŨỤƯỨỪỬỮỰÝỲỶỸỴĐ-]/g, ' ');
+    return safeText.trim();
 };
 
 /**
@@ -212,43 +214,25 @@ const parseResponse = (rawResponse, requestId) => {
  */
 export const analyzeComment = async (text, requestId) => {
     try {
-        const prompt = buildPrompt(text);
+        const safeText = sanitizeInput(text);
+        const prompt = buildPrompt(safeText);
         const rawResponse = await callProvider(prompt, requestId);
         return parseResponse(rawResponse, requestId);
     } catch (error) {
-        console.error("AI Service Error", { requestId, message: "Unexpected error in analyzeComment", stage: "analyzeComment" });
+        logger.error({ requestId, event: 'AI_Service_Error', message: "Unexpected error in analyzeComment", stage: "analyzeComment" });
         return FALLBACK_RESPONSE;
     }
 };
 
-// Simple in-memory cache for MVP
-const synthesisCache = new Map();
-const CACHE_TTL = 1000 * 60 * 60; // 1 hour
-
-/**
- * Phân tích và tổng hợp các review bằng AI với cơ chế Chunking.
- * @param {string} assignmentId
- * @param {string} timeframeKey
- * @param {Array<string>} reviews - Mảng các chuỗi nhận xét.
- * @param {number} totalReviews - Tổng số review ban đầu.
- * @param {number} reviewsUsed - Số review thực tế đưa vào phân tích sau khi sample/filter.
- * @param {string} requestId - Trace ID.
- * @returns {Promise<object>} JSON chứa summary, strengths, weaknesses, suggestions, ...
- */
 export const synthesizeReviews = async (assignmentId, timeframeKey, reviews, totalReviews, reviewsUsed, requestId) => {
     try {
         const hashStr = crypto.createHash('md5').update(reviews.join('||')).digest('hex');
-        const cacheKey = `${assignmentId}_${timeframeKey}_${hashStr}`;
-        const cached = synthesisCache.get(cacheKey);
-        if (cached && (Date.now() - cached.timestamp < CACHE_TTL)) {
-            console.log({ requestId, cacheKey, message: "cache hit" });
-            return cached.data;
-        }
-
-        // Cache eviction: remove oldest if exceeding limit
-        if (synthesisCache.size > 1000) {
-            const firstKey = synthesisCache.keys().next().value;
-            synthesisCache.delete(firstKey);
+        const cacheKey = `ai_syn_${assignmentId}_${timeframeKey}_${hashStr}`;
+        
+        const cached = await cacheInstance.get(cacheKey);
+        if (cached) {
+            logger.info({ event: 'ai_cache_hit', requestId, cacheKey });
+            return cached;
         }
 
         if (!reviews || reviews.length === 0) {
@@ -267,7 +251,8 @@ export const synthesizeReviews = async (assignmentId, timeframeKey, reviews, tot
         const chunkSize = 50;
         const chunks = [];
         for (let i = 0; i < reviews.length; i += chunkSize) {
-            chunks.push(reviews.slice(i, i + chunkSize));
+            const chunkReviews = reviews.slice(i, i + chunkSize).map(sanitizeInput);
+            chunks.push(chunkReviews);
         }
         
         // Parallel chunk synthesis with concurrency limit
@@ -337,7 +322,8 @@ ${JSON.stringify(chunkSummaries)}
                 parsed = {};
             }
         } catch (err) {
-            console.error("AI_SYNTHESIS_PARSE_ERROR", { 
+            logger.error({ 
+                event: 'AI_SYNTHESIS_PARSE_ERROR',
                 requestId, 
                 rawResponse: rawFinal?.slice(0, 150), 
                 error: err.message 
@@ -363,11 +349,12 @@ ${JSON.stringify(chunkSummaries)}
             sentiment: sentiment
         };
 
-        synthesisCache.set(cacheKey, { timestamp: Date.now(), data: finalData });
+        // Cache result for 1 hour (3600 seconds)
+        await cacheInstance.set(cacheKey, finalData, 3600);
 
         return finalData;
     } catch (error) {
-        console.error("AI Service Error", { requestId, message: "Error in synthesizeReviews", stage: "synthesizeReviews", err: error.message });
+        logger.error({ requestId, event: 'AI_Service_Error', message: "Error in synthesizeReviews", stage: "synthesizeReviews", err: error.message });
         return {
             summary: "Lỗi khi tổng hợp bằng AI.",
             strengths: [],

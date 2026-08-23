@@ -1,5 +1,6 @@
 import pool from '../config/db.js';
 import AppError from '../utils/AppError.js';
+import logger from '../utils/logger.util.js';
 import { ACTIVITY_TYPES } from '../utils/constants.js';
 
 // Helper for 2 decimal rounding
@@ -546,15 +547,13 @@ export const getAssignmentReviewAnalytics = async (currentUser, assignmentId) =>
             const recomputed = 0.4 * avgRubric + 0.3 * avgFeedback + 0.3 * avgVariance;
             if (Math.abs(recomputed - avgReviewQuality) > 0.01) {
                 if (Math.random() < 0.1) {
-                    console.warn(JSON.stringify({
-                        level: "warn",
-                        tag: "analytics",
-                        code: "QUALITY_MISMATCH",
+                    logger.warn({
+                        event: "quality_mismatch",
                         assignmentId,
                         reviewerGroupId: reviewer.groupId,
                         expected: avgReviewQuality,
                         recomputed
-                    }));
+                    });
                 }
             }
             breakdown = {
@@ -1150,7 +1149,8 @@ export const getCollaborationRisks = async (currentUser, classId) => {
 
         const finalRisks = risks.slice(0, 50);
 
-        console.info("COLLAB_RISK_RESULT", {
+        logger.info({
+            event: 'collab_risk_result',
             classId,
             totalRisks: finalRisks.length,
             rawRisks: risks.length
@@ -1158,7 +1158,8 @@ export const getCollaborationRisks = async (currentUser, classId) => {
 
         return finalRisks;
     } catch (err) {
-        console.error("COLLAB_RISK_ERROR", { classId, error: err.message });
+        if (err instanceof AppError) throw err;
+        logger.error({ event: 'collab_risk_error', classId, error: err.message });
         return [];
     }
 };

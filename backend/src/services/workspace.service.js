@@ -2,6 +2,7 @@ import pool from '../config/db.js';
 import { logActivity } from './activity.service.js';
 import { ACTIVITY_TYPES } from '../utils/constants.js';
 import AppError from '../utils/AppError.js';
+import logger from '../utils/logger.util.js';
 
 const validateId = (id, fieldName = 'ID') => {
     const numericId = Number(id);
@@ -16,7 +17,7 @@ const executeQuery = async (queryText, params) => {
         return await pool.query(queryText, params);
     } catch (err) {
         if (err instanceof AppError) throw err;
-        console.error('Database error in workspace.service:', { message: err.message, stack: err.stack });
+        logger.error({ message: 'Database error in workspace.service', error: err.message, stack: err.stack });
         throw new AppError('Database error occurred', 500, { original: err.message });
     }
 };

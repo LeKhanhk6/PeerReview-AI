@@ -2,6 +2,7 @@ import pool from '../config/db.js';
 import crypto from 'crypto';
 import { ACTIVITY_TYPES } from '../utils/constants.js';
 import AppError from '../utils/AppError.js';
+import logger from '../utils/logger.util.js';
 
 const validateId = (id, fieldName = 'ID') => {
     const numericId = Number(id);
@@ -36,22 +37,28 @@ const sanitizeMetadata = (actionType, metadata) => {
 
         const str = JSON.stringify(filteredMetadata);
         if (str.length > 1000) {
-            // Safe truncation for MVP: just clear if it still exceeds 1KB after filtering
-            return {};
+            return {
+                truncated: true,
+                preview: str.slice(0, 500)
+            };
         }
         return filteredMetadata;
     } catch (e) {
-        return {};
+        return { invalid: true };
     }
 };
 
-export const logActivity = async ({ groupId, userId, actionType, targetId, metadata, contentSummary }) => {
-    const requestId = crypto.randomUUID();
+export const logActivity = async ({ groupId, userId, actionType, targetId, metadata, contentSummary, requestId }) => {
+    const startTime = Date.now();
     try {
         const validGroupId = validateId(groupId, 'group ID');
         const upperActionType = actionType ? actionType.toUpperCase() : 'UNKNOWN';
         if (!Object.values(ACTIVITY_TYPES).includes(upperActionType)) {
-            console.warn(`[ActivityLog] Unknown actionType: ${upperActionType}`, { requestId });
+            logger.warn({
+                event: 'activity.unknown_action_type',
+                actionType: upperActionType,
+                requestId
+            });
         }
 
         let safeTargetId = targetId ? String(targetId).slice(0, 100) : null;
@@ -69,13 +76,17 @@ export const logActivity = async ({ groupId, userId, actionType, targetId, metad
         `, [validGroupId, userId, upperActionType, safeTargetId, safeMetadata, summary]);
         return result.rows[0];
     } catch (error) {
-        console.error('logActivity failed', {
-            message: error.message,
-            status: error.statusCode || 500,
-            requestId,
-            groupId,
+        logger.error({
+            event: 'activity.log.failed',
+            service: 'activity.service',
             userId,
-            actionType
+            requestId,
+            message: error.message,
+            stack: error.stack,
+            durationMs: Date.now() - startTime,
+            actionType,
+            groupId,
+            targetId
         });
         // Do not throw error to avoid breaking the main request
         return null;
@@ -117,7 +128,7 @@ export const getGroupActivityStats = async (groupId, options = {}) => {
         return result.rows;
     } catch (err) {
         if (err instanceof AppError) throw err; // propagate validation errors
-        console.error('getGroupActivityStats failed', { message: err.message });
+        logger.error({ event: 'activity.stats.failed', service: 'activity.service', error: err.message });
         return []; // Fallback on DB crash
     }
 };
@@ -159,7 +170,7 @@ export const getGroupActivities = async (groupId, limit = 50, offset = 0) => {
         };
     } catch (err) {
         if (err instanceof AppError) throw err;
-        console.error('getGroupActivities failed', { message: err.message });
+        logger.error({ event: 'activity.list.failed', service: 'activity.service', error: err.message });
         return {
             data: [],
             hasNext: false

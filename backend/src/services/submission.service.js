@@ -3,6 +3,7 @@ import { SUBMISSION_STATUS, REVIEW_STATUS } from '../utils/submission.constants.
 import AppError from '../utils/AppError.js';
 import { logActivity } from './activity.service.js';
 import { ACTIVITY_TYPES } from '../utils/constants.js';
+import logger from '../utils/logger.util.js';
 
 const getSubmissionStatus = (submission, deadline) => {
     if (!submission) return SUBMISSION_STATUS.NOT_STARTED;
@@ -30,7 +31,7 @@ const validateId = (id, fieldName = 'ID') => {
 
 export const getStudentDashboardData = async (userId, limit, offset, sortColumn, sortOrder) => {
     try {
-        console.time('dashboard_query');
+        logger.info({ event: 'dashboard_query_start', userId });
         const countQuery = `
             SELECT COUNT(DISTINCT a.id) as total
             FROM assignments a
@@ -85,7 +86,7 @@ export const getStudentDashboardData = async (userId, limit, offset, sortColumn,
     `;
 
     const result = await pool.query(sortedQuery, [userId, limit, offset]);
-    console.timeEnd('dashboard_query');
+    logger.info({ event: 'dashboard_query_end', userId });
     const now = new Date();
 
         const mappedData = result.rows.map(row => {
@@ -138,6 +139,7 @@ export const getStudentDashboardData = async (userId, limit, offset, sortColumn,
             total
         };
     } catch (err) {
+        logger.error({ event: 'dashboard_query_failed', userId, error: err.message });
         const error = new AppError('Failed to fetch student dashboard data', 500);
         error.originalError = err;
         throw error;
@@ -249,7 +251,7 @@ export const submitAssignment = async (assignmentId, userId, fileUrl) => {
                 contentSummary: `Submitted assignment "${title}" (version ${newVersionNumber})`
             });
         } catch (logErr) {
-            console.error('Activity log failed during submission:', logErr);
+            logger.error({ event: 'activity_log_error', message: 'Activity log failed during submission', error: logErr.message });
         }
 
         await client.query('COMMIT');
@@ -262,7 +264,7 @@ export const submitAssignment = async (assignmentId, userId, fileUrl) => {
         };
     } catch (err) {
         await client.query('ROLLBACK');
-        console.error(`submit_assignment_failed:${assignmentId}`, err);
+        logger.error({ event: 'submit_assignment_failed', assignmentId, error: err.message });
         const status = err.status || err.statusCode || 500;
         const error = new AppError(err.message || 'Failed to submit assignment', status);
         error.originalError = err;
@@ -275,7 +277,7 @@ export const submitAssignment = async (assignmentId, userId, fileUrl) => {
 export const getSubmissionHistoryByAssignment = async (assignmentId, userId, limit, offset) => {
     const validAssignmentId = validateId(assignmentId, 'assignment ID');
     const logTag = `submission_history:${validAssignmentId}:user:${userId}:l${limit}:o${offset}`;
-    console.time(logTag);
+    logger.info({ event: 'get_history_start', logTag });
     try {
         // 1. Validation & Auth (Fail-fast using EXISTS, optimized join level)
         const authQuery = `
@@ -342,13 +344,10 @@ export const getSubmissionHistoryByAssignment = async (assignmentId, userId, lim
             total
         };
     } catch (err) {
-        console.error(`${logTag}_failed`, err);
+        logger.error({ event: 'submission_history_failed', logTag, error: err.message });
         const status = err.status || err.statusCode || 500;
         const error = new AppError(err.message || 'Failed to get submission history', status);
         error.originalError = err;
         throw error;
-    } finally {
-        console.timeEnd(logTag);
     }
 };
-

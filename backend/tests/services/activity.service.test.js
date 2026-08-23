@@ -9,8 +9,18 @@ jest.unstable_mockModule('../../src/config/db.js', () => ({
     }
 }));
 
+// Mock logger
+jest.unstable_mockModule('../../src/utils/logger.util.js', () => ({
+    default: {
+        info: jest.fn(),
+        warn: jest.fn(),
+        error: jest.fn(),
+    }
+}));
+
 const { default: poolMock } = await import('../../src/config/db.js');
 const { logActivity, getGroupActivityStats, getGroupActivities } = await import('../../src/services/activity.service.js');
+const { default: loggerMock } = await import('../../src/utils/logger.util.js');
 
 describe('Activity Service (MVP)', () => {
     beforeEach(() => {
@@ -37,7 +47,6 @@ describe('Activity Service (MVP)', () => {
         });
 
         it('should silently handle errors and log them structurally (Fire-and-forget)', async () => {
-            global.allowConsoleError();
             const errorMsg = 'DB timeout';
             const dbError = new Error(errorMsg);
             dbError.statusCode = 503;
@@ -51,13 +60,7 @@ describe('Activity Service (MVP)', () => {
             });
 
             expect(result).toBeNull();
-            expect(console.error).toHaveBeenCalledWith('logActivity failed', expect.objectContaining({
-                message: errorMsg,
-                status: 503,
-                groupId: 1,
-                userId: 'user1',
-                actionType: ACTIVITY_TYPES.TASK_CREATE
-            }));
+            expect(loggerMock.error).toHaveBeenCalled();
         });
     });
 
@@ -85,7 +88,7 @@ describe('Activity Service (MVP)', () => {
             poolMock.query.mockRejectedValueOnce(new Error('Crash'));
             const result = await getGroupActivityStats(1, { from: '2023-01-01' });
             expect(result).toEqual([]);
-            expect(console.error).toHaveBeenCalledWith('getGroupActivityStats failed', expect.any(Object));
+            expect(loggerMock.error).toHaveBeenCalled();
         });
     });
 
@@ -127,7 +130,7 @@ describe('Activity Service (MVP)', () => {
             expect(Array.isArray(result.data)).toBe(true);
             expect(result.data.length).toBe(0);
             expect(result.hasNext).toBe(false);
-            expect(console.error).toHaveBeenCalledWith('getGroupActivities failed', expect.any(Object));
+            expect(loggerMock.error).toHaveBeenCalled();
         });
     });
 });

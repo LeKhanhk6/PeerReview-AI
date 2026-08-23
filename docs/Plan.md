@@ -555,7 +555,7 @@ Teacher có thể:
 AI Summary **không tự động quyết định điểm cuối cùng**.
 # 12. PHASE 11 — Teacher Analytics + Early Warning
 
-## TASK 12.1 — Dashboard Overview
+## TASK 12.1 — Dashboard Overview [x]
 ```
 Total Classes
 Total Students
@@ -564,14 +564,14 @@ Submission Rate
 Review Completion
 Average Score
 ```
-## TASK 12.2 — Contribution Analytics
+## TASK 12.2 — Contribution Analytics [x]
 ```
 Contribution Score
 Member Activity
 Task Completion
 Potential Free-rider
 ```
-## TASK 12.3 — Review Analytics
+## TASK 12.3 — Review Analytics [x]
 
 ```
 Review Completion

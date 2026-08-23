@@ -216,7 +216,17 @@ export const synthesizeReviews = async (assignmentId, timeframeKey, reviews, tot
             synthesisCache.delete(firstKey);
         }
 
-        if (!reviews || reviews.length === 0) return null;
+        if (!reviews || reviews.length === 0) {
+            return {
+                summary: "Không có dữ liệu đánh giá.",
+                strengths: [],
+                weaknesses: [],
+                suggestions: [],
+                importantQuestions: [],
+                keywords: [],
+                sentiment: "neutral"
+            };
+        }
         
         // Chunking (50 reviews per chunk)
         const chunkSize = 50;
@@ -256,18 +266,19 @@ ${JSON.stringify(chunk)}
         // Final Synthesis
         const finalPrompt = `
 Dưới đây là các phần tóm tắt nhận xét chấm chéo của sinh viên cho một bài tập.
-Hãy tổng hợp lại thành 1 JSON duy nhất mô tả tổng quan bài làm của nhóm, điểm mạnh, điểm yếu và gợi ý chung.
+Hãy tổng hợp lại thành 1 JSON duy nhất mô tả tổng quan bài làm của nhóm, điểm mạnh, điểm yếu, gợi ý chung và những câu hỏi quan trọng cần lưu ý.
 
-Do not repeat ideas. Merge similar points. Sort lists by importance (most common first).
-YÊU CẦU BẮT BUỘC: Chỉ trả về duy nhất 1 chuỗi JSON hợp lệ.
+Do not repeat ideas. Merge similar points. Sort lists by importance (most common first). Limit each list to 3-5 items.
+Return ONLY valid JSON. Do not include explanation or markdown.
 Cấu trúc JSON yêu cầu:
 {
   "summary": "Tóm tắt chung 3-5 dòng",
   "strengths": ["Điểm mạnh 1", "Điểm mạnh 2"],
   "weaknesses": ["Điểm yếu phổ biến 1", "Điểm yếu phổ biến 2"],
   "suggestions": ["Gợi ý khắc phục 1", "Gợi ý khắc phục 2"],
+  "important_questions": ["Câu hỏi quan trọng 1", "Câu hỏi quan trọng 2"],
   "keywords": ["keyword1", "keyword2"],
-  "sentiment": "positive" // "positive", "negative", or "mixed"
+  "sentiment": "positive" // "positive", "negative", or "neutral"
 }
 
 Các tóm tắt:
@@ -281,39 +292,42 @@ ${JSON.stringify(chunkSummaries)}
         let cleanText = rawFinal.replace(/```json/gi, '').replace(/```/g, '').trim();
         let parsed = {};
         try {
-            parsed = JSON.parse(cleanText);
+            parsed = JSON.parse(cleanText) || {};
         } catch (err) {
-            throw new Error(`Final synthesis failed: JSON parse error (${err.message}). Raw output: ${cleanText.substring(0, 100)}...`);
+            console.error("AI Service JSON parse error", { requestId, message: err.message });
+            parsed = {};
         }
         
+        const safeArray = (val) => Array.isArray(val) ? val : [];
+        const cleanString = (val) => typeof val === "string" ? val.trim() : "";
+        
+        const rawSentiment = cleanString(parsed.sentiment).toLowerCase();
+        const allowedSentiment = ["positive", "neutral", "negative"];
+        const sentiment = allowedSentiment.includes(rawSentiment) ? rawSentiment : "neutral";
+
         const finalData = {
-            summary: parsed.summary || "Không thể tạo bản tóm tắt.",
-            strengths: Array.isArray(parsed.strengths) ? parsed.strengths : [],
-            weaknesses: Array.isArray(parsed.weaknesses) ? parsed.weaknesses : [],
-            suggestions: Array.isArray(parsed.suggestions) ? parsed.suggestions : [],
-            keywords: Array.isArray(parsed.keywords) ? parsed.keywords : [],
-            sentiment: parsed.sentiment || "mixed",
-            totalReviews,
-            reviewsUsed,
-            confidence: totalReviews > 0 ? parseFloat(Math.min(1, reviewsUsed / totalReviews).toFixed(2)) : 0
+            summary: cleanString(parsed.summary) || "Không thể tạo bản tóm tắt.",
+            strengths: safeArray(parsed.strengths).slice(0, 5),
+            weaknesses: safeArray(parsed.weaknesses).slice(0, 5),
+            suggestions: safeArray(parsed.suggestions).slice(0, 5),
+            importantQuestions: safeArray(parsed.important_questions).slice(0, 5),
+            keywords: safeArray(parsed.keywords).slice(0, 5),
+            sentiment: sentiment
         };
 
         synthesisCache.set(cacheKey, { timestamp: Date.now(), data: finalData });
 
         return finalData;
     } catch (error) {
-        console.error("AI Service Error", { requestId, message: "Error in synthesizeReviews", stage: "synthesizeReviews" });
+        console.error("AI Service Error", { requestId, message: "Error in synthesizeReviews", stage: "synthesizeReviews", err: error.message });
         return {
             summary: "Lỗi khi tổng hợp bằng AI.",
-            reason: error.message,
             strengths: [],
             weaknesses: [],
             suggestions: [],
+            importantQuestions: [],
             keywords: [],
-            sentiment: "mixed",
-            totalReviews,
-            reviewsUsed,
-            confidence: 0
+            sentiment: "neutral"
         };
     }
 };

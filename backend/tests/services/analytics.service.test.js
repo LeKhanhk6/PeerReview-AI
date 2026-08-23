@@ -247,6 +247,7 @@ describe('getCollaborationRisks', () => {
     });
 
     test('Case 10: ERROR FALLBACK', async () => {
+        global.allowConsoleError();
         pool.query.mockImplementation(async (queryStr) => {
             if (queryStr.includes('teacher_id FROM classes')) return { rowCount: 1, rows: [{ teacher_id: 'teacher-1' }] };
             throw new Error('DB connection failed');

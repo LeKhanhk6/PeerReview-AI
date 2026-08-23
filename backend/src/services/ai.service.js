@@ -6,6 +6,7 @@ const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
 import crypto from 'crypto';
 import pool from '../config/db.js';
 import { SUMMARY_STATUS } from '../utils/constants.js';
+import AppError from '../utils/AppError.js';
 
 const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
@@ -59,26 +60,24 @@ Cấu trúc JSON yêu cầu:
 };
 
 /**
- * Gọi API Gemini với AbortController để xử lý timeout
- * @param {string} prompt - Prompt đã được build
- * @param {string} requestId - UUID để tracing log
- * @param {number} customTimeout - (Optional) Custom timeout in ms
- * @returns {Promise<string|null>} - Raw text trả về từ AI hoặc null nếu lỗi
+ * Gọi API Gemini với AbortController, Exponential Backoff, Error Classification và Size Limit
  */
-const callProvider = async (prompt, requestId, customTimeout = null, retries = 1) => {
-    if (!GEMINI_API_KEY) {
+const callProvider = async (prompt, requestId, customTimeout = null, maxRetries = 3) => {
+    const apiKey = process.env.GEMINI_API_KEY;
+    if (!apiKey) {
         console.error("AI Service Error", { requestId, message: "Missing GEMINI_API_KEY", stage: "callProvider" });
         return null;
     }
 
     const timeoutMs = customTimeout || parseInt(process.env.AI_TIMEOUT) || 5000;
+    const MAX_RESPONSE_SIZE = 1048576; // 1MB Limit
     
-    for (let attempt = 0; attempt <= retries; attempt++) {
+    for (let attempt = 0; attempt <= maxRetries; attempt++) {
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
 
         try {
-            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`;
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
             
             const response = await fetch(url, {
                 method: 'POST',
@@ -102,8 +101,15 @@ const callProvider = async (prompt, requestId, customTimeout = null, retries = 1
                     message: `Provider responded with status: ${response.status}`,
                     stage: "callProvider"
                 });
-                if (attempt < retries) {
-                    await sleep(300 * (attempt + 1));
+
+                // Error Classification: DO NOT retry on 4xx (except 429 Too Many Requests)
+                if (response.status >= 400 && response.status < 500 && response.status !== 429) {
+                    return null;
+                }
+
+                if (attempt < maxRetries) {
+                    // Exponential backoff: 300ms, 600ms, 1200ms...
+                    await sleep(300 * Math.pow(2, attempt));
                     continue;
                 }
                 return null;
@@ -113,11 +119,18 @@ const callProvider = async (prompt, requestId, customTimeout = null, retries = 1
             
             const text = data?.candidates?.[0]?.content?.parts?.[0]?.text;
             if (!text || typeof text !== 'string') {
-                if (attempt < retries) {
-                    await sleep(300 * (attempt + 1));
+                if (attempt < maxRetries) {
+                    await sleep(300 * Math.pow(2, attempt));
                     continue;
                 }
                 return null;
+            }
+
+            // Memory Protection Guard (Bytes, not String Length)
+            const byteSize = Buffer.byteLength(text, 'utf8');
+            if (byteSize > MAX_RESPONSE_SIZE) {
+                console.error("AI_SYNTHESIS_OOM_GUARD", { requestId, message: `Response exceeded max size limit (${byteSize} bytes)` });
+                return null; // Return null to trigger fallback
             }
             
             return text;
@@ -127,8 +140,8 @@ const callProvider = async (prompt, requestId, customTimeout = null, retries = 1
             } else {
                 console.error("AI Service Error", { requestId, message: error.message, stage: "callProvider" });
             }
-            if (attempt < retries) {
-                await sleep(300 * (attempt + 1));
+            if (attempt < maxRetries) {
+                await sleep(300 * Math.pow(2, attempt));
                 continue;
             }
             return null;
@@ -382,11 +395,11 @@ export const updateSummaryItemsAI = async (summaryId, itemsData) => {
         `, [summaryId]);
         
         if (summaryRes.rowCount === 0) {
-            throw new Error('Summary not found');
+            throw new AppError('Summary not found', 404);
         }
 
         if (summaryRes.rows[0].status === SUMMARY_STATUS.APPROVED) {
-             throw new Error('Cannot update AI items, summary is already approved');
+             throw new AppError('Cannot update AI items, summary is already approved', 400);
         }
 
         // Thêm/cập nhật các items sinh ra từ AI, chỉ ghi đè những item chưa bị teacher edit

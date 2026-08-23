@@ -2,17 +2,26 @@ import pool from '../config/db.js';
 import AppError from '../utils/AppError.js';
 import { SUMMARY_STATUS, ACTIVITY_TYPES } from '../utils/constants.js';
 
+const validateId = (id, fieldName = 'ID') => {
+    const numericId = Number(id);
+    if (!Number.isInteger(numericId) || numericId <= 0) {
+        throw new AppError(`Invalid ${fieldName}`, 400);
+    }
+    return numericId;
+};
+
 /**
  * Common function to validate ownership of a submission
  */
 const getSubmissionOrFail = async (currentUser, submissionId) => {
+    const validSubmissionId = validateId(submissionId, 'submission ID');
     const result = await pool.query(`
         SELECT sub.id as submission_id, sub.assignment_id, c.teacher_id
         FROM submissions sub
         JOIN assignments a ON sub.assignment_id = a.id
         JOIN classes c ON a.class_id = c.id
         WHERE sub.id = $1
-    `, [submissionId]);
+    `, [validSubmissionId]);
 
     if (result.rowCount === 0) {
         throw new AppError('Submission not found', 404);
@@ -104,6 +113,7 @@ export const getReviewSummary = async (currentUser, submissionId) => {
 };
 
 export const updateSummaryItem = async (currentUser, itemId, updates) => {
+    const validItemId = validateId(itemId, 'item ID');
     // Fail-fast ownership check and not found check via item id
     const itemRes = await pool.query(`
         SELECT i.id, i.updated_at, s.id as summary_id, s.status, c.teacher_id, s.submission_id
@@ -113,7 +123,7 @@ export const updateSummaryItem = async (currentUser, itemId, updates) => {
         JOIN assignments a ON sub.assignment_id = a.id
         JOIN classes c ON a.class_id = c.id
         WHERE i.id = $1
-    `, [itemId]);
+    `, [validItemId]);
 
     if (itemRes.rowCount === 0) {
         throw new AppError('Summary item not found', 404);
@@ -142,9 +152,9 @@ export const updateSummaryItem = async (currentUser, itemId, updates) => {
                 note = COALESCE($2, note),
                 is_teacher_edited = true,
                 updated_at = NOW()
-            WHERE id = $3 AND updated_at = $4
+            WHERE id = $3 AND updated_at <= $4::timestamp
             RETURNING updated_at
-        `, [content, note, itemId, updatedAt]);
+        `, [content, note, validItemId, updatedAt]);
 
         if (updateItemRes.rowCount === 0) {
             throw new AppError('Failed to update item, it might have been modified by someone else or deleted (Conflict)', 409);
@@ -169,15 +179,15 @@ export const updateSummaryItem = async (currentUser, itemId, updates) => {
         `, [
             currentUser.userId, 
             ACTIVITY_TYPES.EDIT_SUMMARY, 
-            itemId, 
-            JSON.stringify({ submission_id: item.submission_id, item_id: itemId }),
+            validItemId, 
+            JSON.stringify({ submission_id: item.submission_id, item_id: validItemId }),
             'Teacher edited summary item'
         ]);
 
         await client.query('COMMIT');
         
         return {
-            id: itemId,
+            id: validItemId,
             updatedAt: updateItemRes.rows[0].updated_at
         };
     } catch (error) {

@@ -79,3 +79,15 @@ export const getSubmissionHistoryByAssignment = async (req, res, next) => {
         next(error);
     }
 };
+
+export const getSubmissionFeedback = async (req, res, next) => {
+    try {
+        const { assignmentId } = req.params;
+        const userId = req.user?.id;
+
+        const feedback = await submissionService.getSubmissionFeedback(assignmentId, userId);
+        return res.ok(feedback);
+    } catch (error) {
+        next(error);
+    }
+};

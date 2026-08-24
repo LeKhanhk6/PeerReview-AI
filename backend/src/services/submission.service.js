@@ -348,3 +348,84 @@ export const getSubmissionHistoryByAssignment = async (assignmentId, userId, lim
         throw error;
     }
 };
+
+export const getSubmissionFeedback = async (assignmentId, userId) => {
+    const validAssignmentId = validateId(assignmentId, 'assignment ID');
+
+    // 1. Verify access and get submission ID
+    const authQuery = `
+        SELECT s.id as submission_id, s.status
+        FROM assignments a
+        JOIN groups g ON g.class_id = a.class_id
+        JOIN group_members gm ON gm.group_id = g.id
+        LEFT JOIN submissions s ON s.assignment_id = a.id AND s.group_id = g.id
+        WHERE a.id = $1 AND gm.user_id = $2
+    `;
+    const authResult = await pool.query(authQuery, [validAssignmentId, userId]);
+
+    if (authResult.rows.length === 0) {
+        throw new AppError('Assignment not found or forbidden', 404);
+    }
+
+    const submission = authResult.rows[0];
+    if (!submission.submission_id) {
+        throw new AppError('Submission not found', 404);
+    }
+
+    // 2. Check if summary is APPROVED
+    const summaryQuery = `
+        SELECT id, status 
+        FROM review_summaries 
+        WHERE submission_id = $1 AND status = 'APPROVED'
+    `;
+    const summaryResult = await pool.query(summaryQuery, [submission.submission_id]);
+
+    if (summaryResult.rows.length === 0) {
+        throw new AppError('Feedback not available', 404);
+    }
+
+    const summaryId = summaryResult.rows[0].id;
+
+    // 3. Get summary items
+    const itemsQuery = `
+        SELECT topic_category, content 
+        FROM review_summary_items 
+        WHERE summary_id = $1
+    `;
+    const itemsResult = await pool.query(itemsQuery, [summaryId]);
+
+    const summaryData = {
+        strengths: [],
+        weaknesses: [],
+        suggestions: []
+    };
+
+    itemsResult.rows.forEach(item => {
+        const cat = (item.topic_category || '').toLowerCase();
+        if (cat.includes('strength')) {
+            summaryData.strengths.push(item.content);
+        } else if (cat.includes('weakness')) {
+            summaryData.weaknesses.push(item.content);
+        } else {
+            summaryData.suggestions.push(item.content);
+        }
+    });
+
+    // 4. Get score and review count
+    const statsQuery = `
+        SELECT 
+            COUNT(r.id) as review_count, 
+            AVG(r.total_score) as avg_score
+        FROM review_assignments ra
+        JOIN reviews r ON r.review_assignment_id = ra.id
+        WHERE ra.submission_id = $1 AND ra.status = 'COMPLETED'
+    `;
+    const statsResult = await pool.query(statsQuery, [submission.submission_id]);
+    const stats = statsResult.rows[0];
+
+    return {
+        summary: summaryData,
+        score: stats.avg_score ? parseFloat(Number(stats.avg_score).toFixed(2)) : null,
+        reviewCount: parseInt(stats.review_count, 10) || 0
+    };
+};

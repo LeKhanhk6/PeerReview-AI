@@ -42,4 +42,7 @@ router.post('/assignments/:assignmentId', authorize('STUDENT'), validate(submitS
 // Submission History API
 router.get('/assignments/:assignmentId/submission-history', authorize('STUDENT'), validate({ params: assignmentIdParamSchema }), paginationMiddleware, submissionController.getSubmissionHistoryByAssignment);
 
+// Student Feedback API
+router.get('/assignments/:assignmentId/feedback', authorize('STUDENT'), validate({ params: assignmentIdParamSchema }), submissionController.getSubmissionFeedback);
+
 export default router;

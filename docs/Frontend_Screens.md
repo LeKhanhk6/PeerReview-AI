@@ -33,10 +33,25 @@ Hệ thống gồm 3 role chính:
   - Cụm Form: Input Email, Input Password (có nút toggle ẩn/hiện mk).
   - Button `Login` (Primary).
   - Link `Forgot Password?` (Tuỳ chọn).
+  - Link `Chưa có tài khoản? Đăng ký ngay` (Trỏ sang màn hình Register).
 - **APIs**: `POST /api/auth/login`
 - **State**: 
   - `Loading`: Button hiển thị spinner, disable form.
   - `Error`: Hiển thị inline error text màu đỏ hoặc Toast notification.
+
+### 1.5 📝 Register Screen (Student)
+- **Mục tiêu**: Tạo tài khoản mới cho sinh viên.
+- **Chức năng (Use Cases)**: Nhập thông tin cá nhân (Tên, Email, Password, MSSV/Mã sinh viên) để tạo tài khoản.
+- **UI Components**:
+  - Logo hệ thống.
+  - Cụm Form: Input Full Name, Input Email, Input Password, Input Student ID.
+  - Button `Register` (Primary).
+  - Link `Đã có tài khoản? Đăng nhập` (Trỏ sang màn hình Login).
+- **APIs**: `POST /api/auth/register` (với role mặc định là STUDENT)
+- **State**: 
+  - `Loading`: Button hiển thị spinner, disable form.
+  - `Error`: Cảnh báo email trùng lặp, mật khẩu yếu.
+  - `Success`: Hiển thị thông báo đăng ký thành công và tự động chuyển sang trang Login (hoặc tự động đăng nhập).
 
 ### 2. 📊 Student Dashboard
 - **Mục tiêu**: Trung tâm điều hướng chính sau khi đăng nhập.
@@ -217,7 +232,7 @@ Hệ thống gồm 3 role chính:
 
 **🎯 Main Flow (Hành trình sinh viên làm bài)**
 ```text
-Login
+(Register) → Login
  → Dashboard
    → Assignment Detail
      → Participation (Tạo/Vào nhóm)

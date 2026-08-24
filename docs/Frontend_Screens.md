@@ -1,112 +1,265 @@
 # UI/UX Design Specifications (Frontend Screens)
 
-Tài liệu này đóng vai trò là bản đặc tả thiết kế (Design Spec) dành riêng cho UI/UX Designer (triển khai trên Figma). Nó định nghĩa chi tiết những gì cần thiết kế trên giao diện, các luồng người dùng (User Flows), và những ràng buộc về UX để đảm bảo hệ thống sát với thực tế dữ liệu của Backend (chuẩn MVP).
+Tài liệu này định nghĩa chi tiết những gì cần thiết kế trên giao diện, các luồng người dùng (User Flows), và sự tương quan trực tiếp giữa Màn hình (Screen) - Use Cases - APIs - UI States để đảm bảo Frontend kết nối liền mạch với Backend.
 
 ---
 
-## 1. Global UX & Design Guidelines
-
-Để đảm bảo tính nhất quán trên toàn bộ hệ thống, Designer cần chuẩn bị các UI Component dùng chung sau:
-
-### 1.1 Trạng thái UI cơ bản (UI States)
-- **Empty States**: Thiết kế các màn hình/khối rỗng có hình minh họa (Illustration) hoặc Icon + Text.
-  - Workspace cần rỗng theo từng Tab: "No tasks yet", "No messages yet", "No files uploaded", "No submissions yet".
-  - Bảng cảnh báo: "Tuyệt vời, không có vấn đề nào được phát hiện".
-- **Loading States**: Thiết kế hệ thống Skeleton Loader (khung xám tải trang) thay vì màn hình trắng. Cần có bản vẽ Partial Loading (ví dụ: Text load xong trước, khung ảnh load sau).
-- **Error States**: Thiết kế Toast Notification (thông báo nhỏ góc màn hình, tự tắt) cho lỗi nhẹ, và Full-page Error Message kèm nút "Thử lại" cho lỗi gián đoạn mạng.
-
-### 1.2 UX Constraints (MVP)
-- **Data Limits**: Một số danh sách (như Cảnh báo Analytics) sẽ giới hạn 50 phần tử. Cần thiết kế nhãn nhỏ "Top 50 Risks only".
-- **Allowed Components**: Ưu tiên sử dụng Progress bars, Badges (Nhãn màu), Tables, và Simple Gauges (vòng cung đo % độ tự tin của AI).
-- **Avoid**: Tuyệt đối không vẽ các biểu đồ phức tạp (Line chart, Radar, Pie chart) để giữ đúng scope MVP.
-- **Accessibility**: Các trạng thái cảnh báo không chỉ dùng màu (Đỏ) mà bắt buộc phải đi kèm Icon (⚠️) để người mù màu dễ nhận biết.
+## 1. Global UX & Design Guidelines (UI States & Constraints)
+- **Empty States**: Thiết kế màn hình rỗng có hình minh họa/Icon + Text.
+- **Loading States**: Sử dụng Skeleton Loader hoặc Spinner/Partial Loading.
+- **Error States**: Toast Notification (lỗi nhẹ), Full-page Error Message + nút "Thử lại".
+- **Pagination**: Mọi list lớn đều trả về kèm `page`, `limit`, `hasNext`.
+- **API Loading & Mutation Rules**:
+  - GET → cache data.
+  - POST/PUT/DELETE → invalidate cache tương ứng.
+  - Disable button & show spinner khi đang submit dữ liệu.
 
 ---
 
-## 2. Các luồng người dùng chính (Main User Flows)
+## 2. Chi tiết các màn hình (Screen Breakdown - Student)
 
-- **Student Flow**: Đăng nhập → Student Dashboard → Click Bài tập (vào Assignment Detail) → Bấm "Enter Group Workspace" → Sử dụng các Tabs (Tasks/Chat/Files) → Nộp bài → Nhận thông báo chấm chéo → Vào Màn hình Grading để chấm điểm.
-- **Teacher Flow**: Đăng nhập → Teacher Dashboard → Click Lớp học (vào Class Detail Hub) → Mở xem Cảnh báo nhóm (Analytics) → Gửi tin nhắn cảnh báo → Mở Review Engine để phân công bài → Mở Màn hình AI Validation duyệt điểm cuối cùng.
+### 2.1 Screen: Login
+#### Use Cases
+- Nhập email và password để đăng nhập vào hệ thống.
+#### APIs
+- `POST /api/auth/login`
+  - Body: `{ email, password }`
+  - Response: `{ message, user, accessToken }`
+#### UI States
+- Normal
+- Loading (Khi đang gọi API)
+- Error (Sai thông tin, Toast hoặc Text màu đỏ)
+
+### 2.2 Screen: Student Dashboard
+#### Use Cases
+- Xem danh sách assignment
+- Xem trạng thái submission
+- Xem review status
+#### APIs
+- `GET /api/submissions/me/dashboard`
+  - Query: `page, limit, sort`
+  - Response: 
+    ```json
+    {
+      "data": [
+        {
+          "assignment_id": "uuid",
+          "title": "string",
+          "deadline": "date",
+          "submission_status": "enum",
+          "review_status": "enum"
+        }
+      ],
+      "page": 1,
+      "limit": 10,
+      "hasNext": true
+    }
+    ```
+#### UI States
+- Loading (Skeleton list)
+- Empty (Không có assignment nào)
+- Error (API fail)
+
+### 2.3 Screen: Assignment Detail
+#### Use Cases
+- Đọc đề bài, tải file đính kèm, xem tiêu chí (rubric) chấm điểm.
+- Nút truy cập vào Workspace.
+#### APIs
+- `GET /api/assignments/:id/detail`
+  - Response: Thông tin chi tiết assignment kèm danh sách file.
+- `GET /api/rubrics/assignment/:id`
+  - Response: Cấu trúc điểm của bài tập.
+#### UI States
+- Loading (Skeleton nội dung)
+- Error (Không tìm thấy bài tập hoặc mất kết nối)
+
+### 2.4 Screen: Group Workspace
+#### Use Cases
+- Quản lý công việc chung (Tasks - Kanban/List).
+- Nhắn tin, thảo luận (Chat).
+- Quản lý tệp tin (Files).
+#### APIs
+- `GET /api/groups/:id`
+- `GET /api/groups/:id/tasks`
+- `GET /api/groups/:id/discussions`
+- `GET /api/groups/:id/files`
+- (Có các API `POST/PATCH/DELETE` tương ứng cho từng tính năng)
+#### UI States
+- Loading (Khi vừa chuyển tab)
+- Empty (Chưa có Task, Chưa có Chat, Chưa upload File)
+- Error (Không tải được nội dung)
+
+### 2.5 Screen: Assignment Submission (Tab trong Workspace)
+#### Use Cases
+- Upload file nộp bài.
+- Xem lịch sử các version đã nộp.
+#### APIs
+- `POST /api/submissions/assignments/:assignmentId`
+  - Gửi file multipart/form-data.
+- `GET /api/submissions/assignments/:assignmentId/submission-history`
+  - Lấy các phiên bản đã nộp.
+#### UI States
+- Uploading (Progress bar % tải lên, disable nút Submit).
+- Uploaded (Thành công).
+- Late Warning (Badge đỏ cảnh báo nộp trễ).
+- Error (File quá lớn, sai định dạng, v.v.).
+
+### 2.6 Screen: My Reviews (Danh sách bài cần chấm)
+#### Use Cases
+- Xem danh sách các bài của nhóm khác được phân công chấm chéo.
+#### APIs
+- `GET /api/reviews/assignments/:assignmentId/my-reviews`
+#### UI States
+- Loading
+- Empty (Chưa đến hạn phân công hoặc giáo viên chưa phân).
+- Error
+
+### 2.7 Screen: Review Grading (Màn hình chấm chéo)
+#### Use Cases
+- Xem bài nộp của nhóm khác (Split-screen).
+- Nhập điểm theo Rubric, ghi chú nhận xét.
+- Sử dụng AI Mentor để phân tích văn bản nhận xét.
+#### APIs
+- `GET /api/reviews/my-reviews/:reviewAssignmentId`
+- `POST /api/reviews/analyze` (Gửi text nhận xét để AI đánh giá)
+- `POST /api/reviews/my-reviews/:reviewAssignmentId/submit` (Nộp phiếu chấm)
+#### UI States
+- Loading PDF / Skeleton Form
+- Analyzing (Khi AI Mentor đang phân tích)
+- Error (Không lưu được điểm)
+- Disabled Submit (Nếu chưa điền đủ điểm)
 
 ---
 
-## 3. Đặc tả chi tiết các màn hình (Screen Breakdown)
+## 3. Chi tiết các màn hình (Screen Breakdown - Teacher)
 
-### 👨‍🎓 Khu vực Sinh Viên (Student Screens)
+### 3.1 Screen: Teacher Dashboard
+#### Use Cases
+- Xem danh sách các lớp học đang phụ trách.
+#### APIs
+- ⚠️ **Missing API**: Cần API `GET /api/classes` hoặc lấy danh sách lớp học của Teacher.
+#### UI States
+- Loading, Empty, Error.
 
-#### 3.1 Student Dashboard
-- **Mục đích**: Trang chủ tổng quan cho Sinh viên.
-- **Layout & Components**:
-  - **Urgent Tasks Widget**: Nhấn mạnh các công việc/deadline sắp đến hạn (Dưới 2 ngày).
-  - **Assignment List/Grid**: Danh sách bài tập, hiển thị: Tên môn, Tên bài, Ngày hết hạn. Kèm theo Trạng thái Nộp bài (LATE, SUBMITTED) và Trạng thái Chấm chéo.
+### 3.2 Screen: Teacher Review Engine
+#### Use Cases
+- Theo dõi tiến độ chấm chéo của cả lớp.
+- Trigger hệ thống tự động phân công bài (Generate Assignments).
+#### APIs
+- `POST /api/review-assignments/assignments/:assignmentId/review-assignments/generate`
+#### UI States
+- Not Started (Trống, sẵn sàng bấm nút phân công).
+- Generating (Loading spinner disable màn hình).
+- Generated (Bảng tiến độ hiển thị).
+- Locked (Chốt, không cho thay đổi).
 
-#### 3.2 Assignment Detail
-- **Mục đích**: Đọc đề bài và tiêu chí chấm điểm trước khi bắt đầu làm bài.
-- **Layout & Components**:
-  - Hạn nộp (Cần nhãn phân loại màu: Sắp đến hạn / Quá hạn).
-  - Khối Mô tả (Description) & Yêu cầu (Requirements).
-  - Khối File đính kèm (Danh sách file để tải về).
-  - Khối Bảng Rubric (Bảng Tiêu chí chấm điểm).
-- **Action quan trọng**: Cần một nút bấm to, nổi bật (Primary CTA) ghi rõ **"Enter Group Workspace"** (Vào không gian làm việc nhóm).
+### 3.3 Screen: Teacher Class Analytics
+#### Use Cases
+- Xem rủi ro làm việc nhóm (Collaboration Risks).
+- Xem điểm đóng góp (Contributions) của từng sinh viên.
+#### APIs
+- `GET /api/analytics/classes/:classId/collaboration-risks`
+- `GET /api/analytics/classes/:classId/contributions`
+#### UI States
+- Loading
+- Empty (Tuyệt vời, không có rủi ro nào)
+- Error
 
-#### 3.3 Group Workspace (Khu vực Làm việc Nhóm)
-- **Mục đích**: Không gian để thành viên nhóm tương tác.
-- **Layout**: Sử dụng Tab Navigation để chia rõ 4 công năng, tránh quá tải một màn hình.
-- **Các Tabs**:
-  - **Tab - Tasks (Công việc)**: Dạng bảng Kanban đơn giản (To Do, Done) hoặc List công việc. 
-  - **Tab - Discussion (Thảo luận)**: Giao diện Chat box (có ô nhập liệu, danh sách tin nhắn).
-  - **Tab - Files (Tài liệu)**: Giao diện danh sách file đính kèm nút Upload.
-  - **Tab - Submission (Nộp bài)**: (Xem chi tiết ở mục 3.4).
-
-#### 3.4 Assignment Submission (Nộp bài - Tab trong Workspace)
-- **Layout & Components**:
-  - Khối Upload File chính.
-  - **UX States**: Bắt buộc vẽ Progress bar (Thanh tiến trình) khi đang upload. Nút Submit phải mờ đi (disabled) khi đang tải.
-  - **Cảnh báo**: Nếu thời điểm nộp đã qua deadline, phải hiện rõ Badge đỏ "Late submission".
-  - **Lịch sử nộp**: Bảng/danh sách hiển thị các phiên bản (Version) đã từng nộp trước đó.
-
-#### 3.5 Review Grading Screen (Màn hình Chấm chéo)
-- **Mục đích**: Sinh viên chấm điểm cho nhóm khác.
-- **Layout**: Split-screen (Chia đôi màn hình). Bên Trái: Hiển thị file PDF/bài làm. Bên Phải: Phiếu chấm điểm (Rubric).
-- **Constraints (Ràng buộc UX)**:
-  - Bắt buộc nhập điểm cho TẤT CẢ tiêu chí thì Nút "Submit" mới được sáng lên.
-  - Các ô nhập điểm cần có range (Ví dụ chỉ cho nhập 0-10).
-  - Nút **"Request AI Mentor"**: Thiết kế một action nhỏ kèm icon ✨. Khi bấm vào hiện loading mờ, sau đó bung ra đoạn text gợi ý nhận xét từ AI.
+### 3.4 Screen: Teacher Review Validation
+#### Use Cases
+- Xem AI tổng hợp ý kiến từ nhiều nhóm chấm (Synthesis).
+- Xem mâu thuẫn điểm (nếu có).
+- Chốt điểm số cuối cùng.
+#### APIs
+- `GET /api/reviews/assignments/:assignmentId/reviews/synthesis`
+- `PATCH /api/summary/:summaryId/finalize`
+#### UI States
+- Loading (AI đang tổng hợp hoặc Server đang xử lý).
+- Synthesis Ready (Hiển thị thẻ màu sắc theo Sentiment).
+- Error (AI lỗi, cho phép chấm thủ công).
 
 ---
 
-### 👨‍🏫 Khu vực Giảng Viên (Teacher Screens)
+## 4. Technical Requirements for Frontend-Backend Integration
 
-#### 3.6 Teacher Dashboard & Class Detail
-- **Teacher Dashboard**: Màn hình hiển thị danh sách các lớp đang quản lý dưới dạng Card. Bấm vào một Lớp sẽ nhảy sang Class Detail.
-- **Teacher Class Detail (Central Hub)**: Đóng vai trò là trạm trung chuyển. Chứa các Dashboard Widgets hoặc Menu lớn dẫn tới: Danh sách bài tập, Analytics (Phân tích), Review Engine (Phân công chấm).
+### 4.1 Authentication (JWT)
+- **Sau khi login:**
+  - Backend trả về: `accessToken` (và `user` data).
+- **Frontend xử lý:**
+  - Lưu token vào: `localStorage` (MVP OK).
+  - Đính kèm Header cho mọi request bảo mật:
+    `Authorization: Bearer <token>`
+- **Xử lý hết hạn/lỗi (401):**
+  - Bắt buộc clear token và redirect người dùng về màn hình Login.
 
-#### 3.7 Review Engine & Progress (Điều phối chấm chéo)
-- **Mục đích**: Phân công bài tự động và theo dõi sinh viên chấm.
-- **Layout phải phản ánh 3 Trạng thái (Lifecycle)**:
-  - **State 1: Chưa chia bài (NOT_STARTED)**: Màn hình trống, nằm chính giữa là nút "Generate Review Assignments" (Bắt đầu chia bài).
-  - **State 2: Đã chia (GENERATED)**: Hiện Bảng Tiến độ chấm chéo của sinh viên (Ai xong, ai chưa). Bổ sung thêm nút "Nhắc nhở qua Email", và nút "Re-generate" (Chia lại nếu lỡ chia sai).
-  - **State 3: Khóa (LOCKED)**: Trạng thái chốt sổ. Các action button đều chuyển xám (disabled).
+### 4.2 API Structure
+- **Base URL:**
+  `http://localhost:5000/api` (hoặc tuỳ môi trường `VITE_API_URL`).
+- **Response format chuẩn (Success):**
+  ```json
+  {
+    "data": ...,
+    "message": "Optional success message"
+  }
+  ```
+- **Error format chuẩn (Fail):**
+  ```json
+  {
+    "error": {
+      "message": "Detailed error string",
+      "code": "ERROR_CODE"
+    }
+  }
+  ```
 
-#### 3.8 Class Analytics (Dashboard Cảnh báo)
-- **Layout**: Sử dụng Tab Navigation.
-- **Tab - Collaboration Risks (Cảnh báo sớm)**:
-  - Hiển thị danh sách các thẻ cảnh báo (Risk Cards). Cần có nhãn "Top 50 Risks only".
-  - **Thiết kế Card**: Dùng Badge màu đỏ (High Risk) hoặc màu Vàng (Medium Risk) + Icon (như ⚠️).
-  - **Dữ liệu trên Card**: Thể hiện Risk Type (DEAD_GROUP, LOW_CONTRIBUTION...). Tên sinh viên vi phạm.
-  - **Action Layer**: Thêm nút bấm nhỏ "Gửi tin nhắn cảnh báo" đặt ngay trên từng Card. Nút "Xem chi tiết".
-- **Tab - Contributions (Điểm đóng góp)**:
-  - Bảng danh sách chi tiết (Table).
-  - Thể hiện: Điểm cống hiến, Tỷ lệ công việc. Bổ sung nhãn cảnh báo (Free-Rider) nếu có. Người dùng có thể bấm xổ dọc (expand row) để xem chi tiết số lượng Message/Task.
+### 4.3 State Management (Quy tắc lưu trữ trạng thái)
+Frontend cần phân chia rõ ràng Server State và Local UI State:
+- **Server State (Dữ liệu từ API):**
+  - Yêu cầu sử dụng **React Query** (hoặc SWR) làm thư viện quản lý.
+  - Tính năng: Tự động retry, cache dữ liệu, background fetching.
+  - Các module cần Caching cực mạnh: Dashboard (giữ mượt), Assignments Detail, Workspace (để chuyển tab không chớp giật).
+- **Local UI State (Trạng thái UI tạm thời):**
+  - Dùng `useState`, `useReducer` hoặc **Zustand**.
+  - Áp dụng cho: Mở/đóng Modal, Toggle Tabs, Form inputs (chưa submit).
 
-#### 3.9 Review Validation (Duyệt kết quả & AI Synthesis)
-- **Mục đích**: Xem AI tóm tắt các nhận xét của nhóm sinh viên, Giáo viên chốt điểm cuối.
-- **Layout**: Master-Detail. (Bên Trái: Danh sách các bài nộp của cả lớp, Bên Phải: Nội dung AI Synthesis & Khung Chốt điểm).
-- **Thiết kế phần AI Synthesis (Bên Phải)**:
-  - **Khối Tổng hợp AI**: Vẽ các mảng chữ tóm tắt Ưu điểm, Nhược điểm. Thêm điểm số AI đề xuất thật to (Ví dụ: 8.5/10).
-  - **UX Enhancement (Khai thác AI)**: 
-    - Gắn cảm xúc (Sentiment) bằng màu nền nhẹ (Xanh lá = Khen, Vàng = Trung lập, Đỏ = Chê).
-    - Danh sách các điểm nghi vấn (Important Questions) vẽ dưới dạng Checklist.
-    - **Highlight Mâu thuẫn**: Phải thiết kế vùng cảnh báo (Icon dấu chấm than/viền đỏ) nếu AI phát hiện các nhóm sinh viên chấm điểm cho nhau có độ lệch lớn (Mâu thuẫn kết quả).
-  - **Fallback State**: Lỡ AI chết, vẽ form báo lỗi chữ nhỏ "AI không thể tóm tắt lúc này" nhưng vẫn mở danh sách Review thô ở bên dưới để Giáo viên tự đọc và chấm thủ công.
-- **Khối Chốt điểm (Validation Action)**: Nằm ở dưới cùng (Sticky bottom). Gồm Input nhập điểm cuối cùng, Textarea ghi chú, và nút "Approve & Finalize".
+### 4.4 API Groups Mapping
+Danh sách tổng hợp các route tương ứng để FE chuẩn bị tích hợp:
+
+- **Auth:**
+  - `POST /api/auth/register`
+  - `POST /api/auth/login`
+  - `GET /api/auth/me`
+- **Assignments:**
+  - `GET /api/assignments`
+  - `GET /api/assignments/:id/detail`
+- **Groups / Workspace:**
+  - `GET /api/groups/:id`
+  - `/api/groups/:id/tasks`
+  - `/api/groups/:id/files`
+  - `/api/groups/:id/discussions`
+- **Submissions:**
+  - `GET /api/submissions/me/dashboard`
+  - `POST /api/submissions/assignments/:id`
+- **Reviews & Grading:**
+  - `/api/reviews/assignments/:id/my-reviews`
+  - `/api/reviews/my-reviews/:id`
+
+### 4.5 Error Handling Strategy & API Loading Rules
+- **Error Routing:**
+  - **400 Bad Request** → Hiển thị thông báo (Toast/Text) báo lỗi nhập liệu hoặc logic.
+  - **401 Unauthorized** → Tự động đăng xuất (Clear token + redirect `/login`).
+  - **403 Forbidden** → Hiển thị trang/Toast "No permission" (Không có quyền).
+  - **500 Internal Error** → Hiển thị thông báo lỗi hệ thống chung chung (Generic error).
+- **Pagination Contract:**
+  ```json
+  {
+    "data": [...],
+    "page": 1,
+    "limit": 10,
+    "hasNext": true
+  }
+  ```
+- **Mutation & Loading Rules (Bắt buộc FE tuân thủ):**
+  - Mọi action thay đổi dữ liệu (POST/PUT/DELETE) phải disable button submit.
+  - Hiển thị spinner/loading ở vùng thao tác để chặn Double-click.
+  - Call API xong (thành công) → Phải Invalidate Cache của Query chứa dữ liệu đó (vd: Thêm task xong phải clear cache danh sách Task).

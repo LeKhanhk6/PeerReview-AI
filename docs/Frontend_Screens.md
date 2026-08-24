@@ -1,265 +1,173 @@
-# UI/UX Design Specifications (Frontend Screens)
+# 📘 PEERREVIEW-AI — SCREEN DESIGN DOCUMENT (FINAL)
 
-Tài liệu này định nghĩa chi tiết những gì cần thiết kế trên giao diện, các luồng người dùng (User Flows), và sự tương quan trực tiếp giữa Màn hình (Screen) - Use Cases - APIs - UI States để đảm bảo Frontend kết nối liền mạch với Backend.
+## I. 🎯 TỔNG QUAN HỆ THỐNG
 
----
+Hệ thống gồm 3 role:
+- **STUDENT** (core flow)
+- **TEACHER**
+- **ADMIN** (optional)
 
-## 1. Global UX & Design Guidelines (UI States & Constraints)
-- **Empty States**: Thiết kế màn hình rỗng có hình minh họa/Icon + Text.
-- **Loading States**: Sử dụng Skeleton Loader hoặc Spinner/Partial Loading.
-- **Error States**: Toast Notification (lỗi nhẹ), Full-page Error Message + nút "Thử lại".
-- **Pagination**: Mọi list lớn đều trả về kèm `page`, `limit`, `hasNext`.
-- **API Loading & Mutation Rules**:
-  - GET → cache data.
-  - POST/PUT/DELETE → invalidate cache tương ứng.
-  - Disable button & show spinner khi đang submit dữ liệu.
-
----
-
-## 2. Chi tiết các màn hình (Screen Breakdown - Student)
-
-### 2.1 Screen: Login
-#### Use Cases
-- Nhập email và password để đăng nhập vào hệ thống.
-#### APIs
-- `POST /api/auth/login`
-  - Body: `{ email, password }`
-  - Response: `{ message, user, accessToken }`
-#### UI States
-- Normal
-- Loading (Khi đang gọi API)
-- Error (Sai thông tin, Toast hoặc Text màu đỏ)
-
-### 2.2 Screen: Student Dashboard
-#### Use Cases
-- Xem danh sách assignment
-- Xem trạng thái submission
-- Xem review status
-#### APIs
-- `GET /api/submissions/me/dashboard`
-  - Query: `page, limit, sort`
-  - Response: 
-    ```json
-    {
-      "data": [
-        {
-          "assignment_id": "uuid",
-          "title": "string",
-          "deadline": "date",
-          "submission_status": "enum",
-          "review_status": "enum"
-        }
-      ],
-      "page": 1,
-      "limit": 10,
-      "hasNext": true
-    }
-    ```
-#### UI States
-- Loading (Skeleton list)
-- Empty (Không có assignment nào)
-- Error (API fail)
-
-### 2.3 Screen: Assignment Detail
-#### Use Cases
-- Đọc đề bài, tải file đính kèm, xem tiêu chí (rubric) chấm điểm.
-- Nút truy cập vào Workspace.
-#### APIs
-- `GET /api/assignments/:id/detail`
-  - Response: Thông tin chi tiết assignment kèm danh sách file.
-- `GET /api/rubrics/assignment/:id`
-  - Response: Cấu trúc điểm của bài tập.
-#### UI States
-- Loading (Skeleton nội dung)
-- Error (Không tìm thấy bài tập hoặc mất kết nối)
-
-### 2.4 Screen: Group Workspace
-#### Use Cases
-- Quản lý công việc chung (Tasks - Kanban/List).
-- Nhắn tin, thảo luận (Chat).
-- Quản lý tệp tin (Files).
-#### APIs
-- `GET /api/groups/:id`
-- `GET /api/groups/:id/tasks`
-- `GET /api/groups/:id/discussions`
-- `GET /api/groups/:id/files`
-- (Có các API `POST/PATCH/DELETE` tương ứng cho từng tính năng)
-#### UI States
-- Loading (Khi vừa chuyển tab)
-- Empty (Chưa có Task, Chưa có Chat, Chưa upload File)
-- Error (Không tải được nội dung)
-
-### 2.5 Screen: Assignment Submission (Tab trong Workspace)
-#### Use Cases
-- Upload file nộp bài.
-- Xem lịch sử các version đã nộp.
-#### APIs
-- `POST /api/submissions/assignments/:assignmentId`
-  - Gửi file multipart/form-data.
-- `GET /api/submissions/assignments/:assignmentId/submission-history`
-  - Lấy các phiên bản đã nộp.
-#### UI States
-- Uploading (Progress bar % tải lên, disable nút Submit).
-- Uploaded (Thành công).
-- Late Warning (Badge đỏ cảnh báo nộp trễ).
-- Error (File quá lớn, sai định dạng, v.v.).
-
-### 2.6 Screen: My Reviews (Danh sách bài cần chấm)
-#### Use Cases
-- Xem danh sách các bài của nhóm khác được phân công chấm chéo.
-#### APIs
-- `GET /api/reviews/assignments/:assignmentId/my-reviews`
-#### UI States
-- Loading
-- Empty (Chưa đến hạn phân công hoặc giáo viên chưa phân).
-- Error
-
-### 2.7 Screen: Review Grading (Màn hình chấm chéo)
-#### Use Cases
-- Xem bài nộp của nhóm khác (Split-screen).
-- Nhập điểm theo Rubric, ghi chú nhận xét.
-- Sử dụng AI Mentor để phân tích văn bản nhận xét.
-#### APIs
-- `GET /api/reviews/my-reviews/:reviewAssignmentId`
-- `POST /api/reviews/analyze` (Gửi text nhận xét để AI đánh giá)
-- `POST /api/reviews/my-reviews/:reviewAssignmentId/submit` (Nộp phiếu chấm)
-#### UI States
-- Loading PDF / Skeleton Form
-- Analyzing (Khi AI Mentor đang phân tích)
-- Error (Không lưu được điểm)
-- Disabled Submit (Nếu chưa điền đủ điểm)
+**🧭 Development Flow (theo roadmap)**
+- PHASE 3 → Assignment
+- PHASE 4 → Workspace
+- PHASE 5 → Submission
+- PHASE 6 → Review Assignment
+- PHASE 7 → Peer Review
+- PHASE 8 → AI Mentor
+- PHASE 10 → Review Synthesis
+- PHASE 11 → Analytics
 
 ---
 
-## 3. Chi tiết các màn hình (Screen Breakdown - Teacher)
+## II. 🎓 STUDENT SCREENS (FINAL)
 
-### 3.1 Screen: Teacher Dashboard
-#### Use Cases
-- Xem danh sách các lớp học đang phụ trách.
-#### APIs
-- ⚠️ **Missing API**: Cần API `GET /api/classes` hoặc lấy danh sách lớp học của Teacher.
-#### UI States
-- Loading, Empty, Error.
+### 1. 🔐 Login Screen
+- **Mục tiêu**: Xác thực user
+- **UI**: Email input, Password input, Login button
+- **State**: Loading, Error
 
-### 3.2 Screen: Teacher Review Engine
-#### Use Cases
-- Theo dõi tiến độ chấm chéo của cả lớp.
-- Trigger hệ thống tự động phân công bài (Generate Assignments).
-#### APIs
-- `POST /api/review-assignments/assignments/:assignmentId/review-assignments/generate`
-#### UI States
-- Not Started (Trống, sẵn sàng bấm nút phân công).
-- Generating (Loading spinner disable màn hình).
-- Generated (Bảng tiến độ hiển thị).
-- Locked (Chốt, không cho thay đổi).
+### 2. 📊 Student Dashboard
+- **Mục tiêu**: Trung tâm điều hướng chính
+- **UI**: Assignment list (Title, Deadline, Status)
+- **🎯 Assignment Lifecycle (GLOBAL RULE)**
+  - `NOT_STARTED` → `IN_PROGRESS` → `SUBMITTED` → `UNDER_REVIEW` → `REVIEWED`
+- **UI Mapping**:
+  - `NOT_STARTED` → Action: **Start**
+  - `IN_PROGRESS` → Action: **Continue**
+  - `SUBMITTED` → Action: **View Submission**
+  - `UNDER_REVIEW` → Action: **Waiting**
+  - `REVIEWED` → Action: **View Feedback**
 
-### 3.3 Screen: Teacher Class Analytics
-#### Use Cases
-- Xem rủi ro làm việc nhóm (Collaboration Risks).
-- Xem điểm đóng góp (Contributions) của từng sinh viên.
-#### APIs
-- `GET /api/analytics/classes/:classId/collaboration-risks`
-- `GET /api/analytics/classes/:classId/contributions`
-#### UI States
-- Loading
-- Empty (Tuyệt vời, không có rủi ro nào)
-- Error
+### 3. 📄 Assignment Detail
+- **UI**: Title, Description, Requirements, Deadline, Attachments, Rubric
+- **Action**: Continue → Participation
 
-### 3.4 Screen: Teacher Review Validation
-#### Use Cases
-- Xem AI tổng hợp ý kiến từ nhiều nhóm chấm (Synthesis).
-- Xem mâu thuẫn điểm (nếu có).
-- Chốt điểm số cuối cùng.
-#### APIs
-- `GET /api/reviews/assignments/:assignmentId/reviews/synthesis`
-- `PATCH /api/summary/:summaryId/finalize`
-#### UI States
-- Loading (AI đang tổng hợp hoặc Server đang xử lý).
-- Synthesis Ready (Hiển thị thẻ màu sắc theo Sentiment).
-- Error (AI lỗi, cho phép chấm thủ công).
+### 4. 🧭 Assignment Participation Screen ⭐ (NEW)
+- **Mục tiêu**: Resolve trạng thái group
+- **Case A: Chưa có group**
+  - Create Group / Join Group
+- **Case B: Đã có group**
+  - Show group info → Go to Workspace
+
+### 5. 👥 Workspace Screen
+- **Mục tiêu**: Làm việc nhóm
+- **Tabs**: 
+  - **Tasks**: Create / assign / update (Leader assign task)
+  - **Discussion**: Chat
+  - **Files**: Upload / download
+- **State**: Empty ("Create first task"), Loading, Permission.
+
+### 6. 📤 Submission Screen (REFACTORED)
+- **Mục tiêu**: Nộp bài (tách khỏi workspace)
+- **UI**: Upload file, Submit button, Version history
+- **State**: Draft, Submitted, Late
+
+### 7. 📝 My Reviews Screen
+- **UI**: List bài cần chấm
+
+### 8. ✍️ Review Grading Screen
+- **Layout**: 
+  - LEFT: File viewer
+  - RIGHT: Rubric, Comment
+- **Validation**: Highlight missing criteria. Error: "Please score all criteria"
+- **AI States**: Analyzing, Success, Error → Retry
+
+### 9. 🧾 Review Detail Screen ⭐ (NEW)
+- **Mục tiêu**: Xem review đã gửi
+- **UI**: Score breakdown, Comment
+
+### 10. 📊 Submission Feedback Screen ⭐ (CORE)
+- **Mục tiêu**: Xem kết quả cuối (khi assignment ở trạng thái REVIEWED)
+- **UI**: Final score, Rubric breakdown, Comments, Strengths / Weaknesses
 
 ---
 
-## 4. Technical Requirements for Frontend-Backend Integration
+## III. 🧑‍🏫 TEACHER SCREENS
 
-### 4.1 Authentication (JWT)
-- **Sau khi login:**
-  - Backend trả về: `accessToken` (và `user` data).
-- **Frontend xử lý:**
-  - Lưu token vào: `localStorage` (MVP OK).
-  - Đính kèm Header cho mọi request bảo mật:
-    `Authorization: Bearer <token>`
-- **Xử lý hết hạn/lỗi (401):**
-  - Bắt buộc clear token và redirect người dùng về màn hình Login.
+### 11. 📚 Teacher Dashboard
+- **UI**: Class list
+- **API**: `GET /api/classes` (Cần define trong backend)
 
-### 4.2 API Structure
-- **Base URL:**
-  `http://localhost:5000/api` (hoặc tuỳ môi trường `VITE_API_URL`).
-- **Response format chuẩn (Success):**
-  ```json
-  {
-    "data": ...,
-    "message": "Optional success message"
-  }
-  ```
-- **Error format chuẩn (Fail):**
-  ```json
-  {
-    "error": {
-      "message": "Detailed error string",
-      "code": "ERROR_CODE"
-    }
-  }
-  ```
+### 12. ⚙️ Assignment Management
+- **UI**: List assignment, Create / Edit / Delete
 
-### 4.3 State Management (Quy tắc lưu trữ trạng thái)
-Frontend cần phân chia rõ ràng Server State và Local UI State:
-- **Server State (Dữ liệu từ API):**
-  - Yêu cầu sử dụng **React Query** (hoặc SWR) làm thư viện quản lý.
-  - Tính năng: Tự động retry, cache dữ liệu, background fetching.
-  - Các module cần Caching cực mạnh: Dashboard (giữ mượt), Assignments Detail, Workspace (để chuyển tab không chớp giật).
-- **Local UI State (Trạng thái UI tạm thời):**
-  - Dùng `useState`, `useReducer` hoặc **Zustand**.
-  - Áp dụng cho: Mở/đóng Modal, Toggle Tabs, Form inputs (chưa submit).
+### 13. 🧠 Review Engine
+- **UI**: Generate review assignments, Progress tracking
 
-### 4.4 API Groups Mapping
-Danh sách tổng hợp các route tương ứng để FE chuẩn bị tích hợp:
+### 14. 📈 Analytics Screen
+- **UI**: Contribution chart, Risk detection
 
-- **Auth:**
-  - `POST /api/auth/register`
-  - `POST /api/auth/login`
-  - `GET /api/auth/me`
-- **Assignments:**
-  - `GET /api/assignments`
-  - `GET /api/assignments/:id/detail`
-- **Groups / Workspace:**
-  - `GET /api/groups/:id`
-  - `/api/groups/:id/tasks`
-  - `/api/groups/:id/files`
-  - `/api/groups/:id/discussions`
-- **Submissions:**
-  - `GET /api/submissions/me/dashboard`
-  - `POST /api/submissions/assignments/:id`
-- **Reviews & Grading:**
-  - `/api/reviews/assignments/:id/my-reviews`
-  - `/api/reviews/my-reviews/:id`
+### 15. 🧪 Review Validation (AI)
+- **UI**: Summary, Conflicts (Approve/Reject review summaries)
 
-### 4.5 Error Handling Strategy & API Loading Rules
-- **Error Routing:**
-  - **400 Bad Request** → Hiển thị thông báo (Toast/Text) báo lỗi nhập liệu hoặc logic.
-  - **401 Unauthorized** → Tự động đăng xuất (Clear token + redirect `/login`).
-  - **403 Forbidden** → Hiển thị trang/Toast "No permission" (Không có quyền).
-  - **500 Internal Error** → Hiển thị thông báo lỗi hệ thống chung chung (Generic error).
-- **Pagination Contract:**
-  ```json
-  {
-    "data": [...],
-    "page": 1,
-    "limit": 10,
-    "hasNext": true
-  }
-  ```
-- **Mutation & Loading Rules (Bắt buộc FE tuân thủ):**
-  - Mọi action thay đổi dữ liệu (POST/PUT/DELETE) phải disable button submit.
-  - Hiển thị spinner/loading ở vùng thao tác để chặn Double-click.
-  - Call API xong (thành công) → Phải Invalidate Cache của Query chứa dữ liệu đó (vd: Thêm task xong phải clear cache danh sách Task).
+---
+
+## IV. ⚙️ SUPPORT SCREENS
+
+### 16. 🧾 Rubric Builder
+- **UI**: Add criteria, Weight, Description
+
+### 17. 👥 Group Management
+- **UI**: Member list, Assign leader
+
+### 18. 📜 Submission History
+- **UI**: Version timeline
+
+### 19. 🛠 Admin Dashboard (Optional)
+- **UI**: Manage user/class
+
+---
+
+## V. 🔌 API MAPPING (ĐÃ ĐƯỢC CHUẨN HÓA VỚI BACKEND)
+
+### Student
+- `GET /api/submissions/me/dashboard` (Lấy dashboard tổng quan)
+- `GET /api/assignments/:id/detail` (Chi tiết assignment)
+- `GET /api/submissions/assignments/:assignmentId/submission-history` (Lịch sử submission / bản nộp hiện tại)
+- `POST /api/submissions/assignments/:assignmentId` (Nộp bài)
+- `GET /api/reviews/assignments/:assignmentId/my-reviews` (Danh sách bài cần chấm)
+- `GET /api/reviews/my-reviews/:reviewAssignmentId` (Lấy detail để chấm)
+- `POST /api/reviews/my-reviews/:reviewAssignmentId/submit` (Submit điểm/comment)
+- `GET /api/submissions/assignments/:assignmentId/feedback` (Student xem kết quả tổng hợp AI + điểm cuối cùng)
+
+### Teacher
+- `GET /api/classes` *(To be implemented)*
+- `GET /api/assignments` (Lấy danh sách)
+- `POST /api/assignments` (Tạo mới)
+- `POST /api/assignments/:assignmentId/review-assignments/generate` (Generate assignment review random)
+- `GET /api/analytics/classes/:classId/reviews` (Lấy analytics)
+- `GET /api/analytics/classes/:classId/collaboration-risks` (Lấy rủi ro nhóm)
+
+---
+
+## VI. 🧭 NAVIGATION FLOW (FINAL)
+
+**🎯 Main Flow**
+```text
+Login
+ → Dashboard
+   → Assignment Detail
+     → Participation
+       → Workspace
+         → Submission
+           → Review Phase
+             → Feedback
+```
+
+**🎯 Review Flow**
+```text
+My Reviews
+ → Review Grading
+   → Submit
+     → Review Detail
+```
+
+---
+
+## VII. 🌐 GLOBAL UI RULES
+
+**Bắt buộc cho mọi screen:**
+- Loading state
+- Empty state + CTA (Call to Action)
+- Error state
+- Pagination

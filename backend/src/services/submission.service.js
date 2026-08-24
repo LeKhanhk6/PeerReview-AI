@@ -1,9 +1,10 @@
 import pool from '../config/db.js';
-import { SUBMISSION_STATUS, REVIEW_STATUS } from '../utils/submission.constants.js';
-import AppError from '../utils/AppError.js';
+import { SUBMISSION_STATUS, REVIEW_STATUS } from '../constants/index.js';
+import { AppError } from '../utils/AppError.js';
 import { logActivity } from './activity.service.js';
-import { ACTIVITY_TYPES } from '../utils/constants.js';
+import { ACTIVITY_TYPES } from '../constants/index.js';
 import logger from '../utils/logger.util.js';
+import { withTransaction } from '../utils/db.util.js';
 
 const getSubmissionStatus = (submission, deadline) => {
     if (!submission) return SUBMISSION_STATUS.NOT_STARTED;
@@ -110,7 +111,7 @@ export const getStudentDashboardData = async (userId, limit, offset, sortColumn,
             }
 
             const days_left = Math.max(0, Math.ceil((deadline - now) / 86400000));
-            const is_overdue = deadline < now && submission_status !== SUBMISSION_STATUS.SUBMITTED;
+            const is_late = deadline < now && submission_status !== SUBMISSION_STATUS.SUBMITTED;
 
             return {
                 assignment_id: row.assignment_id,
@@ -118,7 +119,7 @@ export const getStudentDashboardData = async (userId, limit, offset, sortColumn,
                 deadline: row.deadline,
                 group_id: row.group_id,
                 group_name: row.group_name,
-                is_overdue,
+                is_late,
                 days_left,
                 submission: submission ? {
                     id: row.submission_id,
@@ -146,13 +147,7 @@ export const getStudentDashboardData = async (userId, limit, offset, sortColumn,
     }
 };
 
-export const submitAssignment = async (assignmentId, userId, fileUrl) => {
-    const validAssignmentId = validateId(assignmentId, 'assignment ID');
-    if (!fileUrl || typeof fileUrl !== 'string' || fileUrl.trim() === '') {
-        throw new AppError('Valid file URL is required', 400);
-    }
-    
-    // 1. Validation & Auth
+const verifyUserAssignmentAccess = async (assignmentId, userId) => {
     const authQuery = `
         SELECT a.id, a.deadline, a.title, g.id as group_id
         FROM assignments a
@@ -160,22 +155,30 @@ export const submitAssignment = async (assignmentId, userId, fileUrl) => {
         JOIN group_members gm ON gm.group_id = g.id
         WHERE a.id = $1 AND gm.user_id = $2
     `;
-    const authResult = await pool.query(authQuery, [validAssignmentId, userId]);
+    const authResult = await pool.query(authQuery, [assignmentId, userId]);
     
     if (authResult.rows.length === 0) {
-        const checkExists = await pool.query('SELECT id FROM assignments WHERE id = $1', [validAssignmentId]);
+        const checkExists = await pool.query('SELECT id FROM assignments WHERE id = $1', [assignmentId]);
         throw new AppError(checkExists.rows.length > 0 ? 'Forbidden access to this assignment' : 'Assignment not found', checkExists.rows.length > 0 ? 403 : 404);
     }
     
-    const { deadline, title, group_id: groupId } = authResult.rows[0];
+    return authResult.rows[0];
+};
+
+export const submitAssignment = async (assignmentId, userId, fileUrl) => {
+    const validAssignmentId = validateId(assignmentId, 'assignment ID');
+    if (!fileUrl || typeof fileUrl !== 'string' || fileUrl.trim() === '') {
+        throw new AppError('Valid file URL is required', 400);
+    }
+    
+    // 1. Validation & Auth
+    const { deadline, title, group_id: groupId } = await verifyUserAssignmentAccess(validAssignmentId, userId);
     
     // 2. Deadline Check (Unified logic)
     const now = new Date();
     const newStatus = getSubmissionStatus({ submitted_at: now }, deadline);
 
-    const client = await pool.connect();
-    try {
-        await client.query('BEGIN');
+    return withTransaction(async (client) => {
         await client.query("SET LOCAL statement_timeout = '5s'");
 
         // 3. Upsert Submission with FOR UPDATE to prevent race conditions
@@ -211,7 +214,6 @@ export const submitAssignment = async (assignmentId, userId, fileUrl) => {
             
             // Check Idempotency: Ignore if same file_url
             if (latest.file_url === fileUrl) {
-                await client.query('COMMIT');
                 return {
                     submissionId,
                     versionNumber: latest.version_number,
@@ -253,8 +255,6 @@ export const submitAssignment = async (assignmentId, userId, fileUrl) => {
         } catch (logErr) {
             logger.error({ event: 'activity_log_error', message: 'Activity log failed during submission', error: logErr.message });
         }
-
-        await client.query('COMMIT');
         
         return {
             submissionId,
@@ -262,16 +262,13 @@ export const submitAssignment = async (assignmentId, userId, fileUrl) => {
             status: newStatus,
             versionData
         };
-    } catch (err) {
-        await client.query('ROLLBACK');
+    }, 'REPEATABLE READ').catch(err => {
         logger.error({ event: 'submit_assignment_failed', assignmentId, error: err.message });
         const status = err.status || err.statusCode || 500;
         const error = new AppError(err.message || 'Failed to submit assignment', status);
         error.originalError = err;
         throw error;
-    } finally {
-        client.release();
-    }
+    });
 };
 
 export const getSubmissionHistoryByAssignment = async (assignmentId, userId, limit, offset) => {

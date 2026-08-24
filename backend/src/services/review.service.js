@@ -1,10 +1,11 @@
 import pool from '../config/db.js';
 import { maskSubmissionEntity } from '../utils/masking.util.js';
 import { logActivity } from './activity.service.js';
-import { ACTIVITY_TYPES } from '../utils/constants.js';
-import AppError from '../utils/AppError.js';
+import { ACTIVITY_TYPES } from '../constants/index.js';
+import { AppError } from '../utils/AppError.js';
 import logger from '../utils/logger.util.js';
 import { mapDbError } from '../utils/dbError.util.js';
+import { withTransaction } from '../utils/db.util.js';
 
 const validateId = (id, fieldName = 'ID') => {
     const numericId = Number(id);
@@ -210,13 +211,8 @@ export const getReviewAssignmentDetail = async (reviewAssignmentId, userId) => {
 export const submitReview = async (reviewAssignmentId, userId, payload) => {
     const validReviewAssignmentId = validateId(reviewAssignmentId, 'review assignment ID');
     const { overallComment, criteriaScores } = payload;
-    const client = await pool.connect();
-    let transactionStarted = false;
-
-    try {
-        await client.query('BEGIN');
-        transactionStarted = true;
-
+    
+    return withTransaction(async (client) => {
         // 1. Existence, ownership, and lock for race conditions (FOR UPDATE)
         const checkQuery = `
             SELECT 
@@ -349,8 +345,6 @@ export const submitReview = async (reviewAssignmentId, userId, payload) => {
         `;
         await client.query(bulkInsertQuery, insertParams);
 
-        await client.query('COMMIT');
-
         // 8. Activity Tracking
         try {
             await logActivity({
@@ -376,15 +370,10 @@ export const submitReview = async (reviewAssignmentId, userId, payload) => {
             submittedAt: reviewRow.submitted_at,
             criteriaCount: processedScores.length
         };
-    } catch (error) {
-        if (transactionStarted) {
-            await client.query('ROLLBACK');
-        }
+    }, 'REPEATABLE READ').catch(error => {
         if (error instanceof AppError) throw error;
         throw mapDbError(error, error.code === '23505' ? 'Review already submitted' : null);
-    } finally {
-        client.release();
-    }
+    });
 };
 
 /**

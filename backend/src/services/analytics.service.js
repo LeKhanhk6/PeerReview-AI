@@ -1,7 +1,7 @@
 import pool from '../config/db.js';
-import AppError from '../utils/AppError.js';
+import { AppError } from '../utils/AppError.js';
 import logger from '../utils/logger.util.js';
-import { ACTIVITY_TYPES } from '../utils/constants.js';
+import { ACTIVITY_TYPES } from '../constants/index.js';
 
 // Helper for 2 decimal rounding
 const round2 = (num) => Math.round(num * 100) / 100;

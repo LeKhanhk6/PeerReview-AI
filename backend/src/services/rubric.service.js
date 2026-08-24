@@ -1,5 +1,6 @@
 import pool from '../config/db.js';
-import AppError from '../utils/AppError.js';
+import { AppError } from '../utils/AppError.js';
+import { withTransaction } from '../utils/db.util.js';
 
 const NOT_FOUND_MSG = 'Rubric not found or you do not have permission to access it';
 
@@ -125,15 +126,10 @@ export const saveRubric = async (assignmentId, description, criteriaArray, user)
     
     await verifyTeacherOwnership(validId, user.userId);
 
-    const client = await pool.connect();
-    let transactionStarted = false;
-    try {
-        await client.query('BEGIN');
-        transactionStarted = true;
-
+    return withTransaction(async (client) => {
         const rubricDescription = normalizeOptionalString(description);
 
-        const rubricCheck = await client.query('SELECT id FROM rubrics WHERE assignment_id = $1', [validId]);
+        const rubricCheck = await client.query('SELECT id FROM rubrics WHERE assignment_id = $1 FOR UPDATE', [validId]);
         let rubricId;
 
         if (rubricCheck.rows.length > 0) {
@@ -155,26 +151,16 @@ export const saveRubric = async (assignmentId, description, criteriaArray, user)
                 [rubricId, criteria.name.trim(), criteriaDescription, Number(criteria.weight)]
             );
         }
-
-        await client.query('COMMIT');
         
         // We can just fetch it manually to avoid auth-check loop in getRubricAndCriteria
-        const criteriaRes = await pool.query('SELECT id, name, description, weight, created_at FROM rubric_criteria WHERE rubric_id = $1 ORDER BY created_at ASC', [rubricId]);
+        const criteriaRes = await client.query('SELECT id, name, description, weight, created_at FROM rubric_criteria WHERE rubric_id = $1 ORDER BY created_at ASC', [rubricId]);
         return {
             id: rubricId,
             assignment_id: validId,
             description: rubricDescription,
             criteria: criteriaRes.rows
         };
-    } catch (error) {
-        if (transactionStarted) {
-            await client.query('ROLLBACK');
-        }
-        if (error instanceof AppError) throw error;
-        throw new AppError('Failed to save rubric', 500);
-    } finally {
-        client.release();
-    }
+    }, 'REPEATABLE READ');
 };
 
 export const deleteRubric = async (assignmentId, user) => {
@@ -185,17 +171,19 @@ export const deleteRubric = async (assignmentId, user) => {
     }
     await verifyTeacherOwnership(validId, user.userId);
 
-    const rubricCheck = await pool.query('SELECT id FROM rubrics WHERE assignment_id = $1', [validId]);
-    if (rubricCheck.rows.length === 0) {
-        throw new AppError(NOT_FOUND_MSG, 404);
-    }
+    return withTransaction(async (client) => {
+        const rubricCheck = await client.query('SELECT id FROM rubrics WHERE assignment_id = $1 FOR UPDATE', [validId]);
+        if (rubricCheck.rows.length === 0) {
+            throw new AppError(NOT_FOUND_MSG, 404);
+        }
 
-    // Check if in use (e.g., are there any submissions for this assignment?)
-    const inUseCheck = await pool.query('SELECT id FROM submissions WHERE assignment_id = $1 LIMIT 1', [validId]);
-    if (inUseCheck.rows.length > 0) {
-        throw new AppError('Cannot delete rubric because submissions already exist for this assignment', 400);
-    }
+        // Check if in use (e.g., are there any submissions for this assignment?)
+        const inUseCheck = await client.query('SELECT id FROM submissions WHERE assignment_id = $1 LIMIT 1', [validId]);
+        if (inUseCheck.rows.length > 0) {
+            throw new AppError('Cannot delete rubric because submissions already exist for this assignment', 400);
+        }
 
-    await pool.query('DELETE FROM rubrics WHERE assignment_id = $1', [validId]); // Cascade deletes criteria
-    return true;
+        await client.query('DELETE FROM rubrics WHERE assignment_id = $1', [validId]); // Cascade deletes criteria
+        return true;
+    }, 'REPEATABLE READ');
 };

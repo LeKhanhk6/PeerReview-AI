@@ -3,38 +3,14 @@ import * as reviewService from '../services/review.service.js';
 import * as aiService from '../services/ai.service.js';
 import * as assignmentService from '../services/assignment.service.js';
 import { isValidUUID } from '../utils/validation.util.js';
+import { AppError } from '../utils/AppError.js';
+import logger from '../utils/logger.util.js';
 
 export const getMyReviewAssignments = async (req, res, next) => {
     try {
         const { assignmentId } = req.params;
         const userId = req.user?.id;
-
-        if (!userId) {
-            const error = new Error('Unauthorized');
-            error.statusCode = 401;
-            return next(error);
-        }
-
-        if (!isValidUUID(assignmentId)) {
-            const error = new Error('Invalid assignment ID format');
-            error.statusCode = 400;
-            return next(error);
-        }
-
-        let page = parseInt(req.query.page, 10) || 1;
-        let limit = parseInt(req.query.limit, 10) || 10;
-        
-        if (page < 1 || limit < 1) {
-            const error = new Error('Invalid pagination parameters');
-            error.statusCode = 400;
-            return next(error);
-        }
-
-        // Clamp values to prevent DB stress
-        limit = Math.min(limit, 50);
-        page = Math.min(page, 1000);
-
-        const offset = (page - 1) * limit;
+        const { limit, offset, page } = req.pagination;
 
         const { rows, total } = await reviewService.getMyReviewAssignments(
             assignmentId,
@@ -45,8 +21,7 @@ export const getMyReviewAssignments = async (req, res, next) => {
 
         const hasNext = offset + limit < total;
 
-        return res.status(200).json({
-            data: rows,
+        return res.paginate(rows, {
             page,
             limit,
             hasNext,
@@ -64,52 +39,40 @@ export const generateAssignmentReviewSynthesis = async (req, res, next) => {
         const userId = req.user?.id;
         const { from, to } = req.query;
 
-        if (!isValidUUID(assignmentId)) {
-            const error = new Error('Invalid assignment ID format');
-            error.statusCode = 400;
-            return next(error);
-        }
-
         // Validate Teacher Ownership
         const ownership = await assignmentService.getAssignmentOwnershipInfo(assignmentId);
         if (!ownership) {
-            const error = new Error('Assignment not found');
-            error.statusCode = 404;
-            return next(error);
+            throw new AppError('Assignment not found', 404, 'NOT_FOUND');
         }
         if (req.user.role === 'TEACHER' && ownership.teacher_id !== userId) {
-            const error = new Error('Forbidden: You do not own this assignment');
-            error.statusCode = 403;
-            return next(error);
+            throw new AppError('Forbidden: You do not own this assignment', 403, 'FORBIDDEN');
         }
 
         const requestId = crypto.randomUUID();
-        console.log({ requestId, assignmentId, action: 'generateSynthesis' });
-
         const timeframe = (from || to) ? { from, to } : undefined;
         const timeframeKey = `${from || 'all'}_${to || 'all'}`;
+
+        logger.info({ event: 'review.synthesis.start', requestId, assignmentId, timeframeKey });
 
         const { reviewsText, totalReviews, reviewsUsed } = await reviewService.getAssignmentReviewsForSynthesis(assignmentId, timeframe);
         
         if (totalReviews < 5) {
-            return res.status(200).json({
+            return res.ok({
                 requestId,
-                data: {
-                    summary: "Chưa có đủ dữ liệu để phân tích.",
-                    reason: "NOT_ENOUGH_REVIEWS",
-                    strengths: [],
-                    weaknesses: [],
-                    suggestions: [],
-                    totalReviews,
-                    reviewsUsed: 0,
-                    confidence: 0
-                }
+                summary: "Chưa có đủ dữ liệu để phân tích.",
+                reason: "NOT_ENOUGH_REVIEWS",
+                strengths: [],
+                weaknesses: [],
+                suggestions: [],
+                totalReviews,
+                reviewsUsed: 0,
+                confidence: 0
             });
         }
 
         // Controller-level timeout guard (20s)
         const timeoutPromise = new Promise((_, reject) => 
-            setTimeout(() => reject(new Error('AI Synthesis Request Timeout')), 20000)
+            setTimeout(() => reject(new AppError('AI Synthesis Request Timeout', 504, 'TIMEOUT')), 20000)
         );
 
         const synthesis = await Promise.race([
@@ -117,9 +80,9 @@ export const generateAssignmentReviewSynthesis = async (req, res, next) => {
             timeoutPromise
         ]);
 
-        return res.status(200).json({
+        return res.ok({
             requestId,
-            data: synthesis
+            ...synthesis
         });
     } catch (error) {
         next(error);
@@ -130,30 +93,16 @@ export const getReviewAssignmentDetail = async (req, res, next) => {
     const { reviewAssignmentId } = req.params;
     const userId = req.user?.id;
     
-    console.time(`review_detail:${reviewAssignmentId}:user:${userId}`);
+    logger.info({ event: 'review_detail_start', reviewAssignmentId, userId });
 
     try {
-        if (!userId) {
-            const error = new Error('Unauthorized');
-            error.statusCode = 401;
-            return next(error);
-        }
-
-        if (!isValidUUID(reviewAssignmentId)) {
-            const error = new Error('Invalid review assignment ID format');
-            error.statusCode = 400;
-            return next(error);
-        }
-
         const detail = await reviewService.getReviewAssignmentDetail(reviewAssignmentId, userId);
 
-        return res.status(200).json({
-            data: detail
-        });
+        return res.ok(detail);
     } catch (error) {
         next(error);
     } finally {
-        console.timeEnd(`review_detail:${reviewAssignmentId}:user:${userId}`);
+        logger.info({ event: 'review_detail_end', reviewAssignmentId, userId });
     }
 };
 
@@ -161,79 +110,17 @@ export const submitReviewAssignment = async (req, res, next) => {
     const { reviewAssignmentId } = req.params;
     const userId = req.user?.id;
     
-    console.time(`submit_review:${reviewAssignmentId}:user:${userId}`);
+    logger.info({ event: 'submit_review_start', reviewAssignmentId, userId });
     try {
         const { overallComment, criteriaScores } = req.body;
 
-        if (!userId) {
-            const error = new Error('Unauthorized');
-            error.statusCode = 401;
-            return next(error);
-        }
+        const result = await reviewService.submitReview(reviewAssignmentId, userId, { overallComment, criteriaScores });
 
-        if (!isValidUUID(reviewAssignmentId)) {
-            const error = new Error('Invalid review assignment ID format');
-            error.statusCode = 400;
-            return next(error);
-        }
-
-        // Payload validations (Cheap fail-fast)
-        const comment = typeof overallComment === 'string' ? overallComment.trim() : null;
-        if (!comment || comment.length === 0) {
-            const error = new Error('overallComment is required');
-            error.statusCode = 400;
-            return next(error);
-        }
-
-        if (comment.length > 2000) {
-            const error = new Error('overallComment exceeds maximum length of 2000 characters');
-            error.statusCode = 400;
-            return next(error);
-        }
-
-        if (!Array.isArray(criteriaScores) || criteriaScores.length === 0) {
-            const error = new Error('criteriaScores array is required');
-            error.statusCode = 400;
-            return next(error);
-        }
-
-        if (criteriaScores.length > 50) {
-            const error = new Error('Too many criteria scores');
-            error.statusCode = 400;
-            return next(error);
-        }
-
-        const uniqueIds = new Set();
-        for (const item of criteriaScores) {
-            if (!isValidUUID(item.criteriaId)) {
-                const error = new Error(`Invalid criteriaId format: ${item.criteriaId}`);
-                error.statusCode = 400;
-                return next(error);
-            }
-            if (uniqueIds.has(item.criteriaId)) {
-                const error = new Error(`Duplicate criteriaId found: ${item.criteriaId}`);
-                error.statusCode = 400;
-                return next(error);
-            }
-            uniqueIds.add(item.criteriaId);
-            
-            const score = parseFloat(item.score);
-            if (isNaN(score) || score < 0 || score > 100) {
-                const error = new Error(`Invalid score for criteria ${item.criteriaId}. Must be between 0 and 100.`);
-                error.statusCode = 400;
-                return next(error);
-            }
-        }
-
-        const result = await reviewService.submitReview(reviewAssignmentId, userId, { overallComment: comment, criteriaScores });
-
-        return res.status(200).json({
-            data: result
-        });
+        return res.ok(result);
     } catch (error) {
         next(error);
     } finally {
-        console.timeEnd(`submit_review:${reviewAssignmentId}:user:${userId}`);
+        logger.info({ event: 'submit_review_end', reviewAssignmentId, userId });
     }
 };
 
@@ -241,38 +128,13 @@ export const analyzeReviewText = async (req, res, next) => {
     try {
         const { comment } = req.body;
         
-        // Input validation
-        if (!comment || typeof comment !== 'string') {
-            const error = new Error('Comment is required and must be a string');
-            error.statusCode = 400;
-            return next(error);
-        }
-        
-        const trimmedComment = comment.trim();
-        const sanitized = trimmedComment.replace(/<[^>]*>?/gm, '');
-        
-        if (sanitized.length < 15) {
-            const error = new Error('Comment must be at least 15 characters long');
-            error.statusCode = 400;
-            return next(error);
-        }
-        
-        if (sanitized.length > 2000) {
-            const error = new Error('Comment must not exceed 2000 characters');
-            error.statusCode = 400;
-            return next(error);
-        }
-
         const requestId = crypto.randomUUID();
 
         // Call AI Service
-        const result = await aiService.analyzeComment(sanitized, requestId);
+        const result = await aiService.analyzeComment(comment, requestId); // the schema already sanitized it
         
-        return res.status(200).json({
-            data: result
-        });
+        return res.ok(result);
     } catch (error) {
-        // Delegate unknown errors to central error middleware
         next(error);
     }
 };

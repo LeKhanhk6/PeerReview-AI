@@ -1,23 +1,11 @@
 import * as submissionService from '../services/submission.service.js';
+import { AppError } from '../utils/AppError.js';
 
 export const getStudentDashboard = async (req, res, next) => {
     try {
         const userId = req.user?.id;
-        if (!userId) {
-            return res.status(401).json({ message: 'Unauthorized' });
-        }
-        let { page = 1, limit = 20, sort = 'deadline' } = req.query;
-
-        // Pagination fallback
-        const parsedLimit = parseInt(limit, 10);
-        limit = Number.isInteger(parsedLimit) ? parsedLimit : 20;
-        limit = Math.min(limit, 50);
-
-        const parsedPage = parseInt(page, 10);
-        page = Number.isInteger(parsedPage) ? parsedPage : 1;
-        page = Math.min(page, 1000);
-
-        const offset = (page - 1) * limit;
+        let { sort = 'deadline' } = req.query;
+        const { limit, offset, page } = req.pagination;
 
         // Sort whitelist + DESC
         const allowedSort = {
@@ -26,7 +14,7 @@ export const getStudentDashboard = async (req, res, next) => {
         };
 
         const isDesc = sort?.startsWith('-');
-        const field = sort?.replace('-', '');
+        const field = sort?.replace(/^-+/, '');
 
         const sortColumn = allowedSort[field] || 'a.deadline';
         const sortOrder = isDesc ? 'DESC' : 'ASC';
@@ -42,8 +30,7 @@ export const getStudentDashboard = async (req, res, next) => {
         // heuristic / direct check
         const hasNext = offset + limit < total;
 
-        return res.status(200).json({
-            data: rows,
+        return res.paginate(rows, {
             page,
             limit,
             hasNext,
@@ -54,33 +41,14 @@ export const getStudentDashboard = async (req, res, next) => {
     }
 };
 
-import { isValidUUID, isValidHttpUrl } from '../utils/validation.util.js';
-
 export const submit = async (req, res, next) => {
     try {
         const { assignmentId } = req.params;
         const { file_url } = req.body;
         const userId = req.user?.id;
 
-        if (!userId) {
-            return res.status(401).json({ message: 'Unauthorized' });
-        }
-
-        if (!isValidUUID(assignmentId)) {
-            return res.status(400).json({ message: 'Invalid assignment ID format' });
-        }
-
-        if (!file_url || !isValidHttpUrl(file_url)) {
-            return res.status(400).json({ message: 'A valid file_url is required' });
-        }
-
-        const allowedDomains = ['s3.amazonaws.com', 'firebaseapp.com', 'googleapis.com'];
-        if (!allowedDomains.some(d => file_url.includes(d))) {
-            return res.status(400).json({ message: 'file_url domain is not allowed' });
-        }
-
         const result = await submissionService.submitAssignment(assignmentId, userId, file_url);
-        return res.status(200).json({ data: result });
+        return res.ok(result);
     } catch (error) {
         next(error);
     }
@@ -90,26 +58,7 @@ export const getSubmissionHistoryByAssignment = async (req, res, next) => {
     try {
         const { assignmentId } = req.params;
         const userId = req.user?.id;
-
-        if (!userId) {
-            return res.status(401).json({ message: 'Unauthorized' });
-        }
-
-        if (!isValidUUID(assignmentId)) {
-            return res.status(400).json({ message: 'Invalid assignment ID format' });
-        }
-
-        let { page = 1, limit = 10 } = req.query;
-        
-        const parsedLimit = parseInt(limit, 10);
-        limit = Number.isInteger(parsedLimit) && parsedLimit > 0 ? parsedLimit : 10;
-        limit = Math.max(1, Math.min(limit, 50));
-
-        const parsedPage = parseInt(page, 10);
-        page = Number.isInteger(parsedPage) && parsedPage > 0 ? parsedPage : 1;
-        page = Math.max(1, Math.min(page, 1000));
-        
-        const offset = (page - 1) * limit;
+        const { limit, offset, page } = req.pagination;
 
         const { rows, total } = await submissionService.getSubmissionHistoryByAssignment(
             assignmentId,
@@ -120,8 +69,7 @@ export const getSubmissionHistoryByAssignment = async (req, res, next) => {
 
         const hasNext = offset + limit < total;
 
-        return res.status(200).json({
-            data: rows,
+        return res.paginate(rows, {
             page,
             limit,
             hasNext,

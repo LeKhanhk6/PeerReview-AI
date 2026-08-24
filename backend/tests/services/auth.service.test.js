@@ -37,7 +37,7 @@ beforeEach(async () => {
     getUserById = authService.getUserById;
     
     const appErrorModule = await import('../../src/utils/AppError.js');
-    AppError = appErrorModule.default;
+    AppError = appErrorModule.AppError;
     
     poolMock.query.mockReset();
     mockBcrypt.compare.mockReset();
@@ -114,7 +114,7 @@ describe('auth.service', () => {
             );
             expect(mockBcrypt.compare).toHaveBeenCalledWith('password123', scenario.password_hash);
             expect(mockJwt.sign).toHaveBeenCalledWith(
-                { userId: scenario.id, role: scenario.role },
+                { id: scenario.id, role: scenario.role },
                 'mock-secret-key',
                 { expiresIn: '24h' }
             );

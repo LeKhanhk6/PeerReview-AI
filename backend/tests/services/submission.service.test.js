@@ -17,7 +17,7 @@ beforeAll(async () => {
     getSubmissionHistoryByAssignment = submissionService.getSubmissionHistoryByAssignment;
     
     const appErrorModule = await import('../../src/utils/AppError.js');
-    AppError = appErrorModule.default;
+    AppError = appErrorModule.AppError;
 });
 
 beforeEach(() => {
@@ -42,7 +42,7 @@ describe('submission.service (MVP)', () => {
     describe('submitAssignment (Core: Transaction & Versioning)', () => {
         it('should throw 400 and NOT call DB when id is invalid (Short-circuit test)', async () => {
             const error = await submitAssignment('invalid', userId, fileUrl).catch(e => e);
-            expect(error.status).toBe(400);
+            expect(error.statusCode).toBe(400);
             expect(poolMock.query).not.toHaveBeenCalled();
         });
 
@@ -175,7 +175,7 @@ describe('submission.service (MVP)', () => {
             
             const error = await submitAssignment(assignmentId, userId, fileUrl).catch(e => e);
             expect(error).toBeInstanceOf(AppError);
-            expect(error.status).toBe(400);
+            expect(error.statusCode).toBe(400);
             expect(error.message).toContain('Maximum submission versions');
             expect(clientMock.query).toHaveBeenCalledWith('ROLLBACK');
         });
@@ -196,7 +196,7 @@ describe('submission.service (MVP)', () => {
             poolMock.query.mockResolvedValueOnce({ rows: [{ id: assignmentId }] }); // but assignment exists
             
             const error = await submitAssignment(assignmentId, userId, fileUrl).catch(e => e);
-            expect(error.status).toBe(403);
+            expect(error.statusCode).toBe(403);
             expect(error.message).toContain('Forbidden');
         });
 
@@ -205,7 +205,7 @@ describe('submission.service (MVP)', () => {
             poolMock.query.mockResolvedValueOnce({ rows: [] }); // assignment doesn't exist either
             
             const error = await submitAssignment(assignmentId, userId, fileUrl).catch(e => e);
-            expect(error.status).toBe(404);
+            expect(error.statusCode).toBe(404);
             expect(error.message).toContain('not found');
         });
     });

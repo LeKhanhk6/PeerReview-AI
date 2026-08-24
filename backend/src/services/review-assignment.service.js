@@ -1,6 +1,7 @@
 import pool from '../config/db.js';
-import AppError from '../utils/AppError.js';
+import { AppError } from '../utils/AppError.js';
 import logger from '../utils/logger.util.js';
+import { withTransaction } from '../utils/db.util.js';
 
 const validateId = (id, fieldName = 'ID') => {
     const numericId = Number(id);
@@ -126,10 +127,7 @@ export const generateReviewAssignments = async (assignmentId, userId, reviewsPer
     }
 
     // 6. Transaction to safely clear old and insert new assignments
-    const client = await pool.connect();
-    try {
-        await client.query('BEGIN');
-
+    return withTransaction(async (client) => {
         // Handle duplicate runs (DELETE old ones before insert)
         // SHOULD NEVER RUN due to invariant check (Dynamic Membership Guard)
         const deleteOldQuery = `
@@ -159,7 +157,6 @@ export const generateReviewAssignments = async (assignmentId, userId, reviewsPer
             await client.query(insertQuery, queryValues);
         }
 
-        await client.query('COMMIT');
         logger.info({ event: 'review_assignment_generated', assignmentId: validAssignmentId, total: assignmentsToInsert.length });
 
         // 7. Return summary
@@ -168,12 +165,9 @@ export const generateReviewAssignments = async (assignmentId, userId, reviewsPer
             groups: n,
             reviewsPerGroup
         };
-    } catch (err) {
-        await client.query('ROLLBACK');
+    }, 'REPEATABLE READ').catch(err => {
         logger.error({ event: 'generateReviewAssignments_failed', assignmentId: validAssignmentId, error: err.message });
         if (err instanceof AppError) throw err;
         throw new AppError(err.message || 'Failed to generate review assignments', 500, { original: err.message });
-    } finally {
-        client.release();
-    }
+    });
 };

@@ -1,7 +1,9 @@
 import express from 'express';
 import rateLimit from 'express-rate-limit';
+import { z } from 'zod';
 import { login, logout, getMe, register } from '../controllers/auth.controller.js';
 import { verifyToken } from '../middleware/auth.middleware.js';
+import { validate } from '../middleware/validation.middleware.js';
 
 const router = express.Router();
 
@@ -15,8 +17,23 @@ const loginLimiter = rateLimit({
     legacyHeaders: false,
 });
 
-router.post('/register', register);
-router.post('/login', loginLimiter, login);
+const registerSchema = {
+    body: z.object({
+        full_name: z.string().min(2).max(255).trim(),
+        email: z.string().email().trim().toLowerCase(),
+        password: z.string().min(6).trim()
+    })
+};
+
+const loginSchema = {
+    body: z.object({
+        email: z.string().email().trim().toLowerCase(),
+        password: z.string().min(1).trim() // must not be empty
+    })
+};
+
+router.post('/register', validate(registerSchema), register);
+router.post('/login', loginLimiter, validate(loginSchema), login);
 router.post('/logout', verifyToken, logout);
 router.get('/me', verifyToken, getMe);
 

@@ -1,5 +1,6 @@
 import pool from '../config/db.js';
-import AppError from '../utils/AppError.js';
+import { AppError } from '../utils/AppError.js';
+import { withTransaction } from '../utils/db.util.js';
 
 // --- CONSTANTS ---
 const NOT_FOUND_MSG = 'Group not found or you do not have permission to view it';
@@ -255,19 +256,21 @@ export const createGroup = async (classId, name, user) => {
         throw new AppError('Forbidden: You do not manage this class', 403);
     }
     
-    // Group uniqueness rule: 1 class has max 1 group with the same name
-    const groupNameCheck = await pool.query('SELECT 1 FROM groups WHERE class_id = $1 AND name = $2', [validClassId, name.trim()]);
-    if (groupNameCheck.rows.length > 0) {
-        throw new AppError('A group with this name already exists in the class', 409);
-    }
+    return withTransaction(async (client) => {
+        // Group uniqueness rule: 1 class has max 1 group with the same name
+        const groupNameCheck = await client.query('SELECT 1 FROM groups WHERE class_id = $1 AND name = $2', [validClassId, name.trim()]);
+        if (groupNameCheck.rows.length > 0) {
+            throw new AppError('A group with this name already exists in the class', 409);
+        }
 
-    const query = `
-        INSERT INTO groups (class_id, name)
-        VALUES ($1, $2)
-        RETURNING id, class_id, name, created_at;
-    `;
-    const result = await pool.query(query, [validClassId, name.trim()]);
-    return result.rows[0];
+        const query = `
+            INSERT INTO groups (class_id, name)
+            VALUES ($1, $2)
+            RETURNING id, class_id, name, created_at;
+        `;
+        const result = await client.query(query, [validClassId, name.trim()]);
+        return result.rows[0];
+    }, 'REPEATABLE READ');
 };
 
 export const addMember = async (groupId, userId, currentUser) => {
@@ -289,14 +292,16 @@ export const addMember = async (groupId, userId, currentUser) => {
     // 3. Common Membership Checks
     await checkStudentCanJoinGroup(groupInfo, userId);
 
-    // 6. Insert Member
-    const insertQuery = `
-        INSERT INTO group_members (group_id, user_id, is_leader)
-        VALUES ($1, $2, false)
-        RETURNING group_id, user_id, is_leader, joined_at;
-    `;
-    const insertResult = await pool.query(insertQuery, [groupId, userId]);
-    return insertResult.rows[0];
+    return withTransaction(async (client) => {
+        // 6. Insert Member
+        const insertQuery = `
+            INSERT INTO group_members (group_id, user_id, is_leader)
+            VALUES ($1, $2, false)
+            RETURNING group_id, user_id, is_leader, joined_at;
+        `;
+        const insertResult = await client.query(insertQuery, [groupId, userId]);
+        return insertResult.rows[0];
+    }, 'REPEATABLE READ');
 };
 
 export const removeMember = async (groupId, userId, currentUser) => {
@@ -331,10 +336,12 @@ export const removeMember = async (groupId, userId, currentUser) => {
         throw error;
     }
 
-    // 5. Delete Member
-    const deleteQuery = 'DELETE FROM group_members WHERE group_id = $1 AND user_id = $2';
-    await pool.query(deleteQuery, [groupId, userId]);
-    return true;
+    return withTransaction(async (client) => {
+        // 5. Delete Member
+        const deleteQuery = 'DELETE FROM group_members WHERE group_id = $1 AND user_id = $2';
+        await client.query(deleteQuery, [groupId, userId]);
+        return true;
+    }, 'REPEATABLE READ');
 };
 
 export const assignLeader = async (groupId, targetUserId, currentUser) => {
@@ -353,35 +360,23 @@ export const assignLeader = async (groupId, targetUserId, currentUser) => {
         throw error;
     }
 
-    const client = await pool.connect();
-    try {
-        await client.query('BEGIN');
-
+    return withTransaction(async (client) => {
         // 3. Check membership
-        const memberCheck = await client.query('SELECT 1 FROM group_members WHERE group_id = $1 AND user_id = $2', [groupId, targetUserId]);
+        const memberCheck = await client.query('SELECT 1 FROM group_members WHERE group_id = $1 AND user_id = $2 FOR UPDATE', [groupId, targetUserId]);
         if (memberCheck.rows.length === 0) {
-            const error = new Error('Group member not found');
-            error.status = 404;
-            throw error;
+            throw new AppError('Group member not found', 404);
         }
 
         // 4. Update
         await client.query('UPDATE group_members SET is_leader = false WHERE group_id = $1', [groupId]);
         await client.query('UPDATE group_members SET is_leader = true WHERE group_id = $1 AND user_id = $2', [groupId, targetUserId]);
 
-        await client.query('COMMIT');
-
         return {
             group_id: groupId,
             user_id: targetUserId,
             is_leader: true
         };
-    } catch (error) {
-        await client.query('ROLLBACK');
-        throw error;
-    } finally {
-        client.release();
-    }
+    }, 'REPEATABLE READ');
 };
 
 export const studentJoinGroup = async (groupId, studentId) => {
@@ -394,13 +389,15 @@ export const studentJoinGroup = async (groupId, studentId) => {
 
     await checkStudentCanJoinGroup(groupCheck.rows[0], studentId);
 
-    const insertQuery = `
-        INSERT INTO group_members (group_id, user_id, is_leader)
-        VALUES ($1, $2, false)
-        RETURNING group_id, user_id, is_leader, joined_at;
-    `;
-    const insertResult = await pool.query(insertQuery, [groupId, studentId]);
-    return insertResult.rows[0];
+    return withTransaction(async (client) => {
+        const insertQuery = `
+            INSERT INTO group_members (group_id, user_id, is_leader)
+            VALUES ($1, $2, false)
+            RETURNING group_id, user_id, is_leader, joined_at;
+        `;
+        const insertResult = await client.query(insertQuery, [groupId, studentId]);
+        return insertResult.rows[0];
+    }, 'REPEATABLE READ');
 };
 
 export const studentLeaveGroup = async (groupId, studentId) => {
@@ -418,6 +415,8 @@ export const studentLeaveGroup = async (groupId, studentId) => {
         throw error;
     }
 
-    await pool.query('DELETE FROM group_members WHERE group_id = $1 AND user_id = $2', [groupId, studentId]);
-    return true;
+    return withTransaction(async (client) => {
+        await client.query('DELETE FROM group_members WHERE group_id = $1 AND user_id = $2', [groupId, studentId]);
+        return true;
+    }, 'REPEATABLE READ');
 };

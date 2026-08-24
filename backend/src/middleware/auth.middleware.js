@@ -1,4 +1,6 @@
 import jwt from 'jsonwebtoken';
+import { AppError } from '../utils/AppError.js';
+import { setUserId } from '../utils/context.util.js';
 
 const JWT_SECRET = process.env.JWT_SECRET;
 
@@ -9,22 +11,26 @@ if (!JWT_SECRET) {
 export const verifyToken = (req, res, next) => {
     const authHeader = req.headers.authorization;
     if (!authHeader) {
-        return res.status(401).json({ message: 'No token provided, authorization denied' });
+        throw new AppError('No token provided, authorization denied', 401, 'UNAUTHORIZED');
     }
 
     const [scheme, token] = authHeader.split(' ');
     if (scheme !== 'Bearer' || !token) {
-        return res.status(401).json({ message: 'Invalid authorization format' });
+        throw new AppError('Invalid authorization format', 401, 'UNAUTHORIZED');
     }
 
     try {
         const decoded = jwt.verify(token, JWT_SECRET);
-        req.user = decoded; // { userId, role }
+        req.user = decoded; // { id, role }
+        
+        // Propagate userId to AsyncLocalStorage
+        setUserId(decoded.id || decoded.userId);
+        
         return next();
     } catch (error) {
         if (error.name === 'TokenExpiredError') {
-            return res.status(401).json({ message: 'Token has expired' });
+            throw new AppError('Token has expired', 401, 'TOKEN_EXPIRED');
         }
-        return res.status(401).json({ message: 'Token is not valid' });
+        throw new AppError('Token is not valid', 401, 'UNAUTHORIZED');
     }
 };

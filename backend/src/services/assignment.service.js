@@ -1,6 +1,7 @@
 import pool from '../config/db.js';
-import AppError from '../utils/AppError.js';
+import { AppError } from '../utils/AppError.js';
 import logger from '../utils/logger.util.js';
+import { withTransaction } from '../utils/db.util.js';
 
 const NOT_FOUND_MSG = 'Assignment not found or you do not have permission to access it';
 
@@ -142,14 +143,16 @@ export const createAssignment = async (assignmentData, user) => {
         throw new AppError('Forbidden: You do not manage this class', 403);
     }
 
-    const query = `
-        INSERT INTO assignments (class_id, title, description, requirements, deadline)
-        VALUES ($1, $2, $3, $4, $5)
-        RETURNING id, class_id, title, description, requirements, deadline, created_at;
-    `;
-    const values = [validClassId, title.trim(), description, requirements, deadline];
-    const result = await pool.query(query, values);
-    return result.rows[0];
+    return withTransaction(async (client) => {
+        const query = `
+            INSERT INTO assignments (class_id, title, description, requirements, deadline)
+            VALUES ($1, $2, $3, $4, $5)
+            RETURNING id, class_id, title, description, requirements, deadline, created_at;
+        `;
+        const values = [validClassId, title.trim(), description, requirements, deadline];
+        const result = await client.query(query, values);
+        return result.rows[0];
+    }, 'REPEATABLE READ');
 };
 
 export const updateAssignment = async (id, assignmentData, user) => {
@@ -175,19 +178,25 @@ export const updateAssignment = async (id, assignmentData, user) => {
         throw new AppError('Valid title is required', 400);
     }
 
-    const query = `
-        UPDATE assignments
-        SET title = $1, description = $2, requirements = $3, deadline = $4
-        WHERE id = $5
-        RETURNING id, class_id, title, description, requirements, deadline, created_at;
-    `;
-    const values = [title.trim(), description, requirements, deadline, validId];
-    const result = await pool.query(query, values);
+    return withTransaction(async (client) => {
+        // Lock row
+        const lockQuery = `SELECT id FROM assignments WHERE id = $1 FOR UPDATE`;
+        await client.query(lockQuery, [validId]);
 
-    if (result.rowCount === 0) {
-        throw new AppError(NOT_FOUND_MSG, 404);
-    }
-    return result.rows[0];
+        const query = `
+            UPDATE assignments
+            SET title = $1, description = $2, requirements = $3, deadline = $4
+            WHERE id = $5
+            RETURNING id, class_id, title, description, requirements, deadline, created_at;
+        `;
+        const values = [title.trim(), description, requirements, deadline, validId];
+        const result = await client.query(query, values);
+
+        if (result.rowCount === 0) {
+            throw new AppError(NOT_FOUND_MSG, 404);
+        }
+        return result.rows[0];
+    }, 'REPEATABLE READ');
 };
 
 export const deleteAssignment = async (id, user) => {
@@ -208,13 +217,19 @@ export const deleteAssignment = async (id, user) => {
         throw new AppError(NOT_FOUND_MSG, 404);
     }
 
-    const query = 'DELETE FROM assignments WHERE id = $1 RETURNING id;';
-    const result = await pool.query(query, [validId]);
+    return withTransaction(async (client) => {
+        // Lock row
+        const lockQuery = `SELECT id FROM assignments WHERE id = $1 FOR UPDATE`;
+        await client.query(lockQuery, [validId]);
 
-    if (result.rowCount === 0) {
-        throw new AppError('Assignment not found', 404);
-    }
-    return true;
+        const query = 'DELETE FROM assignments WHERE id = $1 RETURNING id;';
+        const result = await client.query(query, [validId]);
+
+        if (result.rowCount === 0) {
+            throw new AppError('Assignment not found', 404);
+        }
+        return true;
+    }, 'REPEATABLE READ');
 };
 
 // --- TASK 06.2 ASSIGNMENT DETAIL ---

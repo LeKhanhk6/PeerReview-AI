@@ -1,165 +1,111 @@
 import * as groupService from '../services/group.service.js';
-import { isValidUUID, isValidString } from '../utils/validation.util.js';
+import { AppError } from '../utils/AppError.js';
 
-export const getAll = async (req, res) => {
+export const getAll = async (req, res, next) => {
     try {
         const user = req.user;
         const { classId } = req.query;
 
-        if (classId && !isValidUUID(classId)) {
-            return res.status(400).json({ message: 'Invalid classId format' });
-        }
-
         const groups = await groupService.getAllGroups(user, classId);
-        return res.status(200).json(groups);
+        return res.ok(groups);
     } catch (error) {
-        const status = error.status || 500;
-        return res.status(status).json({ message: error.message });
+        next(error);
     }
 };
 
-export const getById = async (req, res) => {
+export const getById = async (req, res, next) => {
     try {
         const { id } = req.params;
         const user = req.user;
 
-        if (!isValidUUID(id)) {
-            return res.status(400).json({ message: 'Invalid group ID format' });
-        }
-
         const group = await groupService.getGroupById(id, user);
-        return res.status(200).json(group);
+        return res.ok(group);
     } catch (error) {
-        const status = error.status || 500;
-        return res.status(status).json({ message: error.message });
+        next(error);
     }
 };
 
-export const create = async (req, res) => {
+export const create = async (req, res, next) => {
     try {
         const user = req.user;
         const { class_id, name } = req.body;
 
-        // 1. Validation
-        if (!class_id || !isValidUUID(class_id)) {
-            return res.status(400).json({ message: 'Valid class_id UUID is required' });
-        }
-        if (!isValidString(name, 100)) {
-            return res.status(400).json({ message: 'Name is required, must not be empty, and max 100 characters' });
-        }
-
         // 2. Class Existence & Ownership Check
         const classInfo = await groupService.getClassOwnershipInfo(class_id);
         if (!classInfo) {
-            return res.status(404).json({ message: 'Class not found' });
+            throw new AppError('Class not found', 404);
         }
 
         if (user.role === 'TEACHER' && classInfo.teacher_id !== user.userId) {
-            return res.status(403).json({ message: 'Forbidden: You do not manage this class' });
+            throw new AppError('Forbidden: You do not manage this class', 403);
         }
 
         // 3. Create
-        const newGroup = await groupService.createGroup(class_id, name.trim());
-        return res.status(201).json(newGroup);
+        const newGroup = await groupService.createGroup(class_id, name);
+        return res.ok(newGroup);
     } catch (error) {
-        const status = error.status || 500;
-        return res.status(status).json({ message: error.message });
+        next(error);
     }
 };
 
-export const addMember = async (req, res) => {
+export const addMember = async (req, res, next) => {
     try {
         const { id } = req.params;
         const { user_id } = req.body;
         const currentUser = req.user;
 
-        // Validation
-        if (!isValidUUID(id)) {
-            return res.status(400).json({ message: 'Invalid group ID format' });
-        }
-        if (!user_id || !isValidUUID(user_id)) {
-            return res.status(400).json({ message: 'Valid user_id UUID is required' });
-        }
-
         const newMember = await groupService.addMember(id, user_id, currentUser);
-        return res.status(201).json(newMember);
+        return res.ok(newMember);
     } catch (error) {
-        const status = error.status || 500;
-        return res.status(status).json({ message: error.message });
+        next(error);
     }
 };
 
-export const removeMember = async (req, res) => {
+export const removeMember = async (req, res, next) => {
     try {
         const { id, userId } = req.params;
         const currentUser = req.user;
 
-        if (!isValidUUID(id)) {
-            return res.status(400).json({ message: 'Invalid group ID format' });
-        }
-        if (!isValidUUID(userId)) {
-            return res.status(400).json({ message: 'Invalid user ID format' });
-        }
-
         await groupService.removeMember(id, userId, currentUser);
-        return res.status(204).send();
+        return res.ok({ success: true });
     } catch (error) {
-        const status = error.status || 500;
-        return res.status(status).json({ message: error.message });
+        next(error);
     }
 };
 
-export const joinGroup = async (req, res) => {
+export const joinGroup = async (req, res, next) => {
     try {
         const { id } = req.params;
         const studentId = req.user.userId;
-
-        if (!isValidUUID(id)) {
-            return res.status(400).json({ message: 'Invalid group ID format' });
-        }
 
         const newMember = await groupService.studentJoinGroup(id, studentId);
-        return res.status(201).json(newMember);
+        return res.ok(newMember);
     } catch (error) {
-        const status = error.status || 500;
-        return res.status(status).json({ message: error.message });
+        next(error);
     }
 };
 
-export const leaveGroup = async (req, res) => {
+export const leaveGroup = async (req, res, next) => {
     try {
         const { id } = req.params;
         const studentId = req.user.userId;
 
-        if (!isValidUUID(id)) {
-            return res.status(400).json({ message: 'Invalid group ID format' });
-        }
-
         await groupService.studentLeaveGroup(id, studentId);
-        return res.status(204).send();
+        return res.ok({ success: true });
     } catch (error) {
-        const status = error.status || 500;
-        return res.status(status).json({ message: error.message });
+        next(error);
     }
 };
 
-export const assignLeader = async (req, res) => {
+export const assignLeader = async (req, res, next) => {
     try {
         const { id } = req.params;
         const { user_id } = req.body;
         const currentUser = req.user;
 
-        if (!isValidUUID(id)) {
-            return res.status(400).json({ message: 'Invalid group ID format' });
-        }
-        if (!user_id || !isValidUUID(user_id)) {
-            return res.status(400).json({ message: 'Valid user_id UUID is required' });
-        }
-
         const result = await groupService.assignLeader(id, user_id, currentUser);
-        return res.status(200).json(result);
+        return res.ok(result);
     } catch (error) {
-        const status = error.status || 500;
-        return res.status(status).json({ message: error.message });
+        next(error);
     }
 };

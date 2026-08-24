@@ -1,9 +1,11 @@
-export default class AppError extends Error {
-    constructor(message, status, details = null) {
-        super(message);
-        this.status = status;
-        this.details = details;
-        this.isOperational = true;
-        Error.captureStackTrace(this, this.constructor);
-    }
+export class AppError extends Error {
+  constructor(message, statusCode = 500, code = 'INTERNAL_ERROR', details = null) {
+    super(message);
+    this.statusCode = statusCode;
+    this.status = statusCode; // Backward compatibility for tests
+    this.code = code;
+    this.details = details;
+    this.isOperational = true;
+    Error.captureStackTrace(this, this.constructor);
+  }
 }

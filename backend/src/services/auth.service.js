@@ -1,7 +1,7 @@
 import pool from '../config/db.js';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
-import AppError from '../utils/AppError.js';
+import { AppError } from '../utils/AppError.js';
 import { mapDbError } from '../utils/dbError.util.js';
 
 const JWT_SECRET = process.env.JWT_SECRET;
@@ -32,7 +32,7 @@ export const registerUser = async (fullName, email, password) => {
         const query = `
             INSERT INTO users (full_name, email, password_hash, role_id)
             VALUES ($1, $2, $3, $4)
-            RETURNING id, email, created_at
+            RETURNING id, email, created_at, (SELECT name FROM roles WHERE id = $4) as role
         `;
         
         const result = await pool.query(query, [fullName, email, passwordHash, studentRoleId]);
@@ -75,7 +75,7 @@ export const loginUser = async (email, password) => {
 
     // Tạo token
     const token = jwt.sign(
-        { userId: user.id, role: user.role },
+        { id: user.id, role: user.role },
         JWT_SECRET,
         { expiresIn: JWT_EXPIRES_IN }
     );

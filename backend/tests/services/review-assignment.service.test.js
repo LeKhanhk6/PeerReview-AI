@@ -1,5 +1,5 @@
 import { jest } from '@jest/globals';
-import AppError from '../../src/utils/AppError.js';
+import { AppError } from '../../src/utils/AppError.js';
 
 // Setup module mock for DB pool
 jest.unstable_mockModule('../../src/config/db.js', () => ({

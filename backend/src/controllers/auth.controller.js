@@ -1,115 +1,60 @@
 import * as authService from '../services/auth.service.js';
+import { AppError } from '../utils/AppError.js';
 
-export const register = async (req, res) => {
+export const register = async (req, res, next) => {
     try {
-        // Input Sanitize: Bóc tách đúng trường cần thiết
-        let { full_name, email, password } = req.body;
+        const { full_name, email, password } = req.body;
 
-        // Null guard & type check
-        if (
-            typeof full_name !== 'string' ||
-            typeof email !== 'string' ||
-            typeof password !== 'string'
-        ) {
-            return res.status(400).json({ error: { message: 'full_name, email, and password must be strings' } });
-        }
+        const user = await authService.registerUser(full_name, email, password);
 
-        email = email.trim().toLowerCase();
-        
-        // Format validation for Email
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        if (!emailRegex.test(email)) {
-            return res.status(400).json({ error: { message: 'Invalid email format' } });
-        }
-
-        full_name = full_name.trim();
-        if (full_name.length < 2 || full_name.length > 255) {
-            return res.status(400).json({ error: { message: 'Full name must be between 2 and 255 characters' } });
-        }
-
-        const normalizedPassword = password.trim();
-        if (normalizedPassword.length < 6) {
-            return res.status(400).json({ error: { message: 'Password must be at least 6 characters long' } });
-        }
-
-        // Gọi service xử lý logic DB
-        const user = await authService.registerUser(full_name, email, normalizedPassword);
-
-        // Logging
         console.info('User registered', { email: user.email, userId: user.id });
 
-        // Trả về kết quả
-        return res.status(201).json({
-            data: {
+        return res.ok({
+            user: {
                 id: user.id,
                 email: user.email,
-                role: 'STUDENT',
+                role: user.role,
                 created_at: user.created_at
             }
-        });
+        }, 201);
     } catch (error) {
-        const status = error.status || 500;
-        console.error('Register error', { message: error.message, status });
-        return res.status(status).json({
-            error: { message: status === 500 ? 'Internal Server Error' : error.message }
-        });
+        next(error);
     }
 };
 
-export const login = async (req, res) => {
+export const login = async (req, res, next) => {
     try {
         const { email, password } = req.body;
         
-        if (
-            typeof email !== 'string' ||
-            typeof password !== 'string' ||
-            !email.trim() ||
-            !password
-        ) {
-            return res.status(400).json({ error: { message: 'Email and password are required' } });
-        }
+        const data = await authService.loginUser(email, password);
         
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        const normalizedEmail = email.trim().toLowerCase();
-        
-        if (!emailRegex.test(normalizedEmail)) {
-            return res.status(400).json({ error: { message: 'Invalid email format' } });
-        }
-        
-        const data = await authService.loginUser(normalizedEmail, password);
-        
-        return res.status(200).json({ data });
-    } catch (error) {
-        const status = error.status || 500;
-        console.error('Login error', { message: error.message, status });
-        return res.status(status).json({ 
-            error: { message: status === 500 ? 'Internal Server Error' : error.message }
+        return res.ok({
+            user: data.user,
+            accessToken: data.token
         });
+    } catch (error) {
+        next(error);
     }
 };
 
-export const logout = async (req, res) => {
-    // JWT is stateless.
-    // The client is responsible for removing the stored token.
-    return res.status(200).json({ data: { message: 'Logout successful' } });
+export const logout = async (req, res, next) => {
+    try {
+        return res.ok(null);
+    } catch (error) {
+        next(error);
+    }
 };
 
-export const getMe = async (req, res) => {
+export const getMe = async (req, res, next) => {
     try {
-        const userId = req.user?.userId; 
+        const userId = req.user?.id; 
         if (!userId) {
-            return res.status(401).json({ error: { message: 'Unauthorized' } });
+            throw new AppError('Unauthorized', 401, 'UNAUTHORIZED');
         }
         
         const user = await authService.getUserById(userId);
-        return res.status(200).json({ data: { user } });
+        return res.ok({ user });
     } catch (error) {
-        const status = error.status || 500;
-        console.error('GetMe error', { message: error.message, status });
-        return res.status(status).json({ 
-            error: { message: status === 500 ? 'Internal Server Error' : error.message }
-        });
+        next(error);
     }
 };
-
-

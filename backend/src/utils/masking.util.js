@@ -30,3 +30,23 @@ export const maskSubmissionEntity = (submission, assignmentId) => {
         fileUrl: `/api/v1/submissions/${anonId}/download`
     };
 };
+
+/**
+ * Strips sensitive fields (emails, tokens, urls, passwords) before logging.
+ * Whitelists known safe fields.
+ */
+export const sanitizeForLog = (data) => {
+    if (!data) return data;
+    const sanitized = { ...data };
+    
+    // Whitelist approach: only pick known safe fields for tasks and standard entities
+    const safeFields = ['id', 'group_id', 'title', 'status', 'assignee_id', 'created_at', 'completed_at', 'message'];
+    
+    for (const key of Object.keys(sanitized)) {
+        if (!safeFields.includes(key)) {
+            delete sanitized[key];
+        }
+    }
+    
+    return sanitized;
+};

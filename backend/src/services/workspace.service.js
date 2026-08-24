@@ -1,8 +1,10 @@
 import pool from '../config/db.js';
 import { logActivity } from './activity.service.js';
-import { ACTIVITY_TYPES } from '../utils/constants.js';
-import AppError from '../utils/AppError.js';
+import { ACTIVITY_TYPES } from '../constants/index.js';
+import { AppError } from '../utils/AppError.js';
 import logger from '../utils/logger.util.js';
+import { withTransaction } from '../utils/db.util.js';
+import { sanitizeForLog } from '../utils/masking.util.js';
 
 const validateId = (id, fieldName = 'ID') => {
     const numericId = Number(id);
@@ -87,7 +89,7 @@ export const getTasks = async (groupId) => {
     const result = await executeQuery(`
         SELECT id, group_id, assignee_id, title, status, created_at, completed_at
         FROM tasks
-        WHERE group_id = $1
+        WHERE group_id = $1 AND deleted_at IS NULL
         ORDER BY created_at DESC
     `, [validGroupId]);
     return result.rows;
@@ -129,64 +131,92 @@ export const createTask = async (groupId, userId, taskData) => {
     return task;
 };
 
-export const updateTask = async (taskId, userId, updateData) => {
+export const getTaskWithAccess = async (taskId, currentUser) => {
     const validTaskId = validateId(taskId, 'task ID');
-    const fields = [];
-    const values = [];
-    let queryIndex = 1;
-
-    if (!updateData || Object.keys(updateData).length === 0) {
-        throw new AppError('No fields to update', 400);
-    }
-
-    if (updateData.status !== undefined) {
-        fields.push(`status = $${queryIndex++}`);
-        values.push(updateData.status);
-        if (updateData.status === 'DONE') {
-            fields.push(`completed_at = COALESCE(completed_at, NOW())`);
-        } else {
-            fields.push(`completed_at = NULL`);
-        }
-    }
-
-    if (updateData.title !== undefined) {
-        if (!updateData.title || typeof updateData.title !== 'string' || !updateData.title.trim()) {
-            throw new AppError('Title is required', 400);
-        }
-        fields.push(`title = $${queryIndex++}`);
-        values.push(updateData.title.trim());
-    }
-
-    if (updateData.assignee_id !== undefined) {
-        fields.push(`assignee_id = $${queryIndex++}`);
-        values.push(updateData.assignee_id);
-    }
-
-    if (fields.length === 0) {
-        throw new AppError('No valid fields to update', 400);
-    }
-
-    values.push(taskId);
     
-    const query = `
-        UPDATE tasks
-        SET ${fields.join(', ')}
-        WHERE id = $${queryIndex}
-        RETURNING id, group_id, assignee_id, title, status, created_at, completed_at
-    `;
-
-    const result = await executeQuery(query, values);
-    const task = result.rows[0];
+    // 1. Fetch task and get group_id
+    const taskResult = await executeQuery(`
+        SELECT * FROM tasks WHERE id = $1 AND deleted_at IS NULL
+    `, [validTaskId]);
+    
+    const task = taskResult.rows[0];
     if (!task) {
         throw new AppError('Task not found', 404);
     }
     
-    const groupId = task.group_id;
+    // 2. Check access using the group_id
+    await checkWorkspaceAccess(task.group_id, currentUser);
+    
+    return task;
+};
+
+export const updateTask = async (taskId, userId, updateData) => {
+    const validTaskId = validateId(taskId, 'task ID');
+    
+    if (!updateData || Object.keys(updateData).length === 0) {
+        throw new AppError('No fields to update', 400);
+    }
+
+    return withTransaction(async (client) => {
+        // 1. SELECT FOR UPDATE to lock the row and get 'before' state
+        const checkResult = await client.query(`
+            SELECT * FROM tasks WHERE id = $1 AND deleted_at IS NULL FOR UPDATE
+        `, [validTaskId]);
+        
+        const oldTask = checkResult.rows[0];
+        if (!oldTask) {
+            throw new AppError('Task not found', 404);
+        }
+
+        const fields = [];
+        const values = [];
+        let queryIndex = 1;
+
+        if (updateData.status !== undefined) {
+            fields.push(`status = $${queryIndex++}`);
+            values.push(updateData.status);
+            if (updateData.status === 'DONE') {
+                fields.push(`completed_at = COALESCE(completed_at, NOW())`);
+            } else {
+                fields.push(`completed_at = NULL`);
+            }
+        }
+
+        if (updateData.title !== undefined) {
+            if (!updateData.title || typeof updateData.title !== 'string' || !updateData.title.trim()) {
+                throw new AppError('Title is required', 400);
+            }
+            fields.push(`title = $${queryIndex++}`);
+            values.push(updateData.title.trim());
+        }
+
+        if (updateData.assignee_id !== undefined) {
+            fields.push(`assignee_id = $${queryIndex++}`);
+            values.push(updateData.assignee_id);
+        }
+
+        if (fields.length === 0) {
+            throw new AppError('No valid fields to update', 400);
+        }
+
+        values.push(validTaskId);
+        
+        const query = `
+            UPDATE tasks
+            SET ${fields.join(', ')}
+            WHERE id = $${queryIndex}
+            RETURNING id, group_id, assignee_id, title, status, created_at, completed_at
+        `;
+
+        const result = await client.query(query, values);
+        const newTask = result.rows[0];
+        
+        const groupId = newTask.group_id;
         const changes = [];
         
-        if (updateData.title !== undefined) changes.push('title');
-        if (updateData.assignee_id !== undefined) changes.push('assignee');
-        if (updateData.status !== undefined) {
+        if (updateData.title !== undefined && updateData.title !== oldTask.title) changes.push('title');
+        if (updateData.assignee_id !== undefined && updateData.assignee_id !== oldTask.assignee_id) changes.push('assignee');
+        if (updateData.status !== undefined && updateData.status !== oldTask.status) {
             changes.push(`status → ${updateData.status}`);
         }
 
@@ -198,35 +228,61 @@ export const updateTask = async (taskId, userId, updateData) => {
                 groupId, 
                 userId, 
                 actionType, 
-                targetId: `${actionType}_${task.id}`,
-                contentSummary: `Updated task "${task.title}" (${changes.join(', ')})`
+                targetId: `${actionType}_${newTask.id}`,
+                contentSummary: `Updated task "${newTask.title}" (${changes.join(', ')})`
+            });
+            
+            logger.info({ 
+                event: 'task.updated', 
+                taskId: validTaskId, 
+                userId,
+                before: sanitizeForLog(oldTask), 
+                after: sanitizeForLog(newTask) 
             });
         }
-    
-    return task;
+        
+        return newTask;
+    }, 'REPEATABLE READ');
 };
 
 export const deleteTask = async (taskId, userId) => {
     const validTaskId = validateId(taskId, 'task ID');
-    const result = await executeQuery(`
-        DELETE FROM tasks WHERE id = $1
-        RETURNING id, title, group_id
-    `, [validTaskId]);
     
-    const task = result.rows[0];
-    if (!task) {
-        throw new AppError('Task not found', 404);
-    }
+    return withTransaction(async (client) => {
+        // Use SELECT FOR UPDATE for consistency during deletion
+        const checkResult = await client.query(`
+            SELECT * FROM tasks WHERE id = $1 AND deleted_at IS NULL FOR UPDATE
+        `, [validTaskId]);
+        
+        const oldTask = checkResult.rows[0];
+        if (!oldTask) {
+            throw new AppError('Task not found', 404);
+        }
 
-    await logActivity({
-        groupId: task.group_id, 
-        userId, 
-        actionType: ACTIVITY_TYPES.TASK_DELETE, 
-        targetId: `${ACTIVITY_TYPES.TASK_DELETE}_${task.id}`,
-        contentSummary: `Deleted task "${task.title}"`
-    });
-    
-    return task;
+        const result = await client.query(`
+            UPDATE tasks SET deleted_at = NOW() WHERE id = $1
+            RETURNING id, title, group_id
+        `, [validTaskId]);
+        
+        const task = result.rows[0];
+
+        await logActivity({
+            groupId: task.group_id, 
+            userId, 
+            actionType: ACTIVITY_TYPES.TASK_DELETE, 
+            targetId: `${ACTIVITY_TYPES.TASK_DELETE}_${task.id}`,
+            contentSummary: `Deleted task "${task.title}"`
+        });
+        
+        logger.info({ 
+            event: 'task.deleted', 
+            taskId: validTaskId, 
+            userId,
+            task: sanitizeForLog(oldTask)
+        });
+        
+        return task;
+    }, 'REPEATABLE READ');
 };
 
 export const isAssigneeValid = async (groupId, assigneeId) => {

@@ -1,6 +1,6 @@
 import { jest } from '@jest/globals';
-import AppError from '../../src/utils/AppError.js';
-import { ACTIVITY_TYPES } from '../../src/utils/constants.js';
+import { AppError } from '../../src/utils/AppError.js';
+import { ACTIVITY_TYPES } from '../../src/constants/index.js';
 
 // Setup module mock for DB pool
 jest.unstable_mockModule('../../src/config/db.js', () => ({

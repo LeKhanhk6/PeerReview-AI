@@ -1,27 +1,42 @@
 import express from 'express';
+import { z } from 'zod';
 import { authenticate, authorize } from '../middleware/auth.middleware.js';
 import * as analyticsController from '../controllers/analytics.controller.js';
+import { validate } from '../middleware/validation.middleware.js';
 
 const router = express.Router();
 
 router.use(authenticate);
 router.use(authorize('TEACHER', 'ADMIN'));
 
-router.get('/dashboard/overview', analyticsController.getDashboardOverview);
+// Schemas
+const uuidSchema = z.string().uuid();
+
+const classIdQuerySchema = {
+    query: z.object({
+        classId: uuidSchema.optional()
+    })
+};
+
+const groupIdParamSchema = { params: z.object({ groupId: uuidSchema }) };
+const classIdParamSchema = { params: z.object({ classId: uuidSchema }) };
+const assignmentIdParamSchema = { params: z.object({ assignmentId: uuidSchema }) };
+
+router.get('/dashboard/overview', validate(classIdQuerySchema), analyticsController.getDashboardOverview);
 
 // Group Contribution (detail)
-router.get('/groups/:groupId/contribution', analyticsController.getGroupContribution);
+router.get('/groups/:groupId/contribution', validate(groupIdParamSchema), analyticsController.getGroupContribution);
 
 // Class Contributions Overview (list of groups)
-router.get('/classes/:classId/contributions', analyticsController.getClassContributions);
+router.get('/classes/:classId/contributions', validate(classIdParamSchema), analyticsController.getClassContributions);
 
 // Assignment Review Analytics (Core API)
-router.get('/assignments/:assignmentId/reviews', analyticsController.getAssignmentReviewAnalytics);
+router.get('/assignments/:assignmentId/reviews', validate(assignmentIdParamSchema), analyticsController.getAssignmentReviewAnalytics);
 
 // Class Review Analytics (Aggregation API)
-router.get('/classes/:classId/reviews', analyticsController.getClassReviewAnalytics);
+router.get('/classes/:classId/reviews', validate(classIdParamSchema), analyticsController.getClassReviewAnalytics);
 
 // Collaboration Risks / Early Warning
-router.get('/classes/:classId/collaboration-risks', analyticsController.getClassCollaborationRisks);
+router.get('/classes/:classId/collaboration-risks', validate(classIdParamSchema), analyticsController.getClassCollaborationRisks);
 
 export default router;

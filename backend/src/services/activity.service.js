@@ -1,7 +1,7 @@
 import pool from '../config/db.js';
 import crypto from 'crypto';
-import { ACTIVITY_TYPES } from '../utils/constants.js';
-import AppError from '../utils/AppError.js';
+import { ACTIVITY_TYPES } from '../constants/index.js';
+import { AppError } from '../utils/AppError.js';
 import logger from '../utils/logger.util.js';
 
 const validateId = (id, fieldName = 'ID') => {

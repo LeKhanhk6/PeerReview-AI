@@ -1,6 +1,6 @@
 import pool from '../config/db.js';
 import { getGroupActivityStats } from './activity.service.js';
-import { CONTRIBUTION_WEIGHTS, CONTRIBUTION_CAPS, CONTRIBUTION_THRESHOLDS } from '../utils/constants.js';
+import { CONTRIBUTION_WEIGHTS, CONTRIBUTION_CAPS, CONTRIBUTION_THRESHOLDS } from '../constants/index.js';
 
 /**
  * Calculates the contribution scores for all members of a group within a timeframe.

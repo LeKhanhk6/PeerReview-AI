@@ -1,7 +1,9 @@
 import express from 'express';
+import { z } from 'zod';
 import { verifyToken, authorize } from '../middleware/auth.middleware.js';
 import * as summaryController from '../controllers/summary.controller.js';
-import { validateUUID } from '../middleware/validation.middleware.js';
+import { validate } from '../middleware/validation.middleware.js';
+import { paginationMiddleware } from '../middleware/pagination.middleware.js';
 
 const router = express.Router();
 
@@ -9,31 +11,46 @@ const router = express.Router();
 router.use(verifyToken);
 router.use(authorize('TEACHER', 'ADMIN'));
 
+// Schemas
+const uuidSchema = z.string().uuid();
+const submissionIdParamSchema = z.object({ submissionId: uuidSchema });
+const itemIdParamSchema = z.object({ itemId: uuidSchema });
+
+const updateItemSchema = {
+    params: itemIdParamSchema,
+    body: z.object({
+        content: z.string().min(1).max(2000).trim().optional(),
+        note: z.string().max(1000).trim().optional(),
+        updatedAt: z.string().datetime()
+    }).strict() // ensure no extra fields are passed
+};
+
 // Lấy danh sách source reviews cho một submission (có hỗ trợ pagination)
 router.get(
     '/submissions/:submissionId/reviews',
-    validateUUID('submissionId'),
+    validate({ params: submissionIdParamSchema }),
+    paginationMiddleware,
     summaryController.getSourceReviews
 );
 
 // Lấy chi tiết Review Summary của một submission
 router.get(
     '/submissions/:submissionId/summary',
-    validateUUID('submissionId'),
+    validate({ params: submissionIdParamSchema }),
     summaryController.getReviewSummary
 );
 
 // Chỉnh sửa một summary item
 router.patch(
     '/summary-items/:itemId',
-    validateUUID('itemId'),
+    validate(updateItemSchema),
     summaryController.updateSummaryItem
 );
 
 // Duyệt summary
 router.patch(
     '/submissions/:submissionId/summary/approve',
-    validateUUID('submissionId'),
+    validate({ params: submissionIdParamSchema }),
     summaryController.approveReviewSummary
 );
 

@@ -1,8 +1,9 @@
 import pool from '../config/db.js';
-import AppError from '../utils/AppError.js';
-import { SUMMARY_STATUS, ACTIVITY_TYPES } from '../utils/constants.js';
+import { AppError } from '../utils/AppError.js';
+import { SUMMARY_STATUS, ACTIVITY_TYPES } from '../constants/index.js';
 import logger from '../utils/logger.util.js';
 import { mapDbError } from '../utils/dbError.util.js';
+import { withTransaction } from '../utils/db.util.js';
 
 const validateId = (id, fieldName = 'ID') => {
     const numericId = Number(id);
@@ -140,10 +141,7 @@ export const updateSummaryItem = async (currentUser, itemId, updates) => {
         throw new AppError('Cannot edit an approved summary', 400);
     }
 
-    const client = await pool.connect();
-    try {
-        await client.query('BEGIN');
-
+    return withTransaction(async (client) => {
         // Note: optimistic locking omitted in MVP if not explicitly provided by client payload, 
         // but adding it since it was mentioned in plan
         const { content, note, updatedAt } = updates;
@@ -169,7 +167,7 @@ export const updateSummaryItem = async (currentUser, itemId, updates) => {
                 SET status = $1, updated_by = $2, updated_at = NOW()
                 WHERE id = $3 AND status = $4
             `, [SUMMARY_STATUS.REVIEWING, currentUser.userId, item.summary_id, SUMMARY_STATUS.DRAFT]);
-            if (item.status !== SUMMARY_STATUS.DRAFT) {
+            if (updateStatusRes.rowCount === 0) {
                 logger.warn({
                     event: 'summary_item_status_ignored',
                     summaryId: item.summary_id,
@@ -190,28 +188,20 @@ export const updateSummaryItem = async (currentUser, itemId, updates) => {
             'Teacher edited summary item'
         ]);
 
-        await client.query('COMMIT');
-        
         return {
             id: validItemId,
             updatedAt: updateItemRes.rows[0].updated_at
         };
-    } catch (error) {
-        await client.query('ROLLBACK');
+    }, 'REPEATABLE READ').catch(error => {
         if (error instanceof AppError) throw error;
         throw mapDbError(error, error.code === '55P03' ? 'The summary is currently being updated by another teacher. Please try again.' : null);
-    } finally {
-        client.release();
-    }
+    });
 };
 
 export const approveReviewSummary = async (currentUser, submissionId) => {
     await getSubmissionOrFail(currentUser, submissionId);
 
-    const client = await pool.connect();
-    try {
-        await client.query('BEGIN ISOLATION LEVEL REPEATABLE READ');
-
+    return withTransaction(async (client) => {
         // Check summary existence and lock row
         const summaryRes = await client.query(`
             SELECT * FROM review_summaries
@@ -261,18 +251,13 @@ export const approveReviewSummary = async (currentUser, submissionId) => {
             'Teacher approved review summary'
         ]);
 
-        await client.query('COMMIT');
-        
         return {
             id: summary.id,
             status: SUMMARY_STATUS.APPROVED,
             updatedAt: updateRes.rows[0].updated_at
         };
-    } catch (error) {
-        await client.query('ROLLBACK');
+    }, 'REPEATABLE READ').catch(error => {
         if (error instanceof AppError) throw error;
         throw mapDbError(error, error.code === '55P03' ? 'The summary is currently being updated by another teacher. Please try again.' : null);
-    } finally {
-        client.release();
-    }
+    });
 };

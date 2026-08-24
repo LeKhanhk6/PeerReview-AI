@@ -4,9 +4,3 @@ export const SUBMISSION_STATUS = {
     SUBMITTED: 'SUBMITTED',
     LATE: 'LATE'
 };
-
-export const REVIEW_STATUS = {
-    NOT_REVIEWED: 'NOT_REVIEWED',
-    UNDER_REVIEW: 'UNDER_REVIEW',
-    REVIEWED: 'REVIEWED'
-};

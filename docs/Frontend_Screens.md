@@ -41,10 +41,10 @@ Hệ thống gồm 3 role chính:
 
 ### 1.5 📝 Register Screen (Student)
 - **Mục tiêu**: Tạo tài khoản mới cho sinh viên.
-- **Chức năng (Use Cases)**: Nhập thông tin cá nhân (Tên, Email, Password, MSSV/Mã sinh viên) để tạo tài khoản.
+- **Chức năng (Use Cases)**: Nhập thông tin cá nhân (Họ Tên, Email, Password) để tạo tài khoản.
 - **UI Components**:
   - Logo hệ thống.
-  - Cụm Form: Input Full Name, Input Email, Input Password, Input Student ID.
+  - Cụm Form: Input Full Name, Input Email, Input Password.
   - Button `Register` (Primary).
   - Link `Đã có tài khoản? Đăng nhập` (Trỏ sang màn hình Login).
 - **APIs**: `POST /api/auth/register` (với role mặc định là STUDENT)

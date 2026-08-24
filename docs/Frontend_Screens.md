@@ -85,12 +85,11 @@ Hệ thống gồm 3 role chính:
 - **APIs**: `GET /api/assignments/:id/detail`
 
 ### 4. 🧭 Assignment Participation Screen ⭐ (NEW)
-- **Mục tiêu**: Giải quyết bài toán "Làm việc nhóm hay cá nhân" trước khi vào không gian làm bài.
-- **Chức năng (Use Cases)**: Chọn hình thức tham gia. Tự tạo nhóm mới làm Leader, tham gia nhóm có sẵn qua mã mời (Invite Code), hoặc chuyển thẳng vào Workspace nếu đã có nhóm.
+- **Mục tiêu**: Giải quyết bài toán tham gia nhóm trước khi vào không gian làm bài.
+- **Chức năng (Use Cases)**: Đăng ký vào nhóm (do giảng viên tạo sẵn) qua mã mời, hoặc chuyển thẳng vào Workspace nếu đã có nhóm.
 - **UI Components**:
   - Phân nhánh UI theo **Case A (Chưa có nhóm)**:
-    - Nút to: `Tạo nhóm mới` (Mở modal nhập tên nhóm).
-    - Input: `Nhập mã nhóm` + Nút `Tham gia`.
+    - Input: `Nhập mã nhóm / ID nhóm` + Nút `Tham gia`.
   - Phân nhánh UI theo **Case B (Đã có nhóm)**:
     - Hiển thị Group Info Card (Tên nhóm, Vai trò, Danh sách thành viên).
     - Nút bự: `Vào Workspace`.
@@ -100,10 +99,10 @@ Hệ thống gồm 3 role chính:
 - **Chức năng (Use Cases)**: Phân chia công việc (Kanban/List), trao đổi tin nhắn (Group Chat), tải lên và chia sẻ tài liệu chung.
 - **UI Components**:
   - Tabs Navigation: `Tasks`, `Discussion`, `Files`.
-  - **Tasks Tab**: Bảng Kanban (To-do, In-progress, Done) hoặc Task List. Nút `Add Task`. Leader có quyền assign.
+  - **Tasks Tab**: Bảng Kanban (To-do, In-progress, Done) hoặc Task List. Mọi thành viên đều có thể tạo và assign task cho nhau.
   - **Discussion Tab**: Khung chat thời gian thực, input gửi tin nhắn.
   - **Files Tab**: Danh sách file, nút upload kéo thả. Cột hiển thị người tải lên và ngày tải.
-- **State**: `Empty` ("Hãy tạo công việc đầu tiên"), `Permission` (Chỉ Leader mới được sửa Task).
+- **State**: `Empty` ("Hãy tạo công việc đầu tiên"), `Permission` (Chỉ thành viên nhóm mới được xem/sửa).
 
 ### 6. 📤 Submission Screen (REFACTORED)
 - **Mục tiêu**: Giao diện nộp bài tập chính thức.

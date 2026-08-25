@@ -45,7 +45,7 @@ describe('AI Service (Staff-Level Resilience)', () => {
             const result = await aiService.analyzeComment('bad input', 'req-1');
             
             // Should return fallback response immediately
-            expect(result.status).toBe('UNKNOWN');
+            expect(result.category).toBe('UNKNOWN');
             // Fetch should only be called ONCE (no retry on 400)
             expect(fetchSpy).toHaveBeenCalledTimes(1);
         });
@@ -87,7 +87,7 @@ describe('AI Service (Staff-Level Resilience)', () => {
             
             const result = await aiService.analyzeComment('test', 'req-3');
             
-            expect(result.status).toBe('UNKNOWN');
+            expect(result.category).toBe('UNKNOWN');
             expect(fetchSpy).toHaveBeenCalled();
             
             delete process.env.AI_TIMEOUT;
@@ -112,7 +112,7 @@ describe('AI Service (Staff-Level Resilience)', () => {
             
             // Assuming MAX_RESPONSE_SIZE is around 1MB (1048576 bytes)
             // The service should catch the byte limit and return fallback
-            expect(result.status).toBe('UNKNOWN');
+            expect(result.category).toBe('UNKNOWN');
         });
         
         it('Invalid JSON: Should activate fallback gracefully', async () => {
@@ -128,8 +128,8 @@ describe('AI Service (Staff-Level Resilience)', () => {
 
             const result = await aiService.analyzeComment('test', 'req-5');
             
-            expect(result.status).toBe('UNKNOWN');
-            expect(result.suggestion).toBeDefined();
+            expect(result.category).toBe('UNKNOWN');
+            expect(result.guidance_message).toBeDefined();
         });
     });
 

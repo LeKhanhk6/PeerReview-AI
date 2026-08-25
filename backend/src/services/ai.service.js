@@ -27,12 +27,11 @@ const pLimit = async (funcs, limit) => {
     return Promise.all(results);
 };
 
-// Cấu trúc mặc định an toàn khi có lỗi
 const FALLBACK_RESPONSE = Object.freeze({
-    status: "UNKNOWN",
-    suggestion: "Không thể phân tích lúc này. Hãy tiếp tục đánh giá.",
-    reason: "Hệ thống AI đang bận hoặc gặp sự cố.",
-    improvement: ""
+    category: "UNKNOWN",
+    rubric_criteria: "UNKNOWN",
+    guidance_message: "Hệ thống AI đang bận hoặc gặp sự cố. Hãy tiếp tục đánh giá dựa trên tiêu chí.",
+    suggested_rewrite: ""
 });
 
 /**
@@ -42,20 +41,15 @@ const FALLBACK_RESPONSE = Object.freeze({
  */
 const buildPrompt = (text) => {
     return `
-Bạn là một trợ lý AI giúp phân tích nhận xét chấm chéo (peer review) của sinh viên.
-Hãy phân tích nhận xét sau đây và đánh giá mức độ xây dựng (constructiveness), sự phù hợp, giọng điệu, và độ độc hại (toxicity).
-Nếu nhận xét tốt, hãy khích lệ. Nếu nhận xét tiêu cực, cộc lốc hoặc chung chung, hãy gợi ý cách cải thiện.
-
 Nhận xét của sinh viên: "${text}"
 
 YÊU CẦU BẮT BUỘC: Chỉ trả về duy nhất 1 chuỗi JSON hợp lệ, KHÔNG CÓ BẤT KỲ VĂN BẢN NÀO KHÁC BÊN NGOÀI JSON (không markdown, không code block).
-Nếu không tuân thủ đúng format JSON, kết quả sẽ bị loại bỏ.
 Cấu trúc JSON yêu cầu:
 {
-  "status": "GOOD" | "NEEDS_IMPROVEMENT" | "TOXIC",
-  "suggestion": "Câu gợi ý ngắn gọn (1-2 câu) cho sinh viên",
-  "reason": "Lý do ngắn gọn tại sao nhận xét này tốt hoặc chưa tốt",
-  "improvement": "Ví dụ cách viết lại cho tốt hơn (nếu cần, nếu không thì để trống)"
+  "category": "Chọn 1 trong 4 nhãn như hướng dẫn",
+  "rubric_criteria": "Chọn 1 trong các nhãn Rubric",
+  "guidance_message": "Lời khuyên ngắn gọn cho sinh viên",
+  "suggested_rewrite": "Câu mẫu lịch sự tham khảo"
 }
 `;
 };
@@ -63,7 +57,7 @@ Cấu trúc JSON yêu cầu:
 /**
  * Gọi API Gemini với AbortController, Exponential Backoff, Error Classification và Size Limit
  */
-const callProvider = async (prompt, requestId, customTimeout = null, maxRetries = 3) => {
+const callProvider = async (prompt, requestId, customTimeout = null, maxRetries = 3, systemInstruction = null) => {
     const apiKey = process.env.GEMINI_API_KEY;
     if (!apiKey) {
         logger.error({ requestId, message: "Missing GEMINI_API_KEY", stage: "callProvider" });
@@ -79,14 +73,19 @@ const callProvider = async (prompt, requestId, customTimeout = null, maxRetries 
 
         try {
             const baseUrl = process.env.AI_API_URL || 'https://generativelanguage.googleapis.com/v1beta';
-            const url = `${baseUrl}/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
+            const url = `${baseUrl}/models/gemini-3.6-flash:generateContent?key=${apiKey}`;
+            const bodyPayload = {
+                contents: [{ parts: [{ text: prompt }] }],
+                generationConfig: { responseMimeType: "application/json" }
+            };
+            if (systemInstruction) {
+                bodyPayload.systemInstruction = { parts: [{ text: systemInstruction }] };
+            }
+
             const response = await fetch(url, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    contents: [{ parts: [{ text: prompt }] }],
-                    generationConfig: { responseMimeType: "application/json" }
-                }),
+                body: JSON.stringify(bodyPayload),
                 signal: controller.signal
             });
 
@@ -172,15 +171,12 @@ const parseResponse = (rawResponse, requestId) => {
             parsed = {};
         }
 
-        const validStatus = ["GOOD", "NEEDS_IMPROVEMENT", "TOXIC"];
-        const statusVal = parsed.status ? parsed.status.toUpperCase() : "";
-
-        // Chuẩn hóa, đảm bảo các trường luôn tồn tại và đúng enum
+        // Chuẩn hóa, đảm bảo các trường luôn tồn tại
         return {
-            status: validStatus.includes(statusVal) ? statusVal : FALLBACK_RESPONSE.status,
-            suggestion: parsed.suggestion || FALLBACK_RESPONSE.suggestion,
-            reason: parsed.reason || FALLBACK_RESPONSE.reason,
-            improvement: parsed.improvement || ""
+            category: parsed.category || FALLBACK_RESPONSE.category,
+            rubric_criteria: parsed.rubric_criteria || FALLBACK_RESPONSE.rubric_criteria,
+            guidance_message: parsed.guidance_message || FALLBACK_RESPONSE.guidance_message,
+            suggested_rewrite: parsed.suggested_rewrite || ""
         };
     } catch (error) {
         logger.error({ 
@@ -217,7 +213,18 @@ export const analyzeComment = async (text, requestId) => {
     try {
         const safeText = sanitizeInput(text);
         const prompt = buildPrompt(safeText);
-        const rawResponse = await callProvider(prompt, requestId);
+        
+        const systemInstruction = `
+Bạn là Trợ lý AI Giáo dục chuyên kiểm duyệt và hướng dẫn sinh viên viết phản hồi đánh giá chéo (Peer-review) chất lượng trong môi trường đại học.
+
+Khi nhận được một câu nhận xét bất kỳ từ sinh viên, hãy phân tích và trả về đúng một định dạng JSON gồm 4 trường:
+1. "category": Chọn 1 trong 4 nhãn ("1. Tiêu cực/xúc phạm", "2. Qua loa/hời hợt", "3. Khen chung chung", "4. Góp ý chi tiết bám sát tiêu chí chấm điểm").
+2. "rubric_criteria": Chọn 1 trong các nhãn ("Nội dung" | "Hình thức" | "Thái độ" | "Sáng tạo").
+3. "guidance_message": Lời khuyên ngắn gọn, mang tính giáo dục giúp sinh viên hiểu nhận xét của mình cần cải thiện điều gì.
+4. "suggested_rewrite": Một câu nhận xét mẫu lịch sự, bám sát tiêu chí Rubric để sinh viên tham khảo sửa lại.
+`;
+        
+        const rawResponse = await callProvider(prompt, requestId, null, 3, systemInstruction);
         return parseResponse(rawResponse, requestId);
     } catch (error) {
         logger.error({ requestId, event: 'AI_Service_Error', message: "Unexpected error in analyzeComment", stage: "analyzeComment" });

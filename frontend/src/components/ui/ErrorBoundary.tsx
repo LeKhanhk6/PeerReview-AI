@@ -1,4 +1,5 @@
-import React, { Component, ErrorInfo, ReactNode } from 'react';
+import { Component } from 'react';
+import type { ErrorInfo, ReactNode } from 'react';
 import { EmptyState } from './EmptyState';
 import { sendClientError, sendTelemetry } from '../../lib/telemetry';
 import { commonMessages } from '../../constants/messages/common';

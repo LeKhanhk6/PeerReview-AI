@@ -544,13 +544,13 @@ Output JSON cuối cùng (MVP):
 ```
 *(Provides a high-level summary of peer reviews to solve the teacher's pain point. Teacher Validation is built-in.)*
 
-## TASK 11.2 — Teacher Validation (Human-in-the-loop) [ ]
+## TASK 11.2 — Teacher Validation (Human-in-the-loop) [x]
 Teacher có thể:
 
-- [ ] View Summary.
-- [ ] View source Reviews.
-- [ ] Approve Summary.
-- [ ] Correct/annotate Summary.
+- [x] View Summary.
+- [x] View source Reviews.
+- [x] Approve Summary.
+- [x] Correct/annotate Summary.
 
 AI Summary **không tự động quyết định điểm cuối cùng**.
 # 12. PHASE 11 — Teacher Analytics + Early Warning
@@ -578,7 +578,7 @@ Review Completion
 Average Score
 Review Quality
 ```
-## TASK 12.4 — Review Synthesis
+## TASK 12.4 — Review Synthesis [x]
 ```
 Strengths
 Weaknesses
@@ -603,19 +603,19 @@ Potential Collaboration Risk
 
 ## TASK 13.1 — Backend Testing
 
-- [ ]  Auth API.
-- [ ]  User API.
-- [ ]  Class API.
-- [ ]  Assignment API.
-- [ ]  Rubric API.
-- [ ]  Group API.
-- [ ]  Activity API.
-- [ ]  Submission API.
-- [ ]  Review API.
-- [ ]  Contribution API.
-- [ ]  AI API.
-- [ ]  Summary API.
-- [ ]  Analytics API.
+- [x]  Auth API.
+- [x]  User API.
+- [x]  Class API.
+- [x]  Assignment API.
+- [x]  Rubric API.
+- [x]  Group API.
+- [x]  Activity API.
+- [x]  Submission API.
+- [x]  Review API.
+- [x]  Contribution API.
+- [x]  AI API.
+- [x]  Summary API.
+- [x]  Analytics API.
 
 ## TASK 13.2 — Frontend Testing
 

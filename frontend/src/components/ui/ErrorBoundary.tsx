@@ -43,7 +43,7 @@ export class ErrorBoundary extends Component<Props, State> {
             chunkName: error.message,
           }
         });
-        
+
         sessionStorage.setItem('chunk_reloaded', 'true');
         window.location.reload();
         return;
@@ -60,7 +60,7 @@ export class ErrorBoundary extends Component<Props, State> {
   private handleRetry = () => {
     // Invalidate queries instead of clear()
     queryClient.invalidateQueries();
-    
+
     this.setState({ hasError: false, error: null, hasReloaded: false });
   };
 

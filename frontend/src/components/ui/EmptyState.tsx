@@ -2,7 +2,6 @@ import { FolderX, ShieldAlert, AlertTriangle } from 'lucide-react';
 import { Button } from './Button';
 import { useNavigate } from 'react-router-dom';
 import { commonMessages } from '../../constants/messages/common';
-import { getCurrentUserRole } from '../../lib/utils';
 import { cn } from '../../lib/utils';
 
 type EmptyStateType = 'no_data' | 'no_permission' | 'error';
@@ -15,6 +14,7 @@ interface EmptyStateProps {
   onAction?: () => void;
   showBack?: boolean;
   compact?: boolean;
+  userRole?: 'STUDENT' | 'TEACHER' | 'ADMIN' | null;
 }
 
 export const EmptyState = ({
@@ -25,6 +25,7 @@ export const EmptyState = ({
   onAction,
   showBack,
   compact = false,
+  userRole = 'STUDENT',
 }: EmptyStateProps) => {
   const navigate = useNavigate();
 
@@ -32,8 +33,7 @@ export const EmptyState = ({
     if (window.history.length > 1) {
       navigate(-1);
     } else {
-      const role = getCurrentUserRole();
-      navigate(role === 'STUDENT' ? '/dashboard' : '/teacher');
+      navigate(userRole === 'STUDENT' ? '/dashboard' : '/teacher');
     }
   };
 

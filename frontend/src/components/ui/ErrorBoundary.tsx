@@ -25,22 +25,29 @@ export class ErrorBoundary extends Component<Props, State> {
     return { hasError: true, error };
   }
 
+  public componentDidMount() {
+    // Nếu mount thành công, xoá flag để các lỗi chunk load ở phiên sau (khi deploy mới) vẫn có thể auto-reload
+    sessionStorage.removeItem('chunk_reloaded');
+  }
+
   public componentDidCatch(error: Error, errorInfo: ErrorInfo) {
     const isChunkError = error.name === 'ChunkLoadError' || error.message.includes('Loading chunk');
 
     // Handle ChunkLoadError
-    if (isChunkError && !this.state.hasReloaded) {
-      sendTelemetry({
-        event: 'chunk_load_error',
-        metadata: {
-          chunkName: error.message,
-          // buildVersion: import.meta.env.VITE_BUILD_VERSION, // Assuming available
-        }
-      });
-      
-      this.setState({ hasReloaded: true });
-      window.location.reload();
-      return;
+    if (isChunkError) {
+      const hasReloaded = sessionStorage.getItem('chunk_reloaded');
+      if (!hasReloaded) {
+        sendTelemetry({
+          event: 'chunk_load_error',
+          metadata: {
+            chunkName: error.message,
+          }
+        });
+        
+        sessionStorage.setItem('chunk_reloaded', 'true');
+        window.location.reload();
+        return;
+      }
     }
 
     sendClientError({

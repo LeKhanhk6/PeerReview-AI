@@ -70,10 +70,10 @@ _(Bản đã chỉnh sửa theo Technical Review — các thay đổi so với v
 
 ### 🆕 Definition of Done — Phase 0
 
-- [ ]  Mọi rule ở 00.2 có util/hook thật + ít nhất 1 usage example
-- [ ]  Copy 100% nằm trong messages file (không còn hard-coded English trong components)
-- [ ]  Lỗi runtime đều flow về telemetry endpoint (verify bằng MSW mock)
-- [ ]  DoD checklist từ "Quy tắc code.md" được tham chiếu và tick đầy đủ
+- [x]  Mọi rule ở 00.2 có util/hook thật + ít nhất 1 usage example
+- [x]  Copy 100% nằm trong messages file (không còn hard-coded English trong components)
+- [x]  Lỗi runtime đều flow về telemetry endpoint (verify bằng MSW mock)
+- [x]  DoD checklist từ "Quy tắc code.md" được tham chiếu và tick đầy đủ
 
 ---
 
@@ -84,7 +84,7 @@ _(Bản đã chỉnh sửa theo Technical Review — các thay đổi so với v
 - [x]  Zustand auth store + hydration flow (`GET /me` trước khi render app)
 - [x]  Activate full 401 handling trong interceptor (logout + redirect, chống loop)
 - [x]  ProtectedRoute + RoleRoute (student/teacher/admin)
-- [x]  Login/Register/Forgot Password screens + Zod validation
+- [x]  Login/Register screens + Zod validation
 
 ### Task 01.2 — Layouts
 

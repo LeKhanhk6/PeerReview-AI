@@ -1,4 +1,5 @@
 import axios, { type AxiosError, type AxiosResponse } from 'axios';
+import { useAuthStore } from '../features/auth/store/authStore';
 
 export interface ApiError {
   code: string;
@@ -13,6 +14,7 @@ export const api = axios.create({
     'Content-Type': 'application/json',
   },
   timeout: 30000,
+  withCredentials: true,
 });
 
 api.interceptors.response.use(
@@ -34,8 +36,19 @@ api.interceptors.response.use(
       status: status,
     };
     
-    // Phase 0: Log errors. Phase 1 will implement full 401 handling.
     console.error(`[API Error] ${status}: ${normalizedError.message}`, normalizedError);
+
+    // Full 401 handling
+    if (status === 401) {
+      const originalRequest = error.config;
+      // Do not redirect if it's the login route or the initial hydration check
+      if (originalRequest && !originalRequest.url?.includes('/auth/login') && !originalRequest.url?.includes('/auth/me')) {
+        // Clear auth state
+        useAuthStore.getState().setUser(null);
+        // Redirect to login to prevent loops
+        window.location.href = '/login';
+      }
+    }
 
     return Promise.reject(normalizedError);
   }

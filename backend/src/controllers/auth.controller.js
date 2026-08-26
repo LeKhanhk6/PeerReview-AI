@@ -28,6 +28,14 @@ export const login = async (req, res, next) => {
         
         const data = await authService.loginUser(email, password);
         
+        // Set HTTP-only cookie
+        res.cookie('token', data.token, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: 'lax',
+            maxAge: 24 * 60 * 60 * 1000 // 24 hours
+        });
+
         return res.ok({
             user: data.user,
             accessToken: data.token
@@ -39,6 +47,7 @@ export const login = async (req, res, next) => {
 
 export const logout = async (req, res, next) => {
     try {
+        res.clearCookie('token');
         return res.ok(null);
     } catch (error) {
         next(error);

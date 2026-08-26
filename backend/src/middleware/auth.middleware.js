@@ -22,9 +22,10 @@ export const verifyToken = (req, res, next) => {
     try {
         const decoded = jwt.verify(token, JWT_SECRET);
         req.user = decoded; // { id, role }
+        req.user.userId = decoded.id || decoded.userId; // ensure backward compatibility
         
         // Propagate userId to AsyncLocalStorage
-        setUserId(decoded.id || decoded.userId);
+        setUserId(req.user.userId);
         
         return next();
     } catch (error) {

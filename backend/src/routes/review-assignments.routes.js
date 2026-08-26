@@ -1,12 +1,13 @@
 import express from 'express';
 import { z } from 'zod';
 import * as reviewAssignmentController from '../controllers/review-assignment.controller.js';
-import { authenticate, authorize } from '../middlewares/auth.middleware.js';
+import { verifyToken } from '../middleware/auth.middleware.js';
+import { authorizeRoles } from '../middleware/role.middleware.js';
 import { validate } from '../middleware/validation.middleware.js';
 
 const router = express.Router();
 
-router.use(authenticate);
+router.use(verifyToken);
 
 const uuidSchema = z.string().uuid();
 const generateSchema = {
@@ -17,6 +18,6 @@ const generateSchema = {
 };
 
 // Teacher: Generate double-blind peer review assignments
-router.post('/assignments/:assignmentId/review-assignments/generate', authorize('TEACHER', 'ADMIN'), validate(generateSchema), reviewAssignmentController.generateReviewAssignments);
+router.post('/assignments/:assignmentId/review-assignments/generate', authorizeRoles('TEACHER', 'ADMIN'), validate(generateSchema), reviewAssignmentController.generateReviewAssignments);
 
 export default router;

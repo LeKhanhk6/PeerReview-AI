@@ -1,6 +1,7 @@
 import express from 'express';
 import { z } from 'zod';
-import { verifyToken, authorize } from '../middleware/auth.middleware.js';
+import { verifyToken } from '../middleware/auth.middleware.js';
+import { authorizeRoles } from '../middleware/role.middleware.js';
 import * as summaryController from '../controllers/summary.controller.js';
 import { validate } from '../middleware/validation.middleware.js';
 import { paginationMiddleware } from '../middleware/pagination.middleware.js';
@@ -9,7 +10,7 @@ const router = express.Router();
 
 // Tất cả các route này chỉ dành cho TEACHER và ADMIN
 router.use(verifyToken);
-router.use(authorize('TEACHER', 'ADMIN'));
+router.use(authorizeRoles('TEACHER', 'ADMIN'));
 
 // Schemas
 const uuidSchema = z.string().uuid();

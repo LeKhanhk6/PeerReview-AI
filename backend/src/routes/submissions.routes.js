@@ -1,13 +1,14 @@
 import express from 'express';
 import { z } from 'zod';
 import * as submissionController from '../controllers/submission.controller.js';
-import { authenticate, authorize } from '../middlewares/auth.middleware.js';
+import { verifyToken } from '../middleware/auth.middleware.js';
+import { authorizeRoles } from '../middleware/role.middleware.js';
 import { validate } from '../middleware/validation.middleware.js';
 import { paginationMiddleware } from '../middleware/pagination.middleware.js';
 
 const router = express.Router();
 
-router.use(authenticate);
+router.use(verifyToken);
 
 const uuidSchema = z.string().uuid();
 const assignmentIdParamSchema = z.object({ assignmentId: uuidSchema });
@@ -34,15 +35,15 @@ const dashboardQuerySchema = {
 };
 
 // Student Dashboard API
-router.get('/me/dashboard', authorize('STUDENT'), validate(dashboardQuerySchema), paginationMiddleware, submissionController.getStudentDashboard);
+router.get('/me/dashboard', authorizeRoles('STUDENT'), validate(dashboardQuerySchema), paginationMiddleware, submissionController.getStudentDashboard);
 
 // Submit Assignment API
-router.post('/assignments/:assignmentId', authorize('STUDENT'), validate(submitSchema), submissionController.submit);
+router.post('/assignments/:assignmentId', authorizeRoles('STUDENT'), validate(submitSchema), submissionController.submit);
 
 // Submission History API
-router.get('/assignments/:assignmentId/submission-history', authorize('STUDENT'), validate({ params: assignmentIdParamSchema }), paginationMiddleware, submissionController.getSubmissionHistoryByAssignment);
+router.get('/assignments/:assignmentId/submission-history', authorizeRoles('STUDENT'), validate({ params: assignmentIdParamSchema }), paginationMiddleware, submissionController.getSubmissionHistoryByAssignment);
 
 // Student Feedback API
-router.get('/assignments/:assignmentId/feedback', authorize('STUDENT'), validate({ params: assignmentIdParamSchema }), submissionController.getSubmissionFeedback);
+router.get('/assignments/:assignmentId/feedback', authorizeRoles('STUDENT'), validate({ params: assignmentIdParamSchema }), submissionController.getSubmissionFeedback);
 
 export default router;

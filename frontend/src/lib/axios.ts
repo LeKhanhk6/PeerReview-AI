@@ -17,10 +17,29 @@ export const api = axios.create({
   withCredentials: true,
 });
 
+api.interceptors.request.use(
+  (config) => {
+    const token = useAuthStore.getState().token;
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+  },
+  (error) => {
+    return Promise.reject(error);
+  }
+);
+
 api.interceptors.response.use(
   (response: AxiosResponse) => {
-    // Unwrap { success, data } if the backend follows this format
-    if (response.data && typeof response.data === 'object' && 'success' in response.data && 'data' in response.data) {
+    // Unwrap { data } if the backend follows this format, but keep pagination if it exists
+    if (response.data && typeof response.data === 'object' && 'data' in response.data) {
+      if ('pagination' in response.data) {
+        return {
+          data: response.data.data,
+          ...response.data.pagination
+        };
+      }
       return response.data.data;
     }
     return response.data;
@@ -44,7 +63,7 @@ api.interceptors.response.use(
       // Do not redirect if it's the login route or the initial hydration check
       if (originalRequest && !originalRequest.url?.includes('/auth/login') && !originalRequest.url?.includes('/auth/me')) {
         // Clear auth state
-        useAuthStore.getState().setUser(null);
+        useAuthStore.getState().setAuth(null, null);
         // Redirect to login to prevent loops
         window.location.href = '/login';
       }

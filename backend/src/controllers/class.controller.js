@@ -2,8 +2,8 @@ import * as classService from '../services/class.service.js';
 
 export const getAll = async (req, res, next) => {
     try {
-        const classes = await classService.getAllClasses(req.user);
-        return res.ok(classes);
+        const result = await classService.getAllClasses(req.user, req.pagination);
+        return res.ok(result);
     } catch (error) {
         next(error);
     }

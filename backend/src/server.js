@@ -3,6 +3,7 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import { connectDB } from './config/db.js';
 import { requestLogger } from './middleware/logger.middleware.js';
+import { responseMiddleware } from './middleware/response.middleware.js';
 import errorHandler from './middleware/errorHandler.js';
 
 import authRoutes from './routes/auth.routes.js';
@@ -26,7 +27,28 @@ const PORT = process.env.PORT || 5000;
 
 // Cấu hình Middleware
 app.use(requestLogger);
-app.use(cors());
+app.use(responseMiddleware);
+app.use(cors({
+    origin: function (origin, callback) {
+        if (!origin) return callback(null, true);
+        
+        // Trong môi trường Production, CHỈ cho phép tên miền thật
+        if (process.env.NODE_ENV === 'production') {
+            const allowedOrigins = ['https://your-production-domain.com'];
+            if (allowedOrigins.includes(origin)) {
+                return callback(null, true);
+            }
+            return callback(new Error('Not allowed by CORS'));
+        }
+        
+        // Trong môi trường Development, cho phép localhost chạy cổng bất kỳ
+        if (/^http:\/\/(localhost|127\.0\.0\.1):\d+$/.test(origin)) {
+            return callback(null, true);
+        }
+        return callback(new Error('Not allowed by CORS'));
+    },
+    credentials: true
+}));
 app.use(express.json());
 
 // Gọi hàm kiểm tra kết nối Database

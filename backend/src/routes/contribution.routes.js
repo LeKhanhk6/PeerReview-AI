@@ -1,7 +1,7 @@
 import express from 'express';
 import { z } from 'zod';
 import * as contributionController from '../controllers/contribution.controller.js';
-import { requireAuth } from '../middleware/auth.middleware.js';
+import { verifyToken } from '../middleware/auth.middleware.js';
 import { validate } from '../middleware/validation.middleware.js';
 
 const router = express.Router();
@@ -17,6 +17,6 @@ const getReportSchema = {
 };
 
 // GET /api/groups/:groupId/contributions
-router.get('/:groupId/contributions', requireAuth, validate(getReportSchema), contributionController.getGroupContributionReport);
+router.get('/:groupId/contributions', verifyToken, validate(getReportSchema), contributionController.getGroupContributionReport);
 
 export default router;

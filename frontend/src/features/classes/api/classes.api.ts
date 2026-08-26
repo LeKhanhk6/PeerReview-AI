@@ -2,8 +2,8 @@ import { api } from '@/lib/axios';
 import type { Class, ClassMember, CreateClassDTO, UpdateClassDTO } from '../types';
 
 export const classesApi = {
-  getAll: (): Promise<Class[]> => {
-    return api.get('/classes');
+  getAll: (params?: Record<string, any>): Promise<{ data: Class[]; total: number; page: number; limit: number; totalPages: number }> => {
+    return api.get('/classes', { params });
   },
   
   getById: (id: string): Promise<Class> => {

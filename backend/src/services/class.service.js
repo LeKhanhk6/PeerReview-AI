@@ -25,7 +25,7 @@ const validateId = (id, fieldName = 'ID') => {
 
 // --- CRUD OPERATIONS ---
 
-export const getAllClasses = async (user) => {
+export const getAllClasses = async (user, pagination = { page: 1, limit: 10, offset: 0 }) => {
     if (!user || !user.role || !user.userId) {
         throw new AppError('Invalid user context', 400);
     }
@@ -37,9 +37,18 @@ export const getAllClasses = async (user) => {
     `;
     const values = [];
 
+    let countQuery = `
+        SELECT COUNT(*)
+        FROM classes 
+        WHERE deleted_at IS NULL
+    `;
+    const countValues = [];
+
     if (user.role === 'TEACHER') {
         query += ' AND teacher_id = $1';
+        countQuery += ' AND teacher_id = $1';
         values.push(user.userId);
+        countValues.push(user.userId);
     } else if (user.role === 'STUDENT') {
         query = `
             SELECT c.id, c.course_code, c.course_name, c.name, c.invite_code, c.semester, c.created_at, c.teacher_id
@@ -47,12 +56,31 @@ export const getAllClasses = async (user) => {
             JOIN class_members cm ON c.id = cm.class_id
             WHERE cm.user_id = $1 AND c.deleted_at IS NULL
         `;
+        countQuery = `
+            SELECT COUNT(*)
+            FROM classes c
+            JOIN class_members cm ON c.id = cm.class_id
+            WHERE cm.user_id = $1 AND c.deleted_at IS NULL
+        `;
         values.push(user.userId);
+        countValues.push(user.userId);
     }
     
-    query += ' ORDER BY created_at DESC';
+    const countResult = await pool.query(countQuery, countValues);
+    const total = parseInt(countResult.rows[0].count, 10);
+    
+    query += ` ORDER BY created_at DESC LIMIT $${values.length + 1} OFFSET $${values.length + 2}`;
+    values.push(pagination.limit, pagination.offset);
+    
     const result = await pool.query(query, values);
-    return result.rows;
+    
+    return {
+        data: result.rows,
+        total,
+        page: pagination.page,
+        limit: pagination.limit,
+        totalPages: Math.ceil(total / pagination.limit)
+    };
 };
 
 export const getClassById = async (id, user) => {

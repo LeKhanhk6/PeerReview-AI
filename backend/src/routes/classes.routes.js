@@ -4,6 +4,7 @@ import * as classController from '../controllers/class.controller.js';
 import { verifyToken } from '../middleware/auth.middleware.js';
 import { authorizeRoles } from '../middleware/role.middleware.js';
 import { validate } from '../middleware/validation.middleware.js';
+import { paginationMiddleware } from '../middleware/pagination.middleware.js';
 
 const router = express.Router();
 
@@ -42,7 +43,7 @@ const joinSchema = {
 // --- ROUTES ---
 
 // TEACHER & ADMIN & STUDENT routes
-router.get('/', authorizeRoles('TEACHER', 'ADMIN', 'STUDENT'), classController.getAll);
+router.get('/', authorizeRoles('TEACHER', 'ADMIN', 'STUDENT'), paginationMiddleware, classController.getAll);
 router.get('/:id', authorizeRoles('TEACHER', 'ADMIN', 'STUDENT'), validate({ params: idParamSchema }), classController.getById);
 router.get('/:id/members', authorizeRoles('TEACHER', 'ADMIN', 'STUDENT'), validate({ params: idParamSchema }), classController.getMembers);
 

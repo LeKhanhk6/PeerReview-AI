@@ -1,13 +1,14 @@
 import express from 'express';
 import { z } from 'zod';
 import * as reviewController from '../controllers/review.controller.js';
-import { authenticate, authorize } from '../middlewares/auth.middleware.js';
+import { verifyToken } from '../middleware/auth.middleware.js';
+import { authorizeRoles } from '../middleware/role.middleware.js';
 import { validate } from '../middleware/validation.middleware.js';
 import { paginationMiddleware } from '../middleware/pagination.middleware.js';
 
 const router = express.Router();
 
-router.use(authenticate);
+router.use(verifyToken);
 
 // ==========================================
 // SCHEMAS
@@ -45,18 +46,18 @@ const synthesisQuerySchema = {
 };
 
 // Student: Get assignments they are supposed to review (Double-blind mapped)
-router.get('/assignments/:assignmentId/my-reviews', authorize('STUDENT'), validate({ params: assignmentIdParamSchema }), paginationMiddleware, reviewController.getMyReviewAssignments);
+router.get('/assignments/:assignmentId/my-reviews', authorizeRoles('STUDENT'), validate({ params: assignmentIdParamSchema }), paginationMiddleware, reviewController.getMyReviewAssignments);
 
 // Student: Get detail of a specific review assignment (for grading screen)
-router.get('/my-reviews/:reviewAssignmentId', authorize('STUDENT'), validate({ params: reviewAssignmentIdParamSchema }), reviewController.getReviewAssignmentDetail);
+router.get('/my-reviews/:reviewAssignmentId', authorizeRoles('STUDENT'), validate({ params: reviewAssignmentIdParamSchema }), reviewController.getReviewAssignmentDetail);
 
 // Student: Submit a peer review
-router.post('/my-reviews/:reviewAssignmentId/submit', authorize('STUDENT'), validate(submitReviewSchema), reviewController.submitReviewAssignment);
+router.post('/my-reviews/:reviewAssignmentId/submit', authorizeRoles('STUDENT'), validate(submitReviewSchema), reviewController.submitReviewAssignment);
 
 // Student: Analyze review comment with AI
-router.post('/analyze', authorize('STUDENT'), validate(analyzeReviewSchema), reviewController.analyzeReviewText);
+router.post('/analyze', authorizeRoles('STUDENT'), validate(analyzeReviewSchema), reviewController.analyzeReviewText);
 
 // Teacher/Admin: Generate AI Synthesis of all reviews for an assignment
-router.get('/assignments/:assignmentId/reviews/synthesis', authorize('TEACHER', 'ADMIN'), validate(synthesisQuerySchema), reviewController.generateAssignmentReviewSynthesis);
+router.get('/assignments/:assignmentId/reviews/synthesis', authorizeRoles('TEACHER', 'ADMIN'), validate(synthesisQuerySchema), reviewController.generateAssignmentReviewSynthesis);
 
 export default router;

@@ -5,9 +5,10 @@ import { CreateClassDialog } from '../components/CreateClassDialog';
 import { Link } from 'react-router-dom';
 import { toast } from 'sonner';
 import { EmptyState } from '@/components/ui/EmptyState';
+import { Pagination } from '@/components/ui/Pagination';
 
 export const TeacherClassesPage: React.FC = () => {
-  const { data: classes, isLoading } = useClasses();
+  const { data: classesData, isLoading, page, setPage } = useClasses();
   const deleteClass = useDeleteClass();
   const [isCreateOpen, setIsCreateOpen] = useState(false);
 
@@ -32,7 +33,7 @@ export const TeacherClassesPage: React.FC = () => {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {classes?.map((cls) => (
+        {classesData?.data?.map((cls: any) => (
           <div key={cls.id} className="bg-white rounded-lg shadow border border-gray-200 p-6">
             <div className="flex justify-between items-start mb-4">
               <div>
@@ -58,7 +59,7 @@ export const TeacherClassesPage: React.FC = () => {
             </div>
           </div>
         ))}
-        {classes?.length === 0 && (
+        {classesData?.data?.length === 0 && (
           <div className="col-span-full">
             <EmptyState
               type="no_data"
@@ -70,6 +71,16 @@ export const TeacherClassesPage: React.FC = () => {
           </div>
         )}
       </div>
+
+      {classesData && classesData.totalPages > 1 && (
+        <div className="mt-8">
+          <Pagination
+            page={page}
+            totalPages={classesData.totalPages}
+            onPageChange={setPage}
+          />
+        </div>
+      )}
 
       <CreateClassDialog open={isCreateOpen} onClose={() => setIsCreateOpen(false)} />
     </div>

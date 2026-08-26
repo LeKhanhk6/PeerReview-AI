@@ -1,6 +1,7 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { usePaginatedQuery } from '@/hooks/usePaginatedQuery';
 import { classesApi } from '../api/classes.api';
-import type { CreateClassDTO, UpdateClassDTO } from '../types';
+import type { Class, CreateClassDTO, UpdateClassDTO } from '../types';
 
 export const classKeys = {
   all: ['classes'] as const,
@@ -11,10 +12,11 @@ export const classKeys = {
 };
 
 export const useClasses = () => {
-  return useQuery({
-    queryKey: classKeys.lists(),
-    queryFn: classesApi.getAll,
-  });
+  return usePaginatedQuery<{ data: Class[]; total: number; page: number; limit: number; totalPages: number }>(
+    classKeys.lists() as unknown as unknown[],
+    (params) => classesApi.getAll(params),
+    10
+  );
 };
 
 export const useClass = (id: string) => {

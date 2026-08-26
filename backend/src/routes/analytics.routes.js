@@ -1,13 +1,14 @@
 import express from 'express';
 import { z } from 'zod';
-import { authenticate, authorize } from '../middleware/auth.middleware.js';
+import { verifyToken } from '../middleware/auth.middleware.js';
+import { authorizeRoles } from '../middleware/role.middleware.js';
 import * as analyticsController from '../controllers/analytics.controller.js';
 import { validate } from '../middleware/validation.middleware.js';
 
 const router = express.Router();
 
-router.use(authenticate);
-router.use(authorize('TEACHER', 'ADMIN'));
+router.use(verifyToken);
+router.use(authorizeRoles('TEACHER', 'ADMIN'));
 
 // Schemas
 const uuidSchema = z.string().uuid();

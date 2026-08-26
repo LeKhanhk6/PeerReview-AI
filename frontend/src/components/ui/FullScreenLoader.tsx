@@ -1,13 +1,12 @@
 import { useState, useEffect } from 'react';
 import { Loader2 } from 'lucide-react';
 import { Button } from './Button';
-import { useNavigate } from 'react-router-dom';
 import { sendTelemetry } from '../../lib/telemetry';
+import { executeRecoveryStrategy } from '../../lib/recovery';
 import { commonMessages } from '../../constants/messages/common';
 
 export const FullScreenLoader = () => {
   const [showTimeout, setShowTimeout] = useState(false);
-  const navigate = useNavigate();
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -23,11 +22,7 @@ export const FullScreenLoader = () => {
   }, []);
 
   const handleEscape = () => {
-    if (window.history.length > 1) {
-      navigate(-1);
-    } else {
-      navigate('/login');
-    }
+    executeRecoveryStrategy('/login');
   };
 
   return (

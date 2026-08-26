@@ -73,7 +73,7 @@ export async function sendTelemetry(payload: Omit<TelemetryEvent, 'sessionId' | 
     } else {
       failCount = 0; // reset on success
     }
-  } catch (error) {
+  } catch (_error) {
     failCount++;
   }
 }
@@ -108,7 +108,7 @@ export async function sendClientError(payload: Omit<ClientErrorPayload, 'session
     } else {
       failCount = 0;
     }
-  } catch (error) {
+  } catch (_error) {
     failCount++;
   }
 }

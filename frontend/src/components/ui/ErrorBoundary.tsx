@@ -2,8 +2,8 @@ import { Component } from 'react';
 import type { ErrorInfo, ReactNode } from 'react';
 import { EmptyState } from './EmptyState';
 import { sendClientError, sendTelemetry } from '../../lib/telemetry';
+import { executeRecoveryStrategy } from '../../lib/recovery';
 import { commonMessages } from '../../constants/messages/common';
-import { queryClient } from '../../lib/queryClient';
 
 interface Props {
   children: ReactNode;
@@ -59,10 +59,7 @@ export class ErrorBoundary extends Component<Props, State> {
   }
 
   private handleRetry = () => {
-    // Invalidate queries instead of clear()
-    queryClient.invalidateQueries();
-
-    this.setState({ hasError: false, error: null, hasReloaded: false });
+    executeRecoveryStrategy('/');
   };
 
   public render() {

@@ -1,4 +1,10 @@
-import axios from 'axios';
+import axios, { type AxiosError, type AxiosResponse } from 'axios';
+
+export interface ApiError {
+  code: string;
+  message: string;
+  status: number;
+}
 
 // Create a configured axios instance
 export const api = axios.create({
@@ -9,11 +15,28 @@ export const api = axios.create({
   timeout: 30000,
 });
 
-// We can add interceptors here later for JWT token parsing
 api.interceptors.response.use(
-  (response) => response.data,
-  (error) => {
-    // You can handle global errors here like 401 Unauthorized
-    return Promise.reject(error.response?.data || error);
+  (response: AxiosResponse) => {
+    // Unwrap { success, data } if the backend follows this format
+    if (response.data && typeof response.data === 'object' && 'success' in response.data && 'data' in response.data) {
+      return response.data.data;
+    }
+    return response.data;
+  },
+  (error: AxiosError<any>) => {
+    const status = error.response?.status || 500;
+    const responseData = error.response?.data || {};
+    
+    // Normalize error to { code, message, status }
+    const normalizedError: ApiError = {
+      code: responseData.code || 'UNKNOWN_ERROR',
+      message: responseData.message || error.message || 'An unexpected error occurred',
+      status: status,
+    };
+    
+    // Phase 0: Log errors. Phase 1 will implement full 401 handling.
+    console.error(`[API Error] ${status}: ${normalizedError.message}`, normalizedError);
+
+    return Promise.reject(normalizedError);
   }
 );

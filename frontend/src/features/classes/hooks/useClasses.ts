@@ -49,7 +49,7 @@ export const useUpdateClass = () => {
   
   return useMutation({
     mutationFn: ({ id, data }: { id: string; data: UpdateClassDTO }) => classesApi.update(id, data),
-    onSuccess: (data, variables) => {
+    onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: classKeys.lists() });
       queryClient.invalidateQueries({ queryKey: classKeys.detail(variables.id) });
     },

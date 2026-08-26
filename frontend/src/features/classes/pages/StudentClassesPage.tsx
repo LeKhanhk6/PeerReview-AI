@@ -35,11 +35,11 @@ export const StudentClassesPage: React.FC = () => {
             </div>
             
             <div className="mt-4 pt-4 border-t border-gray-100 flex items-center justify-between">
-              <Button variant="outline" size="sm" asChild>
-                <Link to={`/student/classes/${cls.id}`}>
+              <Link to={`/student/classes/${cls.id}`}>
+                <Button variant="outline" size="sm">
                   Go to Workspace
-                </Link>
-              </Button>
+                </Button>
+              </Link>
             </div>
           </div>
         ))}

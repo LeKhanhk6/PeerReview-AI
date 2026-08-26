@@ -1,7 +1,7 @@
 import React from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useClass, useClassMembers } from '../hooks/useClasses';
-import { Button } from '@/components/ui/Button';
+
 
 export const TeacherClassDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();

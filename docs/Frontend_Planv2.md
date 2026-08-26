@@ -105,8 +105,8 @@ _(Bản đã chỉnh sửa theo Technical Review — các thay đổi so với v
 
 ### Task 02.1 — Class/Course Management
 
-- [ ]  CRUD lớp học, danh sách sinh viên, invite/join flow
-- [ ]  URL-synced pagination/filtering (theo rule mới 00.2)
+- [x]  CRUD lớp học, danh sách sinh viên, invite/join flow
+- [x]  URL-synced pagination/filtering (theo rule mới 00.2)
 
 ### Task 02.2 — Group Management
 

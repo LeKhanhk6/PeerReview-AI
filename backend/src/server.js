@@ -16,6 +16,7 @@ import reviewRoutes from './routes/reviews.routes.js';
 import contributionRoutes from './routes/contribution.routes.js';
 import summaryRoutes from './routes/summary.routes.js';
 import analyticsRoutes from './routes/analytics.routes.js';
+import telemetryRoutes from './routes/telemetry.routes.js';
 
 dotenv.config();
 
@@ -42,6 +43,7 @@ app.use('/api', reviewRoutes);
 app.use('/api/groups', contributionRoutes);
 app.use('/api', summaryRoutes);
 app.use('/api/analytics', analyticsRoutes);
+app.use('/api', telemetryRoutes);
 
 // API Test cơ bản
 app.get('/api/health', (req, res) => {

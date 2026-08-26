@@ -1,7 +1,7 @@
 import { v4 as uuidv4 } from 'uuid';
 
 export interface TelemetryEvent {
-  event: 'loader_timeout' | 'chunk_load_error' | 'ai_error' | 'ui_error';
+  event: 'loader_timeout' | 'chunk_load_error' | 'ai_error' | 'ui_error' | 'api_failure' | 'ai_retry';
   metadata?: Record<string, any>;
   userId?: string;
   timestamp: number;

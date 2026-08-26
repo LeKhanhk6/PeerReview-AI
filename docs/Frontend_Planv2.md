@@ -47,9 +47,9 @@ _(Bản đã chỉnh sửa theo Technical Review — các thay đổi so với v
 
 ### 🆕 Task 00.4 — i18n & Copy Management _(mới)_
 
-- [ ]  Tạo `constants/messages.ts` chứa TOÀN BỘ user-facing copy (EmptyState, Loader, Toaster, form errors)
-- [ ]  Quy tắc: cấm hard-coded string trong JSX — ESLint rule cảnh báo
-- [ ]  Cấu trúc sẵn để nâng cấp i18n library sau nếu cần đa ngôn ngữ
+- [x]  Tạo `constants/messages.ts` chứa TOÀN BỘ user-facing copy (EmptyState, Loader, Toaster, form errors)
+- [x]  Quy tắc: cấm hard-coded string trong JSX — ESLint rule cảnh báo
+- [x]  Cấu trúc sẵn để nâng cấp i18n library sau nếu cần đa ngôn ngữ
 
 ### 🆕 Task 00.5 — Client Observability _(mới)_
 

@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/Button';
 import { CreateClassDialog } from '../components/CreateClassDialog';
 import { Link } from 'react-router-dom';
 import { toast } from 'sonner';
+import { EmptyState } from '@/components/ui/EmptyState';
 
 export const TeacherClassesPage: React.FC = () => {
   const { data: classes, isLoading } = useClasses();
@@ -58,8 +59,14 @@ export const TeacherClassesPage: React.FC = () => {
           </div>
         ))}
         {classes?.length === 0 && (
-          <div className="col-span-full text-center py-12 text-gray-500 bg-white rounded-lg border border-dashed">
-            No classes found. Create one to get started.
+          <div className="col-span-full">
+            <EmptyState
+              type="no_data"
+              title="No classes found"
+              description="You haven't created any classes yet. Create one to get started."
+              actionLabel="Create Class"
+              onAction={() => setIsCreateOpen(true)}
+            />
           </div>
         )}
       </div>

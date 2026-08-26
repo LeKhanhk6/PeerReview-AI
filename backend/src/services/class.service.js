@@ -78,6 +78,13 @@ export const getClassById = async (id, user) => {
         throw new AppError(NOT_FOUND_MSG, 404);
     }
     
+    if (user.role === 'STUDENT') {
+        const memberCheck = await pool.query('SELECT 1 FROM class_members WHERE class_id = $1 AND user_id = $2', [classId, user.userId]);
+        if (memberCheck.rows.length === 0) {
+            throw new AppError(NOT_FOUND_MSG, 404);
+        }
+    }
+    
     return classData;
 };
 

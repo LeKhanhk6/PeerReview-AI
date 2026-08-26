@@ -1,6 +1,7 @@
 import React from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useClass, useClassMembers } from '../hooks/useClasses';
+import { EmptyState } from '@/components/ui/EmptyState';
 
 
 export const TeacherClassDetailPage: React.FC = () => {
@@ -76,8 +77,13 @@ export const TeacherClassDetailPage: React.FC = () => {
               ))}
               {members?.length === 0 && (
                 <tr>
-                  <td colSpan={4} className="px-6 py-12 text-center text-gray-500">
-                    No students have joined this class yet. Share the invite code: <strong>{classData.invite_code}</strong>
+                  <td colSpan={4} className="p-0">
+                    <EmptyState
+                      type="no_data"
+                      title="No students yet"
+                      description={`Share the invite code ${classData.invite_code} for students to join.`}
+                      compact
+                    />
                   </td>
                 </tr>
               )}

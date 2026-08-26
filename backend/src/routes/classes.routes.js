@@ -43,13 +43,13 @@ const joinSchema = {
 
 // TEACHER & ADMIN & STUDENT routes
 router.get('/', authorizeRoles('TEACHER', 'ADMIN', 'STUDENT'), classController.getAll);
+router.get('/:id', authorizeRoles('TEACHER', 'ADMIN', 'STUDENT'), validate({ params: idParamSchema }), classController.getById);
+router.get('/:id/members', authorizeRoles('TEACHER', 'ADMIN', 'STUDENT'), validate({ params: idParamSchema }), classController.getMembers);
 
 // TEACHER & ADMIN routes
-router.get('/:id', authorizeRoles('TEACHER', 'ADMIN'), validate({ params: idParamSchema }), classController.getById);
 router.post('/', authorizeRoles('TEACHER', 'ADMIN'), validate(createSchema), classController.create);
 router.put('/:id', authorizeRoles('TEACHER', 'ADMIN'), validate(updateSchema), classController.update);
 router.delete('/:id', authorizeRoles('TEACHER', 'ADMIN'), validate({ params: idParamSchema }), classController.remove);
-router.get('/:id/members', authorizeRoles('TEACHER', 'ADMIN'), validate({ params: idParamSchema }), classController.getMembers);
 
 // STUDENT routes
 router.post('/join', authorizeRoles('STUDENT'), validate(joinSchema), classController.join);

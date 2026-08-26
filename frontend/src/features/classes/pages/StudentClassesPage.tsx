@@ -3,6 +3,7 @@ import { useClasses } from '../hooks/useClasses';
 import { Button } from '@/components/ui/Button';
 import { JoinClassDialog } from '../components/JoinClassDialog';
 import { Link } from 'react-router-dom';
+import { EmptyState } from '@/components/ui/EmptyState';
 
 export const StudentClassesPage: React.FC = () => {
   const { data: classes, isLoading } = useClasses();
@@ -44,8 +45,14 @@ export const StudentClassesPage: React.FC = () => {
           </div>
         ))}
         {classes?.length === 0 && (
-          <div className="col-span-full text-center py-12 text-gray-500 bg-white rounded-lg border border-dashed">
-            You haven't joined any classes yet. Click "Join Class" and enter your invite code.
+          <div className="col-span-full">
+            <EmptyState
+              type="no_data"
+              title="No classes joined"
+              description="You haven't joined any classes yet. Click 'Join Class' and enter your invite code."
+              actionLabel="Join Class"
+              onAction={() => setIsJoinOpen(true)}
+            />
           </div>
         )}
       </div>

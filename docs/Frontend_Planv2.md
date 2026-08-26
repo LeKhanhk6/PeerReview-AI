@@ -26,13 +26,13 @@ _(Bản đã chỉnh sửa theo Technical Review — các thay đổi so với v
 
 **🆕 Rule Thép API (enforced bằng code):**
 
-- [ ]  Wrapper hook `useApiQuery` / `useApiMutation` — mọi call API **bắt buộc đi qua wrapper này**, chặn việc gọi axios trực tiếp trong component
-- [ ]  Response interceptor chuẩn hóa: unwrap `{ success, data }`, normalize error thành `{ code, message, status }`
+- [x]  Wrapper hook `useApiQuery` / `useApiMutation` — mọi call API **bắt buộc đi qua wrapper này**, chặn việc gọi axios trực tiếp trong component
+- [x]  Response interceptor chuẩn hóa: unwrap `{ success, data }`, normalize error thành `{ code, message, status }`
 
 **🆕 Rule Phân Trang (enforced bằng code):**
 
-- [ ]  Hook `usePaginatedQuery(queryKey, fetchFn)` — tự áp `keepPreviousData` + sync page/filter vào URL searchParams
-- [ ]  🆕 Generalize rule: **mọi bảng có filter/pagination đều sync URL** (shareable link), không riêng Assignment list
+- [x]  Hook `usePaginatedQuery(queryKey, fetchFn)` — tự áp `keepPreviousData` + sync page/filter vào URL searchParams
+- [x]  🆕 Generalize rule: **mọi bảng có filter/pagination đều sync URL** (shareable link), không riêng Assignment list
 
 ### Task 00.3 — Global UI Components ✅ _(đã review Phase 0.3)_
 
@@ -40,10 +40,10 @@ _(Bản đã chỉnh sửa theo Technical Review — các thay đổi so với v
 
 **🆕 Fix-back từ Code Review Phase 0.3 (bắt buộc trước Phase 1):**
 
-- [ ]  🔴 Toaster: đổi error style → nền neutral + icon/border destructive; thêm token `--success`
-- [ ]  🔴 ErrorBoundary: tích hợp client error reporting thực tế (`POST /api/client-errors`), không hiển thị raw `error.message`, xử lý riêng ChunkLoadError (auto-reload 1 lần có guard)
-- [ ]  🔴 FullScreenLoader: thêm secondary action "Về trang đăng nhập"; emit `loading_timeout` event lên telemetry
-- [ ]  🟠 Thống nhất **Recovery Strategy chung**: reset query cache → redirect safe route → reload last resort (áp dụng cho cả 3 component)
+- [x]  🔴 Toaster: đổi error style → nền neutral + icon/border destructive; thêm token `--success`
+- [x]  🔴 ErrorBoundary: tích hợp client error reporting thực tế (`POST /api/client-errors`), không hiển thị raw `error.message`, xử lý riêng ChunkLoadError (auto-reload 1 lần có guard)
+- [x]  🔴 FullScreenLoader: thêm secondary action "Về trang đăng nhập"; emit `loading_timeout` event lên telemetry
+- [x]  🟠 Thống nhất **Recovery Strategy chung**: reset query cache → redirect safe route → reload last resort (áp dụng cho cả 3 component)
 
 ### 🆕 Task 00.4 — i18n & Copy Management _(mới)_
 

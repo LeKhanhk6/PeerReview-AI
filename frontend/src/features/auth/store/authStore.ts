@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import type { AuthState, User } from '../types';
 import { api } from '@/lib/axios';
+import { queryClient } from '@/lib/queryClient';
 
 interface AuthActions {
   setUser: (user: User | null) => void;
@@ -44,6 +45,8 @@ export const useAuthStore = create<AuthStore>()(
           console.error('Logout failed:', error);
         } finally {
           set({ user: null, isAuthenticated: false, isLoading: false, error: null });
+          // Clear query cache to prevent data leaking between users
+          queryClient.clear();
         }
       }
     }),

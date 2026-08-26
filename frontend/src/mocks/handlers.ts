@@ -19,15 +19,27 @@ export const handlers = [
 
   // Auth Mocks
   http.get('/api/auth/me', () => {
-    // Simulate 401 for testing protected routes if needed, or return a mock user
-    // return new HttpResponse(null, { status: 401 });
+    // Check session storage for mock scenarios
+    const auditEnabledStr = sessionStorage.getItem('MSW_AUDIT_ENABLED');
+    const auditEnabled = auditEnabledStr === 'false' ? false : true;
+    
+    // Simulate loading if requested
+    if (sessionStorage.getItem('MSW_LOADING') === 'true') {
+      return new Promise(() => {}); // Never resolves
+    }
+
+    const role = sessionStorage.getItem('MSW_ROLE') || 'STUDENT';
+
     return HttpResponse.json({
       success: true,
       data: {
         id: '123',
         email: 'mockuser@example.com',
         full_name: 'Mock User',
-        role: 'STUDENT',
+        role: role,
+        capabilities: {
+          audit_enabled: auditEnabled
+        }
       }
     });
   }),
@@ -37,6 +49,13 @@ export const handlers = [
     if (body.email === 'error@example.com') {
       return HttpResponse.json({ success: false, message: 'Invalid credentials' }, { status: 401 });
     }
+
+    let role = 'STUDENT';
+    if (body.email.includes('admin')) role = 'ADMIN';
+    if (body.email.includes('teacher')) role = 'TEACHER';
+
+    sessionStorage.setItem('MSW_ROLE', role);
+
     return HttpResponse.json({
       success: true,
       data: {
@@ -44,7 +63,10 @@ export const handlers = [
           id: '123',
           email: body.email,
           full_name: 'Mock User',
-          role: 'STUDENT',
+          role: role,
+          capabilities: {
+            audit_enabled: true
+          }
         }
       }
     });

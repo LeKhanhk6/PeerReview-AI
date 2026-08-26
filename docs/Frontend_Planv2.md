@@ -86,10 +86,10 @@ _(Bản đã chỉnh sửa theo Technical Review — các thay đổi so với v
 - [x]  ProtectedRoute + RoleRoute (student/teacher/admin)
 - [x]  Login/Register screens + Zod validation
 
-### Task 01.2 — Layouts
+### Task 01.2 — Layouts ✅
 
-- [ ]  StudentLayout / TeacherLayout / AdminLayout (sidebar + topbar)
-- [ ]  Admin dùng TeacherLayout + Badge "⚡ ADMIN MODE"
+- [x]  StudentLayout / TeacherLayout / AdminLayout (sidebar + topbar)
+- [x]  Admin dùng TeacherLayout + Badge "⚡ ADMIN MODE"
     - 🆕 **Bổ sung guard:** mọi admin action destructive phải confirm dialog đỏ + backend ghi audit log (frontend disable nút nếu response thiếu audit capability)
 
 ---

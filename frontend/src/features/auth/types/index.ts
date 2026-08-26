@@ -5,6 +5,9 @@ export interface User {
   email: string;
   full_name: string;
   role: Role;
+  capabilities?: {
+    audit_enabled?: boolean;
+  };
   avatar_url?: string;
   created_at?: string;
 }

@@ -6,21 +6,12 @@ import { Toaster } from './components/ui/Toaster';
 import { queryClient } from './lib/queryClient';
 import { useAuthStore } from './features/auth/store/authStore';
 import { ProtectedRoute } from './features/auth/components/ProtectedRoute';
+import { RoleRoute } from './features/auth/components/RoleRoute';
 import { LoginPage } from './features/auth/pages/LoginPage';
 import { RegisterPage } from './features/auth/pages/RegisterPage';
-
-const appName = "PeerReview-AI";
-
-const DashboardPlaceholder = () => {
-  const { user, logout } = useAuthStore();
-  return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-background text-foreground">
-      <h1 className="text-4xl font-bold mb-4">{appName} - Dashboard</h1>
-      <p className="mb-4">Welcome, {user?.full_name} ({user?.role})</p>
-      <button onClick={logout} className="px-4 py-2 bg-red-600 text-white rounded">Logout</button>
-    </div>
-  );
-};
+import { StudentLayout } from './components/layout/StudentLayout';
+import { TeacherLayout } from './components/layout/TeacherLayout';
+import { AdminLayout } from './components/layout/AdminLayout';
 
 function App() {
   const { checkAuth } = useAuthStore();
@@ -37,15 +28,61 @@ function App() {
         <Routes>
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
+          
+          {/* Student Routes */}
           <Route 
-            path="/dashboard" 
+            path="/student" 
             element={
               <ProtectedRoute>
-                <DashboardPlaceholder />
+                <RoleRoute allowedRoles={['STUDENT']}>
+                  <StudentLayout />
+                </RoleRoute>
               </ProtectedRoute>
             } 
-          />
-          <Route path="*" element={<Navigate to="/dashboard" replace />} />
+          >
+            <Route path="dashboard" element={<div>Student Dashboard</div>} />
+            <Route path="reviews" element={<div>Student Reviews</div>} />
+            <Route path="profile" element={<div>Student Profile</div>} />
+            <Route index element={<Navigate to="dashboard" replace />} />
+          </Route>
+
+          {/* Teacher Routes */}
+          <Route 
+            path="/teacher" 
+            element={
+              <ProtectedRoute>
+                <RoleRoute allowedRoles={['TEACHER']}>
+                  <TeacherLayout />
+                </RoleRoute>
+              </ProtectedRoute>
+            } 
+          >
+            <Route path="dashboard" element={<div>Teacher Dashboard</div>} />
+            <Route path="assignments" element={<div>Teacher Assignments</div>} />
+            <Route path="submissions" element={<div>Teacher Submissions</div>} />
+            <Route index element={<Navigate to="dashboard" replace />} />
+          </Route>
+
+          {/* Admin Routes */}
+          <Route 
+            path="/admin" 
+            element={
+              <ProtectedRoute>
+                <RoleRoute allowedRoles={['ADMIN']}>
+                  <AdminLayout />
+                </RoleRoute>
+              </ProtectedRoute>
+            } 
+          >
+            <Route path="dashboard" element={<div>Admin Dashboard</div>} />
+            <Route path="users" element={<div>Admin Users</div>} />
+            <Route path="settings" element={<div>Admin Settings</div>} />
+            <Route index element={<Navigate to="dashboard" replace />} />
+          </Route>
+
+          {/* Fallback routing based on role or to login */}
+          <Route path="/" element={<Navigate to="/login" replace />} />
+          <Route path="*" element={<Navigate to="/login" replace />} />
         </Routes>
       </Router>
     </QueryClientProvider>

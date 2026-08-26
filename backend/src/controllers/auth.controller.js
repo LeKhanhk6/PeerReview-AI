@@ -53,7 +53,20 @@ export const getMe = async (req, res, next) => {
         }
         
         const user = await authService.getUserById(userId);
-        return res.ok({ user });
+        const auditEnabled = process.env.AUDIT_ENABLED === 'true';
+
+        return res.ok({ 
+            user: {
+                id: user.id,
+                email: user.email,
+                full_name: user.full_name,
+                role: user.role,
+                created_at: user.created_at,
+                capabilities: {
+                    audit_enabled: auditEnabled
+                }
+            }
+        });
     } catch (error) {
         next(error);
     }

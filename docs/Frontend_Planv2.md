@@ -51,16 +51,16 @@ _(Bản đã chỉnh sửa theo Technical Review — các thay đổi so với v
 - [x]  Quy tắc: cấm hard-coded string trong JSX — ESLint rule cảnh báo
 - [x]  Cấu trúc sẵn để nâng cấp i18n library sau nếu cần đa ngôn ngữ
 
-### 🆕 Task 00.5 — Client Observability _(mới)_
+### 🆕 Task 00.5 — Client Observability ✅
 
 - [x]  Telemetry module: `reportError(error, context)` → POST `/api/client-errors` (backend cần endpoint tương ứng)
 - [x]  Event tracking: loading timeouts, API failures, AI retry occurrences
 - [x]  Wire vào ErrorBoundary + FullScreenLoader + global query `onError`
 
-### 🆕 Task 00.6 — Offline/Network Handling _(mới)_
+### 🆕 Task 00.6 — Offline/Network Handling ✅
 
-- [ ]  Global banner "Mất kết nối" (detect qua `navigator.onLine` + query retry failures)
-- [ ]  TanStack Query `networkMode` config rõ ràng (pause mutations khi offline, queue lại khi online)
+- [x]  Global banner "Mất kết nối" (detect qua `navigator.onLine` + query retry failures)
+- [x]  TanStack Query `networkMode` config rõ ràng (pause mutations khi offline, queue lại khi online)
 
 ### Task 00.7 — MSW Setup _(chuyển lên trước khi test components)_
 

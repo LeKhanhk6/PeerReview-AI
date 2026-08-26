@@ -51,6 +51,10 @@ export const queryClient = new QueryClient({
     queries: {
       retry: 1,
       refetchOnWindowFocus: false,
+      networkMode: 'offlineFirst',
     },
+    mutations: {
+      networkMode: 'offlineFirst',
+    }
   },
 });

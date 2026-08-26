@@ -22,5 +22,9 @@ export const commonMessages = {
   },
   loader: {
     stillLoading: 'Hệ thống vẫn đang xử lý... Bạn có thể đợi thêm hoặc quay lại.',
+  },
+  network: {
+    offline: 'Mất kết nối mạng. Vui lòng kiểm tra lại đường truyền.',
+    online: 'Đã khôi phục kết nối.',
   }
 };

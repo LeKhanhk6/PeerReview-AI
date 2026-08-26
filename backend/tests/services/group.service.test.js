@@ -19,7 +19,7 @@ beforeAll(async () => {
     studentLeaveGroup = groupService.studentLeaveGroup;
     
     const appErrorModule = await import('../../src/utils/AppError.js');
-    AppError = appErrorModule.default;
+    AppError = appErrorModule.AppError;
 });
 
 beforeEach(() => {

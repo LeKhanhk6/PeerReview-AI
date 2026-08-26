@@ -13,10 +13,10 @@ import logger from './logger.util.js';
 export const withTransaction = async (callback, isolationLevel = 'REPEATABLE READ') => {
     const client = await pool.connect();
     try {
-        await client.query('BEGIN');
-        
         if (isolationLevel) {
-            await client.query(`SET TRANSACTION ISOLATION LEVEL ${isolationLevel}`);
+            await client.query(`BEGIN ISOLATION LEVEL ${isolationLevel}`);
+        } else {
+            await client.query('BEGIN');
         }
 
         const result = await callback(client);
@@ -24,13 +24,13 @@ export const withTransaction = async (callback, isolationLevel = 'REPEATABLE REA
         await client.query('COMMIT');
         return result;
     } catch (error) {
-        await client.query('ROLLBACK');
+        if (client) await client.query('ROLLBACK');
         logger.error({ event: 'transaction.rollback', error: error.message });
-        if (error instanceof AppError) {
+        if (error.isOperational || (error.status >= 400 && error.status < 600) || error.code) {
             throw error;
         }
         throw new AppError(error.message || 'Transaction failed', 500, 'INTERNAL_ERROR', { original: error.message });
     } finally {
-        client.release();
+        if (client) client.release();
     }
 };

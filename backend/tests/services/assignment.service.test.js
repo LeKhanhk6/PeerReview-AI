@@ -15,7 +15,7 @@ beforeAll(async () => {
     getAssignmentDetailById = assignmentService.getAssignmentDetailById;
     
     const appErrorModule = await import('../../src/utils/AppError.js');
-    AppError = appErrorModule.default;
+    AppError = appErrorModule.AppError;
 });
 
 afterEach(() => {
@@ -127,6 +127,7 @@ describe('assignment.service (MVP)', () => {
 
         it('should update assignment successfully for teacher owner', async () => {
             poolMock.query.mockResolvedValueOnce({ rows: [{ id: 1, teacher_id: 'teacher1' }] }); // ownership check
+            poolMock.query.mockResolvedValueOnce({ rows: [{ id: 1 }] }); // lock query
             poolMock.query.mockResolvedValueOnce({ rows: [{ ...dbAssignmentRow, title: 'Updated' }], rowCount: 1 }); // update
             
             const result = await updateAssignment(1, updatePayload, teacherOwner);
@@ -169,7 +170,7 @@ describe('assignment.service (MVP)', () => {
     describe('getAssignmentDetailById (Deadline logic)', () => {
         let fixedTime = new Date('2026-06-15T00:00:00Z').getTime();
         beforeAll(() => {
-            jest.spyOn(Date.prototype, 'getTime').mockImplementation(() => fixedTime);
+            jest.spyOn(Date, 'now').mockImplementation(() => fixedTime);
         });
         afterAll(() => {
             jest.restoreAllMocks();

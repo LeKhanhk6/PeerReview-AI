@@ -1,12 +1,11 @@
 import { jest } from '@jest/globals';
+import poolMock from '../__mocks__/db.mock.js';
 import { AppError } from '../../src/utils/AppError.js';
 import { ACTIVITY_TYPES } from '../../src/constants/index.js';
 
 // Mock DB
 jest.unstable_mockModule('../../src/config/db.js', () => ({
-    default: {
-        query: jest.fn()
-    }
+    default: poolMock
 }));
 
 // Mock Activity Service to isolate side effects
@@ -14,7 +13,6 @@ jest.unstable_mockModule('../../src/services/activity.service.js', () => ({
     logActivity: jest.fn()
 }));
 
-const { default: poolMock } = await import('../../src/config/db.js');
 const { logActivity } = await import('../../src/services/activity.service.js');
 const {
     checkWorkspaceAccess,
@@ -29,8 +27,15 @@ const {
 } = await import('../../src/services/workspace.service.js');
 
 describe('Workspace Service (MVP)', () => {
+    let clientMock;
+
     beforeEach(() => {
         jest.clearAllMocks();
+        clientMock = {
+            query: jest.fn(),
+            release: jest.fn()
+        };
+        poolMock.connect.mockResolvedValue(clientMock);
     });
 
     describe('checkWorkspaceAccess', () => {
@@ -80,10 +85,17 @@ describe('Workspace Service (MVP)', () => {
         });
 
         it('should handle Concurrency safely with Promise.all', async () => {
-            // Mock the update query to return different simulated task states
-            poolMock.query
-                .mockResolvedValueOnce({ rows: [{ id: 10, status: 'IN_PROGRESS', group_id: 1, title: 'Task' }] })
-                .mockResolvedValueOnce({ rows: [{ id: 10, status: 'DONE', group_id: 1, title: 'Task' }] });
+            // Mock the transaction queries (BEGIN, SELECT FOR UPDATE, UPDATE, COMMIT)
+            clientMock.query
+                .mockResolvedValueOnce() // res1 BEGIN
+                .mockResolvedValueOnce() // res2 BEGIN
+                .mockResolvedValueOnce({ rows: [{ id: 10, status: 'TODO', group_id: 1, title: 'Task' }] }) // res1 SELECT
+                .mockResolvedValueOnce({ rows: [{ id: 10, status: 'IN_PROGRESS', group_id: 1, title: 'Task' }] }) // res2 SELECT
+                .mockResolvedValueOnce({ rows: [{ id: 10, status: 'IN_PROGRESS', group_id: 1, title: 'Task' }] }) // res1 UPDATE
+                .mockResolvedValueOnce({ rows: [{ id: 10, status: 'DONE', group_id: 1, title: 'Task' }] }) // res2 UPDATE
+                .mockResolvedValueOnce() // res1 COMMIT
+                .mockResolvedValueOnce(); // res2 COMMIT
+
 
             logActivity.mockResolvedValue(null);
 
@@ -101,10 +113,15 @@ describe('Workspace Service (MVP)', () => {
         });
 
         it('should handle race condition between update and delete (Nice-to-have)', async () => {
-            poolMock.query
-                .mockResolvedValueOnce({ rows: [{ id: 10, title: 'Deleted', group_id: 1 }] }) // delete succeeds
-                .mockResolvedValueOnce({ rows: [] }); // update fails because task is gone (returns empty rows)
-                
+            clientMock.query
+                .mockResolvedValueOnce() // delete BEGIN
+                .mockResolvedValueOnce() // update BEGIN
+                .mockResolvedValueOnce({ rows: [{ id: 10, title: 'Deleted', group_id: 1 }] }) // delete SELECT
+                .mockResolvedValueOnce({ rows: [] }) // update SELECT (fails because task is gone)
+                .mockResolvedValueOnce({ rows: [{ id: 10, title: 'Deleted', group_id: 1 }] }) // delete UPDATE
+                .mockResolvedValueOnce() // delete COMMIT
+                .mockResolvedValueOnce(); // update ROLLBACK
+
             const results = await Promise.allSettled([
                 deleteTask(10, 'user1'),
                 updateTask(10, 'user1', { title: 'Updated' })
@@ -122,7 +139,12 @@ describe('Workspace Service (MVP)', () => {
         });
 
         it('should delete task and log activity', async () => {
-            poolMock.query.mockResolvedValueOnce({ rows: [{ id: 10, group_id: 1, title: 'Deleted' }] });
+            clientMock.query
+                .mockResolvedValueOnce() // BEGIN
+                .mockResolvedValueOnce({ rows: [{ id: 10, group_id: 1, title: 'Deleted' }] }) // SELECT
+                .mockResolvedValueOnce({ rows: [{ id: 10, group_id: 1, title: 'Deleted' }] }) // UPDATE
+                .mockResolvedValueOnce(); // COMMIT
+
             logActivity.mockResolvedValueOnce(null);
 
             const result = await deleteTask(10, 'user1');

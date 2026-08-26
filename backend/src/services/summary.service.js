@@ -193,7 +193,7 @@ export const updateSummaryItem = async (currentUser, itemId, updates) => {
             updatedAt: updateItemRes.rows[0].updated_at
         };
     }, 'REPEATABLE READ').catch(error => {
-        if (error instanceof AppError) throw error;
+        if (error.isOperational || (error.status >= 400 && error.status < 600)) throw error;
         throw mapDbError(error, error.code === '55P03' ? 'The summary is currently being updated by another teacher. Please try again.' : null);
     });
 };
@@ -257,7 +257,7 @@ export const approveReviewSummary = async (currentUser, submissionId) => {
             updatedAt: updateRes.rows[0].updated_at
         };
     }, 'REPEATABLE READ').catch(error => {
-        if (error instanceof AppError) throw error;
+        if (error.isOperational || (error.status >= 400 && error.status < 600)) throw error;
         throw mapDbError(error, error.code === '55P03' ? 'The summary is currently being updated by another teacher. Please try again.' : null);
     });
 };

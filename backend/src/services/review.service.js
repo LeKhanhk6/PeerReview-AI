@@ -371,7 +371,7 @@ export const submitReview = async (reviewAssignmentId, userId, payload) => {
             criteriaCount: processedScores.length
         };
     }, 'REPEATABLE READ').catch(error => {
-        if (error instanceof AppError) throw error;
+        if (error.isOperational || (error.status >= 400 && error.status < 600)) throw error;
         throw mapDbError(error, error.code === '23505' ? 'Review already submitted' : null);
     });
 };

@@ -72,7 +72,7 @@ describe('submission.service (MVP)', () => {
             
             expect(res.submissionId).toBe(100);
             expect(res.versionNumber).toBe(1);
-            expect(clientMock.query).toHaveBeenCalledWith('BEGIN');
+            expect(clientMock.query).toHaveBeenCalledWith(expect.stringContaining('BEGIN'));
             expect(clientMock.query).toHaveBeenCalledWith('COMMIT');
             expect(clientMock.release).toHaveBeenCalled();
             expect(logActivityMock).toHaveBeenCalled();

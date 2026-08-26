@@ -330,7 +330,7 @@ export const getAssignmentDetailById = async (id, user) => {
             })
         ]);
 
-        const now = new Date().getTime();
+        const now = Date.now();
         const deadline = new Date(assignment.deadline).getTime();
         const is_overdue = deadline < now;
         const time_left_days = Math.max(0, Math.ceil((deadline - now) / 86400000));

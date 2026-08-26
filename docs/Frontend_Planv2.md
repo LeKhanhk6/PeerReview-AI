@@ -88,9 +88,16 @@ _(Bản đã chỉnh sửa theo Technical Review — các thay đổi so với v
 
 ### Task 01.2 — Layouts ✅
 
-- [x]  StudentLayout / TeacherLayout / AdminLayout (sidebar + topbar)
-- [x]  Admin dùng TeacherLayout + Badge "⚡ ADMIN MODE"
-    - 🆕 **Bổ sung guard:** mọi admin action destructive phải confirm dialog đỏ + backend ghi audit log (frontend disable nút nếu response thiếu audit capability)
+- [x]  `AppLayout` làm shell gốc, tích hợp lồng lặp với `RoleRoute`
+- [x]  `StudentLayout` / `TeacherLayout` / `AdminLayout` với cấu hình nav riêng
+- [x]  Responsive Sidebar: Drawer mode cho màn < 768px (có Backdrop, phím Escape)
+- [x]  Navigation: Active state đồng bộ hoàn toàn với URL qua `useLocation()`
+- [x]  TopBar: Hiển thị Avatar, tên User, Badge "⚡ ADMIN MODE" cho Admin
+- [x]  `AuthStore` Logout Flow: Tích hợp logic clear session + `queryClient.clear()`
+- [x]  **A11y Dialog & ConfirmDialog**: Chuẩn Focus trap, Shift+Tab lùi, phục hồi focus
+- [x]  **AdminActionGuard**: Tự động block actions nguy hiểm hoặc mở popup ConfirmDialog phụ thuộc biến `capabilities.audit_enabled` lấy từ `AuthStore`
+- [x]  Loại bỏ 100% hard-coded user strings (chuyển vào `constants/messages/layout.ts`)
+- [x]  Ghi nhận TODO API Contract Change Request: Backend `GET /me` chưa trả về `capabilities.audit_enabled`
 
 ---
 

@@ -9,6 +9,7 @@ export interface User {
     audit_enabled?: boolean;
   };
   avatar_url?: string;
+  student_id?: string;
   created_at?: string;
 }
 

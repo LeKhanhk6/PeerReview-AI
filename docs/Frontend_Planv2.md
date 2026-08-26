@@ -62,11 +62,11 @@ _(Bản đã chỉnh sửa theo Technical Review — các thay đổi so với v
 - [x]  Global banner "Mất kết nối" (detect qua `navigator.onLine` + query retry failures)
 - [x]  TanStack Query `networkMode` config rõ ràng (pause mutations khi offline, queue lại khi online)
 
-### Task 00.7 — MSW Setup _(chuyển lên trước khi test components)_
+### Task 00.7 — MSW Setup ✅
 
-- [ ]  Mock handlers cho tất cả endpoints
-- [ ]  Simulate error states: 500, timeout, 401, slow network
-- [ ]  Dùng chính MSW để unit-test EmptyState/ErrorBoundary/Loader
+- [x]  Mock handlers cho tất cả endpoints
+- [x]  Simulate error states: 500, timeout, 401, slow network
+- [x]  Dùng chính MSW để unit-test EmptyState/ErrorBoundary/Loader
 
 ### 🆕 Definition of Done — Phase 0
 

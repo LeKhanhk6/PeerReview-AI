@@ -30,20 +30,25 @@ CREATE TABLE users (
 -- 2. NHÓM LỚP HỌC VÀ MÔN HỌC (Courses & Classes)
 -- ==============================================================================
 
-CREATE TABLE courses (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    code VARCHAR(50) UNIQUE NOT NULL,
-    name VARCHAR(255) NOT NULL,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
-);
-
 CREATE TABLE classes (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    course_id UUID REFERENCES courses(id) ON DELETE CASCADE,
     teacher_id UUID REFERENCES users(id) ON DELETE SET NULL,
+    course_code VARCHAR(50) NOT NULL,
+    course_name VARCHAR(255) NOT NULL,
     name VARCHAR(255) NOT NULL,
+    invite_code VARCHAR(50) UNIQUE NOT NULL,
     semester VARCHAR(50),
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    deleted_at TIMESTAMP WITH TIME ZONE
+);
+
+CREATE TABLE class_members (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    class_id UUID REFERENCES classes(id) ON DELETE CASCADE,
+    user_id UUID REFERENCES users(id) ON DELETE CASCADE,
+    role VARCHAR(50) DEFAULT 'STUDENT',
+    joined_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    UNIQUE(class_id, user_id)
 );
 
 -- ==============================================================================
@@ -373,34 +378,43 @@ Nhóm bảng này quản lý danh tính người dùng trong hệ thống và c�
 - `updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()`: Thời điểm thông tin tài khoản được cập nhật gần nhất.
     
 
-## 2. NHÓM LỚP HỌC VÀ MÔN HỌC (Courses & Classes)
+## 2. NHÓM LỚP HỌC (Classes & Class Members)
 
-Quản lý danh mục học phần (khóa học) và các lớp học cụ thể mở theo học kỳ.
+Quản lý các lớp học cụ thể mở theo học kỳ và thành viên trong lớp.
 
-### 🔹 Bảng `courses` (Danh mục môn học/khóa học gốc)
-
-- `id UUID PRIMARY KEY DEFAULT uuid_generate_v4()`: Khóa chính.
-    
-- `code VARCHAR(50) UNIQUE NOT NULL`: Mã môn học (Ví dụ: `CSC10001`, `INT2204`).
-    
-- `name VARCHAR(255) NOT NULL`: Tên môn học (Ví dụ: `Cấu trúc dữ liệu và giải thuật`).
-    
-- `created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()`: Thời điểm tạo môn học.
-    
-
-### 🔹 Bảng `classes` (Các lớp học phần cụ thể)
+### 🔹 Bảng `classes` (Các lớp học)
 
 - `id UUID PRIMARY KEY DEFAULT uuid_generate_v4()`: Khóa chính.
-    
-- `course_id UUID REFERENCES courses(id) ON DELETE CASCADE`: Khóa ngoại liên kết với môn học gốc. Nếu môn học bị xóa, các lớp học thuộc môn đó cũng bị xóa theo (`CASCADE`).
     
 - `teacher_id UUID REFERENCES users(id) ON DELETE SET NULL`: Giảng viên phụ trách lớp. Nếu tài khoản giảng viên bị xóa, trường này sẽ thành `NULL`.
     
-- `name VARCHAR(255) NOT NULL`: Tên lớp học phần (Ví dụ: `Lớp 01 - Nhóm 2`).
+- `course_code VARCHAR(50) NOT NULL`: Mã môn học (Ví dụ: `CSC10001`, `INT2204`).
+    
+- `course_name VARCHAR(255) NOT NULL`: Tên môn học (Ví dụ: `Cấu trúc dữ liệu và giải thuật`).
+    
+- `name VARCHAR(255) NOT NULL`: Tên lớp (Ví dụ: `Lớp 01 - Nhóm 2`).
+    
+- `invite_code VARCHAR(50) UNIQUE NOT NULL`: Mã mời ngẫu nhiên để sinh viên tham gia lớp.
     
 - `semester VARCHAR(50)`: Học kỳ diễn ra lớp học (Ví dụ: `HK2025-2026`).
     
 - `created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()`: Thời điểm tạo lớp học.
+    
+- `deleted_at TIMESTAMP WITH TIME ZONE`: Thời điểm lớp bị xóa mềm.
+
+### 🔹 Bảng `class_members` (Danh sách sinh viên trong lớp)
+
+- `id UUID PRIMARY KEY DEFAULT uuid_generate_v4()`: Khóa chính.
+    
+- `class_id UUID REFERENCES classes(id) ON DELETE CASCADE`: Lớp học.
+    
+- `user_id UUID REFERENCES users(id) ON DELETE CASCADE`: Sinh viên tham gia lớp.
+    
+- `role VARCHAR(50) DEFAULT 'STUDENT'`: Vai trò trong lớp (Mặc định STUDENT).
+    
+- `joined_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()`: Thời điểm tham gia.
+    
+- `UNIQUE(class_id, user_id)`: Ràng buộc đảm bảo sinh viên không tham gia lớp 2 lần.
     
 
 ## 3. NHÓM BÀI TẬP VÀ TIÊU CHÍ CHẤM (Assignments & Rubrics)

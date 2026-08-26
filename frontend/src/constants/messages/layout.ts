@@ -1,6 +1,7 @@
 export const layoutMessages = {
   navigation: {
     dashboard: 'Dashboard',
+    classes: 'Classes',
     reviews: 'Reviews',
     profile: 'Profile',
     assignments: 'Assignments',

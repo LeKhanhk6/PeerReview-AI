@@ -1,5 +1,5 @@
 import React from 'react';
-import { LayoutDashboard, MessageSquare, User } from 'lucide-react';
+import { LayoutDashboard, MessageSquare, User, Users } from 'lucide-react';
 import { AppLayout } from './AppLayout';
 import { layoutMessages } from '../../constants/messages/layout';
 
@@ -8,6 +8,11 @@ const studentNavItems = [
     icon: LayoutDashboard,
     label: layoutMessages.navigation.dashboard,
     href: '/student/dashboard',
+  },
+  {
+    icon: Users,
+    label: layoutMessages.navigation.classes,
+    href: '/student/classes',
   },
   {
     icon: MessageSquare,

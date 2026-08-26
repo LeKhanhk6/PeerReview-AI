@@ -12,6 +12,9 @@ import { RegisterPage } from './features/auth/pages/RegisterPage';
 import { StudentLayout } from './components/layout/StudentLayout';
 import { TeacherLayout } from './components/layout/TeacherLayout';
 import { AdminLayout } from './components/layout/AdminLayout';
+import { TeacherClassesPage } from './features/classes/pages/TeacherClassesPage';
+import { TeacherClassDetailPage } from './features/classes/pages/TeacherClassDetailPage';
+import { StudentClassesPage } from './features/classes/pages/StudentClassesPage';
 
 function App() {
   const { checkAuth } = useAuthStore();
@@ -41,6 +44,8 @@ function App() {
             } 
           >
             <Route path="dashboard" element={<div>Student Dashboard</div>} />
+            <Route path="classes" element={<StudentClassesPage />} />
+            <Route path="classes/:id" element={<div>Student Class Workspace</div>} />
             <Route path="reviews" element={<div>Student Reviews</div>} />
             <Route path="profile" element={<div>Student Profile</div>} />
             <Route index element={<Navigate to="dashboard" replace />} />
@@ -58,6 +63,8 @@ function App() {
             } 
           >
             <Route path="dashboard" element={<div>Teacher Dashboard</div>} />
+            <Route path="classes" element={<TeacherClassesPage />} />
+            <Route path="classes/:id" element={<TeacherClassDetailPage />} />
             <Route path="assignments" element={<div>Teacher Assignments</div>} />
             <Route path="submissions" element={<div>Teacher Submissions</div>} />
             <Route index element={<Navigate to="dashboard" replace />} />

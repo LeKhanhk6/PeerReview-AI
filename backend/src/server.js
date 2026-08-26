@@ -6,6 +6,7 @@ import { requestLogger } from './middleware/logger.middleware.js';
 import errorHandler from './middleware/errorHandler.js';
 
 import authRoutes from './routes/auth.routes.js';
+import classesRoutes from './routes/classes.routes.js';
 import assignmentRoutes from './routes/assignments.routes.js';
 import rubricRoutes from './routes/rubrics.routes.js';
 import groupRoutes from './routes/groups.routes.js';
@@ -33,6 +34,7 @@ connectDB();
 
 // Routes
 app.use('/api/auth', authRoutes);
+app.use('/api/classes', classesRoutes);
 app.use('/api/assignments', assignmentRoutes);
 app.use('/api/rubrics', rubricRoutes);
 app.use('/api/groups', groupRoutes);

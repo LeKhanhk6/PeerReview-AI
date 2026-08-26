@@ -100,7 +100,7 @@ Thiết kế đầy đủ:
 - User.
 - Role.
 - Class.
-- Course.
+- Course (Deferred/Out-of-scope MVP).
 - Assignment.
 - Rubric.
 - RubricCriteria.
@@ -759,7 +759,7 @@ src/
 │       ├── Dashboard.jsx
 │       ├── Users.jsx
 │       ├── Classes.jsx
-│       └── Courses.jsx
+│       └── Courses.jsx (Deferred/Out-of-scope MVP)
 │
 ├── services/
 │   ├── api.js

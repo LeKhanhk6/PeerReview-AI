@@ -1,4 +1,5 @@
 import * as assignmentService from '../services/assignment.service.js';
+import { AppError } from '../utils/AppError.js';
 
 export const getAll = async (req, res, next) => {
     try {
@@ -58,7 +59,7 @@ export const create = async (req, res, next) => {
             description,
             requirements,
             deadline
-        });
+        }, user);
         return res.ok(newAssignment);
     } catch (error) {
         next(error);
@@ -87,7 +88,7 @@ export const update = async (req, res, next) => {
             description,
             requirements,
             deadline
-        });
+        }, user);
         return res.ok(updatedAssignment);
     } catch (error) {
         next(error);
@@ -110,7 +111,7 @@ export const remove = async (req, res, next) => {
         }
 
         // 2. Delete
-        await assignmentService.deleteAssignment(id);
+        await assignmentService.deleteAssignment(id, user);
         return res.ok({ success: true });
     } catch (error) {
         next(error);

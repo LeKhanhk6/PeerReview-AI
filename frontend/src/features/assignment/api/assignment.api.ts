@@ -27,9 +27,9 @@ export const assignmentApi = {
     return res || { data: [] };
   },
 
-  // Lấy chi tiết Bài tập
+  // Lấy chi tiết Bài tập (bao gồm Rubric & Attachments lồng nhau)
   getAssignmentById: async (id: string): Promise<Assignment> => {
-    const res: any = await api.get(`/assignments/${id}`);
+    const res: any = await api.get(`/assignments/${id}/detail`);
     return res.data || res;
   },
 

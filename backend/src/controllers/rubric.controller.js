@@ -23,7 +23,7 @@ export const getRubricByAssignment = async (req, res, next) => {
         }
 
         // Lấy Rubric
-        const rubric = await rubricService.getRubricAndCriteria(assignmentId);
+        const rubric = await rubricService.getRubricAndCriteria(assignmentId, user);
         if (!rubric) {
             throw new AppError('Rubric not found for this assignment', 404);
         }
@@ -56,7 +56,7 @@ export const saveRubric = async (req, res, next) => {
         // ADMIN được đi tiếp
 
         // 4. Lưu Rubric (Transaction đã được xử lý trong service)
-        const savedRubric = await rubricService.saveRubric(assignmentId, description, criteria);
+        const savedRubric = await rubricService.saveRubric(assignmentId, description, criteria, user);
         
         return res.ok(savedRubric);
     } catch (error) {

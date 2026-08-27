@@ -67,50 +67,61 @@ export const getAllGroups = async (user, classId) => {
         throw new AppError('Invalid user context', 400);
     }
     
+    const validClassId = classId ? validateId(classId, 'class ID') : null;
     let query = '';
     const values = [];
 
     const baseSelect = `
-        SELECT g.id, g.class_id, c.name as class_name, g.name, g.created_at, 
-        (SELECT count(*)::int FROM group_members WHERE group_id = g.id) as member_count
+        SELECT 
+            g.id, 
+            g.class_id, 
+            c.name as class_name, 
+            g.name, 
+            g.created_at,
+            COUNT(DISTINCT gm.user_id)::int as member_count,
+            COALESCE(
+                json_agg(
+                    json_build_object(
+                        'id', u.id,
+                        'full_name', u.full_name,
+                        'email', u.email,
+                        'student_id', u.student_id,
+                        'is_leader', gm.is_leader,
+                        'joined_at', gm.joined_at
+                    )
+                ) FILTER (WHERE u.id IS NOT NULL), '[]'
+            ) as members
+        FROM groups g
+        JOIN classes c ON g.class_id = c.id
+        LEFT JOIN group_members gm ON g.id = gm.group_id
+        LEFT JOIN users u ON gm.user_id = u.id
     `;
 
     if (user.role === 'ADMIN') {
-        query = `${baseSelect} FROM groups g JOIN classes c ON g.class_id = c.id`;
-        if (classId) {
+        query = baseSelect;
+        if (validClassId) {
             query += ' WHERE g.class_id = $1';
-            values.push(classId);
+            values.push(validClassId);
         }
     } else if (user.role === 'TEACHER') {
-        query = `
-            ${baseSelect} 
-            FROM groups g 
-            JOIN classes c ON g.class_id = c.id 
-            WHERE c.teacher_id = $1
-        `;
+        query = `${baseSelect} WHERE c.teacher_id = $1`;
         values.push(user.userId);
-        if (classId) {
+        if (validClassId) {
             query += ' AND g.class_id = $2';
-            values.push(classId);
+            values.push(validClassId);
         }
     } else if (user.role === 'STUDENT') {
-        query = `
-            ${baseSelect} 
-            FROM groups g 
-            JOIN classes c ON g.class_id = c.id
-            JOIN group_members gm ON g.id = gm.group_id 
-            WHERE gm.user_id = $1
-        `;
+        query = `${baseSelect} WHERE g.id IN (SELECT group_id FROM group_members WHERE user_id = $1)`;
         values.push(user.userId);
-        if (classId) {
+        if (validClassId) {
             query += ' AND g.class_id = $2';
-            values.push(classId);
+            values.push(validClassId);
         }
     } else {
         throw new AppError('Unsupported role', 403);
     }
 
-    query += ' ORDER BY g.created_at DESC';
+    query += ' GROUP BY g.id, g.class_id, c.name, g.name, g.created_at ORDER BY g.created_at DESC';
     const result = await pool.query(query, values);
     return result.rows.map(row => ({
         id: row.id,
@@ -120,7 +131,8 @@ export const getAllGroups = async (user, classId) => {
             name: row.class_name
         },
         created_at: row.created_at,
-        member_count: row.member_count
+        member_count: row.member_count,
+        members: Array.isArray(row.members) ? row.members : []
     }));
 };
 

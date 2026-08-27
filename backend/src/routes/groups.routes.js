@@ -11,19 +11,19 @@ const router = express.Router();
 router.use(verifyToken);
 
 // Schemas
-const uuidSchema = z.string().uuid();
-const idParamSchema = z.object({ id: uuidSchema });
-const idAndUserIdParamSchema = z.object({ id: uuidSchema, userId: uuidSchema });
+const idSchema = z.string().min(1).trim();
+const idParamSchema = z.object({ id: idSchema });
+const idAndUserIdParamSchema = z.object({ id: idSchema, userId: idSchema });
 
 const getAllSchema = {
     query: z.object({
-        classId: uuidSchema.optional()
+        classId: idSchema.optional()
     })
 };
 
 const createSchema = {
     body: z.object({
-        class_id: uuidSchema,
+        class_id: idSchema,
         name: z.string().min(1).max(100).trim()
     })
 };
@@ -31,14 +31,14 @@ const createSchema = {
 const addMemberSchema = {
     params: idParamSchema,
     body: z.object({
-        user_id: uuidSchema
+        user_id: idSchema
     })
 };
 
 const assignLeaderSchema = {
     params: idParamSchema,
     body: z.object({
-        user_id: uuidSchema
+        user_id: idSchema
     })
 };
 

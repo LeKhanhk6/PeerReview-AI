@@ -232,11 +232,11 @@ export const getGroupContribution = async (currentUser, groupId) => {
         `, [groupId]),
         pool.query(`
             SELECT 
-                created_by as user_id,
+                user_id,
                 COUNT(*) as tasks_created
-            FROM tasks
-            WHERE group_id = $1
-            GROUP BY created_by
+            FROM activity_logs
+            WHERE group_id = $1 AND action_type LIKE 'TASK_CREATE%'
+            GROUP BY user_id
         `, [groupId])
     ]);
 
@@ -351,13 +351,13 @@ export const getClassContributions = async (currentUser, classId) => {
         `, [classId]),
         pool.query(`
             SELECT 
-                t.group_id,
-                t.created_by as user_id,
+                al.group_id,
+                al.user_id,
                 COUNT(*) as tasks_created
-            FROM tasks t
-            JOIN groups g ON t.group_id = g.id
-            WHERE g.class_id = $1
-            GROUP BY t.group_id, t.created_by
+            FROM activity_logs al
+            JOIN groups g ON al.group_id = g.id
+            WHERE g.class_id = $1 AND al.action_type LIKE 'TASK_CREATE%'
+            GROUP BY al.group_id, al.user_id
         `, [classId])
     ]);
 
@@ -924,11 +924,11 @@ export const getCollaborationRisks = async (currentUser, classId) => {
             WHERE g.class_id = $1
         `, [classId]),
         pool.query(`
-            SELECT t.group_id, t.created_by as user_id, COUNT(*) as tasks_created
-            FROM tasks t
-            JOIN groups g ON t.group_id = g.id
-            WHERE g.class_id = $1
-            GROUP BY t.group_id, t.created_by
+            SELECT al.group_id, al.user_id, COUNT(*) as tasks_created
+            FROM activity_logs al
+            JOIN groups g ON al.group_id = g.id
+            WHERE g.class_id = $1 AND al.action_type LIKE 'TASK_CREATE%'
+            GROUP BY al.group_id, al.user_id
         `, [classId]),
         pool.query(`
             SELECT id, title, deadline 

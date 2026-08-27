@@ -6,13 +6,15 @@ export const responseMiddleware = (req, res, next) => {
 
     // res.paginate(data, meta)
     res.paginate = (data, meta = {}, statusCode = 200) => {
+        const safeData = data || [];
+        const dataLength = Array.isArray(safeData) ? safeData.length : 0;
         res.status(statusCode).json({
-            data,
+            data: safeData,
             pagination: {
                 page: meta.page || 1,
-                limit: meta.limit || data.length,
+                limit: meta.limit || dataLength,
                 hasNext: meta.hasNext || false,
-                total: meta.total
+                total: meta.total !== undefined ? meta.total : dataLength
             }
         });
     };

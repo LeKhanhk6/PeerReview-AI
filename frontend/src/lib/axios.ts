@@ -47,11 +47,12 @@ api.interceptors.response.use(
   (error: AxiosError<any>) => {
     const status = error.response?.status || 500;
     const responseData = error.response?.data || {};
+    const errObj = responseData.error || responseData;
     
     // Normalize error to { code, message, status }
     const normalizedError: ApiError = {
-      code: responseData.code || 'UNKNOWN_ERROR',
-      message: responseData.message || error.message || 'An unexpected error occurred',
+      code: errObj.code || responseData.code || 'UNKNOWN_ERROR',
+      message: errObj.message || responseData.message || error.message || 'An unexpected error occurred',
       status: status,
     };
     

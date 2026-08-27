@@ -36,15 +36,15 @@ export const StudentClassesPage: React.FC = () => {
               </span>
             </div>
             
-            <div className="mt-4 pt-4 border-t border-gray-100 flex items-center justify-between gap-2">
-              <Link to={`/student/classes/${cls.id}`}>
-                <Button variant="outline" size="sm">
-                  Chi tiết Lớp
+            <div className="mt-4 pt-4 border-t border-gray-100 flex items-center justify-between gap-2 flex-wrap">
+              <Link to={`/student/groups/g-101`}>
+                <Button size="sm" variant="outline" className="text-xs">
+                  🚀 Không Gian Nhóm
                 </Button>
               </Link>
-              <Link to={`/student/groups/g-101`}>
-                <Button size="sm" className="bg-blue-600 hover:bg-blue-700 text-white">
-                  🚀 Không Gian Nhóm
+              <Link to={`/student/assignments/a-101/submit`}>
+                <Button size="sm" className="bg-blue-600 hover:bg-blue-700 text-white text-xs">
+                  📥 Nộp Bài Tập
                 </Button>
               </Link>
             </div>

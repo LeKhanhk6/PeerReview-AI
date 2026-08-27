@@ -20,6 +20,7 @@ import { CreateAssignmentPage } from './features/assignment/pages/CreateAssignme
 import { EditAssignmentPage } from './features/assignment/pages/EditAssignmentPage';
 import { TeacherAnalyticsDashboardPage } from './features/analytics/pages/TeacherAnalyticsDashboardPage';
 import { StudentGroupWorkspacePage } from './features/workspace/pages/StudentGroupWorkspacePage';
+import { StudentSubmissionPage } from './features/submission/pages/StudentSubmissionPage';
 
 function App() {
   const { checkAuth } = useAuthStore();
@@ -52,6 +53,7 @@ function App() {
             <Route path="classes" element={<StudentClassesPage />} />
             <Route path="classes/:id" element={<div>Student Class Workspace</div>} />
             <Route path="groups/:groupId" element={<StudentGroupWorkspacePage />} />
+            <Route path="assignments/:assignmentId/submit" element={<StudentSubmissionPage />} />
             <Route path="reviews" element={<div>Student Reviews</div>} />
             <Route path="profile" element={<div>Student Profile</div>} />
             <Route index element={<Navigate to="dashboard" replace />} />

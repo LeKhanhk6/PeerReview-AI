@@ -152,11 +152,11 @@ _(Bản đã chỉnh sửa theo Technical Review — các thay đổi so với v
 
 - [x]  Tasks board, discussions feed, activity timeline
 
-### Task 04.2 — Submission Flow
+### Task 04.2 — Submission Flow ✅
 
-- [ ]  Upload với version history, deadline countdown
-- [ ]  Disable submit khi uploading, progress bar, retry upload
-- [ ]  🆕 Offline-safe: chặn submit khi mất mạng, hiện banner thay vì silent fail
+- [x]  Upload với version history, deadline countdown
+- [x]  Disable submit khi uploading, progress bar, retry upload
+- [x]  🆕 Offline-safe: chặn submit khi mất mạng, hiện banner thay vì silent fail
 
 ---
 

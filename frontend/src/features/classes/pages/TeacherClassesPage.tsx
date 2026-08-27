@@ -18,7 +18,7 @@ export const TeacherClassesPage: React.FC = () => {
         await deleteClass.mutateAsync(id);
         toast.success('Class deleted successfully');
       } catch (error: any) {
-        toast.error('Failed to delete class');
+        toast.error(error.message || 'Failed to delete class');
       }
     }
   };

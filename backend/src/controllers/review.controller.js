@@ -70,20 +70,25 @@ export const generateAssignmentReviewSynthesis = async (req, res, next) => {
             });
         }
 
-        // Controller-level timeout guard (20s)
-        const timeoutPromise = new Promise((_, reject) => 
-            setTimeout(() => reject(new AppError('AI Synthesis Request Timeout', 504, 'TIMEOUT')), 20000)
-        );
-
-        const synthesis = await Promise.race([
-            aiService.synthesizeReviews(assignmentId, timeframeKey, reviewsText, totalReviews, reviewsUsed, requestId),
-            timeoutPromise
-        ]);
-
-        return res.ok({
-            requestId,
-            ...synthesis
+        // Controller-level timeout guard (20s) with explicit timer cleanup
+        let timerId;
+        const timeoutPromise = new Promise((_, reject) => {
+            timerId = setTimeout(() => reject(new AppError('AI Synthesis Request Timeout', 504, 'TIMEOUT')), 20000);
         });
+
+        try {
+            const synthesis = await Promise.race([
+                aiService.synthesizeReviews(assignmentId, timeframeKey, reviewsText, totalReviews, reviewsUsed, requestId),
+                timeoutPromise
+            ]);
+
+            return res.ok({
+                requestId,
+                ...synthesis
+            });
+        } finally {
+            clearTimeout(timerId);
+        }
     } catch (error) {
         next(error);
     }

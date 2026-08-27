@@ -28,7 +28,8 @@ export const JoinClassDialog: React.FC<Props> = ({ open, onClose }) => {
   const onSubmit = async (data: FormValues) => {
     setIsSubmitting(true);
     try {
-      await joinClass.mutateAsync(data.invite_code);
+      const normalizedCode = data.invite_code.toUpperCase().trim();
+      await joinClass.mutateAsync(normalizedCode);
       toast.success('Joined class successfully');
       reset();
       onClose();

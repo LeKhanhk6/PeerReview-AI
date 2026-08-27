@@ -3,20 +3,18 @@ import type { Group, GroupMember } from '../types/group';
 import { Button } from '@/components/ui/Button';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { useRemoveMember, useAssignLeader } from '../hooks/useGroups';
-import { Crown, UserPlus, UserX, ShieldAlert } from 'lucide-react';
+import { Crown, UserPlus, UserX } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface GroupCardProps {
   group: Group;
   classId: string;
-  assignedUserIds: Set<string>;
   onAddMemberClick: (group: Group) => void;
 }
 
 export const GroupCard: React.FC<GroupCardProps> = ({
   group,
   classId,
-  assignedUserIds,
   onAddMemberClick,
 }) => {
   const removeMember = useRemoveMember(classId);

@@ -82,7 +82,6 @@ export const GroupList: React.FC<GroupListProps> = ({ classId }) => {
               key={group.id}
               group={group}
               classId={classId}
-              assignedUserIds={assignedUserIds}
               onAddMemberClick={(g) => setSelectedGroupForAdd(g)}
             />
           ))}

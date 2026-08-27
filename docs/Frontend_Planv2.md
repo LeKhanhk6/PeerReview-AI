@@ -112,13 +112,13 @@ _(Bản đã chỉnh sửa theo Technical Review — các thay đổi so với v
 
 - [x]  CRUD groups, leader assignment, member overview
 
-### Task 02.3 — Assignment & Rubric Builder
+### Task 02.3 — Assignment & Rubric Builder ✅
 
-- [ ]  Form động tạo rubric criteria (thêm/xóa/sắp xếp dòng)
-- [ ]  Validation tổng weight = 100%
+- [x]  Form động tạo rubric criteria (thêm/xóa/sắp xếp dòng ⬆️/⬇️)
+- [x]  Validation tổng weight = 100% (tolerance Math.abs(total - 100) < 0.01)
     - 🆕 **Server-side cũng validate** — frontend hiển thị lỗi trả về từ backend (không tin frontend-only check)
-- [ ]  Deadline picker + timezone handling
-- [ ]  File attachment upload (progress bar, cancel, retry)
+- [x]  Deadline picker + timezone handling (UTC ISO contract + past date disabled)
+- [x]  File attachment upload (progress bar, cancel, retry UI simulation)
 
 ### 🆕 Task 02.4 — Accessibility Checklist _(áp dụng từ task này trở đi)_
 

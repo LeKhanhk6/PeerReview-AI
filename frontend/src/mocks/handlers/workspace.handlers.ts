@@ -105,6 +105,17 @@ export const workspaceHandlers = [
       created_at: new Date().toISOString(),
     };
     mockTasks.push(newTask);
+
+    mockActivities.unshift({
+      id: Date.now(),
+      group_id: String(params.id),
+      user_id: 'u-current',
+      user_name: 'Bạn (Sinh viên)',
+      action_type: 'TASK_CREATE',
+      content_summary: `Đã tạo công việc mới: "${body.title}"`,
+      created_at: new Date().toISOString(),
+    });
+
     return HttpResponse.json({ success: true, data: newTask });
   }),
 
@@ -113,7 +124,19 @@ export const workspaceHandlers = [
     const { taskId } = params;
     const taskIndex = mockTasks.findIndex((t) => String(t.id) === String(taskId));
     if (taskIndex !== -1) {
+      const oldTitle = mockTasks[taskIndex].title;
       mockTasks[taskIndex] = { ...mockTasks[taskIndex], ...body };
+
+      mockActivities.unshift({
+        id: Date.now(),
+        group_id: mockTasks[taskIndex].group_id,
+        user_id: 'u-current',
+        user_name: 'Bạn (Sinh viên)',
+        action_type: 'TASK_UPDATE',
+        content_summary: `Đã cập nhật công việc "${oldTitle}" ${body.status ? `sang ${body.status}` : ''}`,
+        created_at: new Date().toISOString(),
+      });
+
       return HttpResponse.json({ success: true, data: mockTasks[taskIndex] });
     }
     return HttpResponse.json({ success: false, message: 'Task not found' }, { status: 404 });
@@ -123,7 +146,19 @@ export const workspaceHandlers = [
     const { taskId } = params;
     const taskIndex = mockTasks.findIndex((t) => String(t.id) === String(taskId));
     if (taskIndex !== -1) {
+      const task = mockTasks[taskIndex];
       mockTasks.splice(taskIndex, 1);
+
+      mockActivities.unshift({
+        id: Date.now(),
+        group_id: task.group_id,
+        user_id: 'u-current',
+        user_name: 'Bạn (Sinh viên)',
+        action_type: 'TASK_DELETE',
+        content_summary: `Đã xóa công việc: "${task.title}"`,
+        created_at: new Date().toISOString(),
+      });
+
       return HttpResponse.json({ success: true });
     }
     return HttpResponse.json({ success: false, message: 'Task not found' }, { status: 404 });
@@ -145,6 +180,17 @@ export const workspaceHandlers = [
       created_at: new Date().toISOString(),
     };
     mockDiscussions.push(newMessage);
+
+    mockActivities.unshift({
+      id: Date.now(),
+      group_id: String(params.id),
+      user_id: 'u-current',
+      user_name: 'Bạn (Sinh viên)',
+      action_type: 'COMMENT_ADD',
+      content_summary: `Đã gửi tin nhắn thảo luận: "${body.message.slice(0, 30)}..."`,
+      created_at: new Date().toISOString(),
+    });
+
     return HttpResponse.json({ success: true, data: newMessage });
   }),
 
@@ -170,6 +216,17 @@ export const workspaceHandlers = [
       created_at: new Date().toISOString(),
     };
     mockFiles.push(newFile);
+
+    mockActivities.unshift({
+      id: Date.now(),
+      group_id: String(params.id),
+      user_id: 'u-current',
+      user_name: 'Bạn (Sinh viên)',
+      action_type: 'SUBMISSION_UPLOAD',
+      content_summary: `Đã tải lên tệp tài liệu: "${body.fileName}"`,
+      created_at: new Date().toISOString(),
+    });
+
     return HttpResponse.json({ success: true, data: newFile });
   }),
 ];

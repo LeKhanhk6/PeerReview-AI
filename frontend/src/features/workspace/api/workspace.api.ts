@@ -43,6 +43,15 @@ export const workspaceApi = {
         created_at: new Date().toISOString(),
       };
       mockTasks.push(newTask);
+      mockActivities.unshift({
+        id: Date.now(),
+        group_id: groupId,
+        user_id: 'u-current',
+        user_name: 'Bạn (Sinh viên)',
+        action_type: 'TASK_CREATE',
+        content_summary: `Đã tạo công việc mới: "${data.title}"`,
+        created_at: new Date().toISOString(),
+      });
       return newTask;
     }
   },
@@ -57,7 +66,17 @@ export const workspaceApi = {
     } catch (_err) {
       const taskIndex = mockTasks.findIndex((t) => String(t.id) === String(taskId));
       if (taskIndex !== -1) {
+        const oldTitle = mockTasks[taskIndex].title;
         mockTasks[taskIndex] = { ...mockTasks[taskIndex], ...data };
+        mockActivities.unshift({
+          id: Date.now(),
+          group_id: mockTasks[taskIndex].group_id,
+          user_id: 'u-current',
+          user_name: 'Bạn (Sinh viên)',
+          action_type: 'TASK_UPDATE',
+          content_summary: `Đã cập nhật công việc "${oldTitle}" ${data.status ? `sang ${data.status}` : ''}`,
+          created_at: new Date().toISOString(),
+        });
         return mockTasks[taskIndex];
       }
       return { id: taskId, group_id: 'g-101', title: 'Task', status: data.status || 'TODO', assignee_id: null };
@@ -71,7 +90,17 @@ export const workspaceApi = {
     } catch (_err) {
       const taskIndex = mockTasks.findIndex((t) => String(t.id) === String(taskId));
       if (taskIndex !== -1) {
+        const task = mockTasks[taskIndex];
         mockTasks.splice(taskIndex, 1);
+        mockActivities.unshift({
+          id: Date.now(),
+          group_id: task.group_id,
+          user_id: 'u-current',
+          user_name: 'Bạn (Sinh viên)',
+          action_type: 'TASK_DELETE',
+          content_summary: `Đã xóa công việc: "${task.title}"`,
+          created_at: new Date().toISOString(),
+        });
       }
       return { success: true };
     }

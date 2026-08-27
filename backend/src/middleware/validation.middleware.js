@@ -14,13 +14,18 @@ export const formatZodError = (zodError) => {
 export const validate = (schema) => (req, res, next) => {
     try {
         if (schema.params) {
-            req.params = schema.params.parse(req.params);
+            const parsedParams = schema.params.parse(req.params);
+            Object.assign(req.params, parsedParams);
         }
         if (schema.body) {
             req.body = schema.body.parse(req.body);
         }
         if (schema.query) {
-            req.query = schema.query.parse(req.query);
+            const parsedQuery = schema.query.parse(req.query);
+            for (const key of Object.keys(req.query)) {
+                delete req.query[key];
+            }
+            Object.assign(req.query, parsedQuery);
         }
         next();
     } catch (error) {

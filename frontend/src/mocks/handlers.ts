@@ -1,10 +1,14 @@
 import { http, HttpResponse } from 'msw';
+import { assignmentHandlers } from './handlers/assignment.handlers';
 
 export const handlers = [
+  ...assignmentHandlers,
+
   // Mocks for Telemetry and Observability (Always return success to prevent console spam)
   http.post('/api/telemetry', () => {
     return HttpResponse.json({ success: true, message: 'Telemetry logged successfully (Mocked)' });
   }),
+
 
   http.post('/api/client-errors', () => {
     return HttpResponse.json({ success: true, message: 'Client error logged successfully (Mocked)' });

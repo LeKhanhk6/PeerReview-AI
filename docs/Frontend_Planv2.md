@@ -108,9 +108,9 @@ _(Bản đã chỉnh sửa theo Technical Review — các thay đổi so với v
 - [x]  CRUD lớp học, danh sách sinh viên, invite/join flow
 - [x]  URL-synced pagination/filtering (theo rule mới 00.2)
 
-### Task 02.2 — Group Management
+### Task 02.2 — Group Management ✅
 
-- [ ]  CRUD groups, leader assignment, member overview
+- [x]  CRUD groups, leader assignment, member overview
 
 ### Task 02.3 — Assignment & Rubric Builder
 

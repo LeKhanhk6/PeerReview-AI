@@ -1,13 +1,15 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useQueryClient } from '@tanstack/react-query';
 import { assignmentMessages } from '@/constants/messages/assignment';
 import { AssignmentForm } from '../components/AssignmentForm';
-import { useCreateAssignment } from '../hooks/useAssignments';
+import { useCreateAssignment, assignmentKeys } from '../hooks/useAssignments';
 import { assignmentApi } from '../api/assignment.api';
 import { toast } from 'sonner';
 
 export const CreateAssignmentPage: React.FC = () => {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const createAssignment = useCreateAssignment();
 
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -24,6 +26,8 @@ export const CreateAssignmentPage: React.FC = () => {
           assignmentId: newAssignment.id,
           data: formData.rubric,
         });
+        // Ensure cache is invalidated after saving rubric
+        await queryClient.invalidateQueries({ queryKey: assignmentKeys.all });
       }
 
       toast.success(assignmentMessages.createSuccess);

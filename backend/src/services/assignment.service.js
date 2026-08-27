@@ -362,6 +362,7 @@ export const getAssignmentDetailById = async (id, user) => {
 
         return {
             id: assignment.id,
+            class_id: assignment.class_id,
             title: assignment.title,
             description: assignment.description,
             requirements: assignment.requirements,

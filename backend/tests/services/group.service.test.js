@@ -318,13 +318,14 @@ describe('group.service', () => {
         it('should add member successfully (happy path)', async () => {
             poolMock.query.mockResolvedValueOnce({ rows: [{ id: 1, class_id: 1, teacher_id: 'teacher1' }] }); // group check
             poolMock.query.mockResolvedValueOnce({ rows: [{ id: 'student1', role: 'STUDENT' }] }); // user check
+            poolMock.query.mockResolvedValueOnce({ rows: [{}] }); // class membership check
             poolMock.query.mockResolvedValueOnce({ rows: [] }); // duplicate check
             poolMock.query.mockResolvedValueOnce({ rows: [] }); // class limit check
             poolMock.query.mockResolvedValueOnce({ rows: [{ group_id: 1, user_id: 'student1', is_leader: false }] }); // insert
 
             const result = await addMember(1, 'student1', currentUser);
             expect(result.group_id).toBe(1);
-            expect(poolMock.query).toHaveBeenCalledTimes(5);
+            expect(poolMock.query).toHaveBeenCalledTimes(6);
         });
 
         it('should throw 404 if group not found', async () => {
@@ -352,6 +353,7 @@ describe('group.service', () => {
         it('should throw 409 if duplicate member (edge case)', async () => {
             poolMock.query.mockResolvedValueOnce({ rows: [{ id: 1, class_id: 1, teacher_id: 'teacher1' }] });
             poolMock.query.mockResolvedValueOnce({ rows: [{ id: 'student1', role: 'STUDENT' }] });
+            poolMock.query.mockResolvedValueOnce({ rows: [{}] }); // class membership check
             poolMock.query.mockResolvedValueOnce({ rows: [{}] }); // duplicate found
             
             const error = await addMember(1, 'student1', currentUser).catch(e => e);
@@ -432,6 +434,7 @@ describe('group.service', () => {
         it('studentJoinGroup should succeed (happy path)', async () => {
             poolMock.query.mockResolvedValueOnce({ rows: [{ id: 1, class_id: 1 }] }); // group check
             poolMock.query.mockResolvedValueOnce({ rows: [{ id: 'student1', role: 'STUDENT' }] }); // user check
+            poolMock.query.mockResolvedValueOnce({ rows: [{}] }); // class membership check
             poolMock.query.mockResolvedValueOnce({ rows: [] }); // duplicate check
             poolMock.query.mockResolvedValueOnce({ rows: [] }); // class limit check
             poolMock.query.mockResolvedValueOnce({ rows: [{ group_id: 1, user_id: 'student1', is_leader: false }] }); // insert

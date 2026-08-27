@@ -4,12 +4,28 @@ import { withTransaction } from '../utils/db.util.js';
 
 const NOT_FOUND_MSG = 'Rubric not found or you do not have permission to access it';
 
+const UUID_REGEX = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/;
+
 const validateId = (id, fieldName = 'ID') => {
-    const numericId = Number(id);
-    if (!Number.isInteger(numericId) || numericId <= 0) {
+    if (id === null || id === undefined) {
         throw new AppError(`Invalid ${fieldName}`, 400);
     }
-    return numericId;
+    if (typeof id === 'string') {
+        const trimmed = id.trim();
+        if (UUID_REGEX.test(trimmed)) {
+            return trimmed;
+        }
+        const numericId = Number(trimmed);
+        if (Number.isInteger(numericId) && numericId > 0) {
+            return numericId;
+        }
+        throw new AppError(`Invalid ${fieldName}`, 400);
+    }
+    const numericId = Number(id);
+    if (Number.isInteger(numericId) && numericId > 0) {
+        return numericId;
+    }
+    throw new AppError(`Invalid ${fieldName}`, 400);
 };
 
 const verifyTeacherOwnership = async (assignmentId, userId) => {

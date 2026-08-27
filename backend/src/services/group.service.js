@@ -35,6 +35,12 @@ export const checkStudentCanJoinGroup = async (groupInfo, userId) => {
         throw new AppError('Only users with STUDENT role can be added to a group', 400);
     }
 
+    // Check Class Membership
+    const classMembershipCheck = await pool.query('SELECT 1 FROM class_members WHERE class_id = $1 AND user_id = $2', [groupInfo.class_id, userId]);
+    if (classMembershipCheck.rows.length === 0) {
+        throw new AppError('Student is not enrolled in this class', 403);
+    }
+
     // Check duplicate membership in this group
     const duplicateCheck = await pool.query('SELECT 1 FROM group_members WHERE group_id = $1 AND user_id = $2', [groupInfo.id, userId]);
     if (duplicateCheck.rows.length > 0) {

@@ -59,14 +59,20 @@ export const getAllAssignments = async (user, classId) => {
     const values = [];
 
     if (user.role === 'ADMIN') {
-        query = 'SELECT id, class_id, title, description, requirements, deadline, created_at FROM assignments';
+        query = `
+            SELECT a.id, a.class_id, c.name as class_name, a.title, a.description, a.requirements, a.deadline, a.created_at,
+                   EXISTS(SELECT 1 FROM rubrics r WHERE r.assignment_id = a.id) as has_rubric
+            FROM assignments a
+            JOIN classes c ON a.class_id = c.id
+        `;
         if (classId) {
-            query += ' WHERE class_id = $1';
+            query += ' WHERE a.class_id = $1';
             values.push(classId);
         }
     } else if (user.role === 'TEACHER') {
         query = `
-            SELECT a.id, a.class_id, a.title, a.description, a.requirements, a.deadline, a.created_at 
+            SELECT a.id, a.class_id, c.name as class_name, a.title, a.description, a.requirements, a.deadline, a.created_at,
+                   EXISTS(SELECT 1 FROM rubrics r WHERE r.assignment_id = a.id) as has_rubric 
             FROM assignments a 
             JOIN classes c ON a.class_id = c.id 
             WHERE c.teacher_id = $1
@@ -78,8 +84,10 @@ export const getAllAssignments = async (user, classId) => {
         }
     } else if (user.role === 'STUDENT') {
         query = `
-            SELECT DISTINCT a.id, a.class_id, a.title, a.description, a.requirements, a.deadline, a.created_at 
+            SELECT DISTINCT a.id, a.class_id, c.name as class_name, a.title, a.description, a.requirements, a.deadline, a.created_at,
+                            EXISTS(SELECT 1 FROM rubrics r WHERE r.assignment_id = a.id) as has_rubric 
             FROM assignments a 
+            JOIN classes c ON a.class_id = c.id
             JOIN groups g ON a.class_id = g.class_id 
             JOIN group_members gm ON g.id = gm.group_id 
             WHERE gm.user_id = $1

@@ -22,9 +22,9 @@ const buildMockDbResults = ({
         if (queryStr.includes('teacher_id FROM classes')) return { rowCount: 1, rows: [{ teacher_id: 'teacher-1' }] };
         if (queryStr.includes('id, name, created_at FROM groups')) return { rows: groups };
         if (queryStr.includes('group_members gm')) return { rows: members };
-        if (queryStr.includes('activity_logs al')) return { rows: activities };
-        if (queryStr.includes('t.assignee_id, t.status')) return { rows: tasks };
         if (queryStr.includes('tasks_created')) return { rows: tasksCreated };
+        if (queryStr.includes('activity_logs')) return { rows: activities };
+        if (queryStr.includes('t.assignee_id, t.status')) return { rows: tasks };
         if (queryStr.includes('title, deadline')) return { rows: assignments };
         if (queryStr.includes('review_assignments ra')) return { rows: reviews };
         return { rows: [] };

@@ -4,4 +4,5 @@ export * from './validation';
 export * from './layout';
 export * from './assignment';
 export * from './analytics';
+export * from './workspace';
 

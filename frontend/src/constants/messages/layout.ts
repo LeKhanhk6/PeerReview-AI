@@ -5,6 +5,7 @@ export const layoutMessages = {
     reviews: 'Reviews',
     profile: 'Profile',
     assignments: 'Assignments',
+    analytics: 'Phân tích đóng góp',
     submissions: 'Submissions',
     users: 'Users',
     settings: 'Settings',

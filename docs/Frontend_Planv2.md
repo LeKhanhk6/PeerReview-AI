@@ -132,11 +132,11 @@ _(Bản đã chỉnh sửa theo Technical Review — các thay đổi so với v
 
 ## ⚙️ PHASE 3 — TEACHER: ANALYTICS & MONITORING
 
-### Task 03.1 — Contribution Dashboard
+### Task 03.1 — Contribution Dashboard ✅
 
-- [ ]  Contribution % per member, classification badges (High/Low/Free-rider)
-- [ ]  SkeletonCard variant (🆕 thêm vào Skeleton.tsx lúc build phase này)
-- [ ]  Export CSV (🆕 bổ sung — teacher cần mang số liệu ra ngoài)
+- [x]  Contribution % per member, classification badges (High/Low/Free-rider)
+- [x]  SkeletonCard variant (🆕 thêm vào Skeleton.tsx lúc build phase này)
+- [x]  Export CSV (🆕 bổ sung — teacher cần mang số liệu ra ngoài)
 
 ### Task 03.2 — Early Warning Panel
 

@@ -1,5 +1,5 @@
 import React from 'react';
-import { LayoutDashboard, BookOpen, FileCheck, Users } from 'lucide-react';
+import { LayoutDashboard, BookOpen, FileCheck, Users, BarChart3 } from 'lucide-react';
 import { AppLayout } from './AppLayout';
 import { layoutMessages } from '../../constants/messages/layout';
 
@@ -18,6 +18,11 @@ const teacherNavItems = [
     icon: BookOpen,
     label: layoutMessages.navigation.assignments,
     href: '/teacher/assignments',
+  },
+  {
+    icon: BarChart3,
+    label: layoutMessages.navigation.analytics,
+    href: '/teacher/analytics',
   },
   {
     icon: FileCheck,

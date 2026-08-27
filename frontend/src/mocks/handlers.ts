@@ -1,8 +1,10 @@
 import { http, HttpResponse } from 'msw';
 import { assignmentHandlers } from './handlers/assignment.handlers';
+import { analyticsHandlers } from './handlers/analytics.handlers';
 
 export const handlers = [
   ...assignmentHandlers,
+  ...analyticsHandlers,
 
   // Mocks for Telemetry and Observability (Always return success to prevent console spam)
   http.post('/api/telemetry', () => {

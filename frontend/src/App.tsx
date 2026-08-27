@@ -18,6 +18,7 @@ import { StudentClassesPage } from './features/classes/pages/StudentClassesPage'
 import { TeacherAssignmentsPage } from './features/assignment/pages/TeacherAssignmentsPage';
 import { CreateAssignmentPage } from './features/assignment/pages/CreateAssignmentPage';
 import { EditAssignmentPage } from './features/assignment/pages/EditAssignmentPage';
+import { TeacherAnalyticsDashboardPage } from './features/analytics/pages/TeacherAnalyticsDashboardPage';
 
 
 function App() {
@@ -72,6 +73,7 @@ function App() {
             <Route path="assignments" element={<TeacherAssignmentsPage />} />
             <Route path="assignments/create" element={<CreateAssignmentPage />} />
             <Route path="assignments/:id/edit" element={<EditAssignmentPage />} />
+            <Route path="analytics" element={<TeacherAnalyticsDashboardPage />} />
             <Route path="submissions" element={<div>Teacher Submissions</div>} />
             <Route index element={<Navigate to="dashboard" replace />} />
           </Route>

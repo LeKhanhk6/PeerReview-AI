@@ -56,8 +56,13 @@ export function SkeletonTable({ rows = 5, className }: { rows?: number, classNam
 
 export function SkeletonCard({ className }: { className?: string }) {
   return (
-    <div className={cn("flex flex-col space-y-3 p-4 border rounded-xl shadow-sm", className)}>
-      <Skeleton className="h-[125px] w-full rounded-xl" />
+    <div
+      role="status"
+      aria-busy="true"
+      className={cn("flex flex-col space-y-3 p-4 border rounded-xl shadow-sm bg-white", className)}
+    >
+      <span className="sr-only">Đang tải dữ liệu thẻ...</span>
+      <Skeleton className="h-[100px] w-full rounded-lg" />
       <div className="space-y-2">
         <Skeleton className="h-4 w-[250px] max-w-full" />
         <Skeleton className="h-4 w-[200px] max-w-full" />

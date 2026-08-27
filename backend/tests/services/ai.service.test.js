@@ -70,18 +70,25 @@ describe('AI Service (Staff-Level Resilience)', () => {
 
         it('Timeout Hard Cancel: AbortController should abort fetch strictly', async () => {
             process.env.AI_TIMEOUT = '50'; // Use 50ms timeout for test
+            const sleepSpy = jest.spyOn(global, 'setTimeout').mockImplementation((cb) => {
+                if (typeof cb === 'function') cb();
+                return 0;
+            });
 
-            // Simulate a fetch that hangs for 200ms
-            fetchSpy.mockImplementation(async (url, options) => {
+            fetchSpy.mockImplementation((url, options) => {
                 return new Promise((resolve, reject) => {
-                    const timeout = setTimeout(() => resolve({ ok: true, json: async () => ({}) }), 200);
-                    
-                    options.signal.addEventListener('abort', () => {
-                        clearTimeout(timeout);
+                    const timer = setTimeout(() => resolve({ ok: true, json: async () => ({}) }), 200);
+                    const onAbort = () => {
+                        clearTimeout(timer);
                         const err = new Error('The operation was aborted');
                         err.name = 'AbortError';
                         reject(err);
-                    });
+                    };
+                    if (options?.signal?.aborted) {
+                        onAbort();
+                    } else if (options?.signal) {
+                        options.signal.addEventListener('abort', onAbort, { once: true });
+                    }
                 });
             });
             
@@ -90,6 +97,7 @@ describe('AI Service (Staff-Level Resilience)', () => {
             expect(result.category).toBe('UNKNOWN');
             expect(fetchSpy).toHaveBeenCalled();
             
+            sleepSpy.mockRestore();
             delete process.env.AI_TIMEOUT;
         });
 

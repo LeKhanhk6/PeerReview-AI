@@ -36,6 +36,8 @@ export const useAuthStore = create<AuthStore>()(
         } catch (error: any) {
           // 401 is expected if not logged in, don't set global error
           set({ user: null, token: null, isAuthenticated: false, isLoading: false });
+          // Clear query cache to prevent stale data leaking from expired session
+          queryClient.clear();
         }
       },
 

@@ -69,9 +69,38 @@ export const analyticsMessages = {
     noDataDescription: 'Lớp học hoặc Nhóm hiện chưa phát sinh hoạt động làm việc nhóm nào.',
     noGroupsTitle: 'Chưa có nhóm học phần',
     noGroupsDescription: 'Hãy tạo nhóm học phần cho lớp học để bắt đầu theo dõi đóng góp.',
+    noRisksTitle: 'Không có cảnh báo rủi ro nào',
+    noRisksDescription: 'Tất cả các nhóm và thành viên trong lớp học đều đang làm việc ổn định và hiệu quả 🛡️.',
+  },
+
+  tabs: {
+    contribution: '📊 Phân Tích Đóng Góp',
+    earlyWarning: '⚠️ Cảnh Báo Sớm',
+  },
+
+  severities: {
+    HIGH: { label: 'Nghiêm trọng', emoji: '🔴' },
+    MEDIUM: { label: 'Cần lưu ý', emoji: '🟡' },
+    LOW: { label: 'Mức độ thấp', emoji: '🔵' },
+  },
+
+  earlyWarning: {
+    title: 'Bảng Cảnh Báo Sớm Rủi Ro',
+    subtitle: 'Tự động phát hiện các nhóm hoặc cá nhân gặp rào cản trong quá trình làm việc nhóm.',
+    filterSeverity: 'Mức độ rủi ro:',
+    allSeverities: 'Tất cả mức độ',
+    filterStatus: 'Trạng thái xử lý:',
+    activeStatus: 'Đang theo dõi',
+    acknowledgedStatus: 'Đã tiếp nhận',
+    dismissedStatus: 'Đã bỏ qua',
+    actionAcknowledge: 'Tiếp nhận',
+    actionDismiss: 'Bỏ qua',
+    actionViewGroup: 'Chi tiết Nhóm',
+    statusUpdatedToast: 'Đã cập nhật trạng thái cảnh báo.',
   },
 
   error: {
     fetchFailed: 'Không thể tải dữ liệu phân tích đóng góp. Vui lòng thử lại sau.',
+    riskFetchFailed: 'Không thể tải danh sách cảnh báo rủi ro. Vui lòng thử lại sau.',
   },
 };

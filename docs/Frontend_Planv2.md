@@ -138,11 +138,11 @@ _(Bản đã chỉnh sửa theo Technical Review — các thay đổi so với v
 - [x]  SkeletonCard variant (🆕 thêm vào Skeleton.tsx lúc build phase này)
 - [x]  Export CSV (🆕 bổ sung — teacher cần mang số liệu ra ngoài)
 
-### Task 03.2 — Early Warning Panel
+### Task 03.2 — Early Warning Panel ✅
 
-- [ ]  Danh sách cảnh báo (inactivity, negative interaction, unbalanced contribution)
-- [ ]  🆕 Trạng thái resolution: acknowledge/dismiss warning (sync với bảng `early_warnings` — vá mismatch DB-screen đã phát hiện)
-- [ ]  Link sâu tới group/submission liên quan
+- [x]  Danh sách cảnh báo (inactivity, negative interaction, unbalanced contribution)
+- [x]  🆕 Trạng thái resolution: acknowledge/dismiss warning (sync với bảng `early_warnings` — vá mismatch DB-screen đã phát hiện)
+- [x]  Link sâu tới group/submission liên quan
 
 ---
 

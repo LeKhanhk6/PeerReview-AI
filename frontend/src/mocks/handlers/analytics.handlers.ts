@@ -76,6 +76,47 @@ export const mockGroupContribution = [
   },
 ];
 
+export const mockCollaborationRisks = [
+  {
+    id: 'risk-1',
+    groupId: 'g-102',
+    groupName: 'Nhóm 02 - Xây Dựng REST API',
+    userId: 'u-3',
+    userName: 'Le Van C',
+    entityType: 'USER',
+    riskType: 'LOW_CONTRIBUTION',
+    severity: 'HIGH',
+    score: 0.95,
+    message: 'Thành viên Le Van C có đóng góp cực kỳ thấp (5%) và không hoàn thành bất kỳ task nào được giao.',
+    status: 'ACTIVE',
+    createdAt: '2026-08-27T10:00:00Z',
+  },
+  {
+    id: 'risk-2',
+    groupId: 'g-102',
+    groupName: 'Nhóm 02 - Xây Dựng REST API',
+    entityType: 'GROUP',
+    riskType: 'UNBALANCED_CONTRIBUTION',
+    severity: 'MEDIUM',
+    score: 0.72,
+    message: 'Phân chia công việc trong Nhóm 02 quá mất cân bằng giữa các thành viên.',
+    status: 'ACTIVE',
+    createdAt: '2026-08-27T11:30:00Z',
+  },
+  {
+    id: 'risk-3',
+    groupId: 'g-103',
+    groupName: 'Nhóm 03 - Thiết Kế CSDL',
+    entityType: 'GROUP',
+    riskType: 'DEAD_GROUP',
+    severity: 'HIGH',
+    score: 0.98,
+    message: 'Nhóm 03 chưa phát sinh bất kỳ tương tác hoặc thảo luận nào trong 3 ngày qua.',
+    status: 'ACTIVE',
+    createdAt: '2026-08-26T08:00:00Z',
+  },
+];
+
 export const analyticsHandlers = [
   // GET /api/analytics/dashboard/overview
   http.get('/api/analytics/dashboard/overview', ({ request }) => {
@@ -111,6 +152,18 @@ export const analyticsHandlers = [
     return HttpResponse.json({
       success: true,
       data: mockGroupContribution,
+    });
+  }),
+
+  // GET /api/analytics/classes/:classId/collaboration-risks
+  http.get('/api/analytics/classes/:classId/collaboration-risks', ({ params }) => {
+    const { classId } = params;
+    if (classId === 'error-500') {
+      return HttpResponse.json({ success: false, message: 'Internal Server Error' }, { status: 500 });
+    }
+    return HttpResponse.json({
+      success: true,
+      data: mockCollaborationRisks,
     });
   }),
 ];

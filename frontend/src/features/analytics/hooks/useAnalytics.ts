@@ -6,6 +6,7 @@ export const analyticsKeys = {
   overview: (classId?: string) => ['analytics', 'overview', classId] as const,
   classContributions: (classId: string) => ['analytics', 'class-contributions', classId] as const,
   groupContribution: (groupId: string) => ['analytics', 'group-contribution', groupId] as const,
+  collaborationRisks: (classId: string) => ['analytics', 'collaboration-risks', classId] as const,
 };
 
 export const useDashboardOverview = (classId?: string) => {
@@ -28,5 +29,13 @@ export const useGroupContribution = (groupId: string, enabled = true) => {
     queryKey: analyticsKeys.groupContribution(groupId),
     queryFn: () => analyticsApi.getGroupContribution(groupId),
     enabled: Boolean(groupId) && enabled,
+  });
+};
+
+export const useClassCollaborationRisks = (classId: string) => {
+  return useQuery({
+    queryKey: analyticsKeys.collaborationRisks(classId),
+    queryFn: () => analyticsApi.getClassCollaborationRisks(classId),
+    enabled: Boolean(classId),
   });
 };

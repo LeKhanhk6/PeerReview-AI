@@ -3,6 +3,7 @@ import type {
   DashboardOverviewMetrics,
   GroupContributionSummary,
   GroupMemberContribution,
+  CollaborationRiskItem,
 } from '../types/analytics.types';
 
 export const analyticsApi = {
@@ -25,6 +26,14 @@ export const analyticsApi = {
   // Lấy đóng góp chi tiết từng thành viên trong Nhóm (Level 2 Drill-down)
   getGroupContribution: async (groupId: string): Promise<GroupMemberContribution[]> => {
     const res: any = await api.get(`/analytics/groups/${groupId}/contribution`);
+    if (Array.isArray(res)) return res;
+    if (res && Array.isArray(res.data)) return res.data;
+    return [];
+  },
+
+  // Lấy danh sách cảnh báo rủi ro làm việc nhóm (Early Warning Panel)
+  getClassCollaborationRisks: async (classId: string): Promise<CollaborationRiskItem[]> => {
+    const res: any = await api.get(`/analytics/classes/${classId}/collaboration-risks`);
     if (Array.isArray(res)) return res;
     if (res && Array.isArray(res.data)) return res.data;
     return [];

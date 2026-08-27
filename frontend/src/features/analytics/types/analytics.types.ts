@@ -44,3 +44,32 @@ export interface DashboardOverviewMetrics {
 export interface AnalyticsFilterParams {
   classId?: string;
 }
+
+export type RiskSeverity = 'HIGH' | 'MEDIUM' | 'LOW';
+
+export type RiskType =
+  | 'DEAD_GROUP'
+  | 'LOW_ACTIVITY'
+  | 'LOW_CONTRIBUTION'
+  | 'UNBALANCED_CONTRIBUTION'
+  | 'INCOMPLETE_TASKS'
+  | 'REVIEW_INACTIVITY_HIGH'
+  | 'REVIEW_INACTIVITY_MEDIUM'
+  | 'REVIEW_INACTIVITY';
+
+export type RiskStatus = 'ACTIVE' | 'ACKNOWLEDGED' | 'DISMISSED';
+
+export interface CollaborationRiskItem {
+  id: string;
+  groupId?: string;
+  groupName?: string;
+  userId?: string;
+  userName?: string;
+  entityType: 'GROUP' | 'USER';
+  riskType: RiskType;
+  severity: RiskSeverity;
+  score: number;
+  message: string;
+  status?: RiskStatus;
+  createdAt?: string;
+}

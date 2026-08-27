@@ -37,8 +37,8 @@ export const submissionApi = {
   getSubmissionHistory: async (assignmentId: string): Promise<SubmissionVersion[]> => {
     try {
       const res: any = await api.get(`/submissions/assignments/${assignmentId}/submission-history`);
-      if (Array.isArray(res)) return res;
-      if (res && Array.isArray(res.data)) return res.data;
+      if (Array.isArray(res) && res.length > 0) return res;
+      if (res && Array.isArray(res.data) && res.data.length > 0) return res.data;
       return mockSubmissionHistory;
     } catch (_err) {
       return mockSubmissionHistory;

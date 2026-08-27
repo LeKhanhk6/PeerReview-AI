@@ -24,7 +24,7 @@ export const DiscussionFeed: React.FC<DiscussionFeedProps> = ({ groupId }) => {
 
     const validation = createDiscussionSchema.safeParse({ message: inputMessage });
     if (!validation.success) {
-      setFormError(validation.error.errors[0]?.message || 'Nội dung tin nhắn không hợp lệ.');
+      setFormError(validation.error.issues[0]?.message || 'Nội dung tin nhắn không hợp lệ.');
       return;
     }
 

@@ -5,17 +5,11 @@ import type {
   DiscussionMessage,
   ActivityLog,
   GroupFileItem,
-} from '../types/analytics.types'; // fallback or import from workspace.types
-import type {
-  TaskItem as WorkspaceTaskItem,
-  DiscussionMessage as WorkspaceDiscussionMessage,
-  ActivityLog as WorkspaceActivityLog,
-  GroupFileItem as WorkspaceGroupFileItem,
 } from '../types/workspace.types';
 
 export const workspaceApi = {
   // Tasks
-  getGroupTasks: async (groupId: string): Promise<WorkspaceTaskItem[]> => {
+  getGroupTasks: async (groupId: string): Promise<TaskItem[]> => {
     const res: any = await api.get(`/workspace/groups/${groupId}/tasks`);
     if (Array.isArray(res)) return res;
     if (res && Array.isArray(res.data)) return res.data;
@@ -25,7 +19,7 @@ export const workspaceApi = {
   createTask: async (
     groupId: string,
     data: { title: string; status?: TaskStatus; assignee_id?: string | null }
-  ): Promise<WorkspaceTaskItem> => {
+  ): Promise<TaskItem> => {
     const res: any = await api.post(`/workspace/groups/${groupId}/tasks`, data);
     return res.data || res;
   },
@@ -33,7 +27,7 @@ export const workspaceApi = {
   updateTask: async (
     taskId: string | number,
     data: { title?: string; status?: TaskStatus; assignee_id?: string | null }
-  ): Promise<WorkspaceTaskItem> => {
+  ): Promise<TaskItem> => {
     const res: any = await api.patch(`/workspace/tasks/${taskId}`, data);
     return res.data || res;
   },
@@ -44,20 +38,20 @@ export const workspaceApi = {
   },
 
   // Discussions
-  getGroupDiscussions: async (groupId: string): Promise<WorkspaceDiscussionMessage[]> => {
+  getGroupDiscussions: async (groupId: string): Promise<DiscussionMessage[]> => {
     const res: any = await api.get(`/workspace/groups/${groupId}/discussions`);
     if (Array.isArray(res)) return res;
     if (res && Array.isArray(res.data)) return res.data;
     return [];
   },
 
-  createDiscussion: async (groupId: string, message: string): Promise<WorkspaceDiscussionMessage> => {
+  createDiscussion: async (groupId: string, message: string): Promise<DiscussionMessage> => {
     const res: any = await api.post(`/workspace/groups/${groupId}/discussions`, { message });
     return res.data || res;
   },
 
   // Activities (Paginated)
-  getGroupActivities: async (groupId: string, page = 1, limit = 50): Promise<WorkspaceActivityLog[]> => {
+  getGroupActivities: async (groupId: string, page = 1, limit = 50): Promise<ActivityLog[]> => {
     const res: any = await api.get(`/workspace/groups/${groupId}/activities`, {
       params: { page, limit },
     });
@@ -67,7 +61,7 @@ export const workspaceApi = {
   },
 
   // Group Files
-  getGroupFiles: async (groupId: string): Promise<WorkspaceGroupFileItem[]> => {
+  getGroupFiles: async (groupId: string): Promise<GroupFileItem[]> => {
     const res: any = await api.get(`/workspace/groups/${groupId}/files`);
     if (Array.isArray(res)) return res;
     if (res && Array.isArray(res.data)) return res.data;
@@ -77,7 +71,7 @@ export const workspaceApi = {
   createGroupFile: async (
     groupId: string,
     data: { fileName: string; fileUrl: string }
-  ): Promise<WorkspaceGroupFileItem> => {
+  ): Promise<GroupFileItem> => {
     const res: any = await api.post(`/workspace/groups/${groupId}/files`, data);
     return res.data || res;
   },

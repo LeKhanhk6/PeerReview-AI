@@ -50,7 +50,7 @@ export const TaskBoard: React.FC<TaskBoardProps> = ({
     });
 
     if (!validation.success) {
-      setFormError(validation.error.errors[0]?.message || 'Dữ liệu không hợp lệ.');
+      setFormError(validation.error.issues[0]?.message || 'Dữ liệu không hợp lệ.');
       return;
     }
 

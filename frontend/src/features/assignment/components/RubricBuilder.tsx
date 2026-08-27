@@ -92,9 +92,11 @@ export const RubricBuilder: React.FC<RubricBuilderProps> = ({
             }`}
             role="status"
           >
-            {isValidWeight
-              ? assignmentMessages.rubric.weightValid
-              : assignmentMessages.rubric.weightInvalid.replace('{total}', totalWeight.toFixed(2))}
+            <span aria-live="polite">
+              {isValidWeight
+                ? assignmentMessages.rubric.weightValid
+                : assignmentMessages.rubric.weightInvalid.replace('{total}', totalWeight.toFixed(2))}
+            </span>
           </span>
         </div>
       </div>

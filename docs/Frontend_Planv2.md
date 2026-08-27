@@ -120,12 +120,13 @@ _(Bản đã chỉnh sửa theo Technical Review — các thay đổi so với v
 - [x]  Deadline picker + timezone handling (UTC ISO contract + past date disabled)
 - [x]  File attachment upload (progress bar, cancel, retry UI simulation)
 
-### 🆕 Task 02.4 — Accessibility Checklist _(áp dụng từ task này trở đi)_
+### 🆕 Task 02.4 — Accessibility Checklist ✅
 
-- [ ]  Mỗi screen khi Done phải pass checklist a11y cơ bản:
-    - Focus trap trong modal/dialog
-    - Keyboard navigation cho form động (Rubric Builder) và split-screen (Review)
-    - aria-label cho icon buttons, skeleton có `aria-busy`, toast có role="status"
+- [x]  Mỗi screen khi Done phải pass checklist a11y cơ bản:
+    - Focus trap trong modal/dialog (Tab/Shift+Tab loop, Esc key, focus restore)
+    - Keyboard navigation cho form động (Rubric Builder `aria-live="polite"` tổng trọng số)
+    - aria-label cho icon buttons, skeleton có `aria-busy="true"` + `role="status"` + `<span className="sr-only">`, toast có `role="status"` & duration hợp lý
+    - 📌 _Defer: Tích hợp axe-core tự động (vitest-axe / @axe-core/react) → chuyển sang PHASE 12 Accessibility Audit_
 
 ---
 

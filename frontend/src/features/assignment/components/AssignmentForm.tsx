@@ -157,6 +157,7 @@ export const AssignmentForm: React.FC<AssignmentFormProps> = ({
               value={classId}
               onChange={(e) => setClassId(e.target.value)}
               disabled={isEditMode || isSubmitting}
+              aria-describedby={errors.class_id ? "err-class-id" : undefined}
               className={`w-full px-3 py-2 border rounded-md text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 ${
                 errors.class_id ? 'border-red-500 bg-red-50' : 'border-gray-300'
               }`}
@@ -169,7 +170,7 @@ export const AssignmentForm: React.FC<AssignmentFormProps> = ({
               ))}
             </select>
           )}
-          {errors.class_id && <p className="text-xs text-red-600 mt-1">{errors.class_id}</p>}
+          {errors.class_id && <p id="err-class-id" role="alert" className="text-xs text-red-600 mt-1">{errors.class_id}</p>}
         </div>
 
         {/* Assignment Title */}
@@ -184,11 +185,12 @@ export const AssignmentForm: React.FC<AssignmentFormProps> = ({
             onChange={(e) => setTitle(e.target.value)}
             placeholder={assignmentMessages.form.titlePlaceholder}
             disabled={isSubmitting}
+            aria-describedby={errors.title ? "err-title" : undefined}
             className={`w-full px-3 py-2 border rounded-md text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 ${
               errors.title ? 'border-red-500 bg-red-50' : 'border-gray-300'
             }`}
           />
-          {errors.title && <p className="text-xs text-red-600 mt-1">{errors.title}</p>}
+          {errors.title && <p id="err-title" role="alert" className="text-xs text-red-600 mt-1">{errors.title}</p>}
         </div>
 
         {/* Description */}

@@ -148,9 +148,9 @@ _(Bản đã chỉnh sửa theo Technical Review — các thay đổi so với v
 
 ## ⚙️ PHASE 4 — STUDENT: GROUP WORKSPACE
 
-### Task 04.1 — Group Workspace Home
+### Task 04.1 — Group Workspace Home ✅
 
-- [ ]  Tasks board, discussions feed, activity timeline
+- [x]  Tasks board, discussions feed, activity timeline
 
 ### Task 04.2 — Submission Flow
 

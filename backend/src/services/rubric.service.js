@@ -115,7 +115,11 @@ export const getRubricAndCriteria = async (assignmentId, user) => {
 
     const criteriaQuery = 'SELECT id, name, description, weight, created_at FROM rubric_criteria WHERE rubric_id = $1 ORDER BY created_at ASC';
     const criteriaRes = await pool.query(criteriaQuery, [rubric.id]);
-    const criteria = criteriaRes && Array.isArray(criteriaRes.rows) ? criteriaRes.rows : [];
+    const rawCriteria = criteriaRes && Array.isArray(criteriaRes.rows) ? criteriaRes.rows : [];
+    const criteria = rawCriteria.map(c => ({
+        ...c,
+        weight: Number(c.weight) || 0
+    }));
     
     return {
         ...rubric,

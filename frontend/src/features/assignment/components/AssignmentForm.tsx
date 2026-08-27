@@ -59,7 +59,10 @@ export const AssignmentForm: React.FC<AssignmentFormProps> = ({
     initialValues?.rubric?.description || ''
   );
   const [criteria, setCriteria] = useState<RubricCriteria[]>(
-    initialValues?.rubric?.criteria || [
+    initialValues?.rubric?.criteria?.map((c) => ({
+      ...c,
+      weight: Number(c.weight) || 0,
+    })) || [
       { name: 'Nội dung & Tính đúng đắn', description: 'Đạt đầy đủ yêu cầu bài tập', weight: 50 },
       { name: 'Hình thức & Mã nguồn', description: 'Trình bày sạch đẹp, đúng chuẩn', weight: 50 },
     ]

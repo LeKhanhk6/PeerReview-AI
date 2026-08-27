@@ -313,7 +313,7 @@ export const getRubricByAssignmentId = async (assignmentId) => {
             id: row.criteria_id,
             name: row.name,
             description: row.criteria_description,
-            weight: row.weight
+            weight: Number(row.weight) || 0
         }));
     }
     

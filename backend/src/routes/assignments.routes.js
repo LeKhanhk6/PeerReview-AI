@@ -37,7 +37,7 @@ const updateSchema = {
         title: z.string().min(1).max(255).trim(),
         description: z.string().trim().optional().nullable(),
         requirements: z.string().trim().optional().nullable(),
-        deadline: z.string().datetime().refine(val => new Date(val) > new Date(), { message: 'Deadline must be in the future' })
+        deadline: z.string().datetime()
     })
 };
 

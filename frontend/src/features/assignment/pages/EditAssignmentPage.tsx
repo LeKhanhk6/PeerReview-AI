@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { useQueryClient } from '@tanstack/react-query';
 import { assignmentMessages } from '@/constants/messages/assignment';
 import { AssignmentForm } from '../components/AssignmentForm';
 import {
@@ -7,6 +8,7 @@ import {
   useAssignmentRubric,
   useUpdateAssignment,
   useSaveRubric,
+  assignmentKeys,
 } from '../hooks/useAssignments';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { EmptyState } from '@/components/ui/EmptyState';
@@ -15,6 +17,7 @@ import { toast } from 'sonner';
 export const EditAssignmentPage: React.FC = () => {
   const { id = '' } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
 
   const { data: assignment, isLoading: isLoadingAssignment, isError } = useAssignmentDetail(id);
   const { data: rubric, isLoading: isLoadingRubric } = useAssignmentRubric(id);
@@ -65,6 +68,8 @@ export const EditAssignmentPage: React.FC = () => {
       if (formData.rubric) {
         await saveRubric.mutateAsync(formData.rubric);
       }
+
+      await queryClient.invalidateQueries({ queryKey: assignmentKeys.all });
 
       toast.success(assignmentMessages.updateSuccess);
       navigate('/teacher/assignments');

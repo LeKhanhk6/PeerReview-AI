@@ -21,9 +21,9 @@ const saveRubricSchema = {
         criteria: z.array(z.object({
             name: z.string().min(1).max(255).trim(),
             description: z.string().trim().optional().nullable(),
-            weight: z.number().positive()
+            weight: z.coerce.number().positive()
         })).min(1).refine(items => {
-            const total = items.reduce((sum, item) => sum + item.weight, 0);
+            const total = items.reduce((sum, item) => sum + (Number(item.weight) || 0), 0);
             return Math.abs(total - 100) < 0.01;
         }, { message: "Total weight must be 100%" })
     })

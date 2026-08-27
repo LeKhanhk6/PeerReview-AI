@@ -17,9 +17,9 @@ router.use(verifyToken);
 // ==========================================
 // SCHEMAS
 // ==========================================
-const uuidSchema = z.string().uuid();
-const idParamSchema = z.object({ id: z.coerce.number().positive().int() });
-const taskIdParamSchema = z.object({ taskId: z.coerce.number().positive().int() });
+const uuidSchema = z.string().trim().min(1);
+const idParamSchema = z.object({ id: z.string().trim().min(1) });
+const taskIdParamSchema = z.object({ taskId: z.string().trim().min(1) });
 
 const createTaskSchema = {
     params: idParamSchema,

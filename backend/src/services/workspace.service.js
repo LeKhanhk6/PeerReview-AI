@@ -14,6 +14,7 @@ const validateId = (id, fieldName = 'ID') => {
     }
     if (typeof id === 'string') {
         const trimmed = id.trim();
+        if (!trimmed) throw new AppError(`Invalid ${fieldName}`, 400);
         if (UUID_REGEX.test(trimmed)) {
             return trimmed;
         }
@@ -21,7 +22,7 @@ const validateId = (id, fieldName = 'ID') => {
         if (Number.isInteger(numericId) && numericId > 0) {
             return numericId;
         }
-        throw new AppError(`Invalid ${fieldName}`, 400);
+        return trimmed;
     }
     const numericId = Number(id);
     if (Number.isInteger(numericId) && numericId > 0) {

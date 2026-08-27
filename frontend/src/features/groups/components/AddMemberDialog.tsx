@@ -18,7 +18,7 @@ export const AddMemberDialog: React.FC<Props> = ({ open, onClose, classId, group
   const addMember = useAddMember(classId);
   const [selectedUserId, setSelectedUserId] = useState('');
 
-  const unassignedMembers = (members || []).filter((m) => !assignedUserIds.has(m.id));
+  const unassignedMembers = (members || []).filter((m) => (!m.role || m.role === 'STUDENT') && !assignedUserIds.has(m.id));
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

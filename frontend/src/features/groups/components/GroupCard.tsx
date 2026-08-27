@@ -23,6 +23,7 @@ export const GroupCard: React.FC<GroupCardProps> = ({
   const assignLeader = useAssignLeader(classId);
 
   const [memberToRemove, setMemberToRemove] = useState<GroupMember | null>(null);
+  const [assigningLeaderUserId, setAssigningLeaderUserId] = useState<string | null>(null);
 
   const handleConfirmRemove = async () => {
     if (!memberToRemove) return;
@@ -37,11 +38,14 @@ export const GroupCard: React.FC<GroupCardProps> = ({
 
   const handleAssignLeader = async (member: GroupMember) => {
     if (member.is_leader) return;
+    setAssigningLeaderUserId(member.id);
     try {
       await assignLeader.mutateAsync({ groupId: group.id, user_id: member.id });
       toast.success(`Set ${member.full_name} as Group Leader`);
     } catch (err: any) {
       toast.error(err.message || 'Failed to assign leader');
+    } finally {
+      setAssigningLeaderUserId(null);
     }
   };
 
@@ -115,7 +119,7 @@ export const GroupCard: React.FC<GroupCardProps> = ({
                       variant="ghost"
                       size="sm"
                       onClick={() => handleAssignLeader(member)}
-                      isLoading={assignLeader.isPending}
+                      isLoading={assigningLeaderUserId === member.id}
                       className="text-xs text-amber-700 hover:text-amber-800 hover:bg-amber-50 h-7 px-2"
                       title="Set as Group Leader"
                       aria-label={`Set ${member.full_name} as Group Leader`}

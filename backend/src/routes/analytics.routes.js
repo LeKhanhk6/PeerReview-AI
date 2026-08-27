@@ -11,17 +11,17 @@ router.use(verifyToken);
 router.use(authorizeRoles('TEACHER', 'ADMIN'));
 
 // Schemas
-const uuidSchema = z.string().uuid();
+const idSchema = z.string().trim().min(1);
 
 const classIdQuerySchema = {
     query: z.object({
-        classId: uuidSchema.optional()
+        classId: idSchema.optional()
     })
 };
 
-const groupIdParamSchema = { params: z.object({ groupId: uuidSchema }) };
-const classIdParamSchema = { params: z.object({ classId: uuidSchema }) };
-const assignmentIdParamSchema = { params: z.object({ assignmentId: uuidSchema }) };
+const groupIdParamSchema = { params: z.object({ groupId: idSchema }) };
+const classIdParamSchema = { params: z.object({ classId: idSchema }) };
+const assignmentIdParamSchema = { params: z.object({ assignmentId: idSchema }) };
 
 router.get('/dashboard/overview', validate(classIdQuerySchema), analyticsController.getDashboardOverview);
 

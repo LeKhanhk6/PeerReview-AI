@@ -319,7 +319,8 @@ export const getClassContributions = async (currentUser, classId) => {
         throw new AppError('Forbidden: You do not have access to this class', 403);
     }
 
-    const [membersRes, activitiesRes, tasksAssignedRes, tasksCreatedRes] = await Promise.all([
+    const [allGroupsRes, membersRes, activitiesRes, tasksAssignedRes, tasksCreatedRes] = await Promise.all([
+        pool.query(`SELECT id, name FROM groups WHERE class_id = $1 ORDER BY created_at ASC`, [classId]),
         pool.query(`
             SELECT gm.group_id, u.id as user_id
             FROM group_members gm
@@ -360,7 +361,13 @@ export const getClassContributions = async (currentUser, classId) => {
         `, [classId])
     ]);
 
+    const groupNamesMap = new Map();
     const groupsMap = new Map();
+
+    allGroupsRes.rows.forEach(g => {
+        groupNamesMap.set(g.id, g.name);
+        groupsMap.set(g.id, new Map());
+    });
 
     membersRes.rows.forEach(m => {
         if (!groupsMap.has(m.group_id)) groupsMap.set(m.group_id, new Map());
@@ -422,6 +429,8 @@ export const getClassContributions = async (currentUser, classId) => {
 
         result.push({
             groupId,
+            groupName: groupNamesMap.get(groupId) || `Nhóm #${groupId}`,
+            memberCount: members.length,
             hasFreeRider
         });
     });

@@ -14,6 +14,24 @@ const WEIGHTS = Object.freeze({
 });
 const FREE_RIDER_THRESHOLD = 0.1;
 
+const validateId = (id, fieldName = 'ID') => {
+    if (id === null || id === undefined) {
+        throw new AppError(`Invalid ${fieldName}`, 400);
+    }
+    if (typeof id === 'string') {
+        const trimmed = id.trim();
+        if (!trimmed || trimmed === 'invalid') {
+            throw new AppError(`Invalid ${fieldName}`, 400);
+        }
+        return trimmed;
+    }
+    const numericId = Number(id);
+    if (Number.isInteger(numericId) && numericId > 0) {
+        return numericId;
+    }
+    throw new AppError(`Invalid ${fieldName}`, 400);
+};
+
 /**
  * Helper function to calculate contribution metrics for a member
  */
@@ -53,9 +71,11 @@ function calculateContribution(m, maxActivities, maxTasksCreated) {
 export const getDashboardOverview = async (currentUser, classId) => {
     const isAdmin = currentUser.role === 'ADMIN';
 
+    let validClassId = null;
     // 1. Validate ownership if classId is provided
     if (classId) {
-        const classRes = await pool.query(`SELECT teacher_id FROM classes WHERE id = $1`, [classId]);
+        validClassId = validateId(classId, 'class ID');
+        const classRes = await pool.query(`SELECT teacher_id FROM classes WHERE id = $1`, [validClassId]);
         if (classRes.rowCount === 0) {
             throw new AppError('Class not found', 404);
         }
@@ -164,6 +184,7 @@ export const getDashboardOverview = async (currentUser, classId) => {
 };
 
 export const getGroupContribution = async (currentUser, groupId) => {
+    const validGroupId = validateId(groupId, 'group ID');
     const isAdmin = currentUser.role === 'ADMIN';
 
     const groupRes = await pool.query(`
@@ -171,7 +192,7 @@ export const getGroupContribution = async (currentUser, groupId) => {
         FROM groups g
         JOIN classes c ON g.class_id = c.id
         WHERE g.id = $1
-    `, [groupId]);
+    `, [validGroupId]);
 
     if (groupRes.rowCount === 0) {
         throw new AppError('Group not found', 404);
@@ -282,13 +303,14 @@ export const getGroupContribution = async (currentUser, groupId) => {
 };
 
 export const getClassContributions = async (currentUser, classId) => {
+    const validClassId = validateId(classId, 'class ID');
     const isAdmin = currentUser.role === 'ADMIN';
 
     const classRes = await pool.query(`
         SELECT teacher_id 
         FROM classes
         WHERE id = $1
-    `, [classId]);
+    `, [validClassId]);
 
     if (classRes.rowCount === 0) {
         throw new AppError('Class not found', 404);
@@ -425,6 +447,7 @@ const getTrimmedMean = (arr) => {
 };
 
 export const getAssignmentReviewAnalytics = async (currentUser, assignmentId) => {
+    const validAssignmentId = validateId(assignmentId, 'assignment ID');
     const isAdmin = currentUser.role === 'ADMIN';
 
     const assignmentRes = await pool.query(`
@@ -432,7 +455,7 @@ export const getAssignmentReviewAnalytics = async (currentUser, assignmentId) =>
         FROM assignments a
         JOIN classes c ON a.class_id = c.id
         WHERE a.id = $1
-    `, [assignmentId]);
+    `, [validAssignmentId]);
 
     if (assignmentRes.rowCount === 0) {
         throw new AppError('Assignment not found', 404);
@@ -627,9 +650,10 @@ export const getAssignmentReviewAnalytics = async (currentUser, assignmentId) =>
 };
 
 export const getClassReviewAnalytics = async (currentUser, classId) => {
+    const validClassId = validateId(classId, 'class ID');
     const isAdmin = currentUser.role === 'ADMIN';
 
-    const classRes = await pool.query(`SELECT teacher_id FROM classes WHERE id = $1`, [classId]);
+    const classRes = await pool.query(`SELECT teacher_id FROM classes WHERE id = $1`, [validClassId]);
     if (classRes.rowCount === 0) {
         throw new AppError('Class not found', 404);
     }
@@ -846,10 +870,11 @@ export const getClassReviewAnalytics = async (currentUser, classId) => {
 };
 
 export const getCollaborationRisks = async (currentUser, classId) => {
+    const validClassId = validateId(classId, 'class ID');
     const isAdmin = currentUser.role === 'ADMIN';
 
     // 1. Validate ownership
-    const classRes = await pool.query(`SELECT teacher_id FROM classes WHERE id = $1`, [classId]);
+    const classRes = await pool.query(`SELECT teacher_id FROM classes WHERE id = $1`, [validClassId]);
     if (classRes.rowCount === 0) {
         throw new AppError('Class not found', 404);
     }

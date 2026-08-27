@@ -41,7 +41,7 @@ export const create = async (req, res, next) => {
         }
 
         // 3. Create
-        const newGroup = await groupService.createGroup(class_id, name);
+        const newGroup = await groupService.createGroup(class_id, name, user);
         return res.ok(newGroup);
     } catch (error) {
         next(error);

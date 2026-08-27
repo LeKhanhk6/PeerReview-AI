@@ -54,6 +54,12 @@ export const EarlyWarningCard: React.FC<EarlyWarningCardProps> = ({
               👥 {groupDisplay}
             </span>
 
+            {risk.riskType && (
+              <span className="text-xs font-semibold text-purple-800 bg-purple-50 px-2 py-0.5 rounded border border-purple-200">
+                🏷️ {risk.riskType}
+              </span>
+            )}
+
             {risk.userName && (
               <span className="text-xs font-semibold text-gray-700 bg-white px-2 py-0.5 rounded border border-gray-200">
                 👤 {risk.userName}
@@ -75,7 +81,9 @@ export const EarlyWarningCard: React.FC<EarlyWarningCardProps> = ({
         )}
       </div>
 
-      <p className="text-sm font-medium leading-relaxed">{risk.message}</p>
+      <p className="text-sm font-medium leading-relaxed font-sans">
+        {risk.message || (risk as any).description || 'Cảnh báo rủi ro trong nhóm'}
+      </p>
 
       {/* Action Buttons & Deep Link */}
       <div className="pt-2 border-t border-gray-200/60 flex items-center justify-between flex-wrap gap-2">

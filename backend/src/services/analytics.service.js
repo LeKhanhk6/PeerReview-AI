@@ -1138,12 +1138,16 @@ export const getCollaborationRisks = async (currentUser, classId) => {
         }
 
         return {
+            id: `risk-${g.group.id}-${res.userId || 'group'}-${res.type}`,
             groupId: g.group.id,
+            groupName: g.group.name,
             userId: res.userId || null,
+            userName: res.userName || null,
             entityType: res.entity,
             riskType: res.type,
             severity: res.severity,
             score,
+            message: description,
             description,
             data: res.data || {}
         };

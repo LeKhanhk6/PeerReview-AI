@@ -26,10 +26,15 @@ export const EarlyWarningPanel: React.FC<EarlyWarningPanelProps> = ({ classId, o
     toast.success(analyticsMessages.earlyWarning.statusUpdatedToast);
   };
 
-  const processedRisks: CollaborationRiskItem[] = rawRisks.map((r) => ({
-    ...r,
-    status: riskStatuses[r.id] || r.status || 'ACTIVE',
-  }));
+  const processedRisks: CollaborationRiskItem[] = rawRisks.map((r, index) => {
+    const computedId = r.id || `risk-${r.groupId || 'g'}-${r.userId || 'u'}-${r.riskType || 'type'}-${index}`;
+    return {
+      ...r,
+      id: computedId,
+      message: r.message || (r as any).description || 'Cảnh báo rủi ro nhóm',
+      status: riskStatuses[computedId] || r.status || 'ACTIVE',
+    };
+  });
 
   const filteredRisks = processedRisks.filter((risk) => {
     if (severityFilter && risk.severity !== severityFilter) return false;

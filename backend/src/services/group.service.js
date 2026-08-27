@@ -26,7 +26,12 @@ export const getClassOwnershipInfo = async (classId) => {
 
 export const checkStudentCanJoinGroup = async (groupInfo, userId) => {
     // User Existence and Role check
-    const userResult = await pool.query('SELECT id, role FROM users WHERE id = $1', [userId]);
+    const userResult = await pool.query(`
+        SELECT u.id, r.name as role
+        FROM users u
+        LEFT JOIN roles r ON u.role_id = r.id
+        WHERE u.id = $1
+    `, [userId]);
     if (userResult.rows.length === 0) {
         throw new AppError('User not found', 404);
     }

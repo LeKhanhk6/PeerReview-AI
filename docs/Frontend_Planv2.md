@@ -173,19 +173,13 @@ _(Bản đã chỉnh sửa theo Technical Review — các thay đổi so với v
 - [ ]  Draft persistence (autosave local + 🆕 API draft endpoint — cần confirm với backend, hiện đang thiếu trong API contract)
 - [ ]  Keyboard navigation giữa 2 panel (a11y)
 
-### Task 05.3 — AI Mentor Integration
+### Task 05.3 — AI Mentor Integration ✅
 
-- [ ]  Real-time NLP feedback khi viết review (debounce 1–2s)
-- [ ]  🆕 **Ma trận Retry/Timeout thống nhất** (viết rõ, dev không tự quyết):
+- [x]  Real-time NLP feedback khi viết review (debounce 1.5s)
+- [x]  Ma trận Retry/Timeout thống nhất (Auto-retry 1 lần, fallback UI "AI tạm thời không khả dụng", không block submit)
+- [x]  Circuit-breaker UX (Lỗi >3 lần trong session -> tắt auto-call, chuyển nút gọi manual)
+- [x]  Áp dụng câu mẫu từ AI có ConfirmDialog bảo vệ dữ liệu người dùng
 
-|Loại lỗi|Hành vi|
-|---|---|
-|Network timeout (AI mentor)|Auto-retry 1 lần (RQ `retry: 1`) → fallback UI "AI tạm thời không khả dụng", **vẫn cho viết review bình thường**|
-|AI service 5xx|Hiện inline notice, không block submit|
-|Mutation thất bại (submit review/upload)|Toast error + nút Retry thủ công (disable 1–2s chống spam)|
-|Auth 401|Interceptor xử lý global, không retry|
-
-- [ ]  Circuit-breaker UX: nếu AI fail liên tục >N lần trong session → tắt auto-call, chỉ gọi manual
 
 ---
 

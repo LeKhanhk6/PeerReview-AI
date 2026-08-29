@@ -22,6 +22,9 @@ import { TeacherAnalyticsDashboardPage } from './features/analytics/pages/Teache
 import { StudentGroupWorkspacePage } from './features/workspace/pages/StudentGroupWorkspacePage';
 import { StudentSubmissionPage } from './features/submission/pages/StudentSubmissionPage';
 
+import { ReviewInboxScreen } from './features/review/components/ReviewInboxScreen';
+import { ReviewWritingScreen } from './features/review/components/ReviewWritingScreen';
+
 function App() {
   const { checkAuth } = useAuthStore();
 
@@ -54,7 +57,10 @@ function App() {
             <Route path="classes/:id" element={<div>Student Class Workspace</div>} />
             <Route path="groups/:groupId" element={<StudentGroupWorkspacePage />} />
             <Route path="assignments/:assignmentId/submit" element={<StudentSubmissionPage />} />
-            <Route path="reviews" element={<div>Student Reviews</div>} />
+            <Route path="assignments/:assignmentId/reviews" element={<ReviewInboxScreen />} />
+            <Route path="assignments/:assignmentId/reviews/:reviewAssignmentId" element={<ReviewWritingScreen />} />
+            <Route path="reviews" element={<Navigate to="/student/classes" replace />} />
+
             <Route path="profile" element={<div>Student Profile</div>} />
             <Route index element={<Navigate to="dashboard" replace />} />
           </Route>

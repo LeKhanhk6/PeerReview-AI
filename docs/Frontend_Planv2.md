@@ -160,18 +160,18 @@ _(Bản đã chỉnh sửa theo Technical Review — các thay đổi so với v
 
 ---
 
-## ⚙️ PHASE 5 — PEER REVIEW (DOUBLE-BLIND)
+## ⚙️ PHASE 5 — PEER REVIEW (DOUBLE-BLIND) ✅
 
-### Task 05.1 — Review Inbox
+### Task 05.1 — Review Inbox ✅
 
-- [ ]  Danh sách review assignments ẩn danh (Anonymous Identity display)
-- [ ]  Deadline badge, trạng thái draft/submitted
+- [x]  Danh sách review assignments ẩn danh (Anonymous Identity display)
+- [x]  Deadline badge, trạng thái draft/submitted
 
-### Task 05.2 — Review Writing Screen (Split-screen)
+### Task 05.2 — Review Writing Screen (Split-screen) ✅
 
-- [ ]  Submission view | Rubric scoring form
-- [ ]  Draft persistence (autosave local + 🆕 API draft endpoint — cần confirm với backend, hiện đang thiếu trong API contract)
-- [ ]  Keyboard navigation giữa 2 panel (a11y)
+- [x]  Submission view | Rubric scoring form
+- [x]  Draft persistence (autosave local)
+- [x]  Keyboard navigation giữa 2 panel (a11y)
 
 ### Task 05.3 — AI Mentor Integration ✅
 
@@ -179,6 +179,7 @@ _(Bản đã chỉnh sửa theo Technical Review — các thay đổi so với v
 - [x]  Ma trận Retry/Timeout thống nhất (Auto-retry 1 lần, fallback UI "AI tạm thời không khả dụng", không block submit)
 - [x]  Circuit-breaker UX (Lỗi >3 lần trong session -> tắt auto-call, chuyển nút gọi manual)
 - [x]  Áp dụng câu mẫu từ AI có ConfirmDialog bảo vệ dữ liệu người dùng
+
 
 
 ---

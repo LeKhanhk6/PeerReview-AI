@@ -1301,32 +1301,34 @@ Một Feature chỉ hoàn thành khi:
 
 ## 🔴 SPRINT 1 (Tuần 1–2) — Admin APIs & Verification
 
-### TASK B1.0 — Verification First (Kiểm chứng mã nguồn trước khi code)
-- Grep mã nguồn kiểm chứng endpoint đã có / còn thiếu:
-  - `GET /api/admin/users`
-  - `PATCH /api/admin/users/:userId/role`
-  - `PATCH /api/admin/users/:userId/status`
-  - `GET /api/admin/audit-logs`
-  - `GET /api/admin/dashboard/overview`
+### TASK B1.0 — Verification First (Kiểm chứng mã nguồn trước khi code) ✅
+- [x] Grep mã nguồn kiểm chứng endpoint đã có / còn thiếu:
+  - ❌ `GET /api/admin/users` (chưa có — cần triển khai trong B1.1)
+  - ❌ `PATCH /api/admin/users/:userId/role` (chưa có — cần triển khai trong B1.1)
+  - ❌ `PATCH /api/admin/users/:userId/status` (chưa có — cần triển khai trong B1.1)
+  - ❌ `GET /api/admin/audit-logs` (chưa có — cần triển khai trong B1.3)
+  - ❌ `GET /api/admin/dashboard/overview` (chưa có — cần triển khai trong B1.4)
 - **Quy tắc**: Chỉ xây dựng các endpoint còn thiếu, tuyệt đối không viết trùng lặp.
 
-### TASK B1.1 — User Management API
-- `GET /api/admin/users`: Phân trang (`page`, `limit`, `hasNext`) + Filter `?search=` (tên/email) + `?role=` + `?status=`. Authorize `ADMIN`-only via `role.middleware`.
-- `PATCH /api/admin/users/:userId/role`: Validate role hợp lệ (`STUDENT`, `TEACHER`, `ADMIN`) → trả 400 nếu sai. Trả 404 nếu user không tồn tại.
-- `PATCH /api/admin/users/:userId/status`: Khóa / Mở tài khoản người dùng.
 
-### TASK B1.2 — Business Rules (Backend Enforced — Tuyến chặn chính)
-- **Self-protection**: Chặn ADMIN tự hạ quyền / tự khóa tài khoản chính mình → Trả `403 Forbidden`.
-- **Last-Admin protection**: Chặn hạ quyền / khóa ADMIN duy nhất của hệ thống → Trả `409 Conflict`.
-- **Audit Logging**: Ghi nhật ký vào `activity_logs` cho MỌI thao tác admin (actor, action, target, timestamp).
+### TASK B1.1 — User Management API ✅
+- [x] `GET /api/admin/users`: Phân trang (`page`, `limit`, `hasNext`) + Filter `?search=` (tên/email) + `?role=` + `?status=`. Authorize `ADMIN`-only via `role.middleware`.
+- [x] `PATCH /api/admin/users/:userId/role`: Validate role hợp lệ (`STUDENT`, `TEACHER`, `ADMIN`) → trả 400 nếu sai. Trả 404 nếu user không tồn tại.
+- [x] `PATCH /api/admin/users/:userId/status`: Khóa / Mở tài khoản người dùng.
 
-### TASK B1.3 — Audit Logs API
-- `GET /api/admin/audit-logs`: Read-only, phân trang `limit = 20`, filter `action_type`, `user_id`, `from`/`to`.
-- Query tận dụng 6 indexes có sẵn của `activity_logs`.
-- Mask email phía backend (`a***@domain.com`) trước khi trả response.
+### TASK B1.2 — Business Rules (Backend Enforced — Tuyến chặn chính) ✅
+- [x] **Self-protection**: Chặn ADMIN tự hạ quyền / tự khóa tài khoản chính mình → Trả `403 Forbidden`.
+- [x] **Last-Admin protection**: Chặn hạ quyền / khóa ADMIN duy nhất của hệ thống → Trả `409 Conflict`.
+- [x] **Audit Logging**: Ghi nhật ký vào `activity_logs` cho MỌI thao tác admin (actor, action, target, timestamp).
 
-### TASK B1.4 — Admin Dashboard Overview API
-- `GET /api/admin/dashboard/overview`: Trả về số lượng Users theo role, số lớp học đang hoạt động, tổng số submissions/reviews và số AI requests trong 24h qua.
+### TASK B1.3 — Audit Logs API ✅
+- [x] `GET /api/admin/audit-logs`: Read-only, phân trang `limit = 20`, filter `action_type`, `user_id`, `from`/`to`.
+- [x] Query tận dụng 6 indexes có sẵn của `activity_logs`.
+- [x] Mask email phía backend (`a***@domain.com`) trước khi trả response.
+
+### TASK B1.4 — Admin Dashboard Overview API ✅
+- [x] `GET /api/admin/dashboard/overview`: Trả về số lượng Users theo role, số lớp học đang hoạt động, tổng số submissions/reviews và số AI requests trong 24h qua.
+
 
 ### TASK B2 — Kiểm chứng APIs Frontend Phase 6 đang gọi ✅
 - [x] `PATCH /api/summary/summary-items/:itemId` nhận cả `content` + `note`.

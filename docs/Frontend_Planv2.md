@@ -206,23 +206,24 @@ _(Bản đã chỉnh sửa theo Technical Review — các thay đổi so với v
 
 ## ⚙️ PHASE 7 — ADMIN PANEL
 
-### Task 07.1 — Admin Core (Tuần 1–2, Phụ thuộc Backend B1)
+### Task 07.1 — Admin Core ✅
 
-- [ ] **Task 07.1a**: `admin.types.ts` + `admin.ts` (messages) + export `constants/messages/index.ts`
-- [ ] **Task 07.1b**: `admin.handlers.ts` (MSW) + đăng ký `handlers.ts` — mock data tuyệt đối không chứa PII
-- [ ] **Task 07.1c**: `adminApi.ts` + `useAdmin.ts` (TanStack Query + URL searchParams sync cho filter/search)
-- [ ] **Task 07.1d**: `UserTable` + `UserRoleModal`:
+- [x] **Task 07.1a**: `admin.types.ts` + `admin.ts` (messages) + export `constants/messages/index.ts`
+- [x] **Task 07.1b**: `admin.handlers.ts` (MSW) + đăng ký `handlers.ts` — mock data tuyệt đối không chứa PII
+- [x] **Task 07.1c**: `adminApi.ts` + `useAdmin.ts` (TanStack Query + URL searchParams sync cho filter/search)
+- [x] **Task 07.1d**: `UserTable` + `UserRoleModal`:
   - Self-protection (`userId !== currentUser.id`) + tooltip cảnh báo "Không thể tự hạ quyền/tự khóa chính mình"
   - `AdminActionGuard` + `ConfirmDialog` bảo vệ thao tác nhạy cảm
   - Last-Admin protection UI best-effort
   - Confirm khóa tài khoản hiển thị hậu quả tác động
-- [ ] **Task 07.1e**: `AuditLogViewer`:
+- [x] **Task 07.1e**: `AuditLogViewer`:
   - 100% read-only
   - PII masking: tự động strip (`password`, `token`, `secret`, `jwt`, `api_key`), mask email (`a***@domain.com`)
   - Filter `action_type`, `user_id`, `from`/`to` + phân trang `limit = 20`
-- [ ] **Task 07.1f**: `AdminDashboardPage` + `AdminUsersPage` + `AdminAuditLogsPage` (xử lý EmptyState & 403/404 errors)
-- [ ] **Task 07.1g**: `AdminLayout` nav items + `App.tsx` routes (`RoleRoute allowedRoles={['ADMIN']}`)
+- [x] **Task 07.1f**: `AdminDashboardPage` + `AdminUsersPage` + `AdminAuditLogsPage` (xử lý EmptyState & 403/404 errors)
+- [x] **Task 07.1g**: `AdminLayout` nav items + `App.tsx` routes (`RoleRoute allowedRoles={['ADMIN']}`)
 - **Gate**: `npx tsc --noEmit` pass, MSW verification, manual test 7 bước + test case tìm user không tồn tại.
+
 
 ### Task 07.2 — System Settings (Tuần 3–4, Chờ Backend B4)
 

@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { toast } from '@/components/ui/Toaster';
+import { toast } from 'sonner';
 import { synthesisMessages } from '@/constants/messages/synthesis';
 import { synthesisApi } from '../api/synthesisApi';
 import type { UpdateSummaryItemPayload } from '../types/synthesis.types';
@@ -87,17 +87,9 @@ export const useUpdateSummaryItemMutation = (submissionId: string) => {
     },
     onError: (error: any) => {
       if (error?.status === 409 || error?.code === 'CONFLICT') {
-        toast({
-          title: synthesisMessages.errors.updateItemError,
-          description: synthesisMessages.errors.conflictError409,
-          variant: 'destructive',
-        });
+        toast.error(synthesisMessages.errors.conflictError409);
       } else {
-        toast({
-          title: synthesisMessages.errors.updateItemError,
-          description: error?.message || synthesisMessages.errors.updateItemError,
-          variant: 'destructive',
-        });
+        toast.error(error?.message || synthesisMessages.errors.updateItemError);
       }
     },
   });
@@ -112,21 +104,14 @@ export const useApproveSummaryMutation = (submissionId: string) => {
   return useMutation({
     mutationFn: () => synthesisApi.approveSummary(submissionId),
     onSuccess: () => {
-      toast({
-        title: 'Thành công',
-        description: synthesisMessages.validation.approveSuccessToast,
-        variant: 'default',
-      });
+      toast.success(synthesisMessages.validation.approveSuccessToast);
       queryClient.invalidateQueries({
         queryKey: SYNTHESIS_QUERY_KEYS.submissionSummary(submissionId),
       });
     },
     onError: (error: any) => {
-      toast({
-        title: synthesisMessages.errors.approveError,
-        description: error?.message || synthesisMessages.errors.approveError,
-        variant: 'destructive',
-      });
+      toast.error(error?.message || synthesisMessages.errors.approveError);
     },
   });
 };
+

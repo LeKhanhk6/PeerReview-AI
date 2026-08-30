@@ -15,14 +15,21 @@ export const synthesisApi = {
     const res: any = await api.get(`/reviews/assignments/${assignmentId}/reviews/synthesis`, {
       params,
     });
-    return res.data || res;
+    if (res && typeof res === 'object' && 'data' in res && res.data && typeof res.data === 'object' && 'summary' in res.data) {
+      return res.data;
+    }
+    return res;
   },
 
   // 2. Lấy bản tổng hợp nhận xét của một Bài nộp cụ thể (Submission-level)
   getSubmissionSummary: async (submissionId: string): Promise<SubmissionSummaryResponse> => {
     const res: any = await api.get(`/summary/submissions/${submissionId}/summary`);
-    return res.data || res;
+    if (res && typeof res === 'object' && 'data' in res && res.data && typeof res.data === 'object' && 'summary' in res.data) {
+      return res.data;
+    }
+    return res;
   },
+
 
   // 3. Lấy danh sách vết nguồn bài phản biện gốc (Traceability - Double-Blind Safe)
   getSourceReviews: async (

@@ -18,7 +18,9 @@ describe('AI Service (Staff-Level Resilience)', () => {
     beforeEach(() => {
         jest.clearAllMocks();
         process.env.GEMINI_API_KEY = 'test-key';
+        delete process.env.AI_MOCK;
         global.allowConsoleError();
+
         
         fetchSpy = jest.spyOn(global, 'fetch');
         

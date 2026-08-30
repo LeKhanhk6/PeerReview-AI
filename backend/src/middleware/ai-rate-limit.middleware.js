@@ -5,11 +5,27 @@ import logger from '../utils/logger.util.js';
 
 // In-memory sliding window rate limiter per user/IP
 const userRequestTimestamps = new Map();
+let isTableInitialized = false;
+
+// Periodic cleanup every 10 minutes to delete stale Map keys and prevent memory leaks
+setInterval(() => {
+  const now = Date.now();
+  const windowMs = 60 * 1000;
+  for (const [key, timestamps] of userRequestTimestamps.entries()) {
+    const valid = timestamps.filter((ts) => now - ts < windowMs);
+    if (valid.length === 0) {
+      userRequestTimestamps.delete(key);
+    } else {
+      userRequestTimestamps.set(key, valid);
+    }
+  }
+}, 10 * 60 * 1000);
 
 /**
  * Idempotent DB Initialization for ai_requests table
  */
 export const initAiRequestsTable = async () => {
+  if (isTableInitialized) return;
   try {
     await pool.query(`
       CREATE TABLE IF NOT EXISTS ai_requests (
@@ -26,10 +42,12 @@ export const initAiRequestsTable = async () => {
       );
       CREATE INDEX IF NOT EXISTS idx_ai_req_created_at ON ai_requests(created_at);
     `);
+    isTableInitialized = true;
   } catch (err) {
     logger.error('Failed to initialize ai_requests table:', err);
   }
 };
+
 
 /**
  * Log AI Request usage & token metrics to DB

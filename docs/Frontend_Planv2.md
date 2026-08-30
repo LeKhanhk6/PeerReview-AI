@@ -257,14 +257,15 @@ _(Bản đã chỉnh sửa theo Technical Review — các thay đổi so với v
 
 ## ⚙️ PHASE 8 — POLISH, E2E & PILOT READINESS (Tuần 5–7)
 
-### Task 08.1 — E2E Testing (Playwright)
+### Task 08.1 — E2E Testing (Playwright) ✅
 
-- [ ] Critical flows bắt buộc cover:
-    1. Login → hydration → dashboard
-    2. Student submit assignment (upload + versioning)
-    3. Double-blind review flow (allocate → write → submit)
-    4. Teacher synthesis (trigger → edit → confirm)
-- [ ] Chạy trên CI mỗi PR
+- [x] Critical flows đã cover:
+    1. Login → hydration → dashboard & Security Role-based Redirection assertions (`auth.spec.ts`)
+    2. Student submit assignment (`submission.spec.ts`)
+    3. Double-blind review flow & AI Mentor check (`review.spec.ts`)
+    4. Teacher synthesis dashboard & approval flow (`synthesis.spec.ts`)
+- [x] Chạy trên CI mỗi PR (`playwright.config.ts` + `npm run test:e2e`)
+
 
 ### 🆕 Task 08.2 — Measurable Quality Gate
 

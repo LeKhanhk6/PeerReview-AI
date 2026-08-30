@@ -80,9 +80,12 @@ export const useUpdateSummaryItemMutation = (submissionId: string) => {
     mutationFn: ({ itemId, payload }: { itemId: string; payload: UpdateSummaryItemPayload }) =>
       synthesisApi.updateSummaryItem(itemId, payload),
     onSuccess: () => {
-      // Invalidate cache bài nộp hiện tại để cập nhật UI
+      // Invalidate cache bài nộp hiện tại và tổng quan bài tập
       queryClient.invalidateQueries({
         queryKey: SYNTHESIS_QUERY_KEYS.submissionSummary(submissionId),
+      });
+      queryClient.invalidateQueries({
+        queryKey: ['assignment-synthesis'],
       });
     },
     onError: (error: any) => {
@@ -108,10 +111,14 @@ export const useApproveSummaryMutation = (submissionId: string) => {
       queryClient.invalidateQueries({
         queryKey: SYNTHESIS_QUERY_KEYS.submissionSummary(submissionId),
       });
+      queryClient.invalidateQueries({
+        queryKey: ['assignment-synthesis'],
+      });
     },
     onError: (error: any) => {
       toast.error(error?.message || synthesisMessages.errors.approveError);
     },
   });
 };
+
 

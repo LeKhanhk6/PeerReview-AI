@@ -111,15 +111,14 @@ export const TeacherValidationHeader: React.FC<TeacherValidationHeaderProps> = (
 
       {/* Red Destructive Confirm Dialog */}
       <ConfirmDialog
-        isOpen={isConfirmOpen}
+        open={isConfirmOpen}
+        onClose={() => setIsConfirmOpen(false)}
+        onConfirm={handleConfirmApprove}
         title={synthesisMessages.validation.confirmApproveTitle}
         description={synthesisMessages.validation.confirmApproveDescription}
-        confirmText="Xác nhận Phê duyệt"
-        cancelText="Hủy bỏ"
-        variant="destructive"
-        onConfirm={handleConfirmApprove}
-        onCancel={() => setIsConfirmOpen(false)}
+        isDestructive={true}
       />
+
     </>
   );
 };

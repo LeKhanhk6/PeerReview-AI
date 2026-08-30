@@ -70,3 +70,17 @@ export interface UpdateUserRolePayload {
 export interface UpdateUserStatusPayload {
   status: UserStatus;
 }
+
+export interface SystemConfigItem {
+  key: string;
+  value: string;
+  description: string;
+  updatedBy: string;
+  updatedAt: string;
+}
+
+export interface SystemConfigResponse {
+  configs: Record<string, string>;
+  items: SystemConfigItem[];
+}
+

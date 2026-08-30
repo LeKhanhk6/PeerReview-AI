@@ -13,6 +13,7 @@ export const ADMIN_QUERY_KEYS = {
   users: (filters?: AdminUserFilters) => ['admin-users', filters],
   auditLogs: (filters?: AuditLogFilters) => ['admin-audit-logs', filters],
   overview: () => ['admin-dashboard-overview'],
+  systemConfig: () => ['admin-system-config'],
 };
 
 /**
@@ -99,3 +100,34 @@ export const useAdminDashboardOverview = () => {
     staleTime: 1000 * 60 * 2, // 2 min
   });
 };
+
+/**
+ * Hook lấy cấu hình hệ thống
+ */
+export const useSystemConfig = () => {
+  return useQuery({
+    queryKey: ADMIN_QUERY_KEYS.systemConfig(),
+    queryFn: () => adminApi.getSystemConfig(),
+    staleTime: 1000 * 30, // 30s
+  });
+};
+
+/**
+ * Hook Mutation cập nhật cấu hình hệ thống (Multi-key Batch PATCH)
+ */
+export const useUpdateSystemConfigMutation = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (payload: Record<string, string>) => adminApi.updateSystemConfig(payload),
+    onSuccess: () => {
+      toast.success('Đã cập nhật cấu hình hệ thống thành công!');
+      queryClient.invalidateQueries({ queryKey: ADMIN_QUERY_KEYS.systemConfig() });
+      queryClient.invalidateQueries({ queryKey: ['admin-audit-logs'] });
+    },
+    onError: (error: any) => {
+      toast.error(error?.message || 'Không thể cập nhật cấu hình hệ thống');
+    },
+  });
+};
+

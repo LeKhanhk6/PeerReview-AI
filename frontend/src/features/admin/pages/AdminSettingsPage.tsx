@@ -105,9 +105,8 @@ export const AdminSettingsPage: React.FC = () => {
     await updateMutation.mutateAsync(payload);
   };
 
-  const hasChanges = pendingChanges.length > 0;
-
   return (
+
     <div className="space-y-6 max-w-7xl mx-auto pb-12">
       {/* Page Header */}
       <div className="bg-white p-6 border border-gray-200 rounded-xl shadow-sm space-y-2">

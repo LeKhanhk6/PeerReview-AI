@@ -13,6 +13,7 @@ interface ConfirmDialogProps {
   isLoading?: boolean;
   requireConfirmationText?: boolean;
   confirmationText?: string;
+  children?: React.ReactNode;
 }
 
 export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
@@ -25,7 +26,9 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
   isLoading = false,
   requireConfirmationText = false,
   confirmationText = 'DELETE',
+  children,
 }) => {
+
   const [inputText, setInputText] = useState('');
 
   const handleConfirm = () => {
@@ -54,7 +57,9 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
       closeOnEscape={!isLoading}
     >
       <div className="space-y-6">
+        {children}
         {requireConfirmationText && (
+
           <div className="space-y-2">
             <label className="block text-sm font-medium text-gray-700">
               {layoutMessages.admin.actionGuard.typeToConfirm.replace('DELETE', confirmationText)}

@@ -222,12 +222,15 @@ _(Bản đã chỉnh sửa theo Technical Review — các thay đổi so với v
   - Filter `action_type`, `user_id`, `from`/`to` + phân trang `limit = 20`
 - [x] **Task 07.1f**: `AdminDashboardPage` + `AdminUsersPage` + `AdminAuditLogsPage` (xử lý EmptyState & 403/404 errors)
 - [x] **Task 07.1g**: `AdminLayout` nav items + `App.tsx` routes (`RoleRoute allowedRoles={['ADMIN']}`)
-- **Gate**: `npx tsc --noEmit` pass, MSW verification, manual test 7 bước + test case tìm user không tồn tại.
+- **Gate (Passed)**:
+  - [x] `npx tsc --noEmit` passed (0 errors)
+  - [x] Manual Verification 7/7 passed (Dashboard stats, Search/Filter/Paginate, Self-protection, UserRoleModal, Audit logs PII masking, Last-admin 409 flow, EmptyState handling)
 
+### Task 07.2 — System Settings
 
-### Task 07.2 — System Settings (Tuần 3–4, Chờ Backend B4)
+- [x] **Step 1 (Read-only Status Checks)**: `AdminSettingsPage.tsx` hiển thị trạng thái audit logging, telemetry, rate limit flags từ AuthStore (100% read-only, không gọi endpoint không tồn tại).
+- [ ] **Step 2 (Edit Form Integration — Chờ Backend B4)**: Form chỉnh sửa tham số gọi `PATCH /api/admin/system-config` sau khi Backend B4 sẵn sàng.
 
-- [ ] `SystemConfigPanel` — Read-only status checks trước (audit logging, telemetry flags từ Auth Store), cho phép edit sau khi Backend B4 sẵn sàng `PATCH /api/admin/system-config`.
 
 ### Task 07.2-M — Merge Task 07.1 với Backend API Thật (Tuần 3–4)
 

@@ -366,7 +366,7 @@ export const getDashboardOverview = async () => {
   const [userStatsRes, activeClassesRes, submissionsRes, reviewsRes, aiRequestsRes] =
     await Promise.all([
       pool.query('SELECT role, COUNT(*) as count FROM users GROUP BY role'),
-      pool.query("SELECT COUNT(*) FROM classes WHERE status = 'ACTIVE'"),
+      pool.query('SELECT COUNT(*) FROM classes WHERE deleted_at IS NULL'),
       pool.query('SELECT COUNT(*) FROM submissions'),
       pool.query('SELECT COUNT(*) FROM reviews'),
       pool.query(

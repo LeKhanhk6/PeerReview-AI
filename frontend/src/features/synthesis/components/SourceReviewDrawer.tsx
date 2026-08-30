@@ -34,8 +34,10 @@ export const SourceReviewDrawer: React.FC<SourceReviewDrawerProps> = ({
       setPage(1);
     } else if (triggerRef.current) {
       triggerRef.current.focus();
+      triggerRef.current = null;
     }
   }, [isOpen]);
+
 
   // Handle ESC key press to close drawer (a11y)
   useEffect(() => {

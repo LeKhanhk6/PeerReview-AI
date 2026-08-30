@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { Button } from '@/components/ui/Button';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { SkeletonCard } from '@/components/ui/Skeleton';
@@ -20,9 +20,21 @@ import type { SummaryItem } from '../types/synthesis.types';
 export const TeacherReviewSynthesisPage: React.FC = () => {
   const { assignmentId = '' } = useParams<{ assignmentId: string }>();
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
 
-  // Active Selected Submission ID for level 2 detailed summary
-  const [selectedSubmissionId, setSelectedSubmissionId] = useState<string>('sub-001');
+  // Active Selected Submission ID synced with URL searchParams
+  const selectedSubmissionId = searchParams.get('submissionId') || 'sub-001';
+
+  const handleSubmissionChange = (submissionId: string) => {
+    const params = new URLSearchParams(searchParams);
+    if (submissionId) {
+      params.set('submissionId', submissionId);
+    } else {
+      params.delete('submissionId');
+    }
+    setSearchParams(params);
+  };
+
 
   // Selected item for Source Review Drawer
   const [activeDrawerItem, setActiveDrawerItem] = useState<SummaryItem | null>(null);
@@ -133,9 +145,10 @@ export const TeacherReviewSynthesisPage: React.FC = () => {
           <div className="w-full md:w-80">
             <select
               value={selectedSubmissionId}
-              onChange={(e) => setSelectedSubmissionId(e.target.value)}
+              onChange={(e) => handleSubmissionChange(e.target.value)}
               className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm bg-white font-medium focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
+
               <option value="sub-001">Bài nộp Nhóm 1 (Mã: sub-001)</option>
               <option value="sub-002">Bài nộp Nhóm 2 (Mã: sub-002)</option>
               <option value="sub-003">Bài nộp Nhóm 3 (Mã: sub-003)</option>

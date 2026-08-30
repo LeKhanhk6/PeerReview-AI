@@ -52,8 +52,17 @@ export const SummaryItemCard: React.FC<SummaryItemCardProps> = ({
   const [editContent, setEditContent] = useState(item.content);
   const [editNote, setEditNote] = useState(item.note || '');
 
+  React.useEffect(() => {
+    if (isApproved && isEditing) {
+      setIsEditing(false);
+    }
+  }, [isApproved, isEditing]);
+
   const styles = getCategoryStyles(item.topic_category);
-  const formattedUpdatedAt = new Date(item.updated_at).toLocaleString('vi-VN');
+  const formattedUpdatedAt = item.updated_at
+    ? new Date(item.updated_at).toLocaleString('vi-VN')
+    : '';
+
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();

@@ -3,6 +3,8 @@ import { AppError } from '../utils/AppError.js';
 import logger from '../utils/logger.util.js';
 import { ACTIVITY_TYPES } from '../constants/index.js';
 
+const EMAIL_REGEX = /[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/g;
+
 /**
  * Mask email address for backend PII safety: user@domain.com -> u***@domain.com
  */
@@ -11,6 +13,14 @@ const maskEmail = (email) => {
   const [local, domain] = email.split('@');
   if (local.length <= 1) return `${local}***@${domain}`;
   return `${local[0]}***@${domain}`;
+};
+
+/**
+ * Mask all embedded email addresses inside text strings (e.g. contentSummary)
+ */
+const maskTextEmails = (text) => {
+  if (!text || typeof text !== 'string') return text;
+  return text.replace(EMAIL_REGEX, (match) => maskEmail(match));
 };
 
 /**
@@ -38,6 +48,7 @@ const maskMetadataPii = (metadata) => {
 
   return cleaned;
 };
+
 
 /**
  * GET /api/admin/users
@@ -330,12 +341,14 @@ export const getAuditLogs = async (options = {}) => {
     rows.pop();
   }
 
-  // Apply PII Masking on email and metadata
+  // Apply PII Masking on email, contentSummary text, and metadata
   const maskedRows = rows.map((log) => ({
     ...log,
     userEmail: maskEmail(log.userEmail),
+    contentSummary: maskTextEmails(log.contentSummary),
     metadata: maskMetadataPii(log.metadata),
   }));
+
 
   return {
     logs: maskedRows,

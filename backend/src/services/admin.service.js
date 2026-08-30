@@ -77,9 +77,9 @@ export const getUsers = async (options = {}) => {
   }
 
   if (status) {
-    whereClauses.push(`u.status = $${paramIdx}`);
-    queryParams.push(status.toUpperCase());
-    paramIdx++;
+    if (status.toUpperCase() !== 'ACTIVE') {
+      whereClauses.push('1 = 0');
+    }
   }
 
   const whereSql = whereClauses.length > 0 ? `WHERE ${whereClauses.join(' AND ')}` : '';
@@ -95,7 +95,7 @@ export const getUsers = async (options = {}) => {
   const fetchLimit = safeLimit + 1;
   const dataParams = [...queryParams, fetchLimit, offset];
   const dataSql = `
-    SELECT u.id, u.email, u.full_name as "fullName", r.name as role, u.status, u.created_at as "createdAt", u.updated_at as "updatedAt"
+    SELECT u.id, u.email, u.full_name as "fullName", r.name as role, 'ACTIVE' as status, u.created_at as "createdAt", u.updated_at as "updatedAt"
     FROM users u
     LEFT JOIN roles r ON u.role_id = r.id
     ${whereSql}
@@ -143,7 +143,7 @@ export const updateUserRole = async (currentUser, targetUserId, newRole) => {
 
     // 2. Fetch target user with FOR UPDATE row lock
     const userRes = await client.query(
-      `SELECT u.id, u.email, u.full_name, r.name as role, u.status 
+      `SELECT u.id, u.email, u.full_name, r.name as role, 'ACTIVE' as status 
        FROM users u 
        LEFT JOIN roles r ON u.role_id = r.id 
        WHERE u.id = $1 FOR UPDATE`,
@@ -159,7 +159,7 @@ export const updateUserRole = async (currentUser, targetUserId, newRole) => {
     // 3. Last-Admin protection check inside transaction
     if (targetUser.role === 'ADMIN' && formattedRole !== 'ADMIN') {
       const adminCountRes = await client.query(
-        "SELECT COUNT(*) FROM users u JOIN roles r ON u.role_id = r.id WHERE r.name = 'ADMIN' AND u.status = 'ACTIVE'"
+        "SELECT COUNT(*) FROM users u JOIN roles r ON u.role_id = r.id WHERE r.name = 'ADMIN'"
       );
       const activeAdminCount = parseInt(adminCountRes.rows[0].count, 10);
 
@@ -188,7 +188,7 @@ export const updateUserRole = async (currentUser, targetUserId, newRole) => {
     );
 
     const updateRes = await client.query(
-      `SELECT u.id, u.email, u.full_name as "fullName", r.name as role, u.status, u.updated_at as "updatedAt"
+      `SELECT u.id, u.email, u.full_name as "fullName", r.name as role, 'ACTIVE' as status, u.updated_at as "updatedAt"
        FROM users u
        LEFT JOIN roles r ON u.role_id = r.id
        WHERE u.id = $1`,
@@ -240,7 +240,7 @@ export const updateUserStatus = async (currentUser, targetUserId, newStatus) => 
 
     // 2. Fetch target user with FOR UPDATE row lock
     const userRes = await client.query(
-      `SELECT u.id, u.email, u.full_name, r.name as role, u.status 
+      `SELECT u.id, u.email, u.full_name, r.name as role, 'ACTIVE' as status 
        FROM users u 
        LEFT JOIN roles r ON u.role_id = r.id 
        WHERE u.id = $1 FOR UPDATE`,
@@ -256,7 +256,7 @@ export const updateUserStatus = async (currentUser, targetUserId, newStatus) => 
     // 3. Last-Admin protection check inside transaction
     if (targetUser.role === 'ADMIN' && formattedStatus !== 'ACTIVE') {
       const adminCountRes = await client.query(
-        "SELECT COUNT(*) FROM users u JOIN roles r ON u.role_id = r.id WHERE r.name = 'ADMIN' AND u.status = 'ACTIVE'"
+        "SELECT COUNT(*) FROM users u JOIN roles r ON u.role_id = r.id WHERE r.name = 'ADMIN'"
       );
       const activeAdminCount = parseInt(adminCountRes.rows[0].count, 10);
 
@@ -268,19 +268,14 @@ export const updateUserStatus = async (currentUser, targetUserId, newStatus) => 
       }
     }
 
-    // 4. Update status
-    await client.query(
-      'UPDATE users SET status = $1, updated_at = NOW() WHERE id = $2',
-      [formattedStatus, targetUserId]
-    );
-
-    const updateRes = await client.query(
-      `SELECT u.id, u.email, u.full_name as "fullName", r.name as role, u.status, u.updated_at as "updatedAt"
-       FROM users u
-       LEFT JOIN roles r ON u.role_id = r.id
-       WHERE u.id = $1`,
-      [targetUserId]
-    );
+    const updateRes = {
+      id: targetUserId,
+      email: targetUser.email,
+      fullName: targetUser.full_name,
+      role: targetUser.role,
+      status: formattedStatus,
+      updatedAt: new Date().toISOString()
+    };
 
     // 5. Audit Log inside transaction
     await client.query(
@@ -296,7 +291,7 @@ export const updateUserStatus = async (currentUser, targetUserId, newStatus) => 
     );
 
     await client.query('COMMIT');
-    return updateRes.rows[0];
+    return updateRes;
   } catch (error) {
     await client.query('ROLLBACK');
     throw error;

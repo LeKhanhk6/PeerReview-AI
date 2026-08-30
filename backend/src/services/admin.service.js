@@ -14,7 +14,7 @@ const maskEmail = (email) => {
 };
 
 /**
- * Helper to mask email inside metadata JSON if present
+ * Helper to mask email and strip credentials inside metadata JSON if present
  */
 const maskMetadataPii = (metadata) => {
   if (!metadata || typeof metadata !== 'object') return metadata;
@@ -31,6 +31,9 @@ const maskMetadataPii = (metadata) => {
   // Mask email if present
   if (cleaned.email && typeof cleaned.email === 'string') {
     cleaned.email = maskEmail(cleaned.email);
+  }
+  if (cleaned.target_email && typeof cleaned.target_email === 'string') {
+    cleaned.target_email = maskEmail(cleaned.target_email);
   }
 
   return cleaned;
@@ -81,7 +84,7 @@ export const getUsers = async (options = {}) => {
   const fetchLimit = safeLimit + 1;
   const dataParams = [...queryParams, fetchLimit, offset];
   const dataSql = `
-    SELECT id, email, full_name, role, status, created_at, updated_at
+    SELECT id, email, full_name as "fullName", role, status, created_at as "createdAt", updated_at as "updatedAt"
     FROM users
     ${whereSql}
     ORDER BY created_at DESC
@@ -107,7 +110,7 @@ export const getUsers = async (options = {}) => {
 };
 
 /**
- * PATCH /api/admin/users/:userId/role
+ * PATCH /api/admin/users/:userId/role (Atomic DB Transaction)
  */
 export const updateUserRole = async (currentUser, targetUserId, newRole) => {
   const validRoles = ['STUDENT', 'TEACHER', 'ADMIN'];
@@ -122,42 +125,45 @@ export const updateUserRole = async (currentUser, targetUserId, newRole) => {
     throw new AppError('Forbidden: ADMIN cannot demote or change their own role', 403);
   }
 
-  // 2. Fetch target user
-  const userRes = await pool.query(
-    'SELECT id, email, full_name, role, status FROM users WHERE id = $1',
-    [targetUserId]
-  );
-
-  if (userRes.rowCount === 0) {
-    throw new AppError('User not found', 404);
-  }
-
-  const targetUser = userRes.rows[0];
-
-  // 3. Last-Admin protection check
-  if (targetUser.role === 'ADMIN' && formattedRole !== 'ADMIN') {
-    const adminCountRes = await pool.query(
-      "SELECT COUNT(*) FROM users WHERE role = 'ADMIN' AND status = 'ACTIVE'"
-    );
-    const activeAdminCount = parseInt(adminCountRes.rows[0].count, 10);
-
-    if (activeAdminCount <= 1) {
-      throw new AppError(
-        'Conflict: Cannot demote the last remaining active ADMIN in the system',
-        409
-      );
-    }
-  }
-
-  // 4. Update role
-  const updateRes = await pool.query(
-    'UPDATE users SET role = $1, updated_at = NOW() WHERE id = $2 RETURNING id, email, full_name, role, status, updated_at',
-    [formattedRole, targetUserId]
-  );
-
-  // 5. Audit Log
+  const client = await pool.connect();
   try {
-    await pool.query(
+    await client.query('BEGIN');
+
+    // 2. Fetch target user with FOR UPDATE row lock
+    const userRes = await client.query(
+      'SELECT id, email, full_name, role, status FROM users WHERE id = $1 FOR UPDATE',
+      [targetUserId]
+    );
+
+    if (userRes.rowCount === 0) {
+      throw new AppError('User not found', 404);
+    }
+
+    const targetUser = userRes.rows[0];
+
+    // 3. Last-Admin protection check inside transaction
+    if (targetUser.role === 'ADMIN' && formattedRole !== 'ADMIN') {
+      const adminCountRes = await client.query(
+        "SELECT COUNT(*) FROM users WHERE role = 'ADMIN' AND status = 'ACTIVE'"
+      );
+      const activeAdminCount = parseInt(adminCountRes.rows[0].count, 10);
+
+      if (activeAdminCount <= 1) {
+        throw new AppError(
+          'Conflict: Cannot demote the last remaining active ADMIN in the system',
+          409
+        );
+      }
+    }
+
+    // 4. Update role
+    const updateRes = await client.query(
+      'UPDATE users SET role = $1, updated_at = NOW() WHERE id = $2 RETURNING id, email, full_name as "fullName", role, status, updated_at as "updatedAt"',
+      [formattedRole, targetUserId]
+    );
+
+    // 5. Audit Log inside transaction
+    await client.query(
       `INSERT INTO activity_logs (group_id, user_id, action_type, target_id, metadata, content_summary)
        VALUES (NULL, $1, $2, $3, $4, $5)`,
       [
@@ -168,15 +174,19 @@ export const updateUserRole = async (currentUser, targetUserId, newRole) => {
         `Admin updated user ${targetUser.email} role to ${formattedRole}`,
       ]
     );
-  } catch (logErr) {
-    logger.error('Failed to write audit log for updateUserRole:', logErr);
-  }
 
-  return updateRes.rows[0];
+    await client.query('COMMIT');
+    return updateRes.rows[0];
+  } catch (error) {
+    await client.query('ROLLBACK');
+    throw error;
+  } finally {
+    client.release();
+  }
 };
 
 /**
- * PATCH /api/admin/users/:userId/status
+ * PATCH /api/admin/users/:userId/status (Atomic DB Transaction)
  */
 export const updateUserStatus = async (currentUser, targetUserId, newStatus) => {
   const validStatuses = ['ACTIVE', 'INACTIVE', 'LOCKED'];
@@ -191,42 +201,45 @@ export const updateUserStatus = async (currentUser, targetUserId, newStatus) => 
     throw new AppError('Forbidden: ADMIN cannot lock or disable their own account', 403);
   }
 
-  // 2. Fetch target user
-  const userRes = await pool.query(
-    'SELECT id, email, full_name, role, status FROM users WHERE id = $1',
-    [targetUserId]
-  );
-
-  if (userRes.rowCount === 0) {
-    throw new AppError('User not found', 404);
-  }
-
-  const targetUser = userRes.rows[0];
-
-  // 3. Last-Admin protection check
-  if (targetUser.role === 'ADMIN' && formattedStatus !== 'ACTIVE') {
-    const adminCountRes = await pool.query(
-      "SELECT COUNT(*) FROM users WHERE role = 'ADMIN' AND status = 'ACTIVE'"
-    );
-    const activeAdminCount = parseInt(adminCountRes.rows[0].count, 10);
-
-    if (activeAdminCount <= 1) {
-      throw new AppError(
-        'Conflict: Cannot lock or disable the last remaining active ADMIN in the system',
-        409
-      );
-    }
-  }
-
-  // 4. Update status
-  const updateRes = await pool.query(
-    'UPDATE users SET status = $1, updated_at = NOW() WHERE id = $2 RETURNING id, email, full_name, role, status, updated_at',
-    [formattedStatus, targetUserId]
-  );
-
-  // 5. Audit Log
+  const client = await pool.connect();
   try {
-    await pool.query(
+    await client.query('BEGIN');
+
+    // 2. Fetch target user with FOR UPDATE row lock
+    const userRes = await client.query(
+      'SELECT id, email, full_name, role, status FROM users WHERE id = $1 FOR UPDATE',
+      [targetUserId]
+    );
+
+    if (userRes.rowCount === 0) {
+      throw new AppError('User not found', 404);
+    }
+
+    const targetUser = userRes.rows[0];
+
+    // 3. Last-Admin protection check inside transaction
+    if (targetUser.role === 'ADMIN' && formattedStatus !== 'ACTIVE') {
+      const adminCountRes = await client.query(
+        "SELECT COUNT(*) FROM users WHERE role = 'ADMIN' AND status = 'ACTIVE'"
+      );
+      const activeAdminCount = parseInt(adminCountRes.rows[0].count, 10);
+
+      if (activeAdminCount <= 1) {
+        throw new AppError(
+          'Conflict: Cannot lock or disable the last remaining active ADMIN in the system',
+          409
+        );
+      }
+    }
+
+    // 4. Update status
+    const updateRes = await client.query(
+      'UPDATE users SET status = $1, updated_at = NOW() WHERE id = $2 RETURNING id, email, full_name as "fullName", role, status, updated_at as "updatedAt"',
+      [formattedStatus, targetUserId]
+    );
+
+    // 5. Audit Log inside transaction
+    await client.query(
       `INSERT INTO activity_logs (group_id, user_id, action_type, target_id, metadata, content_summary)
        VALUES (NULL, $1, $2, $3, $4, $5)`,
       [
@@ -237,15 +250,19 @@ export const updateUserStatus = async (currentUser, targetUserId, newStatus) => 
         `Admin updated user ${targetUser.email} status to ${formattedStatus}`,
       ]
     );
-  } catch (logErr) {
-    logger.error('Failed to write audit log for updateUserStatus:', logErr);
-  }
 
-  return updateRes.rows[0];
+    await client.query('COMMIT');
+    return updateRes.rows[0];
+  } catch (error) {
+    await client.query('ROLLBACK');
+    throw error;
+  } finally {
+    client.release();
+  }
 };
 
 /**
- * GET /api/admin/audit-logs (Read-only)
+ * GET /api/admin/audit-logs (Read-only, camelCase normalized)
  */
 export const getAuditLogs = async (options = {}) => {
   const { page = 1, limit = 20, action_type, user_id, from, to } = options;
@@ -295,8 +312,8 @@ export const getAuditLogs = async (options = {}) => {
   const fetchLimit = safeLimit + 1;
   const dataParams = [...queryParams, fetchLimit, offset];
   const dataSql = `
-    SELECT al.id, al.group_id, al.user_id, u.email as user_email, u.full_name as user_name,
-           al.action_type, al.target_id, al.metadata, al.content_summary, al.created_at
+    SELECT al.id, al.group_id as "groupId", al.user_id as "userId", u.email as "userEmail", u.full_name as "userName",
+           al.action_type as "actionType", al.target_id as "targetId", al.metadata, al.content_summary as "contentSummary", al.created_at as "createdAt"
     FROM activity_logs al
     LEFT JOIN users u ON al.user_id = u.id
     ${whereSql}
@@ -316,7 +333,7 @@ export const getAuditLogs = async (options = {}) => {
   // Apply PII Masking on email and metadata
   const maskedRows = rows.map((log) => ({
     ...log,
-    user_email: maskEmail(log.user_email),
+    userEmail: maskEmail(log.userEmail),
     metadata: maskMetadataPii(log.metadata),
   }));
 
@@ -330,7 +347,7 @@ export const getAuditLogs = async (options = {}) => {
 };
 
 /**
- * GET /api/admin/dashboard/overview
+ * GET /api/admin/dashboard/overview (camelCase normalized)
  */
 export const getDashboardOverview = async () => {
   const [userStatsRes, activeClassesRes, submissionsRes, reviewsRes, aiRequestsRes] =

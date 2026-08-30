@@ -7,13 +7,18 @@ import { validate } from '../middleware/validation.middleware.js';
 
 const router = express.Router();
 
-// Rate Limiter cho Login
+// Rate Limiter cho Login (chống brute-force, chỉ đếm các lần thất bại)
 const loginLimiter = rateLimit({
     windowMs: 15 * 60 * 1000, // 15 phút
-    max: 5,
+    max: 5, // Tối đa 5 lần đăng nhập THẤT BẠI trong 15 phút per IP
+    skipSuccessfulRequests: true, // Bỏ qua không đếm các lần đăng nhập THÀNH CÔNG (status < 400)
     message: { message: 'Too many login attempts, please try again after 15 minutes' },
     standardHeaders: true,
     legacyHeaders: false,
+    handler: (req, res, next, options) => {
+        console.warn(`[SECURITY WARNING] Rate limit exceeded for login attempts from IP: ${req.ip}, email target: ${req.body?.email || 'N/A'}`);
+        res.status(options.statusCode).json(options.message);
+    }
 });
 
 // Rate Limiter cho Quên mật khẩu (chống email enumeration & spam)

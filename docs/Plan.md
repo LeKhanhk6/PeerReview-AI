@@ -1297,88 +1297,119 @@ Một Feature chỉ hoàn thành khi:
        └──────────────┘
 ```
 
-# 28. PILOT PREPARATION & BACKEND DEVELOPMENT ROADMAP (500–1,000 Users)
+# 28. PILOT PREPARATION & BACKEND DEVELOPMENT ROADMAP (500–1,000 Users — Bản v2)
 
-## 🔴 SPRINT 1 — Admin APIs & Verification (Tuần 1–2: Chặn Task 07.1 Frontend)
+## 🔴 SPRINT 1 (Tuần 1–2) — Admin APIs & Verification
 
-### B1. Admin APIs (Quản lý User & Audit Logs)
-- `GET /api/admin/users`: Phân trang + `?search=` (tên/email) + `?role=` + `?status=`.
-- `PATCH /api/admin/users/:userId/role`: Validate role (`STUDENT`, `TEACHER`, `ADMIN`), authorize `ADMIN`-only.
-- `PATCH /api/admin/users/:userId/status`: Khóa / Mở tài khoản.
-- **Business Rules Bắt Buộc (Backend Enforced)**:
-  - *Self-protection*: ADMIN không được tự hạ quyền hoặc tự khóa chính mình.
-  - *Last-Admin protection*: Chặn hạ quyền hoặc khóa ADMIN duy nhất của hệ thống.
-  - *Audit Logging*: Ghi lại nhật ký vào `activity_logs` cho mọi thao tác của Admin (actor, action, target, timestamp).
-- `GET /api/admin/audit-logs`: Limit 20, filter `action_type`, `user_id`, `from`, `to`. Sử dụng 6 indexes có sẵn của `activity_logs`. Mask email phía backend (`a***@domain.com`) trước khi trả response.
-- `GET /api/admin/dashboard/overview`: Thống kê Users theo Role, số Lớp học đang hoạt động, tổng số Submissions/Reviews, số lượng AI Requests trong 24h qua.
-- **Verification**: Grep mã nguồn kiểm chứng endpoint nào đã có, chỉ xây dựng các endpoint còn thiếu.
+### TASK B1.0 — Verification First (Kiểm chứng mã nguồn trước khi code)
+- Grep mã nguồn kiểm chứng endpoint đã có / còn thiếu:
+  - `GET /api/admin/users`
+  - `PATCH /api/admin/users/:userId/role`
+  - `PATCH /api/admin/users/:userId/status`
+  - `GET /api/admin/audit-logs`
+  - `GET /api/admin/dashboard/overview`
+- **Quy tắc**: Chỉ xây dựng các endpoint còn thiếu, tuyệt đối không viết trùng lặp.
 
-### B2. Kiểm chứng APIs Frontend Phase 6 đang gọi
-- [x] Xác nhận `PATCH /api/summary/summary-items/:itemId` nhận cả `content` + `note`.
-- [x] Xác nhận logic tự động chuyển trạng thái `DRAFT` → `REVIEWING` (khi teacher edit lần đầu) → `APPROVED` (khi approve).
-- [x] Xác nhận lỗi 409 Conflict trả về đúng khi `updatedAt` mismatch (optimistic locking).
+### TASK B1.1 — User Management API
+- `GET /api/admin/users`: Phân trang (`page`, `limit`, `hasNext`) + Filter `?search=` (tên/email) + `?role=` + `?status=`. Authorize `ADMIN`-only via `role.middleware`.
+- `PATCH /api/admin/users/:userId/role`: Validate role hợp lệ (`STUDENT`, `TEACHER`, `ADMIN`) → trả 400 nếu sai. Trả 404 nếu user không tồn tại.
+- `PATCH /api/admin/users/:userId/status`: Khóa / Mở tài khoản người dùng.
+
+### TASK B1.2 — Business Rules (Backend Enforced — Tuyến chặn chính)
+- **Self-protection**: Chặn ADMIN tự hạ quyền / tự khóa tài khoản chính mình → Trả `403 Forbidden`.
+- **Last-Admin protection**: Chặn hạ quyền / khóa ADMIN duy nhất của hệ thống → Trả `409 Conflict`.
+- **Audit Logging**: Ghi nhật ký vào `activity_logs` cho MỌI thao tác admin (actor, action, target, timestamp).
+
+### TASK B1.3 — Audit Logs API
+- `GET /api/admin/audit-logs`: Read-only, phân trang `limit = 20`, filter `action_type`, `user_id`, `from`/`to`.
+- Query tận dụng 6 indexes có sẵn của `activity_logs`.
+- Mask email phía backend (`a***@domain.com`) trước khi trả response.
+
+### TASK B1.4 — Admin Dashboard Overview API
+- `GET /api/admin/dashboard/overview`: Trả về số lượng Users theo role, số lớp học đang hoạt động, tổng số submissions/reviews và số AI requests trong 24h qua.
+
+### TASK B2 — Kiểm chứng APIs Frontend Phase 6 đang gọi ✅
+- [x] `PATCH /api/summary/summary-items/:itemId` nhận cả `content` + `note`.
+- [x] Logic chuyển trạng thái `DRAFT` → `REVIEWING` (teacher edit lần đầu) → `APPROVED`.
+- [x] Trả đúng `409 Conflict` khi `updatedAt` mismatch (optimistic locking).
 
 ---
 
-## 🟡 SPRINT 2 — Pilot Infrastructure & System Config (Tuần 3–5)
+## 🟡 SPRINT 2 (Tuần 3–5) — Pilot Infrastructure & System Config
 
-### B3. Synthesis Job Infrastructure
-- Triển khai Job queue nền (Redis + Worker) cho AI synthesis — không block HTTP request.
-- Quyết định chiến lược Cancel job và xây dựng endpoint cancel (hoặc báo Frontend sử dụng phương án "job chạy nền, không cancel").
-- Endpoint trả về trạng thái job (`pending`, `processing`, `done`, `failed`) phục vụ Frontend Polling 5s.
+### TASK B3 — Synthesis Job Infrastructure
+- Job queue nền (Redis + Worker) cho AI synthesis — không block HTTP request.
+- Quyết định & phát triển: Endpoint cancel job HOẶC báo Frontend dùng phương án "job chạy nền, không cancel".
+- `GET /api/assignments/:id/review-summary/status` → Trả `pending` | `processing` | `done` | `failed` (cho FE Polling 5s).
 
-### B4. System Config (Chặn Task 07.2 Frontend)
+### TASK B4 — System Config (Chặn FE Task 07.2)
 - Migration DB: Bảng `system_config` (`key`, `value`, `updated_by`, `updated_at`).
-- `GET /api/admin/system-config`: Trả về thông số Audit logging, Telemetry, Rate limit status.
-- `PATCH /api/admin/system-config`: Cho phép Admin cập nhật tham số kèm ghi Audit Log.
+- `GET /api/admin/system-config`: Trả về audit logging, telemetry, rate limit status.
+- `PATCH /api/admin/system-config`: Cập nhật tham số + ghi audit log mọi thay đổi. Authorize `ADMIN`-only cho cả 2 endpoints.
 
-### B5. Email Notifications (Tự động hóa)
-- Email nhắc nhở deadline trước 24h (tự động quét theo từng assignment).
-- Email mời người dùng / reset password.
-- Email thông báo khi tài khoản bị khóa / mở khóa.
+### TASK B5 — Email Notifications (Bản rút gọn — ~2 ngày công)
+- **B5.1 — Email nhắc deadline trước 24h** (Ưu tiên cao): Cron job quét assignment, gửi email cho các nhóm chưa nộp và reviewer chưa chấm. Dùng SMTP provider free tier (Resend / Gmail SMTP / Mailgun), fire-and-forget.
+- **B5.2 — Email reset password**: `POST /api/auth/forgot-password` (gửi link reset có token hết hạn 15 phút), `POST /api/auth/reset-password` (verify token + đổi password). Token one-time, ghi audit log.
+- *(Đã cắt giảm: Email thông báo khóa/mở tài khoản để ưu tiên B6 & B7.1)*.
 
-### B6. AI Cost Control & Rate Limiting
-- Rate limit AI Mentor per user (~30 requests/phút).
-- Caching kết quả Toxicity check để tiết kiệm chi phí API.
-- Ghi log `ai_requests` đủ chi tiết để đối chiếu chi phí hàng tháng.
-
----
-
-## 🟠 SPRINT 3 — Pilot Operations & Hardening (Tuần 6–7)
-
-### B7. Ops & Infrastructure Resilience
-- **Load Testing**: Giả lập 300 concurrent users (bằng k6/Locust) với mục tiêu p95 < 500ms cho thao tác đọc, < 1s cho thao tác ghi.
-- **Database Backup**: Tự động Backup DB hàng ngày + Point-in-time Recovery (PITR với WAL), retention 14 ngày.
-- **Health Check**: Endpoint `/health` phục vụ Admin Dashboard và giám sát hạ tầng.
-- **Table Partitioning**: Phân vùng/giám sát bảng `activity_logs` khi vượt quá 5 triệu bản ghi.
-- **Object Storage**: Cấu hình lưu trữ tệp bài nộp (S3/Firebase/GCS, 5–50GB), giới hạn dung lượng tệp nộp.
-- **Environment**: Tách riêng môi trường Production & Staging; xác minh bộ báo lỗi `/api/client-errors`.
-- **E2E Testing**: Chạy bộ kiểm thử Playwright 4 luồng nghiệp vụ quan trọng trên môi trường Staging.
+### TASK B6 — AI Cost Control & Rate Limiting ⬆️ (Đẩy sớm từ Sprint 3)
+- Rate limit AI Mentor per user (~30 req/phút).
+- Cache kết quả toxicity check để tiết kiệm chi phí.
+- Log `ai_requests` đủ chi tiết để đối chiếu chi phí hàng tháng.
 
 ---
 
-## 📅 TIMELINE TỔNG HỢP & PHÂN CÔNG (BACKEND & FRONTEND)
+## 🟠 SPRINT 3 (Tuần 6–7) — Ops, Hardening & E2E Support
+
+### TASK B7.1 — Load Testing ⬆️ (Bắt đầu sớm nếu B6 xong sớm)
+- k6/Locust giả lập 300 concurrent users (mục tiêu: p95 < 500ms đọc, < 1s ghi). Kịch bản đặc biệt: "Đề nộp phút chót" (spike upload trong 5 phút).
+
+### TASK B7.2 — Database Resilience
+- Backup hàng ngày + Point-in-time Recovery (PITR với WAL), retention 14 ngày.
+- Giám sát / phân vùng `activity_logs` khi vượt 5 triệu bản ghi.
+
+### TASK B7.3 — Health Check
+- Endpoint `GET /health` (kiểm tra DB, AI Service connectivity) phục vụ Admin Dashboard & Monitoring.
+
+### TASK B7.4 — Object Storage
+- Lưu trữ file bài nộp (S3/Firebase/GCS, 5–50GB), giới hạn dung lượng / file nộp.
+
+### TASK B7.5 — Environment & Staging
+- Tách Production / Staging + env variables riêng.
+- Verify error reporting: `POST /api/client-errors` nhận + log được lỗi từ FE.
+
+### TASK B7.6 — E2E Support
+- Chạy Playwright 4 critical flows trên môi trường Staging (khớp FE Task 08.1).
+
+---
+
+## 📋 Definition of Done (DoD Backend)
+1. **Validation & Error Handling**: Validation đầy đủ với định dạng chuẩn `{ code, message, status }`.
+2. **Authorization**: Kiểm thử phân quyền theo role (`STUDENT`, `TEACHER`, `ADMIN`).
+3. **Git & Commit**: Test kỹ lưỡng + commit theo convention (`feat:`, `fix:`).
+4. **Documentation**: Cập nhật tài liệu API.
+
+---
+
+## 📅 TIMELINE TỔNG HỢP & PHÂN CÔNG
 
 | Thời gian | Backend Roadmap | Frontend Roadmap |
 | :--- | :--- | :--- |
-| **Tuần 1–2** | 🔴 Admin APIs (B1, B2) | 🔴 Task 07.1a–07.1g (Admin Core, MSW song song) |
-| **Tuần 3–4** | 🟡 Job queue (B3) + System Config (B4) | 🟡 Task 07.2 System Settings (chờ B4) + Merge 07.1 |
-| **Tuần 5–7** | 🟠 Email (B5), AI Cost (B6), Ops (B7) | 🟠 E2E Testing + Pilot Readiness (F1, F2) |
-| **Tuần 8–10** | 🚀 **PILOT CHÍNH THỨC (3 Giai đoạn)** | 🚀 **PILOT CHÍNH THỨC (3 Giai đoạn)** |
-
-### 🚀 3 Giai đoạn Vận hành Pilot:
-- **Giai đoạn 1 (Tuần 8)**: Kín 50–100 users (Thử nghiệm diện hẹp).
-- **Giai đoạn 2 (Tuần 9)**: Mở rộng 300–500 users (Đánh giá tải và độ ổn định).
-- **Giai đoạn 3 (Tuần 10)**: Mở tối đa 800–1.000 users (Chấm chéo và tổng hợp AI thực tế).
+| **Tuần 1–2** | 🔴 B1.0–B1.4, B2 (Admin APIs + verification) | 🔴 Task 07.1a–07.1g (Admin Core, MSW song song) |
+| **Tuần 3–4** | 🟡 B3 (Job queue) + B4 (SysConfig) + B5 rút gọn | 🟡 Task 07.2 System Settings (chờ B4) + Merge 07.1 |
+| **Tuần 4–5** | 🟡 B6 AI Cost Control ⬆️ | 🟡 Task 07.2 Merge & E2E Prep |
+| **Tuần 5–7** | 🟠 B7.1 Load test ⬆️ → B7.2–B7.6 Ops & Hardening | 🟠 E2E Testing + Pilot Readiness (Task 08.1–08.3) |
+| **Tuần 8–10** | 🚀 **PILOT: GĐ1 kín (50–100) → GĐ2 (300–500) → GĐ3 full (800–1.000)** | 🚀 **PILOT: GĐ1 kín (50–100) → GĐ2 (300–500) → GĐ3 full (800–1.000)** |
 
 ---
 
 ## ⚡ BẢNG QUẢN LÝ RỦI RO & ĐIỂM NGHỄN
 
-| # | Vấn đề / Rủi ro | Đối tượng xử lý | Hệ quả nếu trễ |
-| :---: | :--- | :--- | :--- |
-| 1 | Backend Admin APIs (B1) chưa sẵn sàng | Backend Team | Merge PR Task 07.1 của Frontend bị chặn |
-| 2 | Chiến lược Cancel synthesis job | Backend Team | Frontend sử dụng tạm phương án "Job chạy nền, không cancel" |
-| 3 | Backend Last-Admin check | Backend Team | Frontend chỉ chặn được bằng UI best-effort, tiềm ẩn rủi ro khóa nhầm Admin duy nhất |
-| 4 | Field `sentiment` trong SummaryItem DTO | BE/FE Team | Frontend ghi nhận deviation khỏi roadmap gốc (`topic_category` thay thế) |
-| 5 | Ngân sách & LLM API Key cho Pilot | Ban Quản lý Đề tài | Pilot không khởi chạy được AI Peer-Review Mentor |
+| # | Vấn đề | Chờ ai | Hệ quả nếu trễ |
+|:---:|:---|:---:|:---|
+| 1 | Backend Admin APIs (B1) chưa sẵn sàng | BE | Task 07.1 FE merge PR bị chặn |
+| 2 | Cancel synthesis job | BE | FE dùng phương án "Job chạy nền, không cancel" |
+| 3 | Last-admin check backend | BE | FE chỉ chặn bằng UI best-effort → rủi ro bảo mật |
+| 4 | Field `sentiment` trong SummaryItem DTO | BE/FE | FE ghi nhận deviation khỏi roadmap gốc |
+| 5 | LLM API + Ngân sách cho Pilot | Đề tài | Pilot không chạy được AI Mentor |
+| 6 | Email service provider chọn gì | BE | ✅ SMTP free tier (Resend / Mailgun), chỉ deadline + reset password |

@@ -228,6 +228,26 @@ _(Bản đã chỉnh sửa theo Technical Review — các thay đổi so với v
 
 - [ ] `SystemConfigPanel` — Read-only status checks trước (audit logging, telemetry flags từ Auth Store), cho phép edit sau khi Backend B4 sẵn sàng `PATCH /api/admin/system-config`.
 
+### Task 07.2-M — Merge Task 07.1 với Backend API Thật (Tuần 3–4)
+
+- [ ] Chuyển đổi từ MSW Mock Handlers sang Backend API thật khi Task B1 hoàn tất.
+- [ ] Verify flow 409 Conflict (Last-Admin protection) end-to-end giữa FE & BE.
+- [ ] Verify PII masking khớp với Backend (đảm bảo không bị double-mask email).
+
+---
+
+## 📊 MA TRẬN TASK ↔ SCREEN ↔ API BACKEND
+
+| FE Task | Screen / Component | API Backend | Trạng thái API |
+| :---: | :--- | :--- | :---: |
+| **07.1d** | Screen 19 (Admin Users) | `GET /api/admin/users`, `PATCH /api/admin/users/:id/role`, `status` | ⏳ Chờ BE B1 |
+| **07.1e** | Screen 19 (Audit Logs Tab) | `GET /api/admin/audit-logs` | ⏳ Chờ BE B1 |
+| **07.1f** | Screen 19 (Dashboard Overview) | `GET /api/admin/dashboard/overview` | ⏳ Chờ BE B1 |
+| **07.2** | Screen 19 (System Settings) | `GET /api/admin/system-config`, `PATCH /api/admin/system-config` | ⏳ Chờ BE B4 |
+| **08.1.2** | Screen 6 (Submission) | `POST /submissions/assignments/:id` | ✅ API có sẵn |
+| **08.1.3** | Screen 7, 8 (Peer Review) | `GET/POST /reviews/...`, `POST /ai/review-feedback` | ✅ API có sẵn |
+| **08.1.4** | Screen 15 (Review Synthesis) | `GET/POST /assignments/:id/review-summary` | ✅ API có sẵn |
+
 ---
 
 ## ⚙️ PHASE 8 — POLISH, E2E & PILOT READINESS (Tuần 5–7)
@@ -272,10 +292,11 @@ _(Bản đã chỉnh sửa theo Technical Review — các thay đổi so với v
 
 | Tuần | Backend Roadmap | Frontend Roadmap |
 |---|---|---|
-| **Tuần 1–2** | 🔴 Admin APIs (B1, B2) | 🔴 Task 07.1a–07.1g (Admin Core, MSW song song) |
-| **Tuần 3–4** | 🟡 Job queue (B3) + System Config (B4) | 🟡 Task 07.2 System Settings (chờ B4) + Merge 07.1 |
-| **Tuần 5–7** | 🟠 Email (B5), AI Cost (B6), Ops (B7) | 🟠 E2E Testing + Pilot Readiness (F1, F2) |
-| **Tuần 8–10** | 🚀 **PILOT CHÍNH THỨC (3 Giai đoạn)** | 🚀 **PILOT CHÍNH THỨC (3 Giai đoạn)** |
+| **Tuần 1–2** | 🔴 B1.0–B1.4, B2 (Admin APIs + verification) | 🔴 Task 07.1a–07.1g (Admin Core, MSW song song) |
+| **Tuần 3–4** | 🟡 B3 (Job queue) + B4 (SysConfig) + B5 rút gọn | 🟡 Task 07.2 System Settings (chờ B4) + Merge 07.1 |
+| **Tuần 4–5** | 🟡 B6 AI Cost Control ⬆️ | 🟡 Task 07.2 Merge & E2E Prep |
+| **Tuần 5–7** | 🟠 B7.1 Load test ⬆️ → B7.2–B7.6 Ops & Hardening | 🟠 E2E Testing + Pilot Readiness (Task 08.1–08.3) |
+| **Tuần 8–10** | 🚀 **PILOT: GĐ1 kín (50–100) → GĐ2 (300–500) → GĐ3 full (800–1.000)** | 🚀 **PILOT: GĐ1 kín (50–100) → GĐ2 (300–500) → GĐ3 full (800–1.000)** |
 
 ### 🚀 3 Giai đoạn Vận hành Pilot:
 - **Giai đoạn 1 (Tuần 8)**: Kín 50–100 users (Thử nghiệm diện hẹp).

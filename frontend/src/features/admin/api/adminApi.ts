@@ -62,18 +62,22 @@ export const adminApi = {
   // 6. Lấy danh sách cấu hình hệ thống
   getSystemConfig: async (): Promise<SystemConfigResponse> => {
     const res: any = await api.get('/admin/system-config');
+    const configs = res?.configs || res?.data?.configs || (typeof res === 'object' && !res.configs && !res.data ? res : {});
+    const items = res?.items || res?.data?.items || [];
     return {
-      configs: res.data || res.configs || {},
-      items: res.items || [],
+      configs,
+      items,
     };
   },
 
   // 7. Cập nhật tham số cấu hình hệ thống (Multi-key Batch PATCH)
   updateSystemConfig: async (payload: Record<string, string>): Promise<SystemConfigResponse> => {
     const res: any = await api.patch('/admin/system-config', payload);
+    const configs = res?.configs || res?.data?.configs || (typeof res === 'object' && !res.configs && !res.data ? res : {});
+    const items = res?.items || res?.data?.items || [];
     return {
-      configs: res.data || res.configs || {},
-      items: res.items || [],
+      configs,
+      items,
     };
   },
 };

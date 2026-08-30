@@ -233,6 +233,8 @@ export const synthesisHandlers = [
 
   // 5. PATCH /api/summary/submissions/:submissionId/summary/approve
   http.patch('/api/summary/submissions/:submissionId/summary/approve', ({ params }) => {
+    const { submissionId } = params;
+
     if (mockSummaryStatus === 'APPROVED') {
       return HttpResponse.json(
         { success: false, code: 'BAD_REQUEST', message: 'Summary is already approved' },
@@ -247,9 +249,11 @@ export const synthesisHandlers = [
       success: true,
       data: {
         id: 'summary-uuid-1',
+        submissionId: submissionId as string,
         status: 'APPROVED',
         updatedAt: mockSummaryUpdatedAt,
       },
     });
   }),
 ];
+

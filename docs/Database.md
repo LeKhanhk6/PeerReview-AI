@@ -334,6 +334,29 @@ CREATE TABLE notifications (
     is_read BOOLEAN DEFAULT FALSE,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
+
+-- ==============================================================================
+-- 9. NHÓM CẤU HÌNH HỆ THỐNG (System Configuration & Operational Parameters)
+-- ==============================================================================
+
+CREATE TABLE system_config (
+    id SERIAL PRIMARY KEY,
+    key VARCHAR(100) UNIQUE NOT NULL,
+    value TEXT NOT NULL,
+    description TEXT,
+    updated_by VARCHAR(100),
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- Seed mặc định (Idempotent)
+INSERT INTO system_config (key, value, description, updated_by)
+VALUES 
+  ('audit_logging_enabled', 'true', 'Tự động ghi vết mọi thao tác nhạy cảm vào activity_logs', 'SYSTEM'),
+  ('telemetry_enabled', 'true', 'Thu thập lỗi runtime và báo cáo sự cố mạng (/api/client-errors)', 'SYSTEM'),
+  ('rate_limit_ai_mentor', '30', 'Giới hạn số request AI Mentor mỗi phút per sinh viên', 'SYSTEM'),
+  ('pii_sanitization_mode', 'STRICT', 'Chế độ mã hóa PII thông tin sinh viên và người chấm', 'SYSTEM')
+ON CONFLICT (key) DO NOTHING;
+
 ```
 ## 🛠 KHỞI TẠO EXTENSION
 
@@ -730,3 +753,22 @@ Quản lý việc phát hiện rủi ro học tập/hoạt động nhóm sớm v
 - `is_read BOOLEAN DEFAULT FALSE`: Trạng thái đã đọc (`TRUE`) hoặc chưa đọc (`FALSE`).
     
 - `created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()`: Thời điểm tạo thông báo.
+
+
+## 9. NHÓM CẤU HÌNH HỆ THỐNG (System Configuration & Operational Parameters)
+
+Quản lý các tham số vận hành hệ thống động (Audit logging, Telemetry, Rate limit, PII mode) do Admin kiểm soát.
+
+### 🔹 Bảng `system_config` (Cấu hình hệ thống động)
+
+- `id SERIAL PRIMARY KEY`: Khóa chính số nguyên tự tăng.
+
+- `key VARCHAR(100) UNIQUE NOT NULL`: Khóa định danh tham số cấu hình duy nhất (Ví dụ: `audit_logging_enabled`, `telemetry_enabled`, `rate_limit_ai_mentor`, `pii_sanitization_mode`).
+
+- `value TEXT NOT NULL`: Giá trị lưu trữ dạng chuỗi đại diện cho cấu hình (Ví dụ: `"true"`, `"30"`, `"STRICT"`).
+
+- `description TEXT`: Mô tả công dụng của tham số cấu hình.
+
+- `updated_by VARCHAR(100)`: Email hoặc ID của Admin thực hiện cập nhật gần nhất.
+
+- `updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()`: Thời điểm cập nhật tham số gần nhất.

@@ -1339,15 +1339,18 @@ Một Feature chỉ hoàn thành khi:
 
 ## 🟡 SPRINT 2 (Tuần 3–5) — Pilot Infrastructure & System Config
 
-### TASK B3 — Synthesis Job Infrastructure
-- Job queue nền (Redis + Worker) cho AI synthesis — không block HTTP request.
-- Quyết định & phát triển: Endpoint cancel job HOẶC báo Frontend dùng phương án "job chạy nền, không cancel".
-- `GET /api/assignments/:id/review-summary/status` → Trả `pending` | `processing` | `done` | `failed` (cho FE Polling 5s).
+### TASK B3 — Synthesis Job Infrastructure ✅
+- [x] Quyết định chốt: Dùng phương án "Job chạy nền, không cancel" (phù hợp 100% với UI Phase 6, không gây race condition).
+- [x] `GET /api/summary/submissions/:submissionId/summary/status` → Trả về `{ status: 'pending' | 'processing' | 'done' | 'failed', errorReason: string | null }` cho FE Polling 5s.
+- [x] RBAC Strict Check: Chặn `STUDENT` với `403 Forbidden`, kiểm tra ownership `teacher_id = currentUser.userId` cho Giáo viên.
 
-### TASK B4 — System Config (Chặn FE Task 07.2)
-- Migration DB: Bảng `system_config` (`key`, `value`, `updated_by`, `updated_at`).
-- `GET /api/admin/system-config`: Trả về audit logging, telemetry, rate limit status.
-- `PATCH /api/admin/system-config`: Cập nhật tham số + ghi audit log mọi thay đổi. Authorize `ADMIN`-only cho cả 2 endpoints.
+### TASK B4 — System Config ✅
+- [x] Migration DB: Bảng `system_config` (`key` UNIQUE, `value`, `description`, `updated_by`, `updated_at`) với seed idempotent (`ON CONFLICT (key) DO NOTHING`).
+- [x] In-Memory Cache `getSystemConfigValue(key, defaultValue)` với 60s TTL cache + instant cache invalidation khi PATCH.
+- [x] Whitelist & Type Validation per-key (Key lạ -> `400 Bad Request`, Value sai định dạng -> `400 Bad Request`).
+- [x] `GET /api/admin/system-config`: Trả về danh sách cấu hình key-value (Authorize `ADMIN`-only).
+- [x] `PATCH /api/admin/system-config`: Hỗ trợ Multi-key batch update trong 1 DB Transaction + ghi unified Audit Log (`ADMIN_UPDATE_SYS_CONFIG`).
+
 
 ### TASK B5 — Email Notifications (Bản rút gọn — ~2 ngày công)
 - **B5.1 — Email nhắc deadline trước 24h** (Ưu tiên cao): Cron job quét assignment, gửi email cho các nhóm chưa nộp và reviewer chưa chấm. Dùng SMTP provider free tier (Resend / Gmail SMTP / Mailgun), fire-and-forget.

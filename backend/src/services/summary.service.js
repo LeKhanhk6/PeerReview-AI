@@ -277,3 +277,48 @@ export const approveReviewSummary = async (currentUser, submissionId) => {
         throw mapDbError(error, error.code === '55P03' ? 'The summary is currently being updated by another teacher. Please try again.' : null);
     });
 };
+
+/**
+ * GET /api/summary/submissions/:submissionId/summary/status
+ * Returns { status: 'pending' | 'processing' | 'done' | 'failed', errorReason: string | null }
+ * Strictly requires TEACHER class ownership or ADMIN role. Blocks STUDENT with 403.
+ */
+export const getSummaryStatus = async (currentUser, submissionId) => {
+    if (currentUser.role === 'STUDENT') {
+        throw new AppError('Forbidden: Students are not authorized to access synthesis status', 403);
+    }
+
+    const submission = await getSubmissionOrFail(currentUser, submissionId);
+
+    const summaryRes = await pool.query(`
+        SELECT status, updated_at
+        FROM review_summaries
+        WHERE submission_id = $1
+    `, [submission.submission_id]);
+
+    if (summaryRes.rowCount === 0) {
+        return {
+            status: 'pending',
+            errorReason: null,
+        };
+    }
+
+    const row = summaryRes.rows[0];
+    let status = 'done';
+
+    if (row.status === 'APPROVED' || row.status === 'REVIEWING' || row.status === 'DRAFT') {
+        status = 'done';
+    } else if (row.status === 'PROCESSING') {
+        status = 'processing';
+    } else if (row.status === 'FAILED') {
+        status = 'failed';
+    } else if (row.status === 'PENDING') {
+        status = 'pending';
+    }
+
+    return {
+        status,
+        errorReason: status === 'failed' ? 'LLM_PROCESSING_FAILED' : null,
+    };
+};
+

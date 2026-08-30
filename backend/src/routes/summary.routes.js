@@ -48,6 +48,13 @@ router.patch(
     summaryController.updateSummaryItem
 );
 
+// Kiểm tra trạng thái synthesis job (Task B3 - Polling endpoint)
+router.get(
+    '/submissions/:submissionId/summary/status',
+    validate({ params: submissionIdParamSchema }),
+    summaryController.getSummaryStatus
+);
+
 // Duyệt summary
 router.patch(
     '/submissions/:submissionId/summary/approve',
@@ -56,3 +63,4 @@ router.patch(
 );
 
 export default router;
+

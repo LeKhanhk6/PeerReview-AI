@@ -5,6 +5,7 @@ import { authorizeRoles } from '../middleware/role.middleware.js';
 import { validate } from '../middleware/validation.middleware.js';
 import { paginationMiddleware } from '../middleware/pagination.middleware.js';
 import * as adminController from '../controllers/admin.controller.js';
+import * as systemConfigController from '../controllers/system-config.controller.js';
 
 const router = express.Router();
 
@@ -90,4 +91,17 @@ router.get(
   adminController.getDashboardOverview
 );
 
+// 6. GET /api/admin/system-config
+router.get(
+  '/system-config',
+  systemConfigController.getSystemConfigs
+);
+
+// 7. PATCH /api/admin/system-config
+router.patch(
+  '/system-config',
+  systemConfigController.updateSystemConfigs
+);
+
 export default router;
+

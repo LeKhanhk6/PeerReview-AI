@@ -21,12 +21,22 @@ export const SynthesisStatusCard: React.FC<SynthesisStatusCardProps> = ({
       <div className="bg-white border border-gray-200 rounded-xl p-6 shadow-sm space-y-3" aria-busy="true">
         <div className="flex items-center justify-between">
           <div className="h-5 bg-gray-200 rounded w-1/3 animate-pulse" />
-          <div className="h-8 bg-gray-200 rounded w-28 animate-pulse" />
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={onRefresh}
+            className="text-xs text-gray-500 hover:text-gray-800"
+          >
+            ⏹ Hủy chờ (Chạy nền)
+          </Button>
         </div>
         <div className="h-4 bg-gray-200 rounded w-2/3 animate-pulse" />
-        <div className="h-2 bg-gray-200 rounded w-full animate-pulse" />
-        <p className="text-xs text-blue-600 font-medium animate-pulse">
-          ⏳ {synthesisMessages.status.processing}
+        <div className="w-full bg-blue-100 h-2 rounded-full overflow-hidden">
+          <div className="h-full bg-blue-600 animate-pulse w-3/4" />
+        </div>
+        <p className="text-xs text-blue-600 font-medium flex items-center justify-between">
+          <span>⏳ {synthesisMessages.status.processing}</span>
+          <span className="text-gray-400 font-normal">Bạn có thể rời trang, hệ thống tự động hoàn tất.</span>
         </p>
       </div>
     );

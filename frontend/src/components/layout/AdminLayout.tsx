@@ -1,5 +1,5 @@
 import React from 'react';
-import { LayoutDashboard, Users, Settings } from 'lucide-react';
+import { LayoutDashboard, Users, FileText, Settings } from 'lucide-react';
 import { AppLayout } from './AppLayout';
 import { layoutMessages } from '../../constants/messages/layout';
 
@@ -15,11 +15,17 @@ const adminNavItems = [
     href: '/admin/users',
   },
   {
+    icon: FileText,
+    label: 'Audit Logs',
+    href: '/admin/audit-logs',
+  },
+  {
     icon: Settings,
     label: layoutMessages.navigation.settings,
     href: '/admin/settings',
   },
 ];
+
 
 export const AdminLayout: React.FC = () => {
   return (

@@ -26,6 +26,11 @@ import { StudentSubmissionPage } from './features/submission/pages/StudentSubmis
 import { ReviewInboxScreen } from './features/review/components/ReviewInboxScreen';
 import { ReviewWritingScreen } from './features/review/components/ReviewWritingScreen';
 
+import { AdminDashboardPage } from './features/admin/pages/AdminDashboardPage';
+import { AdminUsersPage } from './features/admin/pages/AdminUsersPage';
+import { AdminAuditLogsPage } from './features/admin/pages/AdminAuditLogsPage';
+import { AdminSettingsPage } from './features/admin/pages/AdminSettingsPage';
+
 function App() {
   const { checkAuth } = useAuthStore();
 
@@ -35,10 +40,11 @@ function App() {
 
   return (
     <QueryClientProvider client={queryClient}>
+      <NetworkBanner />
+      <Toaster />
       <Router>
-        <NetworkBanner />
-        <Toaster />
         <Routes>
+          {/* Public Routes */}
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
           
@@ -55,14 +61,14 @@ function App() {
           >
             <Route path="dashboard" element={<div>Student Dashboard</div>} />
             <Route path="classes" element={<StudentClassesPage />} />
-            <Route path="classes/:id" element={<div>Student Class Workspace</div>} />
-            <Route path="groups/:groupId" element={<StudentGroupWorkspacePage />} />
+            <Route path="assignments" element={<div>Student Assignments</div>} />
+            <Route path="assignments/:assignmentId/workspace" element={<StudentGroupWorkspacePage />} />
             <Route path="assignments/:assignmentId/submit" element={<StudentSubmissionPage />} />
-            <Route path="assignments/:assignmentId/reviews" element={<ReviewInboxScreen />} />
-            <Route path="assignments/:assignmentId/reviews/:reviewAssignmentId" element={<ReviewWritingScreen />} />
-            <Route path="reviews" element={<Navigate to="/student/classes" replace />} />
+            
+            {/* Peer Review Sub-routes */}
+            <Route path="reviews" element={<ReviewInboxScreen />} />
+            <Route path="reviews/:reviewAssignmentId" element={<ReviewWritingScreen />} />
 
-            <Route path="profile" element={<div>Student Profile</div>} />
             <Route index element={<Navigate to="dashboard" replace />} />
           </Route>
 
@@ -81,7 +87,7 @@ function App() {
             <Route path="classes" element={<TeacherClassesPage />} />
             <Route path="classes/:id" element={<TeacherClassDetailPage />} />
             <Route path="assignments" element={<TeacherAssignmentsPage />} />
-            <Route path="assignments/create" element={<CreateAssignmentPage />} />
+            <Route path="assignments/new" element={<CreateAssignmentPage />} />
             <Route path="assignments/:id/edit" element={<EditAssignmentPage />} />
             <Route path="assignments/:assignmentId/synthesis" element={<TeacherReviewSynthesisPage />} />
             <Route path="analytics" element={<TeacherAnalyticsDashboardPage />} />
@@ -100,9 +106,10 @@ function App() {
               </ProtectedRoute>
             } 
           >
-            <Route path="dashboard" element={<div>Admin Dashboard</div>} />
-            <Route path="users" element={<div>Admin Users</div>} />
-            <Route path="settings" element={<div>Admin Settings</div>} />
+            <Route path="dashboard" element={<AdminDashboardPage />} />
+            <Route path="users" element={<AdminUsersPage />} />
+            <Route path="audit-logs" element={<AdminAuditLogsPage />} />
+            <Route path="settings" element={<AdminSettingsPage />} />
             <Route index element={<Navigate to="dashboard" replace />} />
           </Route>
 

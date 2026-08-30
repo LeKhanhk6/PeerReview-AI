@@ -8,4 +8,6 @@ export * from './workspace';
 export * from './submission';
 export * from './review';
 export * from './synthesis';
+export * from './admin';
+
 

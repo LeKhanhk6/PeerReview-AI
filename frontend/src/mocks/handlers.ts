@@ -4,6 +4,7 @@ import { analyticsHandlers } from './handlers/analytics.handlers';
 import { workspaceHandlers } from './handlers/workspace.handlers';
 import { submissionHandlers } from './handlers/submission.handlers';
 import { synthesisHandlers } from './handlers/synthesis.handlers';
+import { adminHandlers } from './handlers/admin.handlers';
 
 export const handlers = [
   ...assignmentHandlers,
@@ -11,6 +12,8 @@ export const handlers = [
   ...workspaceHandlers,
   ...submissionHandlers,
   ...synthesisHandlers,
+  ...adminHandlers,
+
 
   // Mocks for Telemetry and Observability (Always return success to prevent console spam)
   http.post('/api/telemetry', () => {

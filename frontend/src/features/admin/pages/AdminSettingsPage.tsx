@@ -211,9 +211,10 @@ export const AdminSettingsPage: React.FC = () => {
             <Button
               type="submit"
               variant="default"
-              size="md"
+              size="default"
               isLoading={updateMutation.isPending}
             >
+
               💾 Lưu thay đổi cấu hình
             </Button>
           </div>

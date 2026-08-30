@@ -184,25 +184,25 @@ _(Bản đã chỉnh sửa theo Technical Review — các thay đổi so với v
 
 ---
 
-## ⚙️ PHASE 6 — AI SYNTHESIS DASHBOARD _(tách chi tiết — trước đây quá mỏng)_
+## ⚙️ PHASE 6 — AI SYNTHESIS DASHBOARD ✅
 
-### Task 06.1 — Long-running Job UX
+### Task 06.1 — Long-running Job UX ✅
 
-- [ ]  Trigger synthesis → job status polling (hoặc SSE nếu backend hỗ trợ)
-- [ ]  Progress indicator + cancel option
-- [ ]  Xử lý job failure: retry từ UI, giữ trạng thái cũ an toàn
+- [x]  Trigger synthesis → job status polling (hoặc SSE nếu backend hỗ trợ)
+- [x]  Progress indicator + cancel option
+- [x]  Xử lý job failure: retry từ UI, giữ trạng thái cũ an toàn
 
-### Task 06.2 — Summary Report Rendering
+### Task 06.2 — Summary Report Rendering ✅
 
-- [ ]  Render `review_summary_items`: topic clusters, frequency_count, sentiment
-- [ ]  Traceability UI: click item → expand xem `source_review_ids` (reviews gốc, vẫn ẩn danh)
-- [ ]  Pagination/lazy-load nếu summary lớn
+- [x]  Render `review_summary_items`: topic clusters, frequency_count, sentiment
+- [x]  Traceability UI: click item → expand xem `source_review_ids` (reviews gốc, vẫn ẩn danh)
+- [x]  Pagination/lazy-load nếu summary lớn
 
-### Task 06.3 — Human-in-the-loop Editing
+### Task 06.3 — Human-in-the-loop Editing ✅
 
-- [ ]  Teacher edit summary items → đánh dấu `is_teacher_edited`, **không bị AI overwrite**
-- [ ]  Confirm điểm cuối cùng flow + confirm dialog đỏ
-- [ ]  Audit trail hiển thị ai sửa gì, khi nào
+- [x]  Teacher edit summary items → đánh dấu `is_teacher_edited`, **không bị AI overwrite**
+- [x]  Confirm điểm cuối cùng flow + confirm dialog đỏ
+- [x]  Audit trail hiển thị ai sửa gì, khi nào
 
 ---
 

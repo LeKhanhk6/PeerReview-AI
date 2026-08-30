@@ -178,6 +178,15 @@ export const AssignmentList: React.FC = () => {
                   <Button
                     variant="outline"
                     size="sm"
+                    onClick={() => navigate(`/teacher/assignments/${assignment.id}/synthesis`)}
+                    className="border-blue-200 text-blue-700 hover:bg-blue-50 font-medium"
+                  >
+                    🤖 AI Synthesis
+                  </Button>
+
+                  <Button
+                    variant="outline"
+                    size="sm"
                     onClick={() => navigate(`/teacher/assignments/${assignment.id}/edit`)}
                   >
                     Chỉnh sửa

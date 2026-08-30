@@ -6,4 +6,6 @@ export * from './assignment';
 export * from './analytics';
 export * from './workspace';
 export * from './submission';
+export * from './review';
+export * from './synthesis';
 

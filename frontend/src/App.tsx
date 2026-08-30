@@ -19,6 +19,7 @@ import { TeacherAssignmentsPage } from './features/assignment/pages/TeacherAssig
 import { CreateAssignmentPage } from './features/assignment/pages/CreateAssignmentPage';
 import { EditAssignmentPage } from './features/assignment/pages/EditAssignmentPage';
 import { TeacherAnalyticsDashboardPage } from './features/analytics/pages/TeacherAnalyticsDashboardPage';
+import { TeacherReviewSynthesisPage } from './features/synthesis/pages/TeacherReviewSynthesisPage';
 import { StudentGroupWorkspacePage } from './features/workspace/pages/StudentGroupWorkspacePage';
 import { StudentSubmissionPage } from './features/submission/pages/StudentSubmissionPage';
 
@@ -65,12 +66,12 @@ function App() {
             <Route index element={<Navigate to="dashboard" replace />} />
           </Route>
 
-          {/* Teacher Routes */}
+          {/* Teacher Routes (Accessible by TEACHER & ADMIN) */}
           <Route 
             path="/teacher" 
             element={
               <ProtectedRoute>
-                <RoleRoute allowedRoles={['TEACHER']}>
+                <RoleRoute allowedRoles={['TEACHER', 'ADMIN']}>
                   <TeacherLayout />
                 </RoleRoute>
               </ProtectedRoute>
@@ -82,6 +83,7 @@ function App() {
             <Route path="assignments" element={<TeacherAssignmentsPage />} />
             <Route path="assignments/create" element={<CreateAssignmentPage />} />
             <Route path="assignments/:id/edit" element={<EditAssignmentPage />} />
+            <Route path="assignments/:assignmentId/synthesis" element={<TeacherReviewSynthesisPage />} />
             <Route path="analytics" element={<TeacherAnalyticsDashboardPage />} />
             <Route path="submissions" element={<div>Teacher Submissions</div>} />
             <Route index element={<Navigate to="dashboard" replace />} />

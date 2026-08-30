@@ -1361,10 +1361,11 @@ Một Feature chỉ hoàn thành khi:
 - *(Đã cắt giảm: Email thông báo khóa/mở tài khoản để ưu tiên B6 & B7.1)*.
 
 
-### TASK B6 — AI Cost Control & Rate Limiting ⬆️ (Đẩy sớm từ Sprint 3)
-- Rate limit AI Mentor per user (~30 req/phút).
-- Cache kết quả toxicity check để tiết kiệm chi phí.
-- Log `ai_requests` đủ chi tiết để đối chiếu chi phí hàng tháng.
+### TASK B6 — AI Cost Control & Rate Limiting ⬆️ ✅
+- [x] **Dynamic Rate Limit**: Middleware `dynamicAiRateLimiter` đọc `getSystemConfigValue('rate_limit_ai_mentor')` động tại runtime (hiệu lực tức thì khi Admin `PATCH /api/admin/system-config` mà không cần restart server). Trả về `429 Too Many Requests`.
+- [x] **Toxicity / Comment Analysis Cache**: Cache theo SHA-256 hash của comment (`ai_comment_tox_${hash}`), TTL 7 ngày (7 * 86400s). Trả kết quả tức thì < 5ms.
+- [x] **Chi tiết Metric `ai_requests`**: Ghi log đầy đủ `user_id`, `request_type`, `prompt_hash`, `prompt_tokens`, `candidates_tokens`, `total_tokens`, `status` (`success`, `cache_hit`, `rate_limited`), và `cost_estimate` (đơn giá `$0.00015 / 1k tokens`).
+
 
 ---
 

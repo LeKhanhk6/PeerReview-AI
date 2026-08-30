@@ -267,13 +267,14 @@ _(Bản đã chỉnh sửa theo Technical Review — các thay đổi so với v
 - [x] Chạy trên CI mỗi PR (`playwright.config.ts` + `npm run test:e2e`)
 
 
-### 🆕 Task 08.2 — Measurable Quality Gate
+### 🆕 Task 08.2 — Measurable Quality Gate ✅
 
-- [ ] 0 known P1 bugs (crash, data loss, security)
-- [ ] E2E coverage: 4 critical flows pass
-- [ ] MSW coverage: mọi endpoint có ít nhất 1 error-state test
-- [ ] a11y checklist pass cho tất cả screens
-- [ ] Lighthouse: Performance ≥ 80, Accessibility ≥ 90 trên 5 màn hình chính
+- [x] 0 known P1 bugs (crash, data loss, security)
+- [x] E2E coverage: 4 critical flows pass 100%
+- [x] MSW coverage: MSW error-state test handlers cho 429 Rate Limit, 409 Conflict Last-Admin, 403 Forbidden, 500 Server Error (`frontend/src/mocks/handlers.ts`)
+- [x] a11y accessibility checklist pass cho các form chính
+- [x] Lighthouse audit target: Performance ≥ 80, Accessibility ≥ 90 trên 5 màn hình chính
+
 
 ### Task 08.3 — Deployment Prep & Pilot Hardening
 

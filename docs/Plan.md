@@ -1296,3 +1296,89 @@ Một Feature chỉ hoàn thành khi:
        │ AI Feedback  │                  └──────────────────┘
        └──────────────┘
 ```
+
+# 28. PILOT PREPARATION & BACKEND DEVELOPMENT ROADMAP (500–1,000 Users)
+
+## 🔴 SPRINT 1 — Admin APIs & Verification (Tuần 1–2: Chặn Task 07.1 Frontend)
+
+### B1. Admin APIs (Quản lý User & Audit Logs)
+- `GET /api/admin/users`: Phân trang + `?search=` (tên/email) + `?role=` + `?status=`.
+- `PATCH /api/admin/users/:userId/role`: Validate role (`STUDENT`, `TEACHER`, `ADMIN`), authorize `ADMIN`-only.
+- `PATCH /api/admin/users/:userId/status`: Khóa / Mở tài khoản.
+- **Business Rules Bắt Buộc (Backend Enforced)**:
+  - *Self-protection*: ADMIN không được tự hạ quyền hoặc tự khóa chính mình.
+  - *Last-Admin protection*: Chặn hạ quyền hoặc khóa ADMIN duy nhất của hệ thống.
+  - *Audit Logging*: Ghi lại nhật ký vào `activity_logs` cho mọi thao tác của Admin (actor, action, target, timestamp).
+- `GET /api/admin/audit-logs`: Limit 20, filter `action_type`, `user_id`, `from`, `to`. Sử dụng 6 indexes có sẵn của `activity_logs`. Mask email phía backend (`a***@domain.com`) trước khi trả response.
+- `GET /api/admin/dashboard/overview`: Thống kê Users theo Role, số Lớp học đang hoạt động, tổng số Submissions/Reviews, số lượng AI Requests trong 24h qua.
+- **Verification**: Grep mã nguồn kiểm chứng endpoint nào đã có, chỉ xây dựng các endpoint còn thiếu.
+
+### B2. Kiểm chứng APIs Frontend Phase 6 đang gọi
+- [x] Xác nhận `PATCH /api/summary/summary-items/:itemId` nhận cả `content` + `note`.
+- [x] Xác nhận logic tự động chuyển trạng thái `DRAFT` → `REVIEWING` (khi teacher edit lần đầu) → `APPROVED` (khi approve).
+- [x] Xác nhận lỗi 409 Conflict trả về đúng khi `updatedAt` mismatch (optimistic locking).
+
+---
+
+## 🟡 SPRINT 2 — Pilot Infrastructure & System Config (Tuần 3–5)
+
+### B3. Synthesis Job Infrastructure
+- Triển khai Job queue nền (Redis + Worker) cho AI synthesis — không block HTTP request.
+- Quyết định chiến lược Cancel job và xây dựng endpoint cancel (hoặc báo Frontend sử dụng phương án "job chạy nền, không cancel").
+- Endpoint trả về trạng thái job (`pending`, `processing`, `done`, `failed`) phục vụ Frontend Polling 5s.
+
+### B4. System Config (Chặn Task 07.2 Frontend)
+- Migration DB: Bảng `system_config` (`key`, `value`, `updated_by`, `updated_at`).
+- `GET /api/admin/system-config`: Trả về thông số Audit logging, Telemetry, Rate limit status.
+- `PATCH /api/admin/system-config`: Cho phép Admin cập nhật tham số kèm ghi Audit Log.
+
+### B5. Email Notifications (Tự động hóa)
+- Email nhắc nhở deadline trước 24h (tự động quét theo từng assignment).
+- Email mời người dùng / reset password.
+- Email thông báo khi tài khoản bị khóa / mở khóa.
+
+### B6. AI Cost Control & Rate Limiting
+- Rate limit AI Mentor per user (~30 requests/phút).
+- Caching kết quả Toxicity check để tiết kiệm chi phí API.
+- Ghi log `ai_requests` đủ chi tiết để đối chiếu chi phí hàng tháng.
+
+---
+
+## 🟠 SPRINT 3 — Pilot Operations & Hardening (Tuần 6–7)
+
+### B7. Ops & Infrastructure Resilience
+- **Load Testing**: Giả lập 300 concurrent users (bằng k6/Locust) với mục tiêu p95 < 500ms cho thao tác đọc, < 1s cho thao tác ghi.
+- **Database Backup**: Tự động Backup DB hàng ngày + Point-in-time Recovery (PITR với WAL), retention 14 ngày.
+- **Health Check**: Endpoint `/health` phục vụ Admin Dashboard và giám sát hạ tầng.
+- **Table Partitioning**: Phân vùng/giám sát bảng `activity_logs` khi vượt quá 5 triệu bản ghi.
+- **Object Storage**: Cấu hình lưu trữ tệp bài nộp (S3/Firebase/GCS, 5–50GB), giới hạn dung lượng tệp nộp.
+- **Environment**: Tách riêng môi trường Production & Staging; xác minh bộ báo lỗi `/api/client-errors`.
+- **E2E Testing**: Chạy bộ kiểm thử Playwright 4 luồng nghiệp vụ quan trọng trên môi trường Staging.
+
+---
+
+## 📅 TIMELINE TỔNG HỢP & PHÂN CÔNG (BACKEND & FRONTEND)
+
+| Thời gian | Backend Roadmap | Frontend Roadmap |
+| :--- | :--- | :--- |
+| **Tuần 1–2** | 🔴 Admin APIs (B1, B2) | 🔴 Task 07.1a–07.1g (Admin Core, MSW song song) |
+| **Tuần 3–4** | 🟡 Job queue (B3) + System Config (B4) | 🟡 Task 07.2 System Settings (chờ B4) + Merge 07.1 |
+| **Tuần 5–7** | 🟠 Email (B5), AI Cost (B6), Ops (B7) | 🟠 E2E Testing + Pilot Readiness (F1, F2) |
+| **Tuần 8–10** | 🚀 **PILOT CHÍNH THỨC (3 Giai đoạn)** | 🚀 **PILOT CHÍNH THỨC (3 Giai đoạn)** |
+
+### 🚀 3 Giai đoạn Vận hành Pilot:
+- **Giai đoạn 1 (Tuần 8)**: Kín 50–100 users (Thử nghiệm diện hẹp).
+- **Giai đoạn 2 (Tuần 9)**: Mở rộng 300–500 users (Đánh giá tải và độ ổn định).
+- **Giai đoạn 3 (Tuần 10)**: Mở tối đa 800–1.000 users (Chấm chéo và tổng hợp AI thực tế).
+
+---
+
+## ⚡ BẢNG QUẢN LÝ RỦI RO & ĐIỂM NGHỄN
+
+| # | Vấn đề / Rủi ro | Đối tượng xử lý | Hệ quả nếu trễ |
+| :---: | :--- | :--- | :--- |
+| 1 | Backend Admin APIs (B1) chưa sẵn sàng | Backend Team | Merge PR Task 07.1 của Frontend bị chặn |
+| 2 | Chiến lược Cancel synthesis job | Backend Team | Frontend sử dụng tạm phương án "Job chạy nền, không cancel" |
+| 3 | Backend Last-Admin check | Backend Team | Frontend chỉ chặn được bằng UI best-effort, tiềm ẩn rủi ro khóa nhầm Admin duy nhất |
+| 4 | Field `sentiment` trong SummaryItem DTO | BE/FE Team | Frontend ghi nhận deviation khỏi roadmap gốc (`topic_category` thay thế) |
+| 5 | Ngân sách & LLM API Key cho Pilot | Ban Quản lý Đề tài | Pilot không khởi chạy được AI Peer-Review Mentor |

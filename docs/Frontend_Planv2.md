@@ -180,8 +180,6 @@ _(Bản đã chỉnh sửa theo Technical Review — các thay đổi so với v
 - [x]  Circuit-breaker UX (Lỗi >3 lần trong session -> tắt auto-call, chuyển nút gọi manual)
 - [x]  Áp dụng câu mẫu từ AI có ConfirmDialog bảo vệ dữ liệu người dùng
 
-
-
 ---
 
 ## ⚙️ PHASE 6 — AI SYNTHESIS DASHBOARD ✅
@@ -208,42 +206,60 @@ _(Bản đã chỉnh sửa theo Technical Review — các thay đổi so với v
 
 ## ⚙️ PHASE 7 — ADMIN PANEL
 
-- [ ]  User management, class/course oversight
-- [ ]  🆕 Audit log viewer (read-only) — khớp audit requirement ở Phase 1
-- [ ]  System config screens
+### Task 07.1 — Admin Core (Tuần 1–2, Phụ thuộc Backend B1)
+
+- [ ] **Task 07.1a**: `admin.types.ts` + `admin.ts` (messages) + export `constants/messages/index.ts`
+- [ ] **Task 07.1b**: `admin.handlers.ts` (MSW) + đăng ký `handlers.ts` — mock data tuyệt đối không chứa PII
+- [ ] **Task 07.1c**: `adminApi.ts` + `useAdmin.ts` (TanStack Query + URL searchParams sync cho filter/search)
+- [ ] **Task 07.1d**: `UserTable` + `UserRoleModal`:
+  - Self-protection (`userId !== currentUser.id`) + tooltip cảnh báo "Không thể tự hạ quyền/tự khóa chính mình"
+  - `AdminActionGuard` + `ConfirmDialog` bảo vệ thao tác nhạy cảm
+  - Last-Admin protection UI best-effort
+  - Confirm khóa tài khoản hiển thị hậu quả tác động
+- [ ] **Task 07.1e**: `AuditLogViewer`:
+  - 100% read-only
+  - PII masking: tự động strip (`password`, `token`, `secret`, `jwt`, `api_key`), mask email (`a***@domain.com`)
+  - Filter `action_type`, `user_id`, `from`/`to` + phân trang `limit = 20`
+- [ ] **Task 07.1f**: `AdminDashboardPage` + `AdminUsersPage` + `AdminAuditLogsPage` (xử lý EmptyState & 403/404 errors)
+- [ ] **Task 07.1g**: `AdminLayout` nav items + `App.tsx` routes (`RoleRoute allowedRoles={['ADMIN']}`)
+- **Gate**: `npx tsc --noEmit` pass, MSW verification, manual test 7 bước + test case tìm user không tồn tại.
+
+### Task 07.2 — System Settings (Tuần 3–4, Chờ Backend B4)
+
+- [ ] `SystemConfigPanel` — Read-only status checks trước (audit logging, telemetry flags từ Auth Store), cho phép edit sau khi Backend B4 sẵn sàng `PATCH /api/admin/system-config`.
 
 ---
 
-## ⚙️ PHASE 8 — POLISH, E2E & RELEASE _(mới — thay cho "100% bug-free" mơ hồ)_
+## ⚙️ PHASE 8 — POLISH, E2E & PILOT READINESS (Tuần 5–7)
 
 ### Task 08.1 — E2E Testing (Playwright)
 
-- [ ]  Critical flows bắt buộc cover:
+- [ ] Critical flows bắt buộc cover:
     1. Login → hydration → dashboard
     2. Student submit assignment (upload + versioning)
     3. Double-blind review flow (allocate → write → submit)
     4. Teacher synthesis (trigger → edit → confirm)
-- [ ]  Chạy trên CI mỗi PR
+- [ ] Chạy trên CI mỗi PR
 
 ### 🆕 Task 08.2 — Measurable Quality Gate
 
-_(Thay thế target "100% Bug-free environment" — tiêu chí đo được:)_
+- [ ] 0 known P1 bugs (crash, data loss, security)
+- [ ] E2E coverage: 4 critical flows pass
+- [ ] MSW coverage: mọi endpoint có ít nhất 1 error-state test
+- [ ] a11y checklist pass cho tất cả screens
+- [ ] Lighthouse: Performance ≥ 80, Accessibility ≥ 90 trên 5 màn hình chính
 
-- [ ]  0 known P1 bugs (crash, data loss, security)
-- [ ]  E2E coverage: 4 critical flows pass
-- [ ]  MSW coverage: mọi endpoint có ít nhất 1 error-state test
-- [ ]  a11y checklist pass cho tất cả screens
-- [ ]  Lighthouse: Performance ≥ 80, Accessibility ≥ 90 trên 5 màn hình chính
+### Task 08.3 — Deployment Prep & Pilot Hardening
 
-### Task 08.3 — Deployment Prep
-
-- [ ]  Environment configs (.env staging/prod)
-- [ ]  Error reporting verify end-to-end (frontend → `/api/client-errors` → log)
-- [ ]  Smoke test script post-deploy (kiểm tra chunk loading, auth flow)
+- [ ] Environment configs (.env staging/prod)
+- [ ] Error reporting verify end-to-end (frontend → `/api/client-errors` → log)
+- [ ] Smoke test script post-deploy (kiểm tra chunk loading, auth flow)
+- [ ] Giả lập 300 concurrent users load test frontend
+- [ ] Chụp ảnh / ghi hình demo các luồng màn hình chính cho báo cáo & dự thi
 
 ---
 
-## 📌 POST-MVP BACKLOG (ghi rõ — tránh hiểu nhầm là bỏ quên)
+## 📌 POST-MVP BACKLOG
 
 - Notification center UI (bảng DB đã có, UI chưa trong MVP scope)
 - Đa ngôn ngữ đầy đủ (i18n-lite hiện tại là nền)
@@ -252,14 +268,28 @@ _(Thay thế target "100% Bug-free environment" — tiêu chí đo được:)_
 
 ---
 
-## 📊 Timeline tóm tắt
+## 📊 Timeline & Kế Hoạch Vận Hành Pilot (500–1.000 Users)
 
-|Phase|Nội dung|Ghi chú thay đổi|
+| Tuần | Backend Roadmap | Frontend Roadmap |
 |---|---|---|
-|0|Foundation + Rules enforced + i18n + Telemetry + Offline|🆕 mở rộng ~30%|
-|1|Auth & Shell|Nhỏ, activate 401|
-|2–3|Teacher flows|+ a11y checklist, export CSV|
-|4–5|Student & Review|+ Ma trận retry, draft API confirm|
-|6|AI Synthesis|🆕 tách 3 tasks chi tiết|
-|7|Admin|+ audit viewer|
-|8|E2E + Quality gates + Deploy|🆕 measurable DoD|
+| **Tuần 1–2** | 🔴 Admin APIs (B1, B2) | 🔴 Task 07.1a–07.1g (Admin Core, MSW song song) |
+| **Tuần 3–4** | 🟡 Job queue (B3) + System Config (B4) | 🟡 Task 07.2 System Settings (chờ B4) + Merge 07.1 |
+| **Tuần 5–7** | 🟠 Email (B5), AI Cost (B6), Ops (B7) | 🟠 E2E Testing + Pilot Readiness (F1, F2) |
+| **Tuần 8–10** | 🚀 **PILOT CHÍNH THỨC (3 Giai đoạn)** | 🚀 **PILOT CHÍNH THỨC (3 Giai đoạn)** |
+
+### 🚀 3 Giai đoạn Vận hành Pilot:
+- **Giai đoạn 1 (Tuần 8)**: Kín 50–100 users (Thử nghiệm diện hẹp).
+- **Giai đoạn 2 (Tuần 9)**: Mở rộng 300–500 users (Đánh giá tải và độ ổn định).
+- **Giai đoạn 3 (Tuần 10)**: Mở tối đa 800–1.000 users (Chấm chéo và tổng hợp AI thực tế).
+
+---
+
+## ⚡ Điểm Nghẽn & Quyết Định Đang Chờ
+
+| # | Vấn đề | Chờ ai | Hệ quả nếu trễ |
+|:---:|:---|:---:|:---|
+| 1 | Backend Admin APIs (B1) chưa sẵn sàng | BE | Task 07.1 merge PR bị chặn |
+| 2 | Cancel synthesis job | BE | FE dùng phương án "job chạy nền, không cancel" |
+| 3 | Last-admin check backend | BE | FE chỉ chặn bằng UI best-effort |
+| 4 | Field `sentiment` trong SummaryItem | BE | FE ghi nhận deviation khỏi roadmap gốc |
+| 5 | Ngân sách LLM API cho Pilot | Đề tài | Pilot không chạy được AI Peer-Review Mentor |

@@ -1352,10 +1352,14 @@ Một Feature chỉ hoàn thành khi:
 - [x] `PATCH /api/admin/system-config`: Hỗ trợ Multi-key batch update trong 1 DB Transaction + ghi unified Audit Log (`ADMIN_UPDATE_SYS_CONFIG`).
 
 
-### TASK B5 — Email Notifications (Bản rút gọn — ~2 ngày công)
-- **B5.1 — Email nhắc deadline trước 24h** (Ưu tiên cao): Cron job quét assignment, gửi email cho các nhóm chưa nộp và reviewer chưa chấm. Dùng SMTP provider free tier (Resend / Gmail SMTP / Mailgun), fire-and-forget.
-- **B5.2 — Email reset password**: `POST /api/auth/forgot-password` (gửi link reset có token hết hạn 15 phút), `POST /api/auth/reset-password` (verify token + đổi password). Token one-time, ghi audit log.
+### TASK B5 — Email Notifications (Bản rút gọn — ~2 ngày công) ✅
+- [x] **B5.1 — Email nhắc deadline trước 24h**: Hourly Cron job (`checkAndSendDeadlineReminders`) quét assignments due in 24h, ghi vết `deadline_reminders_sent` chống trùng lặp (Idempotent 100%).
+- [x] **B5.2 — Email reset password**:
+  - `POST /api/auth/forgot-password`: Rate limit 5 req/hour, Anti-enumeration protection (Uniform response cho mọi email).
+  - SHA-256 token hashing trong DB (`password_reset_tokens`), 15-min expiration, One-time token invalidation (`used_at`).
+  - `POST /api/auth/reset-password`: Verify token, bcrypt password hashing, invalidate token và ghi Audit Log.
 - *(Đã cắt giảm: Email thông báo khóa/mở tài khoản để ưu tiên B6 & B7.1)*.
+
 
 ### TASK B6 — AI Cost Control & Rate Limiting ⬆️ (Đẩy sớm từ Sprint 3)
 - Rate limit AI Mentor per user (~30 req/phút).

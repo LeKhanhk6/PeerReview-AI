@@ -20,6 +20,7 @@ import summaryRoutes from './routes/summary.routes.js';
 import analyticsRoutes from './routes/analytics.routes.js';
 import telemetryRoutes from './routes/telemetry.routes.js';
 import adminRoutes from './routes/admin.routes.js';
+import { startDeadlineCronJob } from './services/cron-deadline.service.js';
 
 dotenv.config();
 
@@ -52,8 +53,10 @@ app.use(cors({
 }));
 app.use(express.json());
 
-// Gọi hàm kiểm tra kết nối Database
+// Gọi hàm kiểm tra kết nối Database & Cron Scheduler
 connectDB();
+startDeadlineCronJob();
+
 
 // Routes
 app.use('/api/auth', authRoutes);

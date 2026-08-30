@@ -1,4 +1,5 @@
 import * as authService from '../services/auth.service.js';
+import * as passwordResetService from '../services/password-reset.service.js';
 import { AppError } from '../utils/AppError.js';
 
 export const register = async (req, res, next) => {
@@ -76,3 +77,24 @@ export const getMe = async (req, res, next) => {
         next(error);
     }
 };
+
+export const forgotPassword = async (req, res, next) => {
+    try {
+        const { email } = req.body;
+        const result = await passwordResetService.requestPasswordReset(email);
+        return res.ok(result);
+    } catch (error) {
+        next(error);
+    }
+};
+
+export const resetPassword = async (req, res, next) => {
+    try {
+        const { token, password } = req.body;
+        const result = await passwordResetService.resetPassword(token, password);
+        return res.ok(result);
+    } catch (error) {
+        next(error);
+    }
+};
+

@@ -71,13 +71,13 @@ export const getUsers = async (options = {}) => {
   }
 
   if (role) {
-    whereClauses.push(`role = $${paramIdx}`);
+    whereClauses.push(`r.name = $${paramIdx}`);
     queryParams.push(role.toUpperCase());
     paramIdx++;
   }
 
   if (status) {
-    whereClauses.push(`status = $${paramIdx}`);
+    whereClauses.push(`u.status = $${paramIdx}`);
     queryParams.push(status.toUpperCase());
     paramIdx++;
   }
@@ -86,7 +86,7 @@ export const getUsers = async (options = {}) => {
 
   // Get total count
   const countRes = await pool.query(
-    `SELECT COUNT(*) FROM users ${whereSql}`,
+    `SELECT COUNT(*) FROM users u LEFT JOIN roles r ON u.role_id = r.id ${whereSql}`,
     queryParams
   );
   const total = parseInt(countRes.rows[0].count, 10);
@@ -95,10 +95,11 @@ export const getUsers = async (options = {}) => {
   const fetchLimit = safeLimit + 1;
   const dataParams = [...queryParams, fetchLimit, offset];
   const dataSql = `
-    SELECT id, email, full_name as "fullName", role, status, created_at as "createdAt", updated_at as "updatedAt"
-    FROM users
+    SELECT u.id, u.email, u.full_name as "fullName", r.name as role, u.status, u.created_at as "createdAt", u.updated_at as "updatedAt"
+    FROM users u
+    LEFT JOIN roles r ON u.role_id = r.id
     ${whereSql}
-    ORDER BY created_at DESC
+    ORDER BY u.created_at DESC
     LIMIT $${paramIdx++} OFFSET $${paramIdx++}
   `;
 
@@ -142,7 +143,10 @@ export const updateUserRole = async (currentUser, targetUserId, newRole) => {
 
     // 2. Fetch target user with FOR UPDATE row lock
     const userRes = await client.query(
-      'SELECT id, email, full_name, role, status FROM users WHERE id = $1 FOR UPDATE',
+      `SELECT u.id, u.email, u.full_name, r.name as role, u.status 
+       FROM users u 
+       LEFT JOIN roles r ON u.role_id = r.id 
+       WHERE u.id = $1 FOR UPDATE`,
       [targetUserId]
     );
 
@@ -155,7 +159,7 @@ export const updateUserRole = async (currentUser, targetUserId, newRole) => {
     // 3. Last-Admin protection check inside transaction
     if (targetUser.role === 'ADMIN' && formattedRole !== 'ADMIN') {
       const adminCountRes = await client.query(
-        "SELECT COUNT(*) FROM users WHERE role = 'ADMIN' AND status = 'ACTIVE'"
+        "SELECT COUNT(*) FROM users u JOIN roles r ON u.role_id = r.id WHERE r.name = 'ADMIN' AND u.status = 'ACTIVE'"
       );
       const activeAdminCount = parseInt(adminCountRes.rows[0].count, 10);
 
@@ -167,10 +171,28 @@ export const updateUserRole = async (currentUser, targetUserId, newRole) => {
       }
     }
 
-    // 4. Update role
+    // 4. Fetch new role ID
+    const newRoleRes = await client.query(
+      'SELECT id FROM roles WHERE name = $1 LIMIT 1',
+      [formattedRole]
+    );
+    if (newRoleRes.rows.length === 0) {
+      throw new AppError('Invalid user role', 400);
+    }
+    const newRoleId = newRoleRes.rows[0].id;
+
+    // Update role_id
+    await client.query(
+      'UPDATE users SET role_id = $1, updated_at = NOW() WHERE id = $2',
+      [newRoleId, targetUserId]
+    );
+
     const updateRes = await client.query(
-      'UPDATE users SET role = $1, updated_at = NOW() WHERE id = $2 RETURNING id, email, full_name as "fullName", role, status, updated_at as "updatedAt"',
-      [formattedRole, targetUserId]
+      `SELECT u.id, u.email, u.full_name as "fullName", r.name as role, u.status, u.updated_at as "updatedAt"
+       FROM users u
+       LEFT JOIN roles r ON u.role_id = r.id
+       WHERE u.id = $1`,
+      [targetUserId]
     );
 
     // 5. Audit Log inside transaction
@@ -218,7 +240,10 @@ export const updateUserStatus = async (currentUser, targetUserId, newStatus) => 
 
     // 2. Fetch target user with FOR UPDATE row lock
     const userRes = await client.query(
-      'SELECT id, email, full_name, role, status FROM users WHERE id = $1 FOR UPDATE',
+      `SELECT u.id, u.email, u.full_name, r.name as role, u.status 
+       FROM users u 
+       LEFT JOIN roles r ON u.role_id = r.id 
+       WHERE u.id = $1 FOR UPDATE`,
       [targetUserId]
     );
 
@@ -231,7 +256,7 @@ export const updateUserStatus = async (currentUser, targetUserId, newStatus) => 
     // 3. Last-Admin protection check inside transaction
     if (targetUser.role === 'ADMIN' && formattedStatus !== 'ACTIVE') {
       const adminCountRes = await client.query(
-        "SELECT COUNT(*) FROM users WHERE role = 'ADMIN' AND status = 'ACTIVE'"
+        "SELECT COUNT(*) FROM users u JOIN roles r ON u.role_id = r.id WHERE r.name = 'ADMIN' AND u.status = 'ACTIVE'"
       );
       const activeAdminCount = parseInt(adminCountRes.rows[0].count, 10);
 
@@ -244,9 +269,17 @@ export const updateUserStatus = async (currentUser, targetUserId, newStatus) => 
     }
 
     // 4. Update status
-    const updateRes = await client.query(
-      'UPDATE users SET status = $1, updated_at = NOW() WHERE id = $2 RETURNING id, email, full_name as "fullName", role, status, updated_at as "updatedAt"',
+    await client.query(
+      'UPDATE users SET status = $1, updated_at = NOW() WHERE id = $2',
       [formattedStatus, targetUserId]
+    );
+
+    const updateRes = await client.query(
+      `SELECT u.id, u.email, u.full_name as "fullName", r.name as role, u.status, u.updated_at as "updatedAt"
+       FROM users u
+       LEFT JOIN roles r ON u.role_id = r.id
+       WHERE u.id = $1`,
+      [targetUserId]
     );
 
     // 5. Audit Log inside transaction
@@ -365,7 +398,9 @@ export const getAuditLogs = async (options = {}) => {
 export const getDashboardOverview = async () => {
   const [userStatsRes, activeClassesRes, submissionsRes, reviewsRes, aiRequestsRes] =
     await Promise.all([
-      pool.query('SELECT role, COUNT(*) as count FROM users GROUP BY role'),
+      pool.query(
+        'SELECT r.name as role, COUNT(*) as count FROM users u LEFT JOIN roles r ON u.role_id = r.id GROUP BY r.name'
+      ),
       pool.query('SELECT COUNT(*) FROM classes WHERE deleted_at IS NULL'),
       pool.query('SELECT COUNT(*) FROM submissions'),
       pool.query('SELECT COUNT(*) FROM reviews'),

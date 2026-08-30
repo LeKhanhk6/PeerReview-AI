@@ -1,8 +1,13 @@
 import { jest } from '@jest/globals';
 
+const mockClient = {
+  query: jest.fn(),
+  release: jest.fn(),
+};
+
 const mockPool = {
   query: jest.fn(),
-  connect: jest.fn(),
+  connect: jest.fn().mockResolvedValue(mockClient),
 };
 
 jest.unstable_mockModule('../../src/config/db.js', () => ({
@@ -18,6 +23,8 @@ beforeEach(async () => {
   }));
   adminService = await import('../../src/services/admin.service.js');
   mockPool.query.mockReset();
+  mockClient.query.mockReset();
+  mockClient.release.mockReset();
 });
 
 describe('admin.service', () => {
@@ -75,6 +82,36 @@ describe('admin.service', () => {
       const res = await adminService.getUsers({ page: 1, limit: 10 });
       expect(res.users[0].status).toBe('ACTIVE');
       expect(res.total).toBe(1);
+    });
+  });
+
+  describe('updateUserRole', () => {
+    it('should update user role using FOR UPDATE OF u syntax without outer join lock error', async () => {
+      const currentUser = { userId: 'admin-1', role: 'ADMIN' };
+      const targetUserId = 'student-1';
+      const newRole = 'TEACHER';
+
+      mockClient.query
+        .mockResolvedValueOnce({ command: 'BEGIN' })
+        .mockResolvedValueOnce({
+          rowCount: 1,
+          rows: [{ id: targetUserId, email: 'student@example.com', full_name: 'Student One', role: 'STUDENT', status: 'ACTIVE' }],
+        })
+        .mockResolvedValueOnce({ rows: [{ id: 'role-teacher-uuid' }] })
+        .mockResolvedValueOnce({ command: 'UPDATE' })
+        .mockResolvedValueOnce({
+          rows: [{ id: targetUserId, email: 'student@example.com', fullName: 'Student One', role: 'TEACHER', status: 'ACTIVE', updatedAt: '2026-01-01' }],
+        })
+        .mockResolvedValueOnce({ command: 'INSERT' })
+        .mockResolvedValueOnce({ command: 'COMMIT' });
+
+      const updated = await adminService.updateUserRole(currentUser, targetUserId, newRole);
+
+      expect(updated.role).toBe('TEACHER');
+      expect(mockClient.query).toHaveBeenCalledWith(
+        expect.stringContaining('FOR UPDATE OF u'),
+        [targetUserId]
+      );
     });
   });
 });

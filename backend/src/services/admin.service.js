@@ -146,7 +146,7 @@ export const updateUserRole = async (currentUser, targetUserId, newRole) => {
       `SELECT u.id, u.email, u.full_name, r.name as role, 'ACTIVE' as status 
        FROM users u 
        LEFT JOIN roles r ON u.role_id = r.id 
-       WHERE u.id = $1 FOR UPDATE`,
+       WHERE u.id = $1 FOR UPDATE OF u`,
       [targetUserId]
     );
 
@@ -243,7 +243,7 @@ export const updateUserStatus = async (currentUser, targetUserId, newStatus) => 
       `SELECT u.id, u.email, u.full_name, r.name as role, 'ACTIVE' as status 
        FROM users u 
        LEFT JOIN roles r ON u.role_id = r.id 
-       WHERE u.id = $1 FOR UPDATE`,
+       WHERE u.id = $1 FOR UPDATE OF u`,
       [targetUserId]
     );
 

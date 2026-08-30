@@ -58,11 +58,29 @@ Cấu trúc JSON yêu cầu:
  * Gọi API Gemini với AbortController, Exponential Backoff, Error Classification và Size Limit
  */
 const callProvider = async (prompt, requestId, customTimeout = null, maxRetries = 3, systemInstruction = null) => {
+    if (process.env.AI_MOCK === 'true') {
+        logger.info({ requestId, event: 'AI_MOCK_TRIGGERED' });
+        return JSON.stringify({
+            category: "4. Góp ý chi tiết bám sát tiêu chí chấm điểm",
+            rubric_criteria: "Nội dung",
+            guidance_message: "Nhận xét của bạn rất chất lượng và có tính xây dựng cao.",
+            suggested_rewrite: "Bài làm rất chuẩn chỉ và chi tiết, phát huy tốt nhé!",
+            summary: "Bài nộp đạt yêu cầu tốt, lập trình sạch sẽ và có tính ứng dụng cao.",
+            strengths: ["Code sạch sẽ", "Cấu trúc rõ ràng"],
+            weaknesses: ["Cần bổ sung comment"],
+            suggestions: ["Thêm unit test"],
+            important_questions: ["Làm thế nào để scale?"],
+            keywords: ["Clean code", "Unit test"],
+            sentiment: "positive"
+        });
+    }
+
     const apiKey = process.env.GEMINI_API_KEY;
     if (!apiKey) {
         logger.error({ requestId, message: "Missing GEMINI_API_KEY", stage: "callProvider" });
         return null;
     }
+
 
     const timeoutMs = customTimeout || parseInt(process.env.AI_TIMEOUT) || 5000;
     const MAX_RESPONSE_SIZE = 1048576; // 1MB Limit

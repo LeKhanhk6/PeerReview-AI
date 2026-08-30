@@ -226,17 +226,18 @@ _(Bản đã chỉnh sửa theo Technical Review — các thay đổi so với v
   - [x] `npx tsc --noEmit` passed (0 errors)
   - [x] Manual Verification 7/7 passed (Dashboard stats, Search/Filter/Paginate, Self-protection, UserRoleModal, Audit logs PII masking, Last-admin 409 flow, EmptyState handling)
 
-### Task 07.2 — System Settings
+### Task 07.2 — System Settings ✅
 
-- [x] **Step 1 (Read-only Status Checks)**: `AdminSettingsPage.tsx` hiển thị trạng thái audit logging, telemetry, rate limit flags từ AuthStore (100% read-only, không gọi endpoint không tồn tại).
-- [ ] **Step 2 (Edit Form Integration — Chờ Backend B4)**: Form chỉnh sửa tham số gọi `PATCH /api/admin/system-config` sau khi Backend B4 sẵn sàng.
+- [x] **Step 1 (Read-only Status Checks)**: `AdminSettingsPage.tsx` hiển thị trạng thái audit logging, telemetry, rate limit flags từ AuthStore.
+- [x] **Step 2 (Edit Form Integration)**: Form chỉnh sửa tham số gọi `PATCH /api/admin/system-config` tích hợp validation client-side, ConfirmDialog hiển thị diff old->new, và Audit Trail hiển thị `changes[]`.
 
 
-### Task 07.2-M — Merge Task 07.1 với Backend API Thật (Tuần 3–4)
+### Task 07.2-M — Merge Task 07.1 & 07.2 với Backend API Thật ✅
 
-- [ ] Chuyển đổi từ MSW Mock Handlers sang Backend API thật khi Task B1 hoàn tất.
-- [ ] Verify flow 409 Conflict (Last-Admin protection) end-to-end giữa FE & BE.
-- [ ] Verify PII masking khớp với Backend (đảm bảo không bị double-mask email).
+- [x] Chuyển đổi toàn bộ Admin Panel sang Backend API thật (`GET/PATCH /api/admin/users`, `audit-logs`, `dashboard/overview`, `system-config`).
+- [x] Verify flow 409 Conflict (Last-Admin protection) end-to-end giữa FE & BE.
+- [x] Verify PII masking 2 lớp ở cả Backend và Frontend.
+
 
 ---
 

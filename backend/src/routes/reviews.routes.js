@@ -5,6 +5,7 @@ import { verifyToken } from '../middleware/auth.middleware.js';
 import { authorizeRoles } from '../middleware/role.middleware.js';
 import { validate } from '../middleware/validation.middleware.js';
 import { paginationMiddleware } from '../middleware/pagination.middleware.js';
+import { dynamicAiRateLimiter } from '../middleware/ai-rate-limit.middleware.js';
 
 const router = express.Router();
 
@@ -54,8 +55,9 @@ router.get('/my-reviews/:reviewAssignmentId', authorizeRoles('STUDENT'), validat
 // Student: Submit a peer review
 router.post('/my-reviews/:reviewAssignmentId/submit', authorizeRoles('STUDENT'), validate(submitReviewSchema), reviewController.submitReviewAssignment);
 
-// Student: Analyze review comment with AI
-router.post('/analyze', authorizeRoles('STUDENT'), validate(analyzeReviewSchema), reviewController.analyzeReviewText);
+// Student: Analyze review comment with AI (with dynamic rate limiting based on system_config)
+router.post('/analyze', authorizeRoles('STUDENT'), dynamicAiRateLimiter, validate(analyzeReviewSchema), reviewController.analyzeReviewText);
+
 
 // Teacher/Admin: Generate AI Synthesis of all reviews for an assignment
 router.get('/assignments/:assignmentId/reviews/synthesis', authorizeRoles('TEACHER', 'ADMIN'), validate(synthesisQuerySchema), reviewController.generateAssignmentReviewSynthesis);

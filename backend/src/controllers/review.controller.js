@@ -135,11 +135,12 @@ export const analyzeReviewText = async (req, res, next) => {
         
         const requestId = crypto.randomUUID();
 
-        // Call AI Service
-        const result = await aiService.analyzeComment(comment, requestId); // the schema already sanitized it
+        // Call AI Service with userId tracking
+        const result = await aiService.analyzeComment(comment, requestId, req.user?.id);
         
         return res.ok(result);
     } catch (error) {
         next(error);
     }
 };
+

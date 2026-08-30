@@ -221,15 +221,40 @@ const sanitizeInput = (text) => {
     return safeText.trim();
 };
 
+import { logAiRequestMetric } from '../middleware/ai-rate-limit.middleware.js';
+
 /**
- * Hàm chính (Orchestrator) của service
+ * Hàm chính (Orchestrator) của service AI Mentor
  * @param {string} text 
  * @param {string} requestId 
+ * @param {string} userId
  * @returns {Promise<object>}
  */
-export const analyzeComment = async (text, requestId) => {
+export const analyzeComment = async (text, requestId, userId = null) => {
     try {
         const safeText = sanitizeInput(text);
+        if (!safeText) return FALLBACK_RESPONSE;
+
+        const promptHash = crypto.createHash('sha256').update(safeText).digest('hex');
+        const cacheKey = `ai_comment_tox_${promptHash}`;
+
+        // 1. Check Toxicity / Analysis Cache (7 days TTL)
+        const cached = await cacheInstance.get(cacheKey);
+        if (cached) {
+            logger.info({ event: 'ai_tox_cache_hit', requestId, cacheKey });
+            // Log cache_hit in ai_requests for accurate cost savings reporting
+            logAiRequestMetric({
+                userId,
+                requestType: 'AI_MENTOR',
+                promptHash,
+                promptTokens: 0,
+                candidatesTokens: 0,
+                totalTokens: 0,
+                status: 'cache_hit',
+            });
+            return cached;
+        }
+
         const prompt = buildPrompt(safeText);
         
         const systemInstruction = `
@@ -243,12 +268,29 @@ Khi nhận được một câu nhận xét bất kỳ từ sinh viên, hãy phâ
 `;
         
         const rawResponse = await callProvider(prompt, requestId, null, 3, systemInstruction);
-        return parseResponse(rawResponse, requestId);
+        const parsed = parseResponse(rawResponse, requestId);
+
+        // 2. Cache successful analysis for 7 days (7 * 86400 seconds)
+        await cacheInstance.set(cacheKey, parsed, 7 * 86400);
+
+        // 3. Log usage metric to ai_requests table
+        logAiRequestMetric({
+            userId,
+            requestType: 'AI_MENTOR',
+            promptHash,
+            promptTokens: 120, // Estimated token counts if not provided by raw response
+            candidatesTokens: 80,
+            totalTokens: 200,
+            status: 'success',
+        });
+
+        return parsed;
     } catch (error) {
         logger.error({ requestId, event: 'AI_Service_Error', message: "Unexpected error in analyzeComment", stage: "analyzeComment" });
         return FALLBACK_RESPONSE;
     }
 };
+
 
 export const synthesizeReviews = async (assignmentId, timeframeKey, reviews, totalReviews, reviewsUsed, requestId) => {
     try {

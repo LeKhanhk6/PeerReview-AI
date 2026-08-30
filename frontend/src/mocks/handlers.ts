@@ -94,4 +94,58 @@ export const handlers = [
   http.post('/api/auth/logout', () => {
     return HttpResponse.json({ success: true });
   }),
+
+  // Error-State Test Handlers for Task 08.2 Quality Gate
+  http.post('/api/test/error-429', () => {
+    return HttpResponse.json(
+      {
+        success: false,
+        error: {
+          code: 'RATE_LIMITED',
+          message: 'Bạn đã vượt quá giới hạn lượt sử dụng AI Mentor (tối đa 30 lượt/phút). Vui lòng thử lại sau.',
+        },
+      },
+      { status: 429 }
+    );
+  }),
+
+  http.post('/api/test/error-409', () => {
+    return HttpResponse.json(
+      {
+        success: false,
+        error: {
+          code: 'CONFLICT',
+          message: 'Không thể khóa hoặc hạ quyền Admin duy nhất cuối cùng trong hệ thống.',
+        },
+      },
+      { status: 409 }
+    );
+  }),
+
+  http.post('/api/test/error-403', () => {
+    return HttpResponse.json(
+      {
+        success: false,
+        error: {
+          code: 'FORBIDDEN',
+          message: 'Bạn không có quyền thực thi thao tác này.',
+        },
+      },
+      { status: 403 }
+    );
+  }),
+
+  http.post('/api/test/error-500', () => {
+    return HttpResponse.json(
+      {
+        success: false,
+        error: {
+          code: 'INTERNAL_SERVER_ERROR',
+          message: 'Máy chủ gặp sự cố nội bộ. Vui lòng thử lại sau.',
+        },
+      },
+      { status: 500 }
+    );
+  }),
 ];
+

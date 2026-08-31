@@ -9,14 +9,33 @@ if (!JWT_SECRET) {
 }
 
 export const verifyToken = (req, res, next) => {
+    let token = null;
+
+    // 1. Check Authorization header (Bearer <token>)
     const authHeader = req.headers.authorization;
-    if (!authHeader) {
-        throw new AppError('No token provided, authorization denied', 401, 'UNAUTHORIZED');
+    if (authHeader && authHeader.startsWith('Bearer ')) {
+        token = authHeader.split(' ')[1];
     }
 
-    const [scheme, token] = authHeader.split(' ');
-    if (scheme !== 'Bearer' || !token) {
-        throw new AppError('Invalid authorization format', 401, 'UNAUTHORIZED');
+    // 2. Check req.cookies if cookie-parser is used
+    if (!token && req.cookies?.token) {
+        token = req.cookies.token;
+    }
+
+    // 3. Fallback to manually parsing req.headers.cookie if cookie-parser is not used
+    if (!token && req.headers.cookie) {
+        const cookiePairs = req.headers.cookie.split(';');
+        for (const pair of cookiePairs) {
+            const [key, ...valueParts] = pair.trim().split('=');
+            if (key === 'token') {
+                token = valueParts.join('=');
+                break;
+            }
+        }
+    }
+
+    if (!token) {
+        throw new AppError('No token provided, authorization denied', 401, 'UNAUTHORIZED');
     }
 
     try {

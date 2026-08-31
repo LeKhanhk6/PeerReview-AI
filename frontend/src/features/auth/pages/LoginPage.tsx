@@ -39,11 +39,21 @@ export const LoginPage: React.FC = () => {
     setIsSubmitting(true);
     try {
       const response = await loginApi(data);
-      setAuth(response.user, (response as any).accessToken);
-      await checkAuth(); // Hydrate the store
+      const userObj = response.user;
+      const token = (response as any).accessToken || (response as any).token;
+      setAuth(userObj, token);
+      
+      try {
+        await checkAuth();
+      } catch (e) {
+        // If checkAuth fails, setAuth still has valid user object
+      }
+
       toast.success('Login successful!');
       
-      // Let the useEffect handle the redirect so we have the user state hydrated
+      if (userObj?.role) {
+        navigate(`/${userObj.role.toLowerCase()}/dashboard`, { replace: true });
+      }
     } catch (error: any) {
       toast.error(error.message || 'Login failed. Please check your credentials.');
     } finally {

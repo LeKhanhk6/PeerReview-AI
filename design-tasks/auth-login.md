@@ -37,9 +37,9 @@
 - [x] **DoD Task 01**: `npx tsc --noEmit` pass · `npm run build` pass (429ms) · Đủ 3 states (Normal/Loading/Error Toast). (Commit: `800af63`)
 
 ### 🟢 Task 02: Chuẩn hóa `RegisterPage.tsx` theo Design System v2 Token
-- [ ] **Nội dung**: Cập nhật `RegisterPage.tsx` chọn vai trò Sinh viên / Giảng viên, validate MSSV nếu là Sinh viên, dùng token màu chuẩn `bg-brand-primary`.
-- [ ] **Files sửa**: `frontend/src/features/auth/pages/RegisterPage.tsx`
-- [ ] **DoD Task 02**: `npx tsc --noEmit` pass · `npm run build` pass.
+- [x] **Nội dung**: Cập nhật `RegisterPage.tsx` chuẩn hóa Form đăng ký tài khoản Sinh viên kèm MSSV, hiển thị thông báo "Tài khoản Giảng viên do Quản trị viên cấp", dùng token màu chuẩn `bg-brand-primary`.
+- [x] **Files sửa**: `frontend/src/features/auth/pages/RegisterPage.tsx`
+- [x] **DoD Task 02**: `npx tsc --noEmit` pass · `npm run build` pass (462ms) · Đủ 3 states (Normal/Loading/Error Toast). (Commit: `a3e1798`)
 
 ### 🟢 Task 03: Tích hợp Hộp thoại Quên Mật Khẩu (ForgotPasswordModal)
 - [ ] **Nội dung**: Bổ sung Modal Quên mật khẩu gọi API `POST /api/auth/forgot-password` với 3 trạng thái đầy đủ.

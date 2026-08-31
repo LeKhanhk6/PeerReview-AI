@@ -22,6 +22,7 @@ CREATE TABLE users (
     email VARCHAR(255) UNIQUE NOT NULL,
     student_id VARCHAR(50) UNIQUE, -- Chỉ dành cho Student
     password_hash VARCHAR(255) NOT NULL, 
+    status VARCHAR(50) DEFAULT 'ACTIVE', -- Trạng thái tài khoản: ACTIVE, LOCKED, INACTIVE
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
@@ -396,6 +397,8 @@ Nhóm bảng này quản lý danh tính người dùng trong hệ thống và c�
     
 - `password_hash VARCHAR(255)`: Mật khẩu đã được mã hóa (băm) để bảo mật.
     
+- `status VARCHAR(50) DEFAULT 'ACTIVE'`: Trạng thái tài khoản (`ACTIVE` - Đang hoạt động, `LOCKED` - Đã bị khóa bởi Admin, `INACTIVE` - Ngưng hoạt động).
+
 - `created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()`: Thời điểm tạo tài khoản.
     
 - `updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()`: Thời điểm thông tin tài khoản được cập nhật gần nhất.

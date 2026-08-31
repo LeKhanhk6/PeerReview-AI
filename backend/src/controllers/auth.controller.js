@@ -98,3 +98,36 @@ export const resetPassword = async (req, res, next) => {
     }
 };
 
+export const updateProfile = async (req, res, next) => {
+    try {
+        const userId = req.user?.id;
+        if (!userId) {
+            throw new AppError('Unauthorized', 401, 'UNAUTHORIZED');
+        }
+
+        const user = await authService.updateUserProfile(userId, req.body);
+        return res.ok({ user });
+    } catch (error) {
+        next(error);
+    }
+};
+
+export const changePassword = async (req, res, next) => {
+    try {
+        const userId = req.user?.id;
+        if (!userId) {
+            throw new AppError('Unauthorized', 401, 'UNAUTHORIZED');
+        }
+
+        const { current_password, new_password } = req.body;
+        const result = await authService.changeUserPassword(userId, current_password, new_password);
+        
+        // Clear cookie upon password change to invalidate current session
+        res.clearCookie('token');
+        return res.ok(result);
+    } catch (error) {
+        next(error);
+    }
+};
+
+

@@ -1,7 +1,7 @@
 import express from 'express';
 import rateLimit from 'express-rate-limit';
 import { z } from 'zod';
-import { login, logout, getMe, register, forgotPassword, resetPassword } from '../controllers/auth.controller.js';
+import { login, logout, getMe, register, forgotPassword, resetPassword, updateProfile, changePassword } from '../controllers/auth.controller.js';
 import { verifyToken } from '../middleware/auth.middleware.js';
 import { validate } from '../middleware/validation.middleware.js';
 
@@ -19,6 +19,16 @@ const loginLimiter = rateLimit({
         console.warn(`[SECURITY WARNING] Rate limit exceeded for login attempts from IP: ${req.ip}, email target: ${req.body?.email || 'N/A'}`);
         res.status(options.statusCode).json(options.message);
     }
+});
+
+// Rate Limiter cho Đổi Mật Khẩu (chống brute-force current_password)
+const changePasswordLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 phút
+    max: 5, // Tối đa 5 lần thử THẤT BẠI
+    skipSuccessfulRequests: true,
+    message: { message: 'Too many password change attempts, please try again after 15 minutes' },
+    standardHeaders: true,
+    legacyHeaders: false,
 });
 
 // Rate Limiter cho Quên mật khẩu (chống email enumeration & spam)
@@ -58,12 +68,28 @@ const resetPasswordSchema = {
     })
 };
 
+const updateProfileSchema = {
+    body: z.object({
+        full_name: z.string().min(2).max(255).trim().optional(),
+        avatar_url: z.string().url().max(500).trim().optional()
+    })
+};
+
+const changePasswordSchema = {
+    body: z.object({
+        current_password: z.string().min(1).trim(),
+        new_password: z.string().min(8).trim()
+    })
+};
+
 router.post('/register', validate(registerSchema), register);
 router.post('/login', loginLimiter, validate(loginSchema), login);
 router.post('/forgot-password', forgotPasswordLimiter, validate(forgotPasswordSchema), forgotPassword);
 router.post('/reset-password', validate(resetPasswordSchema), resetPassword);
 router.post('/logout', verifyToken, logout);
 router.get('/me', verifyToken, getMe);
+router.patch('/profile', verifyToken, validate(updateProfileSchema), updateProfile);
+router.post('/change-password', verifyToken, changePasswordLimiter, validate(changePasswordSchema), changePassword);
 
 export default router;
 

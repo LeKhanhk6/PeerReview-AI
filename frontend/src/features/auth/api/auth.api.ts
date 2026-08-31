@@ -16,3 +16,12 @@ export const logoutApi = async (): Promise<void> => {
 export const getMeApi = async (): Promise<{ user: User }> => {
   return api.get('/auth/me');
 };
+
+export const updateProfileApi = async (data: { full_name?: string; avatar_url?: string }): Promise<{ user: User }> => {
+  return api.patch('/auth/profile', data);
+};
+
+export const changePasswordApi = async (data: { current_password: string; new_password: string }): Promise<{ message: string }> => {
+  return api.post('/auth/change-password', data);
+};
+

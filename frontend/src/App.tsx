@@ -33,6 +33,7 @@ import { AdminDashboardPage } from './features/admin/pages/AdminDashboardPage';
 import { AdminUsersPage } from './features/admin/pages/AdminUsersPage';
 import { AdminAuditLogsPage } from './features/admin/pages/AdminAuditLogsPage';
 import { AdminSettingsPage } from './features/admin/pages/AdminSettingsPage';
+import { ProfilePage } from './features/auth/pages/ProfilePage';
 
 function App() {
   const { checkAuth } = useAuthStore();
@@ -71,6 +72,7 @@ function App() {
             {/* Peer Review Sub-routes */}
             <Route path="reviews" element={<ReviewInboxScreen />} />
             <Route path="reviews/:reviewAssignmentId" element={<ReviewWritingScreen />} />
+            <Route path="profile" element={<ProfilePage />} />
 
             <Route index element={<Navigate to="dashboard" replace />} />
           </Route>
@@ -96,6 +98,7 @@ function App() {
             <Route path="assignments/:assignmentId/synthesis" element={<TeacherReviewSynthesisPage />} />
             <Route path="analytics" element={<TeacherAnalyticsDashboardPage />} />
             <Route path="submissions" element={<div>Teacher Submissions</div>} />
+            <Route path="profile" element={<ProfilePage />} />
             <Route index element={<Navigate to="dashboard" replace />} />
           </Route>
 
@@ -114,6 +117,7 @@ function App() {
             <Route path="users" element={<AdminUsersPage />} />
             <Route path="audit-logs" element={<AdminAuditLogsPage />} />
             <Route path="settings" element={<AdminSettingsPage />} />
+            <Route path="profile" element={<ProfilePage />} />
             <Route index element={<Navigate to="dashboard" replace />} />
           </Route>
 

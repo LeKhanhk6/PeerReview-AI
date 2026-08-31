@@ -20,7 +20,7 @@ const mockJwt = {
 process.env.JWT_SECRET = 'mock-secret-key';
 process.env.JWT_EXPIRES_IN = '24h';
 
-let loginUser, registerUser, getUserById, AppError;
+let loginUser, registerUser, getUserById, updateUserProfile, changeUserPassword, AppError;
 
 beforeEach(async () => {
     jest.resetModules();
@@ -35,6 +35,8 @@ beforeEach(async () => {
     loginUser = authService.loginUser;
     registerUser = authService.registerUser;
     getUserById = authService.getUserById;
+    updateUserProfile = authService.updateUserProfile;
+    changeUserPassword = authService.changeUserPassword;
     
     const appErrorModule = await import('../../src/utils/AppError.js');
     AppError = appErrorModule.AppError;
@@ -295,4 +297,69 @@ describe('auth.service', () => {
                 .toThrow(new AppError('User not found', 404));
         });
     });
+
+    describe('updateUserProfile', () => {
+        it('should reject avatar_url without https:// protocol with 400 error', async () => {
+            const error = await updateUserProfile('user-1', { avatar_url: 'http://insecure.com/pic.png' }).catch(e => e);
+            expect(error).toBeInstanceOf(AppError);
+            expect(error.statusCode).toBe(400);
+            expect(error.message).toContain('https://');
+        });
+
+        it('should ignore non-whitelisted fields (email, role, student_id) and update profile successfully', async () => {
+            poolMock.query.mockResolvedValueOnce({ rows: [{ id: 'user-1' }] }); // UPDATE
+            poolMock.query.mockResolvedValueOnce({
+                rows: [{
+                    id: 'user-1',
+                    email: 'user@example.com',
+                    full_name: 'New Name',
+                    student_id: 'SV123',
+                    avatar_url: 'https://example.com/avatar.jpg',
+                    role: 'STUDENT'
+                }]
+            }); // getUserById
+
+            const result = await updateUserProfile('user-1', {
+                full_name: 'New Name',
+                avatar_url: 'https://example.com/avatar.jpg',
+                email: 'hacked@example.com',
+                role: 'ADMIN',
+                student_id: 'HACKED'
+            });
+
+            expect(result.full_name).toBe('New Name');
+            expect(result.email).toBe('user@example.com');
+            expect(result.role).toBe('STUDENT');
+        });
+    });
+
+    describe('changeUserPassword', () => {
+        it('should throw 401 Unauthorized if current password is incorrect', async () => {
+            poolMock.query.mockResolvedValueOnce({
+                rows: [{ id: 'user-1', password_hash: 'hashed_current' }]
+            });
+            mockBcrypt.compare.mockResolvedValueOnce(false); // Password wrong
+
+            const error = await changeUserPassword('user-1', 'wrong_current', 'newPassword123').catch(e => e);
+            expect(error).toBeInstanceOf(AppError);
+            expect(error.statusCode).toBe(401);
+            expect(error.message).toBe('Mật khẩu hiện tại không đúng');
+        });
+
+        it('should update password and succeed when current password is correct', async () => {
+            poolMock.query.mockResolvedValueOnce({
+                rows: [{ id: 'user-1', password_hash: 'hashed_current' }]
+            });
+            mockBcrypt.compare.mockResolvedValueOnce(true); // Password correct
+            mockBcrypt.hash.mockResolvedValueOnce('hashed_new');
+            poolMock.query.mockResolvedValueOnce({ rowCount: 1 }); // UPDATE password
+
+            const result = await changeUserPassword('user-1', 'correct_current', 'newPassword123');
+
+            expect(result.message).toBe('Password updated successfully');
+            expect(mockBcrypt.compare).toHaveBeenCalledWith('correct_current', 'hashed_current');
+            expect(mockBcrypt.hash).toHaveBeenCalledWith('newPassword123', 10);
+        });
+    });
 });
+

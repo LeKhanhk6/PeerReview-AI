@@ -8,6 +8,7 @@ interface AuthActions {
   setAuth: (user: User | null, token: string | null) => void;
   setLoading: (isLoading: boolean) => void;
   setError: (error: string | null) => void;
+  updateUser: (updatedUser: Partial<User>) => void;
   checkAuth: () => Promise<void>;
   logout: () => Promise<void>;
 }
@@ -26,6 +27,10 @@ export const useAuthStore = create<AuthStore>()(
       setAuth: (user, token) => set({ user, token, isAuthenticated: !!user, error: null }),
       setLoading: (isLoading) => set({ isLoading }),
       setError: (error) => set({ error }),
+      updateUser: (updatedUser) =>
+        set((state) => ({
+          user: state.user ? { ...state.user, ...updatedUser } : null,
+        })),
 
       checkAuth: async () => {
         try {

@@ -94,7 +94,7 @@ export const loginUser = async (email, password) => {
 
 export const getUserById = async (userId) => {
     const query = `
-        SELECT u.id, u.email, u.full_name, u.student_id, r.name as role
+        SELECT u.id, u.email, u.full_name, u.student_id, u.avatar_url, r.name as role
         FROM users u
         LEFT JOIN roles r ON u.role_id = r.id
         WHERE u.id = $1
@@ -105,3 +105,67 @@ export const getUserById = async (userId) => {
     }
     return result.rows[0];
 };
+
+export const updateUserProfile = async (userId, payload) => {
+    // Whitelist allowed fields only: full_name, avatar_url
+    const { full_name, avatar_url } = payload || {};
+    
+    if (avatar_url !== undefined && avatar_url !== null && avatar_url.trim() !== '') {
+        const trimmedUrl = avatar_url.trim();
+        if (!trimmedUrl.startsWith('https://')) {
+            throw new AppError('avatar_url must start with https://', 400);
+        }
+        if (trimmedUrl.length > 500) {
+            throw new AppError('avatar_url exceeds maximum length (500 chars)', 400);
+        }
+    }
+
+    const query = `
+        UPDATE users
+        SET 
+            full_name = COALESCE($1, full_name),
+            avatar_url = COALESCE($2, avatar_url),
+            updated_at = NOW()
+        WHERE id = $3
+        RETURNING id
+    `;
+    const result = await pool.query(query, [
+        full_name ? full_name.trim() : null,
+        avatar_url ? avatar_url.trim() : null,
+        userId
+    ]);
+
+    if (result.rows.length === 0) {
+        throw new AppError('User not found', 404);
+    }
+
+    return getUserById(userId);
+};
+
+export const changeUserPassword = async (userId, currentPassword, newPassword) => {
+    if (!currentPassword || !newPassword) {
+        throw new AppError('Current password and new password are required', 400);
+    }
+    if (typeof newPassword !== 'string' || newPassword.trim().length < 8) {
+        throw new AppError('New password must be at least 8 characters long', 400);
+    }
+
+    const userQuery = 'SELECT id, password_hash FROM users WHERE id = $1';
+    const userResult = await pool.query(userQuery, [userId]);
+    if (userResult.rows.length === 0) {
+        throw new AppError('User not found', 404);
+    }
+
+    const user = userResult.rows[0];
+    const isMatch = await bcrypt.compare(currentPassword, user.password_hash);
+    if (!isMatch) {
+        throw new AppError('Mật khẩu hiện tại không đúng', 401);
+    }
+
+    const newPasswordHash = await bcrypt.hash(newPassword.trim(), 10);
+    const updateQuery = 'UPDATE users SET password_hash = $1, updated_at = NOW() WHERE id = $2';
+    await pool.query(updateQuery, [newPasswordHash, userId]);
+
+    return { message: 'Password updated successfully' };
+};
+

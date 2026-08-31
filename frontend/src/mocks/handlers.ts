@@ -95,6 +95,35 @@ export const handlers = [
     return HttpResponse.json({ success: true });
   }),
 
+  http.patch('/api/auth/profile', async ({ request }) => {
+    const body = (await request.json()) as any;
+    if (body.avatar_url && !body.avatar_url.startsWith('https://')) {
+      return HttpResponse.json({ success: false, message: 'avatar_url must start with https://' }, { status: 400 });
+    }
+    return HttpResponse.json({
+      success: true,
+      data: {
+        user: {
+          id: '123',
+          email: 'mockuser@example.com',
+          full_name: body.full_name || 'Mock User',
+          avatar_url: body.avatar_url,
+          role: sessionStorage.getItem('MSW_ROLE') || 'STUDENT',
+          student_id: 'SV99999',
+        },
+      },
+    });
+  }),
+
+  http.post('/api/auth/change-password', async ({ request }) => {
+    const body = (await request.json()) as any;
+    if (!body || (body.current_password !== 'password123' && body.current_password !== 'correct_current')) {
+      return HttpResponse.json({ success: false, message: 'Mật khẩu hiện tại không đúng' }, { status: 401 });
+    }
+    return HttpResponse.json({ success: true, message: 'Password updated successfully' });
+  }),
+
+
   // Error-State Test Handlers for Task 08.2 Quality Gate
   http.post('/api/test/error-429', () => {
     return HttpResponse.json(

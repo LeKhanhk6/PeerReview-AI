@@ -22,6 +22,7 @@ CREATE TABLE users (
     email VARCHAR(255) UNIQUE NOT NULL,
     student_id VARCHAR(50) UNIQUE, -- Chỉ dành cho Student
     password_hash VARCHAR(255) NOT NULL, 
+    avatar_url VARCHAR(500), -- Link ảnh đại diện (HTTPS)
     status VARCHAR(50) DEFAULT 'ACTIVE', -- Trạng thái tài khoản: ACTIVE, LOCKED, INACTIVE
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
@@ -161,7 +162,8 @@ CREATE TABLE tasks (
     title VARCHAR(255) NOT NULL,
     status VARCHAR(50) DEFAULT 'TODO', -- TODO, IN_PROGRESS, DONE
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-    completed_at TIMESTAMP WITH TIME ZONE
+    completed_at TIMESTAMP WITH TIME ZONE,
+    deleted_at TIMESTAMP WITH TIME ZONE
 );
 
 CREATE TABLE group_discussions (
@@ -199,6 +201,14 @@ CREATE TABLE submission_versions (
     version_number INT NOT NULL,
     file_url TEXT NOT NULL,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+CREATE TABLE deadline_reminders_sent (
+    id SERIAL PRIMARY KEY,
+    assignment_id UUID REFERENCES assignments(id) ON DELETE CASCADE,
+    user_id UUID REFERENCES users(id) ON DELETE CASCADE,
+    reminder_type VARCHAR(50) NOT NULL,
+    sent_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
 -- submission versions
@@ -396,6 +406,8 @@ Nhóm bảng này quản lý danh tính người dùng trong hệ thống và c�
 - `student_id VARCHAR(50) UNIQUE`: Mã số sinh viên, chỉ dành riêng cho sinh viên (`STUDENT`), có thể để trống với giáo viên hoặc admin.
     
 - `password_hash VARCHAR(255)`: Mật khẩu đã được mã hóa (băm) để bảo mật.
+
+- `avatar_url VARCHAR(500)`: Đường dẫn URL chứa ảnh đại diện của người dùng (giao thức HTTPS).
     
 - `status VARCHAR(50) DEFAULT 'ACTIVE'`: Trạng thái tài khoản (`ACTIVE` - Đang hoạt động, `LOCKED` - Đã bị khóa bởi Admin, `INACTIVE` - Ngưng hoạt động).
 

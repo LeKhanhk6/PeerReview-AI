@@ -8,6 +8,19 @@ export const groupKeys = {
   detail: (id: string) => ['groups', 'detail', id] as const,
 };
 
+const invalidateAllRelatedGroupQueries = (queryClient: any, classId: string) => {
+  queryClient.invalidateQueries({ queryKey: groupKeys.all });
+  queryClient.invalidateQueries({ queryKey: groupKeys.list(classId) });
+  queryClient.invalidateQueries({ queryKey: ['class-groups'] });
+  queryClient.invalidateQueries({ queryKey: ['student-dashboard-assignments'] });
+  queryClient.invalidateQueries({ queryKey: ['classes'] });
+  queryClient.invalidateQueries({ queryKey: ['user-classes'] });
+  queryClient.invalidateQueries({ queryKey: ['my-classes'] });
+  queryClient.invalidateQueries({ queryKey: ['teacher-classes'] });
+  queryClient.invalidateQueries({ queryKey: ['teacher-dashboard-overview'] });
+  queryClient.invalidateQueries({ queryKey: ['workspace'] });
+};
+
 export const useGroups = (classId: string) => {
   return useQuery({
     queryKey: groupKeys.list(classId),
@@ -29,7 +42,7 @@ export const useCreateGroup = (classId: string) => {
   return useMutation({
     mutationFn: (data: CreateGroupPayload) => groupsApi.createGroup(data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: groupKeys.list(classId) });
+      invalidateAllRelatedGroupQueries(queryClient, classId);
     },
   });
 };
@@ -39,7 +52,7 @@ export const useAddMember = (classId: string) => {
   return useMutation({
     mutationFn: (payload: AddMemberPayload) => groupsApi.addMember(payload),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: groupKeys.list(classId) });
+      invalidateAllRelatedGroupQueries(queryClient, classId);
     },
   });
 };
@@ -49,7 +62,7 @@ export const useRemoveMember = (classId: string) => {
   return useMutation({
     mutationFn: (payload: RemoveMemberPayload) => groupsApi.removeMember(payload),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: groupKeys.list(classId) });
+      invalidateAllRelatedGroupQueries(queryClient, classId);
     },
   });
 };
@@ -59,7 +72,7 @@ export const useAssignLeader = (classId: string) => {
   return useMutation({
     mutationFn: (payload: AssignLeaderPayload) => groupsApi.assignLeader(payload),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: groupKeys.list(classId) });
+      invalidateAllRelatedGroupQueries(queryClient, classId);
     },
   });
 };

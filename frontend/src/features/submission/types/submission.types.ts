@@ -44,3 +44,36 @@ export interface AssignmentDetailInfo {
   course_code?: string;
   max_score?: number;
 }
+
+export interface TeacherSubmissionGroupItem {
+  groupId: string;
+  groupName: string;
+  status: 'SUBMITTED' | 'NOT_STARTED' | 'LATE';
+  isLate: boolean;
+  submission: {
+    id: string;
+    initialSubmittedAt: string;
+    latestVersionNumber: number;
+    latestFileUrl: string;
+    latestSubmittedAt: string;
+    totalVersions: number;
+  } | null;
+}
+
+export interface TeacherSubmissionsMonitorData {
+  assignment: {
+    id: string;
+    title: string;
+    deadline: string;
+    classId: string;
+    className: string;
+  };
+  stats: {
+    totalGroups: number;
+    submittedCount: number;
+    notStartedCount: number;
+    lateCount: number;
+  };
+  groups: TeacherSubmissionGroupItem[];
+}
+

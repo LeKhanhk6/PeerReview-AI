@@ -455,3 +455,122 @@ export const getSubmissionFeedback = async (assignmentId, userId) => {
         reviewCount: parseInt(stats.review_count, 10) || 0
     };
 };
+
+export const getTeacherSubmissionsMonitor = async (assignmentId, currentUser, statusFilter = 'ALL') => {
+    const validAssignmentId = validateId(assignmentId, 'assignment ID');
+
+    // 1. Fetch assignment and verify ownership
+    const assignmentQuery = `
+        SELECT a.id, a.title, a.deadline, a.class_id, c.teacher_id, c.name as class_name
+        FROM assignments a
+        JOIN classes c ON c.id = a.class_id
+        WHERE a.id = $1
+    `;
+    const assignmentResult = await pool.query(assignmentQuery, [validAssignmentId]);
+    if (assignmentResult.rows.length === 0) {
+        throw new AppError('Assignment not found', 404);
+    }
+
+    const assignment = assignmentResult.rows[0];
+    if (currentUser.role === 'TEACHER' && assignment.teacher_id !== currentUser.id) {
+        throw new AppError('Forbidden: You are not the teacher of this class', 403);
+    }
+
+    // 2. Optimized Single Query (0 N+1) for all class groups and submission versions
+    const monitorQuery = `
+        SELECT 
+            g.id as group_id,
+            g.name as group_name,
+            s.id as submission_id,
+            s.submitted_at as initial_submitted_at,
+            s.status as raw_submission_status,
+            sv.id as latest_version_id,
+            sv.version_number as latest_version_number,
+            sv.file_url as latest_file_url,
+            sv.created_at as latest_version_created_at,
+            COALESCE(svc.version_count, 0) as total_versions
+        FROM groups g
+        JOIN assignments a ON a.class_id = g.class_id
+        LEFT JOIN submissions s ON s.assignment_id = a.id AND s.group_id = g.id
+        LEFT JOIN LATERAL (
+            SELECT id, version_number, file_url, created_at
+            FROM submission_versions
+            WHERE submission_id = s.id
+            ORDER BY version_number DESC
+            LIMIT 1
+        ) sv ON true
+        LEFT JOIN LATERAL (
+            SELECT COUNT(*)::int as version_count
+            FROM submission_versions
+            WHERE submission_id = s.id
+        ) svc ON true
+        WHERE a.id = $1
+        ORDER BY g.name ASC
+    `;
+
+    const result = await pool.query(monitorQuery, [validAssignmentId]);
+    const deadlineDate = new Date(assignment.deadline);
+
+    let submittedCount = 0;
+    let notStartedCount = 0;
+    let lateCount = 0;
+
+    const mappedGroups = result.rows.map(row => {
+        let status = SUBMISSION_STATUS.NOT_STARTED;
+        let isLate = false;
+
+        if (row.submission_id && row.initial_submitted_at) {
+            const initialSubmittedAt = new Date(row.initial_submitted_at);
+            if (initialSubmittedAt > deadlineDate) {
+                status = SUBMISSION_STATUS.LATE;
+                isLate = true;
+                lateCount++;
+            } else {
+                status = SUBMISSION_STATUS.SUBMITTED;
+                submittedCount++;
+            }
+        } else {
+            status = SUBMISSION_STATUS.NOT_STARTED;
+            notStartedCount++;
+        }
+
+        return {
+            groupId: row.group_id,
+            groupName: row.group_name,
+            status,
+            isLate,
+            submission: row.submission_id ? {
+                id: row.submission_id,
+                initialSubmittedAt: row.initial_submitted_at,
+                latestVersionNumber: row.latest_version_number,
+                latestFileUrl: row.latest_file_url,
+                latestSubmittedAt: row.latest_version_created_at,
+                totalVersions: row.total_versions
+            } : null
+        };
+    });
+
+    // 3. Filter by status if requested
+    const filteredGroups = mappedGroups.filter(g => {
+        if (!statusFilter || statusFilter === 'ALL') return true;
+        return g.status === statusFilter;
+    });
+
+    return {
+        assignment: {
+            id: assignment.id,
+            title: assignment.title,
+            deadline: assignment.deadline,
+            classId: assignment.class_id,
+            className: assignment.class_name
+        },
+        stats: {
+            totalGroups: mappedGroups.length,
+            submittedCount,
+            notStartedCount,
+            lateCount
+        },
+        groups: filteredGroups
+    };
+};
+

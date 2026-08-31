@@ -228,6 +228,12 @@ export const TeacherDashboardPage: React.FC = () => {
                           {daysStatus.label}
                         </span>
 
+                        <Link to={`/teacher/assignments/${assignment.id}/submissions`}>
+                          <Button variant="outline" size="sm">
+                            📂 Theo dõi bài nộp
+                          </Button>
+                        </Link>
+
                         <Link to={`/teacher/assignments/${assignment.id}/synthesis`}>
                           <Button variant="outline" size="sm">
                             Xem tổng hợp AI

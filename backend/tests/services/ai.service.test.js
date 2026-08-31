@@ -71,11 +71,7 @@ describe('AI Service (Staff-Level Resilience)', () => {
         });
 
         it('Timeout Hard Cancel: AbortController should abort fetch strictly', async () => {
-            process.env.AI_TIMEOUT = '50'; // Use 50ms timeout for test
-            const sleepSpy = jest.spyOn(global, 'setTimeout').mockImplementation((cb) => {
-                if (typeof cb === 'function') cb();
-                return 0;
-            });
+            process.env.AI_TIMEOUT = '10'; // Use 10ms timeout for test
 
             fetchSpy.mockImplementation((url, options) => {
                 return new Promise((resolve, reject) => {
@@ -94,12 +90,11 @@ describe('AI Service (Staff-Level Resilience)', () => {
                 });
             });
             
-            const result = await aiService.analyzeComment('test', 'req-3');
+            const result = await aiService.analyzeComment('unique timeout hard cancel test input 12345', 'req-3');
             
             expect(result.category).toBe('UNKNOWN');
             expect(fetchSpy).toHaveBeenCalled();
             
-            sleepSpy.mockRestore();
             delete process.env.AI_TIMEOUT;
         });
 

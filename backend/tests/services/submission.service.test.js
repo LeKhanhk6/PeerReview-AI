@@ -1,7 +1,7 @@
 import { jest } from '@jest/globals';
 import poolMock from '../__mocks__/db.mock.js';
 
-let submitAssignment, getSubmissionHistoryByAssignment, AppError;
+let submitAssignment, getSubmissionHistoryByAssignment, getTeacherSubmissionsMonitor, AppError;
 let clientMock, logActivityMock;
 
 beforeAll(async () => {
@@ -15,6 +15,7 @@ beforeAll(async () => {
     const submissionService = await import('../../src/services/submission.service.js');
     submitAssignment = submissionService.submitAssignment;
     getSubmissionHistoryByAssignment = submissionService.getSubmissionHistoryByAssignment;
+    getTeacherSubmissionsMonitor = submissionService.getTeacherSubmissionsMonitor;
     
     const appErrorModule = await import('../../src/utils/AppError.js');
     AppError = appErrorModule.AppError;
@@ -241,4 +242,90 @@ describe('submission.service (MVP)', () => {
             await expect(getSubmissionHistoryByAssignment(assignmentId, userId, 10, 0)).rejects.toThrow('Crash');
         });
     });
+
+    describe('getTeacherSubmissionsMonitor', () => {
+        const validAssignmentId = '11111111-1111-4111-a111-111111111111';
+        const teacherUser = { id: 'teacher-1', role: 'TEACHER' };
+        const wrongTeacherUser = { id: 'teacher-2', role: 'TEACHER' };
+
+        it('should throw 403 if teacher belongs to a different class', async () => {
+            poolMock.query.mockResolvedValueOnce({
+                rows: [{
+                    id: validAssignmentId,
+                    title: 'CS101 Project',
+                    deadline: '2026-12-31T00:00:00Z',
+                    class_id: 'class-1',
+                    teacher_id: 'teacher-1',
+                    class_name: 'CS101'
+                }]
+            });
+
+            const error = await getTeacherSubmissionsMonitor(validAssignmentId, wrongTeacherUser).catch(e => e);
+            expect(error).toBeInstanceOf(AppError);
+            expect(error.statusCode).toBe(403);
+            expect(error.message).toContain('Forbidden');
+        });
+
+        it('should return mapped monitor data with correct SUBMITTED and LATE statuses', async () => {
+            poolMock.query.mockResolvedValueOnce({
+                rows: [{
+                    id: validAssignmentId,
+                    title: 'CS101 Project',
+                    deadline: '2026-06-01T00:00:00Z',
+                    class_id: 'class-1',
+                    teacher_id: 'teacher-1',
+                    class_name: 'CS101'
+                }]
+            });
+
+            poolMock.query.mockResolvedValueOnce({
+                rows: [
+                    {
+                        group_id: 'g1',
+                        group_name: 'Group 1',
+                        submission_id: 'sub-1',
+                        initial_submitted_at: '2026-05-20T10:00:00Z', // On time
+                        latest_version_number: 2,
+                        latest_file_url: 'http://example.com/sub1_v2.pdf',
+                        latest_version_created_at: '2026-05-21T10:00:00Z',
+                        total_versions: 2
+                    },
+                    {
+                        group_id: 'g2',
+                        group_name: 'Group 2',
+                        submission_id: 'sub-2',
+                        initial_submitted_at: '2026-06-05T10:00:00Z', // Late
+                        latest_version_number: 1,
+                        latest_file_url: 'http://example.com/sub2_v1.pdf',
+                        latest_version_created_at: '2026-06-05T10:00:00Z',
+                        total_versions: 1
+                    },
+                    {
+                        group_id: 'g3',
+                        group_name: 'Group 3',
+                        submission_id: null,
+                        initial_submitted_at: null,
+                        latest_version_number: null,
+                        latest_file_url: null,
+                        latest_version_created_at: null,
+                        total_versions: 0
+                    }
+                ]
+            });
+
+            const result = await getTeacherSubmissionsMonitor(validAssignmentId, teacherUser, 'ALL');
+
+            expect(result.assignment.title).toBe('CS101 Project');
+            expect(result.stats.totalGroups).toBe(3);
+            expect(result.stats.submittedCount).toBe(1);
+            expect(result.stats.lateCount).toBe(1);
+            expect(result.stats.notStartedCount).toBe(1);
+
+            expect(result.groups[0].status).toBe('SUBMITTED');
+            expect(result.groups[1].status).toBe('LATE');
+            expect(result.groups[1].isLate).toBe(true);
+            expect(result.groups[2].status).toBe('NOT_STARTED');
+        });
+    });
 });
+

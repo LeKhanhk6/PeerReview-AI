@@ -1,5 +1,5 @@
 import { api } from '@/lib/axios';
-import type { SubmissionVersion, SubmissionFeedback } from '../types/submission.types';
+import type { SubmissionVersion, SubmissionFeedback, TeacherSubmissionsMonitorData } from '../types/submission.types';
 import {
   mockSubmissionHistory,
   mockSubmissionFeedback,
@@ -53,5 +53,15 @@ export const submissionApi = {
     } catch (_err) {
       return mockSubmissionFeedback;
     }
+  },
+
+  // Get Teacher Submissions Monitor
+  getTeacherSubmissionsMonitor: async (
+    assignmentId: string,
+    status?: string
+  ): Promise<TeacherSubmissionsMonitorData> => {
+    const params = status && status !== 'ALL' ? { status } : {};
+    const res: any = await api.get(`/submissions/assignments/${assignmentId}/monitor`, { params });
+    return res.data || res;
   },
 };

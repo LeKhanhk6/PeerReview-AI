@@ -22,6 +22,7 @@ import { EditAssignmentPage } from './features/assignment/pages/EditAssignmentPa
 import { TeacherAnalyticsDashboardPage } from './features/analytics/pages/TeacherAnalyticsDashboardPage';
 import { TeacherDashboardPage } from './features/analytics/pages/TeacherDashboardPage';
 import { TeacherReviewSynthesisPage } from './features/synthesis/pages/TeacherReviewSynthesisPage';
+import { TeacherSubmissionsMonitorPage } from './features/submission/pages/TeacherSubmissionsMonitorPage';
 import { StudentGroupWorkspacePage } from './features/workspace/pages/StudentGroupWorkspacePage';
 import { StudentSubmissionPage } from './features/submission/pages/StudentSubmissionPage';
 
@@ -91,6 +92,7 @@ function App() {
             <Route path="assignments" element={<TeacherAssignmentsPage />} />
             <Route path="assignments/new" element={<CreateAssignmentPage />} />
             <Route path="assignments/:id/edit" element={<EditAssignmentPage />} />
+            <Route path="assignments/:assignmentId/submissions" element={<TeacherSubmissionsMonitorPage />} />
             <Route path="assignments/:assignmentId/synthesis" element={<TeacherReviewSynthesisPage />} />
             <Route path="analytics" element={<TeacherAnalyticsDashboardPage />} />
             <Route path="submissions" element={<div>Teacher Submissions</div>} />

@@ -46,4 +46,7 @@ router.get('/assignments/:assignmentId/submission-history', authorizeRoles('STUD
 // Student Feedback API
 router.get('/assignments/:assignmentId/feedback', authorizeRoles('STUDENT'), validate({ params: assignmentIdParamSchema }), submissionController.getSubmissionFeedback);
 
+// Teacher Submissions Monitor API
+router.get('/assignments/:assignmentId/monitor', authorizeRoles('TEACHER', 'ADMIN'), validate({ params: assignmentIdParamSchema }), submissionController.getTeacherSubmissionsMonitor);
+
 export default router;

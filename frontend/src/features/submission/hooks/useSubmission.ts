@@ -1,4 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useApiQuery } from '@/hooks/useApiQuery';
 import { submissionApi } from '../api/submission.api';
 import type { SubmissionVersion } from '../types/submission.types';
 
@@ -6,6 +7,7 @@ export const submissionKeys = {
   all: ['submissions'] as const,
   history: (assignmentId: string) => ['submissions', 'history', assignmentId] as const,
   feedback: (assignmentId: string) => ['submissions', 'feedback', assignmentId] as const,
+  monitor: (assignmentId: string, status?: string) => ['submissions', 'monitor', assignmentId, status || 'ALL'] as const,
 };
 
 export const useSubmissionHistory = (assignmentId: string) => {
@@ -22,6 +24,14 @@ export const useSubmissionFeedback = (assignmentId: string) => {
     queryFn: () => submissionApi.getSubmissionFeedback(assignmentId),
     enabled: Boolean(assignmentId),
   });
+};
+
+export const useTeacherSubmissionsMonitor = (assignmentId: string, status?: string) => {
+  return useApiQuery(
+    submissionKeys.monitor(assignmentId, status),
+    () => submissionApi.getTeacherSubmissionsMonitor(assignmentId, status),
+    { enabled: Boolean(assignmentId) }
+  );
 };
 
 export const useSubmitAssignment = (assignmentId: string) => {
@@ -42,3 +52,4 @@ export const useSubmitAssignment = (assignmentId: string) => {
     },
   });
 };
+

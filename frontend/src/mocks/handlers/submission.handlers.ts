@@ -138,4 +138,72 @@ export const submissionHandlers = [
   http.get('/api/submissions/assignments/:assignmentId/feedback', () => {
     return HttpResponse.json({ success: true, data: mockSubmissionFeedback });
   }),
+
+  // GET /api/submissions/assignments/:assignmentId/monitor
+  http.get('/api/submissions/assignments/:assignmentId/monitor', ({ request, params }) => {
+    const url = new URL(request.url);
+    const status = url.searchParams.get('status') || 'ALL';
+    const { assignmentId } = params;
+
+    const allGroups = [
+      {
+        groupId: 'g-1',
+        groupName: 'Nhóm 1 - Kiến trúc phần mềm',
+        status: 'SUBMITTED',
+        isLate: false,
+        submission: {
+          id: 'sub-1',
+          initialSubmittedAt: '2026-08-28T10:00:00Z',
+          latestVersionNumber: 2,
+          latestFileUrl: 'https://storage.googleapis.com/peer-review-bucket/nhom1_v2.pdf',
+          latestSubmittedAt: '2026-08-29T11:00:00Z',
+          totalVersions: 2,
+        },
+      },
+      {
+        groupId: 'g-2',
+        groupName: 'Nhóm 2 - AI Peer Review Engine',
+        status: 'LATE',
+        isLate: true,
+        submission: {
+          id: 'sub-2',
+          initialSubmittedAt: '2026-08-30T16:00:00Z', // Submitted after deadline
+          latestVersionNumber: 1,
+          latestFileUrl: 'https://storage.googleapis.com/peer-review-bucket/nhom2_v1.pdf',
+          latestSubmittedAt: '2026-08-30T16:00:00Z',
+          totalVersions: 1,
+        },
+      },
+      {
+        groupId: 'g-3',
+        groupName: 'Nhóm 3 - Web Frontend UI',
+        status: 'NOT_STARTED',
+        isLate: false,
+        submission: null,
+      },
+    ];
+
+    const filtered = allGroups.filter((g) => status === 'ALL' || g.status === status);
+
+    return HttpResponse.json({
+      success: true,
+      data: {
+        assignment: {
+          id: String(assignmentId),
+          title: 'Bài tập 2 - Đánh giá Kiến trúc Hệ thống & AI Mentor',
+          deadline: '2026-08-30T12:00:00Z',
+          classId: 'c-101',
+          className: 'Lớp 21CNTT1 - Công nghệ phần mềm',
+        },
+        stats: {
+          totalGroups: allGroups.length,
+          submittedCount: 1,
+          notStartedCount: 1,
+          lateCount: 1,
+        },
+        groups: filtered,
+      },
+    });
+  }),
 ];
+

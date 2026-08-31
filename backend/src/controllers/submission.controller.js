@@ -91,3 +91,21 @@ export const getSubmissionFeedback = async (req, res, next) => {
         next(error);
     }
 };
+
+export const getTeacherSubmissionsMonitor = async (req, res, next) => {
+    try {
+        const { assignmentId } = req.params;
+        const { status = 'ALL' } = req.query;
+        const currentUser = req.user;
+
+        const result = await submissionService.getTeacherSubmissionsMonitor(
+            assignmentId,
+            currentUser,
+            status
+        );
+        return res.ok(result);
+    } catch (error) {
+        next(error);
+    }
+};
+

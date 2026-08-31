@@ -100,7 +100,7 @@ export const SubmissionFeedbackPanel: React.FC<SubmissionFeedbackPanelProps> = (
 
           <div className="space-y-3">
             {feedback.reviews.map((rev, index) => {
-              const dateStr = new Date(rev.submitted_at).toLocaleDateString('vi-VN');
+              const dateStr = rev.submitted_at ? new Date(rev.submitted_at).toLocaleDateString('vi-VN') : 'vừa xong';
 
               return (
                 <div key={rev.id || index} className="bg-gray-50 border border-gray-200 p-4 rounded-xl space-y-2">

@@ -12,6 +12,10 @@ export function useSubmitReview(reviewAssignmentId: string) {
       onSuccess: () => {
         queryClient.invalidateQueries({ queryKey: ['reviewDetail', reviewAssignmentId] });
         queryClient.invalidateQueries({ queryKey: ['reviewAssignments'] });
+        queryClient.invalidateQueries({ queryKey: ['student-dashboard-assignments'] });
+        queryClient.invalidateQueries({ queryKey: ['assignment-synthesis'] });
+        queryClient.invalidateQueries({ queryKey: ['submission-summary'] });
+        queryClient.invalidateQueries({ queryKey: ['teacher-dashboard-overview'] });
       },
     }
   );

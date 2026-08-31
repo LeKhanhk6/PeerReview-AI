@@ -406,7 +406,7 @@ export const StudentDashboardPage: React.FC = () => {
                   {/* Actions Footer */}
                   <div className="pt-3 border-t border-slate-100 flex flex-wrap items-center justify-between gap-3">
                     {hasGroup ? (
-                      <Link to={`/student/assignments/${assignment.assignment_id}/workspace`}>
+                      <Link to={`/student/groups/${assignment.group_id}/workspace`}>
                         <Button variant="outline" size="sm">
                           {studentDashboardMessages.actionWorkspace}
                         </Button>

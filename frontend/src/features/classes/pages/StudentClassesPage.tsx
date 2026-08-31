@@ -80,7 +80,7 @@ export const StudentClassesPage: React.FC = () => {
                   <Button
                     size="sm"
                     variant="outline"
-                    onClick={() => navigate(`/student/assignments/${cls.group_id}/workspace`)}
+                    onClick={() => navigate(`/student/groups/${cls.group_id}/workspace`)}
                     className="text-xs text-emerald-800 border-emerald-300 hover:bg-emerald-50 font-semibold"
                   >
                     🚀 Không gian Nhóm

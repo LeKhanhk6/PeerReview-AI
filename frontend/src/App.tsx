@@ -67,6 +67,7 @@ function App() {
             <Route path="classes" element={<StudentClassesPage />} />
             <Route path="assignments" element={<Navigate to="/student/dashboard" replace />} />
             <Route path="assignments/:assignmentId/workspace" element={<StudentGroupWorkspacePage />} />
+            <Route path="groups/:groupId/workspace" element={<StudentGroupWorkspacePage />} />
             <Route path="assignments/:assignmentId/submit" element={<StudentSubmissionPage />} />
             
             {/* Peer Review Sub-routes */}

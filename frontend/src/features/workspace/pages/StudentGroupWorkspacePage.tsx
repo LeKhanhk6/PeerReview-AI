@@ -12,25 +12,38 @@ import { groupsApi } from '@/features/groups/api/groups.api';
 import { useGroupTasks } from '../hooks/useWorkspace';
 import { useAuthStore } from '@/features/auth/store/authStore';
 
+import { useApiQuery } from '@/hooks/useApiQuery';
+import { getStudentDashboardAssignmentsApi } from '@/features/student-dashboard/api/studentDashboardApi';
+
 type WorkspaceTab = 'kanban' | 'discussions' | 'timeline' | 'files';
 
 
 export const StudentGroupWorkspacePage: React.FC = () => {
   const { assignmentId, groupId } = useParams<{ assignmentId?: string; groupId?: string }>();
-  const targetGroupId = groupId || assignmentId || '';
   const navigate = useNavigate();
   const { user } = useAuthStore();
   const [activeTab, setActiveTab] = useState<WorkspaceTab>('kanban');
 
-  const isValidGroup = Boolean(targetGroupId && targetGroupId !== 'null' && targetGroupId !== 'undefined');
+  // Fallback: If URL has assignmentId instead of groupId, lookup actual group_id from student dashboard assignments
+  const { data: dashboardData } = useApiQuery(
+    ['student-dashboard-assignments'],
+    getStudentDashboardAssignmentsApi,
+    { enabled: !groupId && Boolean(assignmentId) }
+  );
+
+  const assignmentsList = Array.isArray(dashboardData) ? dashboardData : (dashboardData as any)?.rows || [];
+  const matchedAssignment = assignmentsList.find((a: any) => String(a.assignment_id) === String(assignmentId));
+  const resolvedGroupId = groupId || matchedAssignment?.group_id || (assignmentId && assignmentId.startsWith('group') ? assignmentId : '');
+
+  const isValidGroup = Boolean(resolvedGroupId && resolvedGroupId !== 'null' && resolvedGroupId !== 'undefined');
 
   const { data: groupData, isError: isGroupError } = useQuery({
-    queryKey: ['group', 'detail', targetGroupId],
-    queryFn: () => groupsApi.getGroupDetail(targetGroupId),
+    queryKey: ['group', 'detail', resolvedGroupId],
+    queryFn: () => groupsApi.getGroupDetail(resolvedGroupId),
     enabled: isValidGroup,
   });
 
-  const { data: tasksResult } = useGroupTasks(targetGroupId);
+  const { data: tasksResult } = useGroupTasks(resolvedGroupId);
   const hasGroup = tasksResult?.hasGroup !== false && !isGroupError;
 
   if (!isValidGroup || !hasGroup) {
@@ -135,18 +148,18 @@ export const StudentGroupWorkspacePage: React.FC = () => {
       <div>
         {activeTab === 'kanban' && (
           <TaskBoard
-            groupId={targetGroupId}
+            groupId={resolvedGroupId}
             userRole={userRole}
             currentUserId={user?.id || ''}
             members={members}
           />
         )}
 
-        {activeTab === 'discussions' && <DiscussionFeed groupId={targetGroupId} />}
+        {activeTab === 'discussions' && <DiscussionFeed groupId={resolvedGroupId} />}
 
-        {activeTab === 'timeline' && <ActivityTimeline groupId={targetGroupId} />}
+        {activeTab === 'timeline' && <ActivityTimeline groupId={resolvedGroupId} />}
 
-        {activeTab === 'files' && <GroupFileManager groupId={targetGroupId} />}
+        {activeTab === 'files' && <GroupFileManager groupId={resolvedGroupId} />}
       </div>
     </div>
   );

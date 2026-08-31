@@ -286,6 +286,32 @@ _(Bản đã chỉnh sửa theo Technical Review — các thay đổi so với v
 
 ---
 
+## ⚙️ PHASE 9 — SCREENS COMPLETION & HARDENING
+
+### Task 09.0 — Forgot / Reset Password Pages ✅
+- [x] `/forgot-password` và `/reset-password` (form nhập token + mật khẩu mới)
+- [x] Link từ Login screen; 100% copy từ `constants/messages`
+- [x] Anti-enumeration handling (response thông báo đồng nhất)
+- [x] 4 trạng thái Token (hợp lệ, sai, hết hạn 410, đã dùng 400) + Xóa token khỏi URL sau reset
+- [x] MSW handlers + E2E test cho flow Quên mật khẩu
+
+### Task 09.1 — Role Dashboards (Student / Teacher / Admin Alignment)
+- [x] **09.1a Student Dashboard**: Tóm tắt bài tập, deadline countdown single source of truth (`date.utils.ts`), 3 stats cards, 3 filter tabs, Group Workspace Task Progress Widget 1:1 theo `group_id` (`StudentDashboardPage.tsx`).
+- [x] **09.1b Teacher Dashboard**: 5 stats cards tổng quan, Class Selector Dropdown lọc dữ liệu theo lớp (`classId`), Early Warning Panel nổi bật phía trên bên phải (sort `HIGH` -> `MEDIUM`, labels thuần Việt, positive emerald empty state khi 0 risks) (`TeacherDashboardPage.tsx`).
+- [ ] **09.1c Admin Dashboard Alignment**: Đối chiếu Figma, chỉ sửa presentation — giữ E2E Flow 1 PASSED (chỉ align UI, không rewrite core)
+
+### Task 09.2 — Teacher Submissions Monitor (#12.5)
+- [ ] Màn hình theo dõi bài nộp cho Giáo viên (Submissions/Non-submitted status list) (Phụ thuộc BE: verify/bổ sung endpoint submission-status bao gồm danh sách đã nộp & chưa nộp)
+
+### Task 09.3 — Student Profile & Security
+- [ ] Trang thông tin sinh viên & Đổi mật khẩu (Phụ thuộc BE: verify `PATCH /users/me` + API đổi mật khẩu)
+
+### Task 09.4 — Admin Classes View (Read-Only)
+- [ ] Màn hình xem danh sách lớp học dành cho Admin (Post-pilot, read-only view)
+
+---
+
+
 ## 📌 POST-MVP BACKLOG
 
 - Notification center UI (bảng DB đã có, UI chưa trong MVP scope)

@@ -299,6 +299,13 @@ describe('auth.service', () => {
     });
 
     describe('updateUserProfile', () => {
+        it('should reject avatar_url without https:// protocol with 400 error', async () => {
+            const error = await updateUserProfile('user-1', { avatar_url: 'http://insecure.com/pic.png' }).catch(e => e);
+            expect(error).toBeInstanceOf(AppError);
+            expect(error.statusCode).toBe(400);
+            expect(error.message).toContain('https://');
+        });
+
         it('should ignore non-whitelisted fields (email, role, student_id) and update profile successfully', async () => {
             poolMock.query.mockResolvedValueOnce({ rows: [{ id: 'user-1' }] }); // UPDATE
             poolMock.query.mockResolvedValueOnce({

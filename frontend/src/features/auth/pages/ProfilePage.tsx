@@ -12,6 +12,7 @@ export const ProfilePage: React.FC = () => {
   // Profile state
   const [fullName, setFullName] = useState(user?.full_name || '');
   const [avatarUrl, setAvatarUrl] = useState(user?.avatar_url || '');
+  const [avatarLoadError, setAvatarLoadError] = useState(false);
   const [isUpdatingProfile, setIsUpdatingProfile] = useState(false);
   const [profileError, setProfileError] = useState<string | null>(null);
 
@@ -39,6 +40,7 @@ export const ProfilePage: React.FC = () => {
 
     try {
       setIsUpdatingProfile(true);
+      setAvatarLoadError(false);
       const res = await updateProfileApi({
         full_name: fullName.trim(),
         avatar_url: avatarUrl.trim() || undefined,
@@ -124,15 +126,12 @@ export const ProfilePage: React.FC = () => {
       {/* Header Banner */}
       <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex flex-col sm:flex-row items-center gap-5">
         <div className="w-16 h-16 rounded-full bg-slate-800 text-white flex items-center justify-center font-bold text-xl overflow-hidden border-2 border-slate-200 shadow-sm shrink-0">
-          {user?.avatar_url ? (
+          {user?.avatar_url && !avatarLoadError ? (
             <img
               src={user.avatar_url}
               alt={user.full_name}
               className="w-full h-full object-cover"
-              onError={(e) => {
-                // Fallback to initials if image fails to load
-                (e.target as HTMLElement).style.display = 'none';
-              }}
+              onError={() => setAvatarLoadError(true)}
             />
           ) : (
             <span>{userInitials}</span>
@@ -221,8 +220,10 @@ export const ProfilePage: React.FC = () => {
                 placeholder="https://example.com/avatar.jpg"
                 className="w-full px-3 py-2 border border-slate-300 rounded-xl text-sm text-slate-900 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-sm"
               />
-              <p className="text-[11px] text-slate-500 mt-1">
-                Yêu cầu URL sử dụng giao thức an toàn HTTPS (https://...)
+              <p className="text-[11px] text-slate-500 mt-1 leading-normal">
+                Yêu cầu <strong>Link ảnh trực tiếp HTTPS</strong> (kết thúc bằng .jpg, .png, .webp, ví dụ: <code>https://i.ibb.co/.../image.jpg</code>).
+                <br />
+                <span className="text-amber-600 font-medium">⚠️ Lưu ý: Link xem trang web như <code>https://ibb.co/xKLXmyxZ</code> không phải là link ảnh trực tiếp. Hãy nhấp chuột phải vào hình ảnh chọn "Sao chép địa chỉ hình ảnh".</span>
               </p>
             </div>
 

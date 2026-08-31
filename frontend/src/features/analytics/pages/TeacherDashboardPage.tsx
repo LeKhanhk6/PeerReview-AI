@@ -64,7 +64,7 @@ export const TeacherDashboardPage: React.FC = () => {
     ['teacher-assignments-list', selectedClassId],
     async () => {
       const params = selectedClassId ? { classId: selectedClassId } : {};
-      const res = await api.get('/assignments', { params });
+      const res = (await api.get('/assignments', { params })) as any;
       return res.data || res.rows || res || [];
     }
   );

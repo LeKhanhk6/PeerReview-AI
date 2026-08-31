@@ -13,10 +13,12 @@ import { EmptyState } from '@/components/ui/EmptyState';
 import { Skeleton } from '@/components/ui/Skeleton';
 
 // Sub-component for individual Group Workspace Task Progress (Handles Multiple Groups 1:1 per assignment)
-const AssignmentGroupWorkspaceWidget: React.FC<{ groupId: string; currentUserId: string }> = ({
+const AssignmentGroupWorkspaceWidget: React.FC<{ groupId?: string; currentUserId: string }> = ({
   groupId,
   currentUserId,
 }) => {
+  if (!groupId) return null;
+
   const { data: tasks = [], isLoading } = useApiQuery(
     ['group-tasks', groupId],
     () => getGroupTasksApi(groupId),
@@ -32,10 +34,11 @@ const AssignmentGroupWorkspaceWidget: React.FC<{ groupId: string; currentUserId:
     );
   }
 
-  const totalTasks = tasks.length;
-  const doneTasks = tasks.filter((t) => t.status === 'DONE').length;
+  const tasksList = Array.isArray(tasks) ? tasks : [];
+  const totalTasks = tasksList.length;
+  const doneTasks = tasksList.filter((t) => t.status === 'DONE').length;
   const progressPct = totalTasks > 0 ? Math.round((doneTasks / totalTasks) * 100) : 0;
-  const myTasks = tasks.filter((t) => t.assignee_id === currentUserId);
+  const myTasks = tasksList.filter((t) => t.assignee_id === currentUserId);
 
   return (
     <div className="mt-4 p-4 rounded-xl bg-slate-50 border border-slate-200/80 space-y-3">
@@ -111,14 +114,16 @@ export const StudentDashboardPage: React.FC = () => {
     getStudentDashboardAssignmentsApi
   );
 
-  const assignments = dashboardData?.rows || [];
+  const assignments = Array.isArray(dashboardData)
+    ? dashboardData
+    : dashboardData?.rows || [];
 
   // Filter calculations
-  const urgentCount = assignments.filter((a) => a.days_left <= 3).length;
+  const urgentCount = assignments.filter((a) => (a.days_left ?? 999) <= 3).length;
   const pendingReviewCount = assignments.filter((a) => a.review?.status === 'UNDER_REVIEW').length;
 
   const filteredAssignments = assignments.filter((item) => {
-    if (filterMode === 'URGENT') return item.days_left <= 3;
+    if (filterMode === 'URGENT') return (item.days_left ?? 999) <= 3;
     if (filterMode === 'NEEDS_REVIEW') return item.review?.status === 'UNDER_REVIEW';
     return true;
   });

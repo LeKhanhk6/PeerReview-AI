@@ -6,7 +6,6 @@ import {
   getTeacherClassesApi,
   getDashboardOverviewApi,
   getClassCollaborationRisksApi,
-  type CollaborationRiskItem,
 } from '../api/teacherDashboardApi';
 import { analyticsMessages } from '@/constants/messages/analytics';
 import { formatPercentage, formatScore } from '@/utils/number.utils';
@@ -22,10 +21,14 @@ export const TeacherDashboardPage: React.FC = () => {
   const [selectedClassId, setSelectedClassId] = useState<string>('');
 
   // 1. Fetch Teacher Classes
-  const { data: classes = [] } = useApiQuery(
+  const { data: rawClasses = [] } = useApiQuery(
     ['teacher-classes'],
     getTeacherClassesApi
   );
+
+  const classes = Array.isArray(rawClasses)
+    ? rawClasses
+    : (rawClasses as any)?.classes || (rawClasses as any)?.rows || [];
 
   // Default to first class if available and no class selected
   useEffect(() => {
@@ -46,13 +49,15 @@ export const TeacherDashboardPage: React.FC = () => {
 
   // 3. Fetch Early Warning Collaboration Risks
   const {
-    data: risks = [],
+    data: rawRisks = [],
     isLoading: isRisksLoading,
   } = useApiQuery(
     ['teacher-dashboard-risks', selectedClassId],
     () => getClassCollaborationRisksApi(selectedClassId),
     { enabled: Boolean(selectedClassId) }
   );
+
+  const risks = Array.isArray(rawRisks) ? rawRisks : [];
 
   // 4. Fetch Teacher Assignments for selected class or all classes
   const { data: assignmentsData } = useApiQuery(
@@ -64,7 +69,9 @@ export const TeacherDashboardPage: React.FC = () => {
     }
   );
 
-  const assignments = Array.isArray(assignmentsData) ? assignmentsData : assignmentsData?.rows || [];
+  const assignments = Array.isArray(assignmentsData)
+    ? assignmentsData
+    : assignmentsData?.rows || [];
 
   // Sort risks: HIGH severity first -> MEDIUM -> score DESC
   const sortedRisks = [...risks].sort((a, b) => {

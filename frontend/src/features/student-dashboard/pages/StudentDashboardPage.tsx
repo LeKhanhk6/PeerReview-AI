@@ -11,7 +11,7 @@ import {
 import { studentDashboardMessages } from '@/constants/messages/studentDashboard';
 import { calculateDaysLeftStatus } from '@/utils/date.utils';
 import { Button } from '@/components/ui/Button';
-import { EmptyState } from '@/components/common/EmptyState/EmptyState';
+import { EmptyState } from '@/components/ui/EmptyState';
 import { Skeleton } from '@/components/ui/Skeleton';
 
 // Sub-component for individual Group Workspace Task Progress (Handles Multiple Groups 1:1 per assignment)

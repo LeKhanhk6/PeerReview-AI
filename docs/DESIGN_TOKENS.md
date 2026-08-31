@@ -1,87 +1,88 @@
-# 🎨 PEERREVIEW-AI — DESIGN TOKENS & CHUẨN TÔNG MÀU GIAO DIỆN
+# 🎨 PEERREVIEW-AI — DESIGN TOKENS & BẢNG MÀU TỪ THIẾT KẾ UI (UI MOCKUP COLOR PALETTE)
 
-Tài liệu này định nghĩa hệ thống **Design Tokens** và bảng mã màu chuẩn được áp dụng thống nhất cho toàn bộ các màn hình giao diện (Screens), thành phần UI (Components) và trạng thái hệ thống trong dự án **PeerReview-AI**.
-
----
-
-## 📌 1. BẢNG MÀU THƯƠNG HIỆU & CHÍNH (PRIMARY BRAND TOKENS)
-
-Sử dụng dải màu Indigo/Blue làm màu chủ đạo cho các hành động chính, nút bấm, tiêu đề trọng tâm và các trạng thái đang hoạt động (Active).
-
-| Tên Token | Mã Hex / Class Tailwind | Vị trí / Mục đích sử dụng | Tiêu chuẩn WCAG AA |
-| :--- | :--- | :--- | :---: |
-| **Primary Main** | `indigo-600` (`#4F46E5`) / `blue-600` (`#2563EB`) | Nút bấm chính (Primary Button), Icon chủ đạo, Tab đang chọn | ✅ Compliant (4.8:1) |
-| **Primary Hover** | `indigo-700` (`#4338CA`) / `blue-700` (`#1D4ED8`) | Trạng thái di chuột (Hover) của nút chính | ✅ Compliant (6.2:1) |
-| **Primary Soft BG** | `indigo-50` (`#EEF2FF`) / `blue-50` (`#EFF6FF`) | Nền thẻ làm nổi bật, Nền Badge thông báo nhẹ | ✅ Compliant |
-| **Primary Soft Border** | `indigo-100` (`#E0E7FF`) / `blue-100` (`#DBEAFE`) | Viền thẻ mềm, viền hộp thoại phụ | ✅ Compliant |
-| **Primary Heavy Text** | `indigo-900` (`#312E81`) / `blue-900` (`#1E3A8A`) | Chữ tiêu đề trên nền Soft BG | ✅ Compliant (11.5:1) |
+Tài liệu này tổng hợp **Bảng mã màu thực tế được trích xuất từ 17 ảnh thiết kế giao diện (UI Mockups trong `frontend/image UI`)**, kết hợp với hệ thống **Design Tokens Tailwind CSS** được áp dụng cho toàn bộ dự án **PeerReview-AI**.
 
 ---
 
-## 🏙️ 2. BẢNG MÀU NỀN & KHUNG CHỨA (BACKGROUND & SURFACE TOKENS)
+## 📌 1. BẢNG MÀU CHỦ ĐẠO & THƯƠNG HIỆU (PRIMARY BRAND PALETTE)
 
-Đảm bảo bố cục giao diện nhất quán với thiết kế phẳng hiện đại, tương phản rõ rệt giữa nền ứng dụng và các thẻ nội dung.
+Dựa trên các màn hình Đăng nhập, Student Dashboard, Admin Overview và Peer Review Workspace:
 
-| Tên Token | Class Tailwind | Vị trí / Mục đích sử dụng |
-| :--- | :--- | :--- |
-| **App Background** | `bg-slate-50` (`#F8FAFC`) | Nền toàn bộ màn hình ứng dụng (App Layout Page Body) |
-| **Card Surface** | `bg-white` (`#FFFFFF`) | Nền các thẻ Card nội dung, Hộp thoại Modal, Form nhập liệu |
-| **Card Border** | `border-slate-100` / `border-slate-200` | Đường viền các thẻ Card, đường kẻ phân cách nội dung |
-| **Sub-Card Background** | `bg-slate-50/80` / `bg-slate-100/60` | Nền các ô thông tin con bên trong Card chính |
-| **Input Background** | `bg-white` (Active) / `bg-slate-100` (Disabled) | Ô nhập văn bản (Input / Textarea / Select) |
+| Tên Token / Thành phần | Mã Hex thực tế (UI Image) | Class Tailwind CSS tương ứng | Mục đích sử dụng trong Giao diện | Standard WCAG AA |
+| :--- | :--- | :--- | :--- | :---: |
+| **Brand Primary Main** | `#0B57D0` / `#1A73E8` / `#2563EB` | `blue-600` / `indigo-600` | Nút bấm hành động chính (Primary Button), Tab Navigation đang được chọn, Icon chính | ✅ Pass (4.8:1) |
+| **Primary Hover / Active** | `#0B4EB5` / `#1D4ED8` | `blue-700` / `indigo-700` | Trạng thái di chuột (Hover) & bấm giữ nút chính | ✅ Pass (6.2:1) |
+| **Primary Soft BG** | `#E8F0FE` / `#EFF6FF` | `blue-50` / `indigo-50` | Nền thẻ Active, Thẻ thông báo nổi bật nhẹ, Thẻ AI Mentor | ✅ Pass |
+| **Primary Soft Border** | `#AECBFA` / `#DBEAFE` | `blue-200` / `indigo-200` | Viền ô lựa chọn active, viền khung AI gợi ý | ✅ Pass |
+| **Primary Heavy Text** | `#041E49` / `#1E3A8A` | `blue-950` / `indigo-950` | Chữ tiêu đề nổi bật trên nền Soft BG | ✅ Pass (11.5:1) |
 
 ---
 
-## 🔤 3. BẢNG MÀU CHỮ & TYPOGRAPHY (NEUTRAL TEXT TOKENS)
+## 🏙️ 2. BẢNG MÀU NỀN & KHUNG CHỨA (BACKGROUND & SURFACE SHADES)
 
-Quy định các màu chữ từ đậm đến nhạt để tạo phân cấp thị giác (Hierarchy) rõ ràng.
+Dựa trên các màn hình Dashboard, Lớp học và Workspace:
 
-| Tên Token | Class Tailwind | Độ đậm (Font Weight) | Mục đích sử dụng |
+| Tên Token / Thành phần | Mã Hex thực tế (UI Image) | Class Tailwind CSS tương ứng | Mục đích sử dụng trong Giao diện |
 | :--- | :--- | :--- | :--- |
-| **Heading 1 / Title** | `text-slate-900` (`#0F172A`) | `font-bold` / `font-black` | Tiêu đề chính màn hình, Tiêu đề Card chính |
-| **Body Text** | `text-slate-700` (`#334155`) | `font-semibold` / `font-medium` | Nội dung văn bản chính, Nhãn input (Label) |
-| **Secondary Text** | `text-slate-600` (`#475569`) | `font-normal` | Mô tả phụ, Subtitle, Đoạn văn bản hướng dẫn |
-| **Muted Meta Text** | `text-slate-500` (`#64748B`) | `font-normal` / `font-medium` | Thời gian, Mốc ngày hết hạn, Ghi chú nhỏ |
-| **Disabled Text** | `text-slate-400` (`#94A3B8`) | `font-normal` | Chữ bị vô hiệu hóa, Chữ giữ chỗ (Placeholder) |
+| **App Body Background** | `#F8FAFC` / `#F0F4F9` | `bg-slate-50` / `bg-slate-100/50` | Nền toàn bộ ứng dụng (Main Page Background) |
+| **Card Surface (White)** | `#FFFFFF` | `bg-white` | Nền các thẻ Card nội dung, Modal Dialog, Form |
+| **Sub-Widget Background** | `#F8FAFC` / `#F1F5F9` | `bg-slate-50` / `bg-slate-100/70` | Nền các khối thông tin con bên trong Card chính (Kanban, Progress) |
+| **Card Border (Default)** | `#E2E8F0` / `#F1F5F9` | `border-slate-200` / `border-slate-100` | Viền thẻ nội dung, viền bảng dữ liệu |
+| **Input Active / Disabled** | `#FFFFFF` (Active) / `#F1F5F9` (Disabled) | `bg-white` / `bg-slate-100` | Nền ô nhập liệu văn bản |
 
 ---
 
-## 🚥 4. BẢNG MÀU TRẠNG THÁI NGHIỆP VỤ (SEMANTIC STATUS TOKENS)
+## 🔤 3. BẢNG MÀU CHỮ & TYPOGRAPHY (NEUTRAL TEXT SHADES)
 
-Dành riêng cho các Badge, Alert, Card Highlight thể hiện trạng thái bài nộp, tiến độ và rủi ro.
-
-### 🟢 Thành công / Đã nộp / Đạt chuẩn (Success / Completed):
-- **Text**: `text-emerald-800` / `text-emerald-700`
-- **Background**: `bg-emerald-50` / `bg-emerald-100`
-- **Border**: `border-emerald-200` / `border-emerald-300`
-
-### 🟡 Cảnh báo / Chờ xử lý / Sắp hết hạn / Chưa vào nhóm (Warning / Pending / Urgent):
-- **Text**: `text-amber-900` / `text-amber-800`
-- **Background**: `bg-amber-50` / `bg-amber-100`
-- **Border**: `border-amber-200` / `border-amber-300`
-
-### 🔴 Quá hạn / Thất bại / Rủi ro cao / Khóa tài khoản (Danger / Late / Error / High Risk):
-- **Text**: `text-rose-800` / `text-red-800`
-- **Background**: `bg-rose-50` / `bg-red-50`
-- **Border**: `border-rose-200` / `border-red-200`
-
-### ⚪ Trung tính / Chưa bắt đầu / Bản nháp (Neutral / Draft / Not Started):
-- **Text**: `text-slate-700` / `text-gray-700`
-- **Background**: `bg-slate-100` / `bg-gray-100`
-- **Border**: `border-slate-200` / `border-gray-200`
+| Tên Token / Thành phần | Mã Hex thực tế (UI Image) | Class Tailwind CSS tương ứng | Độ đậm / Áp dụng |
+| :--- | :--- | :--- | :--- |
+| **Heading 1 / Title** | `#0F172A` / `#1E293B` | `text-slate-900` / `text-slate-800` | `font-bold` — Tiêu đề trang, Tên bài tập, Tên lớp |
+| **Body Text** | `#334155` | `text-slate-700` | `font-semibold` / `font-medium` — Văn bản chính |
+| **Secondary Description** | `#475569` / `#5F6368` | `text-slate-600` | `font-normal` — Đoạn hướng dẫn, Mô tả phụ |
+| **Muted Meta / Time** | `#64748B` | `text-slate-500` | `font-normal` — Thời gian, Ngày hết hạn, Meta badge |
+| **Disabled Placeholder** | `#94A3B8` | `text-slate-400` | `font-normal` — Placeholder input, Chữ vô hiệu hóa |
 
 ---
 
-## 📐 5. BO GÓC & NỔI BẬT (BO-GÓC & SHADOW TOKENS)
+## 🚥 4. BẢNG MÀU TRẠNG THÁI NGHIỆP VỤ (FUNCTIONAL SEMANTIC BADGES)
 
-| Thuộc tính | Class Tailwind | Áp dụng cho |
-| :--- | :--- | :--- |
-| **Card Bo Góc** | `rounded-xl` (12px) / `rounded-2xl` (16px) | Thẻ nội dung, Bảng tổng quan, Hộp thoại Modal |
-| **Button Bo Góc** | `rounded-lg` (8px) / `rounded-xl` (12px) | Nút bấm, Ô nhập văn bản, Badge trạng thái |
-| **Độ Nổi Card** | `shadow-sm` $\to$ `hover:shadow-md` | Thẻ danh sách bài tập, Thẻ nhóm |
+Dựa trên các Badge hiển thị bài nộp, trạng thái chấm chéo và rủi ro nhóm:
+
+### 🟢 Thành công / Đã hoàn thành / Đã nộp bài (Success / Submitted / Done):
+- **Background**: `#E6F4EA` (`bg-emerald-50`)
+- **Text**: `#137333` (`text-emerald-800`)
+- **Border**: `#CEEAD6` (`border-emerald-200`)
+
+### 🟡 Cảnh báo / Đang chấm chéo / Sắp hết hạn / Chưa vào nhóm (Warning / Urgent / Pending):
+- **Background**: `#FEF7E0` (`bg-amber-50`)
+- **Text**: `#B06000` (`text-amber-800`)
+- **Border**: `#FDE293` (`border-amber-200`)
+
+### 🔴 Quá hạn nộp / Thất bại / Rủi ro cao / Khóa tài khoản (Danger / Late / High Risk):
+- **Background**: `#FCE8E6` (`bg-rose-50`)
+- **Text**: `#C5221F` (`text-rose-800`)
+- **Border**: `#FAD2CF` (`border-rose-200`)
+
+### ⚪ Neutral / Bản nháp / Chưa mở chấm (Neutral / Draft / Inactive):
+- **Background**: `#F1F3F4` (`bg-slate-100`)
+- **Text**: `#5F6368` (`text-slate-700`)
+- **Border**: `#E8EAED` (`border-slate-200`)
 
 ---
 
-## ♿ 6. ĐẢM BẢO TIÊU CHUẨN TRUY CẬP (ACCESSIBILITY WCAG AA)
-- Tất cả các vùng văn bản hiển thị phải đạt độ tương phản tối thiểu **$\ge 4.5:1$** so với màu nền.
-- Tuyệt đối không dùng duy nhất màu sắc để phân biệt trạng thái, luôn đi kèm **Icon / Emoji** hoặc **Chữ nhãn rõ ràng** (VD: `🟢 Đã nộp`, `🟡 Chưa có nhóm`, `🔴 Trễ hạn`).
+## 🤖 5. BẢNG MÀU ĐẶC THÙ CHO TÍNH NĂNG AI MENTOR & SYNTHESIS
+
+Dựa trên các khối hiển thị gợi ý AI và biểu đồ phân tích:
+
+| Tính năng | Background | Text Color | Border Color | Tailwind Token |
+| :--- | :--- | :--- | :--- | :--- |
+| **AI Peer-Review Mentor** | `#EFF6FF` (Soft Blue) | `#1E40AF` | `#BFDBFE` | `bg-blue-50 text-blue-800 border-blue-200` |
+| **AI Badge Highlight** | `#F3E8FF` (Soft Purple) | `#6B21A8` | `#E9D5FF` | `bg-purple-50 text-purple-800 border-purple-200` |
+| **Radar Chart Accent** | `#7C3AED` (Purple) & `#2563EB` (Blue) | N/A | N/A | `stroke-purple-600 stroke-blue-600` |
+
+---
+
+## 📐 6. QUY ĐỊNH BO GÓC & BÓNG NỔI (RADIUS & SHADOW TOKENS)
+- **Main Container Card**: `rounded-2xl` (16px) với `border border-slate-100 shadow-sm`.
+- **Sub-Widgets & Buttons**: `rounded-xl` (12px) hoặc `rounded-lg` (8px).
+- **Status Badges**: `rounded-full` (Pill style) hoặc `rounded-md` (6px).

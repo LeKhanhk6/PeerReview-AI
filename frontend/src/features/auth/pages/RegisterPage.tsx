@@ -67,7 +67,7 @@ export const RegisterPage: React.FC = () => {
   return (
     <div className="flex items-center justify-center min-h-screen bg-slate-50 p-2 sm:p-4 lg:p-6">
       {/* 2-Column Split-Screen Container */}
-      <div className="bg-white rounded-2xl shadow-xl overflow-hidden max-w-4xl w-full flex flex-col md:flex-row border border-slate-100/80 my-auto">
+      <div className="bg-white rounded-2xl shadow-xl overflow-hidden max-w-3xl w-full flex flex-col md:flex-row border border-slate-100/80 my-auto">
         
         {/* LEFT COLUMN: Shared Brand Hero Panel (Visible >= md) */}
         <AuthIllustrationPanel
@@ -76,25 +76,25 @@ export const RegisterPage: React.FC = () => {
         />
 
         {/* RIGHT COLUMN: Form Panel (~50%) */}
-        <div className="w-full md:w-1/2 p-5 sm:p-6 lg:p-7 flex flex-col justify-center bg-white">
-          <div className="space-y-3">
+        <div className="w-full md:w-1/2 p-4 sm:p-5 lg:p-6 flex flex-col justify-center bg-white">
+          <div className="space-y-2.5">
             {/* Header with Mascot Icon */}
             <div className="flex items-center justify-between">
               <div>
-                <h2 className="text-xl lg:text-2xl font-extrabold text-slate-900 tracking-tight">
+                <h2 className="text-lg lg:text-xl font-extrabold text-slate-900 tracking-tight">
                   {authMessages.registerHeader}
                 </h2>
-                <p className="text-[11px] sm:text-xs text-slate-500 font-medium mt-0.5">
+                <p className="text-[11px] text-slate-500 font-medium mt-0.5">
                   {authMessages.registerSubheader}
                 </p>
               </div>
-              <div className="w-8 h-8 rounded-xl bg-brand-soft-bg flex items-center justify-center text-lg shadow-xs border border-brand-soft-border shrink-0 ml-2" title="PeerReview AI Mascot">
+              <div className="w-7 h-7 rounded-lg bg-brand-soft-bg flex items-center justify-center text-base shadow-xs border border-brand-soft-border shrink-0 ml-2" title="PeerReview AI Mascot">
                 🎨
               </div>
             </div>
 
             {/* Teacher Registration Note */}
-            <div className="p-2 bg-brand-soft-bg/80 border border-brand-soft-border rounded-lg text-[11px] font-medium text-brand-heavy-text leading-tight">
+            <div className="p-2 bg-brand-soft-bg/80 border border-brand-soft-border rounded-lg text-[10px] sm:text-[11px] font-medium text-brand-heavy-text leading-tight">
               {authMessages.teacherNote}
             </div>
 

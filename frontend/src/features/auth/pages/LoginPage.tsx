@@ -98,7 +98,7 @@ export const LoginPage: React.FC = () => {
   return (
     <div className="flex items-center justify-center min-h-screen bg-slate-50 p-4 sm:p-6 lg:p-8">
       {/* 2-Column Split-Screen Container */}
-      <div className="bg-white rounded-2xl shadow-xl overflow-hidden max-w-4xl w-full flex flex-col md:flex-row border border-slate-100/80 my-auto">
+      <div className="bg-white rounded-2xl shadow-xl overflow-hidden max-w-3xl w-full flex flex-col md:flex-row border border-slate-100/80 my-auto">
         
         {/* LEFT COLUMN: Shared Brand Hero Panel (Visible >= md) */}
         <AuthIllustrationPanel
@@ -107,28 +107,28 @@ export const LoginPage: React.FC = () => {
         />
 
         {/* RIGHT COLUMN: Form Panel (~50%) */}
-        <div className="w-full md:w-1/2 p-6 sm:p-8 lg:p-10 flex flex-col justify-center bg-white">
-          <div className="space-y-4">
+        <div className="w-full md:w-1/2 p-5 sm:p-6 lg:p-7 flex flex-col justify-center bg-white">
+          <div className="space-y-3.5">
             {/* Header */}
             <div>
-              <h2 className="text-xl lg:text-2xl font-bold text-slate-900 tracking-tight">
+              <h2 className="text-lg lg:text-xl font-extrabold text-slate-900 tracking-tight">
                 {authMessages.loginHeader}
               </h2>
-              <p className="text-xs text-slate-600 font-medium mt-0.5">
+              <p className="text-[11px] text-slate-500 font-medium mt-0.5">
                 {authMessages.loginSubheader}
               </p>
             </div>
 
             {/* Account Locked Alert Banner */}
             {isLocked && (
-              <div role="alert" className="p-3 bg-badge-danger-bg border border-badge-danger-border rounded-xl text-xs font-semibold text-badge-danger-text flex items-start gap-2 shadow-sm">
+              <div role="alert" className="p-2.5 bg-badge-danger-bg border border-badge-danger-border rounded-xl text-xs font-semibold text-badge-danger-text flex items-start gap-2 shadow-xs">
                 <span className="text-base shrink-0">⚠️</span>
                 <span>{authMessages.accountLocked}</span>
               </div>
             )}
 
             {/* Form */}
-            <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+            <form onSubmit={handleSubmit(onSubmit)} className="space-y-3">
               {/* Email Field */}
               <div>
                 <label htmlFor="email" className="block text-xs font-bold text-slate-900 mb-1.5">

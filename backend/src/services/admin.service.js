@@ -77,9 +77,9 @@ export const getUsers = async (options = {}) => {
   }
 
   if (status) {
-    if (status.toUpperCase() !== 'ACTIVE') {
-      whereClauses.push('1 = 0');
-    }
+    whereClauses.push(`COALESCE(u.status, 'ACTIVE') = $${paramIdx}`);
+    queryParams.push(status.toUpperCase());
+    paramIdx++;
   }
 
   const whereSql = whereClauses.length > 0 ? `WHERE ${whereClauses.join(' AND ')}` : '';
@@ -95,7 +95,7 @@ export const getUsers = async (options = {}) => {
   const fetchLimit = safeLimit + 1;
   const dataParams = [...queryParams, fetchLimit, offset];
   const dataSql = `
-    SELECT u.id, u.email, u.full_name as "fullName", r.name as role, 'ACTIVE' as status, u.created_at as "createdAt", u.updated_at as "updatedAt"
+    SELECT u.id, u.email, u.full_name as "fullName", r.name as role, COALESCE(u.status, 'ACTIVE') as status, u.created_at as "createdAt", u.updated_at as "updatedAt"
     FROM users u
     LEFT JOIN roles r ON u.role_id = r.id
     ${whereSql}
@@ -143,7 +143,7 @@ export const updateUserRole = async (currentUser, targetUserId, newRole) => {
 
     // 2. Fetch target user with FOR UPDATE row lock
     const userRes = await client.query(
-      `SELECT u.id, u.email, u.full_name, r.name as role, 'ACTIVE' as status 
+      `SELECT u.id, u.email, u.full_name, r.name as role, COALESCE(u.status, 'ACTIVE') as status 
        FROM users u 
        LEFT JOIN roles r ON u.role_id = r.id 
        WHERE u.id = $1 FOR UPDATE OF u`,
@@ -188,7 +188,7 @@ export const updateUserRole = async (currentUser, targetUserId, newRole) => {
     );
 
     const updateRes = await client.query(
-      `SELECT u.id, u.email, u.full_name as "fullName", r.name as role, 'ACTIVE' as status, u.updated_at as "updatedAt"
+      `SELECT u.id, u.email, u.full_name as "fullName", r.name as role, COALESCE(u.status, 'ACTIVE') as status, u.updated_at as "updatedAt"
        FROM users u
        LEFT JOIN roles r ON u.role_id = r.id
        WHERE u.id = $1`,
@@ -240,7 +240,7 @@ export const updateUserStatus = async (currentUser, targetUserId, newStatus) => 
 
     // 2. Fetch target user with FOR UPDATE row lock
     const userRes = await client.query(
-      `SELECT u.id, u.email, u.full_name, r.name as role, 'ACTIVE' as status 
+      `SELECT u.id, u.email, u.full_name, r.name as role, COALESCE(u.status, 'ACTIVE') as status 
        FROM users u 
        LEFT JOIN roles r ON u.role_id = r.id 
        WHERE u.id = $1 FOR UPDATE OF u`,
@@ -267,6 +267,12 @@ export const updateUserStatus = async (currentUser, targetUserId, newStatus) => 
         );
       }
     }
+
+    // 4. Perform actual SQL UPDATE in Postgres DB
+    await client.query(
+      'UPDATE users SET status = $1, updated_at = NOW() WHERE id = $2',
+      [formattedStatus, targetUserId]
+    );
 
     const updateRes = {
       id: targetUserId,

@@ -51,7 +51,7 @@ export const loginUser = async (email, password) => {
 
     // Tìm user và role name
     const query = `
-        SELECT u.id, u.email, u.password_hash, u.full_name, u.student_id, r.name as role
+        SELECT u.id, u.email, u.password_hash, u.full_name, u.student_id, COALESCE(u.status, 'ACTIVE') as status, r.name as role
         FROM users u
         LEFT JOIN roles r ON u.role_id = r.id
         WHERE u.email = $1
@@ -62,6 +62,10 @@ export const loginUser = async (email, password) => {
     }
 
     const user = result.rows[0];
+
+    if (user.status === 'LOCKED' || user.status === 'INACTIVE') {
+        throw new AppError('Tài khoản của bạn đã bị khóa. Vui lòng liên hệ Quản trị viên.', 403, 'ACCOUNT_LOCKED');
+    }
 
     if (!user.role) {
         throw new AppError('User role is not assigned', 403);

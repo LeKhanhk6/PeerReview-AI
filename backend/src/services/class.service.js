@@ -67,14 +67,17 @@ export const getAllClasses = async (user, pagination = { page: 1, limit: 10, off
         countValues.push(user.userId);
     } else if (user.role === 'STUDENT') {
         query = `
-            SELECT DISTINCT ON (c.id) c.id, c.course_code, c.course_name, c.name, c.invite_code, c.semester, c.created_at, c.teacher_id,
-                   g.id as group_id, g.name as group_name
-            FROM classes c
-            JOIN class_members cm ON c.id = cm.class_id
-            LEFT JOIN group_members gm ON gm.user_id = $1
-            LEFT JOIN groups g ON g.id = gm.group_id AND g.class_id = c.id
-            WHERE cm.user_id = $1 AND c.deleted_at IS NULL
-            ORDER BY c.id, (g.id IS NOT NULL) DESC
+            WITH StudentClasses AS (
+                SELECT DISTINCT ON (c.id) c.id, c.course_code, c.course_name, c.name, c.invite_code, c.semester, c.created_at, c.teacher_id,
+                       g.id as group_id, g.name as group_name
+                FROM classes c
+                JOIN class_members cm ON c.id = cm.class_id
+                LEFT JOIN group_members gm ON gm.user_id = $1
+                LEFT JOIN groups g ON g.id = gm.group_id AND g.class_id = c.id
+                WHERE cm.user_id = $1 AND c.deleted_at IS NULL
+                ORDER BY c.id, (g.id IS NOT NULL) DESC
+            )
+            SELECT * FROM StudentClasses
         `;
         countQuery = `
             SELECT COUNT(DISTINCT c.id)

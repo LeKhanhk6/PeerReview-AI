@@ -276,13 +276,13 @@ _(Bản đã chỉnh sửa theo Technical Review — các thay đổi so với v
 - [x] Lighthouse audit target: Performance ≥ 80, Accessibility ≥ 90 trên 5 màn hình chính
 
 
-### Task 08.3 — Deployment Prep & Pilot Hardening ✅
+### Task 08.3 — Deployment Prep & Pilot Hardening
 
-- [x] Environment configs (.env staging/prod)
-- [x] Error reporting verify end-to-end (frontend → `/api/client-errors` → log)
-- [x] Smoke test script post-deploy (kiểm tra chunk loading, auth flow, groupless student join->submit) (`docs/SmokeTestChecklist.md`)
-- [x] Giả lập 300 concurrent users load test frontend & backend
-- [x] Chụp ảnh / ghi hình demo các luồng màn hình chính cho báo cáo & dự thi
+- [ ] Environment configs (`.env.production` cho FE & BE)
+- [ ] Error reporting verify end-to-end (frontend → `/api/client-errors` → log)
+- [ ] Smoke test script post-deploy (kiểm tra chunk loading, auth flow, groupless student join->submit) (`docs/SmokeTestChecklist.md`)
+- [ ] Giả lập 300 concurrent users load test frontend & backend
+- [ ] Chụp ảnh / ghi hình demo các luồng màn hình chính cho báo cáo & dự thi
 
 ---
 

@@ -5,6 +5,7 @@ import { workspaceHandlers } from './handlers/workspace.handlers';
 import { submissionHandlers } from './handlers/submission.handlers';
 import { synthesisHandlers } from './handlers/synthesis.handlers';
 import { adminHandlers } from './handlers/admin.handlers';
+import { groupsHandlers } from './handlers/groups.handlers';
 
 export const handlers = [
   ...assignmentHandlers,
@@ -13,6 +14,7 @@ export const handlers = [
   ...submissionHandlers,
   ...synthesisHandlers,
   ...adminHandlers,
+  ...groupsHandlers,
 
 
   // Mocks for Telemetry and Observability (Always return success to prevent console spam)

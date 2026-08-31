@@ -303,8 +303,8 @@ _(Bản đã chỉnh sửa theo Technical Review — các thay đổi so với v
 ### Task 09.2 — Teacher Submissions Monitor (#12.5) ✅
 - [x] Màn hình theo dõi bài nộp cho Giáo viên (Submissions/Non-submitted status list) (BE endpoint `GET /api/submissions/assignments/:assignmentId/monitor` + FE page `TeacherSubmissionsMonitorPage.tsx`)
 
-### Task 09.3 — Student Profile & Security
-- [ ] Trang thông tin sinh viên & Đổi mật khẩu (Phụ thuộc BE: verify `PATCH /users/me` + API đổi mật khẩu)
+### Task 09.3 — Student Profile & Security ✅
+- [x] Trang thông tin sinh viên & Đổi mật khẩu (`PATCH /api/auth/profile` + `POST /api/auth/change-password` + `ProfilePage.tsx` dùng chung 3 roles)
 
 ### Task 09.4 — Admin Classes View (Read-Only)
 - [ ] Màn hình xem danh sách lớp học dành cho Admin (Post-pilot, read-only view)

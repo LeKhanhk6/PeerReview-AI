@@ -24,6 +24,39 @@
   --color-input: hsl(var(--input));
   --color-ring: hsl(var(--ring));
   --radius: var(--radius);
+
+  /* === PEERREVIEW-AI DESIGN SYSTEM V2 SPECIFIC TOKENS === */
+  --color-brand-primary: #0B57D0;
+  --color-brand-hover: #0B4EB5;
+  --color-brand-soft-bg: #E8F0FE;
+  --color-brand-soft-border: #AECBFA;
+  --color-brand-heavy-text: #041E49;
+
+  /* Semantic Badges Tokens (Single Source of Truth from Mockups) */
+  --color-badge-success-text: #137333;
+  --color-badge-success-bg: #E6F4EA;
+  --color-badge-success-border: #CEEAD6;
+
+  --color-badge-warning-text: #B06000;
+  --color-badge-warning-bg: #FEF7E0;
+  --color-badge-warning-border: #FDE293;
+
+  --color-badge-danger-text: #C5221F;
+  --color-badge-danger-bg: #FCE8E6;
+  --color-badge-danger-border: #FAD2CF;
+
+  --color-badge-neutral-text: #5F6368;
+  --color-badge-neutral-bg: #F1F3F4;
+  --color-badge-neutral-border: #E8EAED;
+
+  /* AI Special Feature Tokens */
+  --color-ai-blue-text: #1E40AF;
+  --color-ai-blue-bg: #EFF6FF;
+  --color-ai-blue-border: #BFDBFE;
+
+  --color-ai-purple-text: #6B21A8;
+  --color-ai-purple-bg: #F3E8FF;
+  --color-ai-purple-border: #E9D5FF;
 }
 
 @layer base {
@@ -37,7 +70,7 @@
     --popover: 0 0% 100%;
     --popover-foreground: 222.2 84% 4.9%;
 
-    --primary: 222.2 47.4% 11.2%;
+    --primary: 217.2 91.2% 42.9%; /* #0B57D0 Google Royal Blue */
     --primary-foreground: 210 40% 98%;
 
     --secondary: 210 40% 96.1%;
@@ -57,7 +90,7 @@
 
     --border: 214.3 31.8% 91.4%;
     --input: 214.3 31.8% 91.4%;
-    --ring: 222.2 84% 4.9%;
+    --ring: 217.2 91.2% 42.9%;
 
     --radius: 0.5rem;
   }

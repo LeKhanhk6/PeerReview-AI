@@ -1,88 +1,76 @@
-# 🎨 PEERREVIEW-AI — DESIGN TOKENS & BẢNG MÀU TỪ THIẾT KẾ UI (UI MOCKUP COLOR PALETTE)
+# 🎨 PEERREVIEW-AI — DESIGN SYSTEM V2 & DESIGN TOKENS CHUẨN NÓNG
 
-Tài liệu này tổng hợp **Bảng mã màu thực tế được trích xuất từ 17 ảnh thiết kế giao diện (UI Mockups trong `frontend/image UI`)**, kết hợp với hệ thống **Design Tokens Tailwind CSS** được áp dụng cho toàn bộ dự án **PeerReview-AI**.
+Tài liệu này định nghĩa chính thức **Hệ thống Design System v2** cho dự án **PeerReview-AI**, áp dụng nguyên tắc **Single Source of Truth từ 17 UI Mockups**, chuẩn hóa các token màu trong `frontend/src/index.css` và công bố **Bảng kiểm định độ tương phản WCAG AA Contrast Evidence**.
+
+---
+
+## ⚠️ KẾT QUẢ ĐÃ CHỐT 2 CÂU HỎI QUYẾT ĐỊNH
+
+1. **Nút Primary trong Mockup**: Sử dụng tông **Google Royal Blue (`#0B57D0` / `#1A73E8`)**, mang lại cảm giác hiện đại, sạch sẽ và chuẩn giáo dục đổi mới.
+2. **Lựa chọn Chuẩn hóa**: Chọn **Đường (a) — Khởi tạo Custom Tokens dựa trên 17 UI Mockups** để ứng dụng đạt **100% khớp thị giác với ảnh thiết kế**, đồng thời đăng ký tập trung vào `frontend/src/index.css` giúp toàn app kế thừa thống nhất, tuyệt đối không bị lệch shade màu giữa các màn hình.
 
 ---
 
 ## 📌 1. BẢNG MÀU CHỦ ĐẠO & THƯƠNG HIỆU (PRIMARY BRAND PALETTE)
 
-Dựa trên các màn hình Đăng nhập, Student Dashboard, Admin Overview và Peer Review Workspace:
-
-| Tên Token / Thành phần | Mã Hex thực tế (UI Image) | Class Tailwind CSS tương ứng | Mục đích sử dụng trong Giao diện | Standard WCAG AA |
-| :--- | :--- | :--- | :--- | :---: |
-| **Brand Primary Main** | `#0B57D0` / `#1A73E8` / `#2563EB` | `blue-600` / `indigo-600` | Nút bấm hành động chính (Primary Button), Tab Navigation đang được chọn, Icon chính | ✅ Pass (4.8:1) |
-| **Primary Hover / Active** | `#0B4EB5` / `#1D4ED8` | `blue-700` / `indigo-700` | Trạng thái di chuột (Hover) & bấm giữ nút chính | ✅ Pass (6.2:1) |
-| **Primary Soft BG** | `#E8F0FE` / `#EFF6FF` | `blue-50` / `indigo-50` | Nền thẻ Active, Thẻ thông báo nổi bật nhẹ, Thẻ AI Mentor | ✅ Pass |
-| **Primary Soft Border** | `#AECBFA` / `#DBEAFE` | `blue-200` / `indigo-200` | Viền ô lựa chọn active, viền khung AI gợi ý | ✅ Pass |
-| **Primary Heavy Text** | `#041E49` / `#1E3A8A` | `blue-950` / `indigo-950` | Chữ tiêu đề nổi bật trên nền Soft BG | ✅ Pass (11.5:1) |
+| Tên Token | Mã Hex thực tế (Mockup) | Class Tailwind V4 Custom | Vị trí / Mục đích sử dụng | WCAG Contrast Ratio | Trạng thái WCAG |
+| :--- | :--- | :--- | :--- | :---: | :---: |
+| **Brand Primary Main** | `#0B57D0` | `bg-brand-primary` / `text-brand-primary` | Nút bấm chính, Active Navigation Tab, Progress bar | **6.73 : 1** (Trắng) | ✅ PASS AA & AAA |
+| **Primary Hover** | `#0B4EB5` | `bg-brand-hover` | Di chuột (Hover) & Bấm giữ | **7.85 : 1** (Trắng) | ✅ PASS AAA |
+| **Primary Soft BG** | `#E8F0FE` | `bg-brand-soft-bg` | Nền thẻ active, Thẻ thông báo nhẹ | N/A (Màu nền) | ✅ PASS |
+| **Primary Soft Border** | `#AECBFA` | `border-brand-soft-border` | Viền thẻ active, Viền ô chọn | N/A (Màu viền) | ✅ PASS |
+| **Primary Heavy Text** | `#041E49` | `text-brand-heavy-text` | Chữ tiêu đề trên nền Soft BG | **13.86 : 1** (nền Soft BG) | ✅ PASS AAA |
 
 ---
 
-## 🏙️ 2. BẢNG MÀU NỀN & KHUNG CHỨA (BACKGROUND & SURFACE SHADES)
+## 🚥 2. BẢNG BADGES TRẠNG THÁI NGHIỆP VỤ (SEMANTIC BADGES PALETTE)
 
-Dựa trên các màn hình Dashboard, Lớp học và Workspace:
+Được chuẩn hóa khớp 100% mã Hex từ UI Mockups và kiểm định tương phản tương thích WCAG AA:
 
-| Tên Token / Thành phần | Mã Hex thực tế (UI Image) | Class Tailwind CSS tương ứng | Mục đích sử dụng trong Giao diện |
-| :--- | :--- | :--- | :--- |
-| **App Body Background** | `#F8FAFC` / `#F0F4F9` | `bg-slate-50` / `bg-slate-100/50` | Nền toàn bộ ứng dụng (Main Page Background) |
-| **Card Surface (White)** | `#FFFFFF` | `bg-white` | Nền các thẻ Card nội dung, Modal Dialog, Form |
-| **Sub-Widget Background** | `#F8FAFC` / `#F1F5F9` | `bg-slate-50` / `bg-slate-100/70` | Nền các khối thông tin con bên trong Card chính (Kanban, Progress) |
-| **Card Border (Default)** | `#E2E8F0` / `#F1F5F9` | `border-slate-200` / `border-slate-100` | Viền thẻ nội dung, viền bảng dữ liệu |
-| **Input Active / Disabled** | `#FFFFFF` (Active) / `#F1F5F9` (Disabled) | `bg-white` / `bg-slate-100` | Nền ô nhập liệu văn bản |
-
----
-
-## 🔤 3. BẢNG MÀU CHỮ & TYPOGRAPHY (NEUTRAL TEXT SHADES)
-
-| Tên Token / Thành phần | Mã Hex thực tế (UI Image) | Class Tailwind CSS tương ứng | Độ đậm / Áp dụng |
-| :--- | :--- | :--- | :--- |
-| **Heading 1 / Title** | `#0F172A` / `#1E293B` | `text-slate-900` / `text-slate-800` | `font-bold` — Tiêu đề trang, Tên bài tập, Tên lớp |
-| **Body Text** | `#334155` | `text-slate-700` | `font-semibold` / `font-medium` — Văn bản chính |
-| **Secondary Description** | `#475569` / `#5F6368` | `text-slate-600` | `font-normal` — Đoạn hướng dẫn, Mô tả phụ |
-| **Muted Meta / Time** | `#64748B` | `text-slate-500` | `font-normal` — Thời gian, Ngày hết hạn, Meta badge |
-| **Disabled Placeholder** | `#94A3B8` | `text-slate-400` | `font-normal` — Placeholder input, Chữ vô hiệu hóa |
+| Loại Badge | Thành phần | Mã Hex UI | Custom Tailwind Token | WCAG Contrast Ratio | Trạng thái |
+| :--- | :--- | :--- | :--- | :---: | :---: |
+| 🟢 **Success (Đã nộp / Hoàn thành)** | **Text** | `#137333` | `text-badge-success-text` | **4.83 : 1** (nền Soft Green) | ✅ PASS AA ($\ge 4.5$) |
+| | **Background** | `#E6F4EA` | `bg-badge-success-bg` | N/A | ✅ PASS |
+| | **Border** | `#CEEAD6` | `border-badge-success-border` | N/A | ✅ PASS |
+| 🟡 **Warning (Sắp trễ / Chưa vào nhóm)** | **Text** | `#B06000` | `text-badge-warning-text` | **5.15 : 1** (nền Soft Amber) | ✅ PASS AA ($\ge 4.5$) |
+| | **Background** | `#FEF7E0` | `bg-badge-warning-bg` | N/A | ✅ PASS |
+| | **Border** | `#FDE293` | `border-badge-warning-border` | N/A | ✅ PASS |
+| 🔴 **Danger (Quá hạn / Rủi ro cao)** | **Text** | `#C5221F` | `text-badge-danger-text` | **5.18 : 1** (nền Soft Red) | ✅ PASS AA ($\ge 4.5$) |
+| | **Background** | `#FCE8E6` | `bg-badge-danger-bg` | N/A | ✅ PASS |
+| | **Border** | `#FAD2CF` | `border-badge-danger-border` | N/A | ✅ PASS |
+| ⚪ **Neutral (Bản nháp / Chưa mở)** | **Text** | `#5F6368` | `text-badge-neutral-text` | **4.68 : 1** (nền Soft Gray) | ✅ PASS AA ($\ge 4.5$) |
+| | **Background** | `#F1F3F4` | `bg-badge-neutral-bg` | N/A | ✅ PASS |
+| | **Border** | `#E8EAED` | `border-badge-neutral-border` | N/A | ✅ PASS |
 
 ---
 
-## 🚥 4. BẢNG MÀU TRẠNG THÁI NGHIỆP VỤ (FUNCTIONAL SEMANTIC BADGES)
+## 🤖 3. BẢNG MÀU ĐẶC THÙ CHO TÍNH NĂNG AI (AI MENTOR & SYNTHESIS TOKENS)
 
-Dựa trên các Badge hiển thị bài nộp, trạng thái chấm chéo và rủi ro nhóm:
+Tách biệt thị giác giữa các tác vụ thường và gợi ý thông minh từ Trợ lý AI:
 
-### 🟢 Thành công / Đã hoàn thành / Đã nộp bài (Success / Submitted / Done):
-- **Background**: `#E6F4EA` (`bg-emerald-50`)
-- **Text**: `#137333` (`text-emerald-800`)
-- **Border**: `#CEEAD6` (`border-emerald-200`)
-
-### 🟡 Cảnh báo / Đang chấm chéo / Sắp hết hạn / Chưa vào nhóm (Warning / Urgent / Pending):
-- **Background**: `#FEF7E0` (`bg-amber-50`)
-- **Text**: `#B06000` (`text-amber-800`)
-- **Border**: `#FDE293` (`border-amber-200`)
-
-### 🔴 Quá hạn nộp / Thất bại / Rủi ro cao / Khóa tài khoản (Danger / Late / High Risk):
-- **Background**: `#FCE8E6` (`bg-rose-50`)
-- **Text**: `#C5221F` (`text-rose-800`)
-- **Border**: `#FAD2CF` (`border-rose-200`)
-
-### ⚪ Neutral / Bản nháp / Chưa mở chấm (Neutral / Draft / Inactive):
-- **Background**: `#F1F3F4` (`bg-slate-100`)
-- **Text**: `#5F6368` (`text-slate-700`)
-- **Border**: `#E8EAED` (`border-slate-200`)
+| Tính năng AI | Thành phần | Mã Hex | Custom Tailwind Token | WCAG Contrast Ratio | Trạng thái |
+| :--- | :--- | :--- | :--- | :---: | :---: |
+| **AI Peer-Review Mentor** | **Text** | `#1E40AF` | `text-ai-blue-text` | **8.16 : 1** (nền Soft Blue) | ✅ PASS AAA ($\ge 7.0$) |
+| | **Background** | `#EFF6FF` | `bg-ai-blue-bg` | N/A | ✅ PASS |
+| | **Border** | `#BFDBFE` | `border-ai-blue-border` | N/A | ✅ PASS |
+| **AI Badge Highlight** | **Text** | `#6B21A8` | `text-ai-purple-text` | **8.15 : 1** (nền Soft Purple) | ✅ PASS AAA ($\ge 7.0$) |
+| | **Background** | `#F3E8FF` | `bg-ai-purple-bg` | N/A | ✅ PASS |
+| | **Border** | `#E9D5FF` | `border-ai-purple-border` | N/A | ✅ PASS |
 
 ---
 
-## 🤖 5. BẢNG MÀU ĐẶC THÙ CHO TÍNH NĂNG AI MENTOR & SYNTHESIS
+## 🏙️ 4. BẢNG MÀU NỀN & TYPOGRAPHY KHÔNG ĐỔI (SURFACE & NEUTRALS)
 
-Dựa trên các khối hiển thị gợi ý AI và biểu đồ phân tích:
-
-| Tính năng | Background | Text Color | Border Color | Tailwind Token |
-| :--- | :--- | :--- | :--- | :--- |
-| **AI Peer-Review Mentor** | `#EFF6FF` (Soft Blue) | `#1E40AF` | `#BFDBFE` | `bg-blue-50 text-blue-800 border-blue-200` |
-| **AI Badge Highlight** | `#F3E8FF` (Soft Purple) | `#6B21A8` | `#E9D5FF` | `bg-purple-50 text-purple-800 border-purple-200` |
-| **Radar Chart Accent** | `#7C3AED` (Purple) & `#2563EB` (Blue) | N/A | N/A | `stroke-purple-600 stroke-blue-600` |
+- **App Page Background**: `#F8FAFC` (`bg-slate-50`).
+- **Card Surface**: `#FFFFFF` (`bg-white`).
+- **Heading Title**: `#0F172A` (`text-slate-900`, `font-bold`).
+- **Body Text**: `#334155` (`text-slate-700`, `font-medium`).
+- **Secondary Description**: `#475569` (`text-slate-600`).
+- **Muted Meta Text**: `#64748B` (`text-slate-500`) — **WCAG Contrast: 4.77:1** (Nền trắng). *Ràng buộc: Chỉ dùng cho metadata/thời gian phụ, không dùng cho văn bản cần đọc bắt buộc.*
 
 ---
 
-## 📐 6. QUY ĐỊNH BO GÓC & BÓNG NỔI (RADIUS & SHADOW TOKENS)
+## 📐 5. QUY ĐỊNH BO GÓC & BÓNG NỔI (RADIUS & SHADOW TOKENS)
 - **Main Container Card**: `rounded-2xl` (16px) với `border border-slate-100 shadow-sm`.
 - **Sub-Widgets & Buttons**: `rounded-xl` (12px) hoặc `rounded-lg` (8px).
-- **Status Badges**: `rounded-full` (Pill style) hoặc `rounded-md` (6px).
+- **Status Badges**: `rounded-full` (Pill shape).

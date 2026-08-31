@@ -31,6 +31,8 @@
   --color-brand-soft-bg: #E8F0FE;
   --color-brand-soft-border: #AECBFA;
   --color-brand-heavy-text: #041E49;
+  --color-brand-gradient-mid: #0B4EB5;
+  --color-brand-gradient-deep: #041E49;
 
   /* Semantic Badges Tokens (Single Source of Truth from Mockups) */
   --color-badge-success-text: #137333;

@@ -1,6 +1,10 @@
 export const authMessages = {
   title: 'PeerReview-AI',
   subtitle: 'Hệ thống AI Hỗ trợ Đánh giá Đồng đẳng & Tương tác Nhóm',
+  welcomeBack: 'Chào mừng trở lại',
+  loginPageSubtext: 'Đăng nhập để tiếp tục công việc của bạn.',
+  academicPlatformTitle: 'Đánh giá Học thuật Thông minh & Đổi mới',
+  academicPlatformSubtitle: 'Nền tảng AI hỗ trợ chấm chéo ẩn danh, phản biện nhóm và phân tích năng lực học tập cho các khóa học đại học và cao đẳng.',
   loginHeader: 'Đăng nhập tài khoản',
   loginSubheader: 'Nhập thông tin xác thực để truy cập hệ thống học tập',
   registerHeader: 'Đăng ký tài khoản mới',

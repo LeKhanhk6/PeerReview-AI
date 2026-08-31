@@ -64,6 +64,7 @@ app.use('/api/classes', classesRoutes);
 app.use('/api/assignments', assignmentRoutes);
 app.use('/api/rubrics', rubricRoutes);
 app.use('/api/groups', groupRoutes);
+app.use('/api/workspace', workspaceRoutes);
 app.use('/api', workspaceRoutes);
 app.use('/api/submissions', submissionRoutes);
 app.use('/api', reviewAssignmentRoutes);

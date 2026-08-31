@@ -57,6 +57,7 @@ router.post('/my-reviews/:reviewAssignmentId/submit', authorizeRoles('STUDENT'),
 
 // Student: Analyze review comment with AI (with dynamic rate limiting based on system_config)
 router.post('/analyze', authorizeRoles('STUDENT'), dynamicAiRateLimiter, validate(analyzeReviewSchema), reviewController.analyzeReviewText);
+router.post('/reviews/analyze', authorizeRoles('STUDENT'), dynamicAiRateLimiter, validate(analyzeReviewSchema), reviewController.analyzeReviewText);
 
 
 // Teacher/Admin: Generate AI Synthesis of all reviews for an assignment

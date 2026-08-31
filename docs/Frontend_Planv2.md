@@ -300,8 +300,8 @@ _(Bản đã chỉnh sửa theo Technical Review — các thay đổi so với v
 - [x] **09.1b Teacher Dashboard**: 5 stats cards tổng quan, Class Selector Dropdown lọc dữ liệu theo lớp (`classId`), Early Warning Panel nổi bật phía trên bên phải (sort `HIGH` -> `MEDIUM`, labels thuần Việt, positive emerald empty state khi 0 risks) (`TeacherDashboardPage.tsx`).
 - [x] **09.1c Admin Dashboard Alignment**: Đối chiếu Figma, chỉ sửa presentation — giữ E2E Flow 1 PASSED (chỉ align UI, không rewrite core)
 
-### Task 09.2 — Teacher Submissions Monitor (#12.5)
-- [ ] Màn hình theo dõi bài nộp cho Giáo viên (Submissions/Non-submitted status list) (Phụ thuộc BE: verify/bổ sung endpoint submission-status bao gồm danh sách đã nộp & chưa nộp)
+### Task 09.2 — Teacher Submissions Monitor (#12.5) ✅
+- [x] Màn hình theo dõi bài nộp cho Giáo viên (Submissions/Non-submitted status list) (BE endpoint `GET /api/submissions/assignments/:assignmentId/monitor` + FE page `TeacherSubmissionsMonitorPage.tsx`)
 
 ### Task 09.3 — Student Profile & Security
 - [ ] Trang thông tin sinh viên & Đổi mật khẩu (Phụ thuộc BE: verify `PATCH /users/me` + API đổi mật khẩu)

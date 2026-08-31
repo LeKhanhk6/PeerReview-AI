@@ -65,9 +65,9 @@ export const RegisterPage: React.FC = () => {
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-slate-50 p-4 sm:p-6 lg:p-8">
+    <div className="flex items-center justify-center min-h-screen bg-slate-50 p-2 sm:p-4 lg:p-6">
       {/* 2-Column Split-Screen Container */}
-      <div className="bg-white rounded-2xl shadow-xl overflow-hidden max-w-5xl w-full flex flex-col md:flex-row border border-slate-100/80">
+      <div className="bg-white rounded-2xl shadow-xl overflow-hidden max-w-4xl w-full flex flex-col md:flex-row border border-slate-100/80 my-auto">
         
         {/* LEFT COLUMN: Shared Brand Hero Panel (Visible >= md) */}
         <AuthIllustrationPanel
@@ -76,44 +76,44 @@ export const RegisterPage: React.FC = () => {
         />
 
         {/* RIGHT COLUMN: Form Panel (~50%) */}
-        <div className="w-full md:w-1/2 p-8 lg:p-12 flex flex-col justify-center bg-white">
-          <div className="space-y-6">
+        <div className="w-full md:w-1/2 p-5 sm:p-6 lg:p-7 flex flex-col justify-center bg-white">
+          <div className="space-y-3">
             {/* Header with Mascot Icon */}
-            <div className="flex items-start justify-between">
+            <div className="flex items-center justify-between">
               <div>
-                <h2 className="text-2xl lg:text-3xl font-extrabold text-slate-900 tracking-tight">
+                <h2 className="text-xl lg:text-2xl font-extrabold text-slate-900 tracking-tight">
                   {authMessages.registerHeader}
                 </h2>
-                <p className="text-xs sm:text-sm text-slate-600 font-medium mt-1">
+                <p className="text-[11px] sm:text-xs text-slate-500 font-medium mt-0.5">
                   {authMessages.registerSubheader}
                 </p>
               </div>
-              <div className="w-10 h-10 rounded-2xl bg-brand-soft-bg flex items-center justify-center text-xl shadow-xs border border-brand-soft-border shrink-0 ml-2" title="PeerReview AI Mascot">
+              <div className="w-8 h-8 rounded-xl bg-brand-soft-bg flex items-center justify-center text-lg shadow-xs border border-brand-soft-border shrink-0 ml-2" title="PeerReview AI Mascot">
                 🎨
               </div>
             </div>
 
             {/* Teacher Registration Note */}
-            <div className="p-3 bg-brand-soft-bg/80 border border-brand-soft-border rounded-xl text-xs font-medium text-brand-heavy-text leading-relaxed">
+            <div className="p-2 bg-brand-soft-bg/80 border border-brand-soft-border rounded-lg text-[11px] font-medium text-brand-heavy-text leading-tight">
               {authMessages.teacherNote}
             </div>
 
             {/* Register Form */}
-            <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+            <form onSubmit={handleSubmit(onSubmit)} className="space-y-2.5">
               {/* Full Name */}
               <div>
-                <label htmlFor="full_name" className="block text-xs font-bold text-slate-900 mb-1">
+                <label htmlFor="full_name" className="block text-[11px] font-bold text-slate-900 mb-0.5">
                   {authMessages.fullNameLabel}
                 </label>
                 <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
-                    <User className="w-4 h-4" />
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+                    <User className="w-3.5 h-3.5" />
                   </div>
                   <input
                     id="full_name"
                     type="text"
                     placeholder="Trần Hữu P."
-                    className={`appearance-none block w-full pl-10 pr-3.5 py-2.5 border rounded-xl shadow-sm text-sm font-medium transition-colors bg-white text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-brand-primary focus:border-brand-primary ${
+                    className={`appearance-none block w-full pl-9 pr-3 py-1.5 border rounded-xl shadow-xs text-xs font-medium transition-colors bg-white text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-brand-primary focus:border-brand-primary ${
                       errors.full_name
                         ? 'border-rose-300 text-rose-900 focus:ring-rose-500 focus:border-rose-500 bg-rose-50/20'
                         : 'border-slate-300'
@@ -122,25 +122,25 @@ export const RegisterPage: React.FC = () => {
                   />
                 </div>
                 {errors.full_name && (
-                  <p className="mt-1.5 text-xs text-rose-600 font-medium">{errors.full_name.message}</p>
+                  <p className="mt-0.5 text-[11px] text-rose-600 font-medium">{errors.full_name.message}</p>
                 )}
               </div>
 
               {/* Email */}
               <div>
-                <label htmlFor="email" className="block text-xs font-bold text-slate-900 mb-1">
+                <label htmlFor="email" className="block text-[11px] font-bold text-slate-900 mb-0.5">
                   {authMessages.emailLabel}
                 </label>
                 <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
-                    <Mail className="w-4 h-4" />
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+                    <Mail className="w-3.5 h-3.5" />
                   </div>
                   <input
                     id="email"
                     type="email"
                     autoComplete="email"
                     placeholder="tranhuup@truong.edu.vn"
-                    className={`appearance-none block w-full pl-10 pr-3.5 py-2.5 border rounded-xl shadow-sm text-sm font-medium transition-colors bg-white text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-brand-primary focus:border-brand-primary ${
+                    className={`appearance-none block w-full pl-9 pr-3 py-1.5 border rounded-xl shadow-xs text-xs font-medium transition-colors bg-white text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-brand-primary focus:border-brand-primary ${
                       errors.email
                         ? 'border-rose-300 text-rose-900 focus:ring-rose-500 focus:border-rose-500 bg-rose-50/20'
                         : 'border-slate-300'
@@ -149,24 +149,24 @@ export const RegisterPage: React.FC = () => {
                   />
                 </div>
                 {errors.email && (
-                  <p className="mt-1.5 text-xs text-rose-600 font-medium">{errors.email.message}</p>
+                  <p className="mt-0.5 text-[11px] text-rose-600 font-medium">{errors.email.message}</p>
                 )}
               </div>
 
               {/* Student ID (MSSV) */}
               <div>
-                <label htmlFor="student_id" className="block text-xs font-bold text-slate-900 mb-1">
+                <label htmlFor="student_id" className="block text-[11px] font-bold text-slate-900 mb-0.5">
                   {authMessages.studentIdLabel}
                 </label>
                 <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
-                    <GraduationCap className="w-4 h-4" />
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+                    <GraduationCap className="w-3.5 h-3.5" />
                   </div>
                   <input
                     id="student_id"
                     type="text"
                     placeholder="2026123456"
-                    className={`appearance-none block w-full pl-10 pr-3.5 py-2.5 border rounded-xl shadow-sm text-sm font-medium transition-colors bg-white text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-brand-primary focus:border-brand-primary ${
+                    className={`appearance-none block w-full pl-9 pr-3 py-1.5 border rounded-xl shadow-xs text-xs font-medium transition-colors bg-white text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-brand-primary focus:border-brand-primary ${
                       errors.student_id
                         ? 'border-rose-300 text-rose-900 focus:ring-rose-500 focus:border-rose-500 bg-rose-50/20'
                         : 'border-slate-300'
@@ -175,25 +175,25 @@ export const RegisterPage: React.FC = () => {
                   />
                 </div>
                 {errors.student_id && (
-                  <p className="mt-1.5 text-xs text-rose-600 font-medium">{errors.student_id.message}</p>
+                  <p className="mt-0.5 text-[11px] text-rose-600 font-medium">{errors.student_id.message}</p>
                 )}
               </div>
 
               {/* Password */}
               <div>
-                <label htmlFor="password" className="block text-xs font-bold text-slate-900 mb-1">
+                <label htmlFor="password" className="block text-[11px] font-bold text-slate-900 mb-0.5">
                   {authMessages.passwordLabel}
                 </label>
                 <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
-                    <Lock className="w-4 h-4" />
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+                    <Lock className="w-3.5 h-3.5" />
                   </div>
                   <input
                     id="password"
                     type={showPassword ? 'text' : 'password'}
                     autoComplete="new-password"
                     placeholder={authMessages.passwordPlaceholder}
-                    className={`appearance-none block w-full pl-10 pr-10 py-2.5 border rounded-xl shadow-sm text-sm font-medium transition-colors bg-white text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-brand-primary focus:border-brand-primary ${
+                    className={`appearance-none block w-full pl-9 pr-9 py-1.5 border rounded-xl shadow-xs text-xs font-medium transition-colors bg-white text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-brand-primary focus:border-brand-primary ${
                       errors.password
                         ? 'border-rose-300 text-rose-900 focus:ring-rose-500 focus:border-rose-500 bg-rose-50/20'
                         : 'border-slate-300'
@@ -204,31 +204,31 @@ export const RegisterPage: React.FC = () => {
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
                     aria-label={showPassword ? 'Ẩn mật khẩu' : 'Hiển thị mật khẩu'}
-                    className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-slate-400 hover:text-slate-600 transition-colors"
+                    className="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-600 transition-colors"
                   >
-                    {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    {showPassword ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
                   </button>
                 </div>
                 {errors.password && (
-                  <p className="mt-1.5 text-xs text-rose-600 font-medium">{errors.password.message}</p>
+                  <p className="mt-0.5 text-[11px] text-rose-600 font-medium">{errors.password.message}</p>
                 )}
               </div>
 
               {/* Confirm Password */}
               <div>
-                <label htmlFor="confirm_password" className="block text-xs font-bold text-slate-900 mb-1">
+                <label htmlFor="confirm_password" className="block text-[11px] font-bold text-slate-900 mb-0.5">
                   {authMessages.confirmPasswordLabel}
                 </label>
                 <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
-                    <KeyRound className="w-4 h-4" />
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+                    <KeyRound className="w-3.5 h-3.5" />
                   </div>
                   <input
                     id="confirm_password"
                     type={showConfirmPassword ? 'text' : 'password'}
                     autoComplete="new-password"
                     placeholder={authMessages.confirmPasswordPlaceholder}
-                    className={`appearance-none block w-full pl-10 pr-10 py-2.5 border rounded-xl shadow-sm text-sm font-medium transition-colors bg-white text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-brand-primary focus:border-brand-primary ${
+                    className={`appearance-none block w-full pl-9 pr-9 py-1.5 border rounded-xl shadow-xs text-xs font-medium transition-colors bg-white text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-brand-primary focus:border-brand-primary ${
                       errors.confirm_password
                         ? 'border-rose-300 text-rose-900 focus:ring-rose-500 focus:border-rose-500 bg-rose-50/20'
                         : 'border-slate-300'
@@ -239,23 +239,23 @@ export const RegisterPage: React.FC = () => {
                     type="button"
                     onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                     aria-label={showConfirmPassword ? 'Ẩn mật khẩu xác nhận' : 'Hiển thị mật khẩu xác nhận'}
-                    className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-slate-400 hover:text-slate-600 transition-colors"
+                    className="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-600 transition-colors"
                   >
-                    {showConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    {showConfirmPassword ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
                   </button>
                 </div>
                 {errors.confirm_password && (
-                  <p className="mt-1.5 text-xs text-rose-600 font-medium">{errors.confirm_password.message}</p>
+                  <p className="mt-0.5 text-[11px] text-rose-600 font-medium">{errors.confirm_password.message}</p>
                 )}
               </div>
 
               {/* Submit Button */}
-              <div className="pt-2">
+              <div className="pt-1">
                 <Button
                   type="submit"
                   variant="default"
                   size="lg"
-                  className="w-full flex justify-center py-3 bg-brand-primary hover:bg-brand-hover text-white font-bold rounded-xl shadow-md transition-colors text-sm"
+                  className="w-full flex justify-center py-2.5 bg-brand-primary hover:bg-brand-hover text-white font-bold rounded-xl shadow-md transition-colors text-xs"
                   isLoading={isSubmitting}
                 >
                   {isSubmitting ? authMessages.submittingRegister : authMessages.submitRegister}
@@ -263,8 +263,8 @@ export const RegisterPage: React.FC = () => {
               </div>
 
               {/* Login Link Prompt */}
-              <div className="text-center pt-3 border-t border-slate-100">
-                <p className="text-xs text-slate-600 font-medium">
+              <div className="text-center pt-2 border-t border-slate-100">
+                <p className="text-[11px] text-slate-600 font-medium">
                   {authMessages.hasAccountPrompt}{' '}
                   <Link to="/login" className="font-bold text-brand-primary hover:underline ml-1">
                     {authMessages.loginNow} →

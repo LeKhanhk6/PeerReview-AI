@@ -5,8 +5,6 @@ import { useApiQuery } from '@/hooks/useApiQuery';
 import {
   getStudentDashboardAssignmentsApi,
   getGroupTasksApi,
-  type StudentDashboardAssignmentItem,
-  type GroupTaskItem,
 } from '../api/studentDashboardApi';
 import { studentDashboardMessages } from '@/constants/messages/studentDashboard';
 import { calculateDaysLeftStatus } from '@/utils/date.utils';

@@ -3,11 +3,13 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useNavigate, Link } from 'react-router-dom';
+import { User, Mail, GraduationCap, Lock, KeyRound, Eye, EyeOff } from 'lucide-react';
 import { useAuthStore } from '../store/authStore';
 import { registerApi } from '../api/auth.api';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/Button';
 import { authMessages } from '@/constants/messages/auth';
+import { AuthIllustrationPanel } from '../components/AuthIllustrationPanel';
 
 const registerSchema = z.object({
   full_name: z.string().min(2, 'Vui lòng nhập họ và tên (tối thiểu 2 ký tự)').max(255),
@@ -26,6 +28,8 @@ export const RegisterPage: React.FC = () => {
   const navigate = useNavigate();
   const { isAuthenticated, user } = useAuthStore();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   React.useEffect(() => {
     if (isAuthenticated && user) {
@@ -61,171 +65,211 @@ export const RegisterPage: React.FC = () => {
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-slate-50 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md w-full space-y-8 bg-white p-8 sm:p-10 rounded-2xl shadow-xl border border-slate-100/80">
-        {/* Header Branding */}
-        <div className="text-center space-y-2">
-          <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-brand-soft-bg text-brand-primary font-black text-2xl shadow-sm border border-brand-soft-border mb-1">
-            🎓
+    <div className="flex items-center justify-center min-h-screen bg-slate-50 p-4 sm:p-6 lg:p-8">
+      {/* 2-Column Split-Screen Container */}
+      <div className="bg-white rounded-2xl shadow-xl overflow-hidden max-w-5xl w-full flex flex-col md:flex-row border border-slate-100/80">
+        
+        {/* LEFT COLUMN: Shared Brand Hero Panel (Visible >= md) */}
+        <AuthIllustrationPanel
+          title="Tạo tài khoản Sinh viên mới"
+          subtitle="Tham gia nền tảng đánh giá đồng cấp thông minh bằng AI cho các khóa học đại học và cao đẳng."
+        />
+
+        {/* RIGHT COLUMN: Form Panel (~50%) */}
+        <div className="w-full md:w-1/2 p-8 lg:p-12 flex flex-col justify-center bg-white">
+          <div className="space-y-6">
+            {/* Header */}
+            <div>
+              <h2 className="text-2xl lg:text-3xl font-bold text-slate-900 tracking-tight">
+                {authMessages.registerHeader}
+              </h2>
+              <p className="text-xs sm:text-sm text-slate-600 font-medium mt-1">
+                {authMessages.registerSubheader}
+              </p>
+            </div>
+
+            {/* Teacher Registration Note */}
+            <div className="p-3 bg-brand-soft-bg/80 border border-brand-soft-border rounded-xl text-xs font-medium text-brand-heavy-text leading-relaxed">
+              {authMessages.teacherNote}
+            </div>
+
+            {/* Register Form */}
+            <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+              {/* Full Name */}
+              <div>
+                <label htmlFor="full_name" className="block text-xs font-bold text-slate-900 mb-1">
+                  {authMessages.fullNameLabel}
+                </label>
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+                    <User className="w-4 h-4" />
+                  </div>
+                  <input
+                    id="full_name"
+                    type="text"
+                    placeholder="Trần Hữu P."
+                    className={`appearance-none block w-full pl-10 pr-3.5 py-2.5 border rounded-xl shadow-sm text-sm font-medium transition-colors bg-white text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-brand-primary focus:border-brand-primary ${
+                      errors.full_name
+                        ? 'border-rose-300 text-rose-900 focus:ring-rose-500 focus:border-rose-500 bg-rose-50/20'
+                        : 'border-slate-300'
+                    }`}
+                    {...register('full_name')}
+                  />
+                </div>
+                {errors.full_name && (
+                  <p className="mt-1.5 text-xs text-rose-600 font-medium">{errors.full_name.message}</p>
+                )}
+              </div>
+
+              {/* Email */}
+              <div>
+                <label htmlFor="email" className="block text-xs font-bold text-slate-900 mb-1">
+                  {authMessages.emailLabel}
+                </label>
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+                    <Mail className="w-4 h-4" />
+                  </div>
+                  <input
+                    id="email"
+                    type="email"
+                    autoComplete="email"
+                    placeholder="tranhuup@truong.edu.vn"
+                    className={`appearance-none block w-full pl-10 pr-3.5 py-2.5 border rounded-xl shadow-sm text-sm font-medium transition-colors bg-white text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-brand-primary focus:border-brand-primary ${
+                      errors.email
+                        ? 'border-rose-300 text-rose-900 focus:ring-rose-500 focus:border-rose-500 bg-rose-50/20'
+                        : 'border-slate-300'
+                    }`}
+                    {...register('email')}
+                  />
+                </div>
+                {errors.email && (
+                  <p className="mt-1.5 text-xs text-rose-600 font-medium">{errors.email.message}</p>
+                )}
+              </div>
+
+              {/* Student ID (MSSV) */}
+              <div>
+                <label htmlFor="student_id" className="block text-xs font-bold text-slate-900 mb-1">
+                  {authMessages.studentIdLabel}
+                </label>
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+                    <GraduationCap className="w-4 h-4" />
+                  </div>
+                  <input
+                    id="student_id"
+                    type="text"
+                    placeholder="2026123456"
+                    className={`appearance-none block w-full pl-10 pr-3.5 py-2.5 border rounded-xl shadow-sm text-sm font-medium transition-colors bg-white text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-brand-primary focus:border-brand-primary ${
+                      errors.student_id
+                        ? 'border-rose-300 text-rose-900 focus:ring-rose-500 focus:border-rose-500 bg-rose-50/20'
+                        : 'border-slate-300'
+                    }`}
+                    {...register('student_id')}
+                  />
+                </div>
+                {errors.student_id && (
+                  <p className="mt-1.5 text-xs text-rose-600 font-medium">{errors.student_id.message}</p>
+                )}
+              </div>
+
+              {/* Password */}
+              <div>
+                <label htmlFor="password" className="block text-xs font-bold text-slate-900 mb-1">
+                  {authMessages.passwordLabel}
+                </label>
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+                    <Lock className="w-4 h-4" />
+                  </div>
+                  <input
+                    id="password"
+                    type={showPassword ? 'text' : 'password'}
+                    autoComplete="new-password"
+                    placeholder={authMessages.passwordPlaceholder}
+                    className={`appearance-none block w-full pl-10 pr-10 py-2.5 border rounded-xl shadow-sm text-sm font-medium transition-colors bg-white text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-brand-primary focus:border-brand-primary ${
+                      errors.password
+                        ? 'border-rose-300 text-rose-900 focus:ring-rose-500 focus:border-rose-500 bg-rose-50/20'
+                        : 'border-slate-300'
+                    }`}
+                    {...register('password')}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    aria-label={showPassword ? 'Ẩn mật khẩu' : 'Hiển thị mật khẩu'}
+                    className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-slate-400 hover:text-slate-600 transition-colors"
+                  >
+                    {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  </button>
+                </div>
+                {errors.password && (
+                  <p className="mt-1.5 text-xs text-rose-600 font-medium">{errors.password.message}</p>
+                )}
+              </div>
+
+              {/* Confirm Password */}
+              <div>
+                <label htmlFor="confirm_password" className="block text-xs font-bold text-slate-900 mb-1">
+                  {authMessages.confirmPasswordLabel}
+                </label>
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+                    <KeyRound className="w-4 h-4" />
+                  </div>
+                  <input
+                    id="confirm_password"
+                    type={showConfirmPassword ? 'text' : 'password'}
+                    autoComplete="new-password"
+                    placeholder={authMessages.confirmPasswordPlaceholder}
+                    className={`appearance-none block w-full pl-10 pr-10 py-2.5 border rounded-xl shadow-sm text-sm font-medium transition-colors bg-white text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-brand-primary focus:border-brand-primary ${
+                      errors.confirm_password
+                        ? 'border-rose-300 text-rose-900 focus:ring-rose-500 focus:border-rose-500 bg-rose-50/20'
+                        : 'border-slate-300'
+                    }`}
+                    {...register('confirm_password')}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                    aria-label={showConfirmPassword ? 'Ẩn mật khẩu xác nhận' : 'Hiển thị mật khẩu xác nhận'}
+                    className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-slate-400 hover:text-slate-600 transition-colors"
+                  >
+                    {showConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  </button>
+                </div>
+                {errors.confirm_password && (
+                  <p className="mt-1.5 text-xs text-rose-600 font-medium">{errors.confirm_password.message}</p>
+                )}
+              </div>
+
+              {/* Submit Button */}
+              <div className="pt-2">
+                <Button
+                  type="submit"
+                  variant="default"
+                  size="lg"
+                  className="w-full flex justify-center py-3 bg-brand-primary hover:bg-brand-hover text-white font-bold rounded-xl shadow-md transition-colors text-sm"
+                  isLoading={isSubmitting}
+                >
+                  {isSubmitting ? authMessages.submittingRegister : authMessages.submitRegister}
+                </Button>
+              </div>
+
+              {/* Login Link Prompt */}
+              <div className="text-center pt-3 border-t border-slate-100">
+                <p className="text-xs text-slate-600 font-medium">
+                  {authMessages.hasAccountPrompt}{' '}
+                  <Link to="/login" className="font-bold text-brand-primary hover:underline ml-1">
+                    {authMessages.loginNow} →
+                  </Link>
+                </p>
+              </div>
+            </form>
           </div>
-          <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
-            {authMessages.registerHeader}
-          </h1>
-          <p className="text-xs sm:text-sm text-slate-600 font-medium">
-            {authMessages.registerSubheader}
-          </p>
         </div>
 
-        {/* Teacher Registration Note */}
-        <div className="p-3 bg-brand-soft-bg/80 border border-brand-soft-border rounded-xl text-xs font-medium text-brand-heavy-text leading-relaxed">
-          {authMessages.teacherNote}
-        </div>
-
-        {/* Register Form */}
-        <form className="mt-6 space-y-5" onSubmit={handleSubmit(onSubmit)}>
-          <div className="space-y-4">
-            {/* Full Name */}
-            <div>
-              <label htmlFor="full_name" className="block text-xs font-bold text-slate-700 mb-1">
-                {authMessages.fullNameLabel}
-              </label>
-              <div className="mt-1">
-                <input
-                  id="full_name"
-                  type="text"
-                  placeholder={authMessages.fullNamePlaceholder}
-                  className={`appearance-none block w-full px-3.5 py-2.5 border rounded-xl shadow-sm text-sm font-medium transition-colors bg-white text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-brand-primary focus:border-brand-primary ${
-                    errors.full_name
-                      ? 'border-rose-300 text-rose-900 focus:ring-rose-500 focus:border-rose-500 bg-rose-50/20'
-                      : 'border-slate-300'
-                  }`}
-                  {...register('full_name')}
-                />
-              </div>
-              {errors.full_name && (
-                <p className="mt-1.5 text-xs text-rose-600 font-medium">{errors.full_name.message}</p>
-              )}
-            </div>
-
-            {/* Email */}
-            <div>
-              <label htmlFor="email" className="block text-xs font-bold text-slate-700 mb-1">
-                {authMessages.emailLabel}
-              </label>
-              <div className="mt-1">
-                <input
-                  id="email"
-                  type="email"
-                  autoComplete="email"
-                  placeholder={authMessages.emailPlaceholder}
-                  className={`appearance-none block w-full px-3.5 py-2.5 border rounded-xl shadow-sm text-sm font-medium transition-colors bg-white text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-brand-primary focus:border-brand-primary ${
-                    errors.email
-                      ? 'border-rose-300 text-rose-900 focus:ring-rose-500 focus:border-rose-500 bg-rose-50/20'
-                      : 'border-slate-300'
-                  }`}
-                  {...register('email')}
-                />
-              </div>
-              {errors.email && (
-                <p className="mt-1.5 text-xs text-rose-600 font-medium">{errors.email.message}</p>
-              )}
-            </div>
-
-            {/* Student ID (MSSV) */}
-            <div>
-              <label htmlFor="student_id" className="block text-xs font-bold text-slate-700 mb-1">
-                {authMessages.studentIdLabel}
-              </label>
-              <div className="mt-1">
-                <input
-                  id="student_id"
-                  type="text"
-                  placeholder={authMessages.studentIdPlaceholder}
-                  className={`appearance-none block w-full px-3.5 py-2.5 border rounded-xl shadow-sm text-sm font-medium transition-colors bg-white text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-brand-primary focus:border-brand-primary ${
-                    errors.student_id
-                      ? 'border-rose-300 text-rose-900 focus:ring-rose-500 focus:border-rose-500 bg-rose-50/20'
-                      : 'border-slate-300'
-                  }`}
-                  {...register('student_id')}
-                />
-              </div>
-              {errors.student_id && (
-                <p className="mt-1.5 text-xs text-rose-600 font-medium">{errors.student_id.message}</p>
-              )}
-            </div>
-
-            {/* Password */}
-            <div>
-              <label htmlFor="password" className="block text-xs font-bold text-slate-700 mb-1">
-                {authMessages.passwordLabel}
-              </label>
-              <div className="mt-1">
-                <input
-                  id="password"
-                  type="password"
-                  autoComplete="new-password"
-                  placeholder={authMessages.passwordPlaceholder}
-                  className={`appearance-none block w-full px-3.5 py-2.5 border rounded-xl shadow-sm text-sm font-medium transition-colors bg-white text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-brand-primary focus:border-brand-primary ${
-                    errors.password
-                      ? 'border-rose-300 text-rose-900 focus:ring-rose-500 focus:border-rose-500 bg-rose-50/20'
-                      : 'border-slate-300'
-                  }`}
-                  {...register('password')}
-                />
-              </div>
-              {errors.password && (
-                <p className="mt-1.5 text-xs text-rose-600 font-medium">{errors.password.message}</p>
-              )}
-            </div>
-
-            {/* Confirm Password */}
-            <div>
-              <label htmlFor="confirm_password" className="block text-xs font-bold text-slate-700 mb-1">
-                {authMessages.confirmPasswordLabel}
-              </label>
-              <div className="mt-1">
-                <input
-                  id="confirm_password"
-                  type="password"
-                  autoComplete="new-password"
-                  placeholder={authMessages.confirmPasswordPlaceholder}
-                  className={`appearance-none block w-full px-3.5 py-2.5 border rounded-xl shadow-sm text-sm font-medium transition-colors bg-white text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-brand-primary focus:border-brand-primary ${
-                    errors.confirm_password
-                      ? 'border-rose-300 text-rose-900 focus:ring-rose-500 focus:border-rose-500 bg-rose-50/20'
-                      : 'border-slate-300'
-                  }`}
-                  {...register('confirm_password')}
-                />
-              </div>
-              {errors.confirm_password && (
-                <p className="mt-1.5 text-xs text-rose-600 font-medium">{errors.confirm_password.message}</p>
-              )}
-            </div>
-          </div>
-
-          {/* Submit Button */}
-          <div>
-            <Button
-              type="submit"
-              variant="default"
-              size="lg"
-              className="w-full flex justify-center py-3 bg-brand-primary hover:bg-brand-hover text-white font-bold rounded-xl shadow-md transition-colors"
-              isLoading={isSubmitting}
-            >
-              {isSubmitting ? authMessages.submittingRegister : authMessages.submitRegister}
-            </Button>
-          </div>
-
-          {/* Login Link Prompt */}
-          <div className="text-center pt-2 border-t border-slate-100">
-            <p className="text-xs text-slate-600 font-medium">
-              {authMessages.hasAccountPrompt}{' '}
-              <Link to="/login" className="font-bold text-brand-primary hover:underline ml-1">
-                {authMessages.loginNow} →
-              </Link>
-            </p>
-          </div>
-        </form>
       </div>
     </div>
   );

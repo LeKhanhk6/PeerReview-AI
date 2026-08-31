@@ -58,15 +58,15 @@ api.interceptors.response.use(
     
     console.error(`[API Error] ${status}: ${normalizedError.message}`, normalizedError);
 
-    // Full 401 handling
-    if (status === 401) {
+    // Full 401 & 403 ACCOUNT_LOCKED handling
+    if (status === 401 || (status === 403 && (normalizedError.code === 'ACCOUNT_LOCKED' || normalizedError.code === 'USER_LOCKED'))) {
       const originalRequest = error.config;
       // Do not redirect if it's the login route or the initial hydration check
       if (originalRequest && !originalRequest.url?.includes('/auth/login') && !originalRequest.url?.includes('/auth/me')) {
         // Clear auth state
         useAuthStore.getState().setAuth(null, null);
         // Redirect to login to prevent loops
-        window.location.href = '/login';
+        window.location.href = '/login?reason=locked';
       }
     }
 

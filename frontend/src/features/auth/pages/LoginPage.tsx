@@ -72,6 +72,12 @@ export const LoginPage: React.FC = () => {
             Sign in to your account
           </p>
         </div>
+
+        {new URLSearchParams(window.location.search).get('reason') === 'locked' && (
+          <div role="alert" className="p-3 bg-red-50 border border-red-200 rounded-lg text-xs font-semibold text-red-800 text-center">
+            ⚠️ Phiên làm việc đã kết thúc hoặc tài khoản của bạn đã bị khóa bởi Quản trị viên.
+          </div>
+        )}
         <form className="mt-8 space-y-6" onSubmit={handleSubmit(onSubmit)}>
           <div className="space-y-4">
             <div>

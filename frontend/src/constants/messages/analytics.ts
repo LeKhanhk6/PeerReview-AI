@@ -2,18 +2,30 @@ export const analyticsMessages = {
   title: 'Bảng Đóng Góp & Giám Sát Lớp Học',
   subtitle: 'Theo dõi chỉ số tham gia, tỷ lệ đóng góp %, phân loại thành viên và cảnh báo rủi ro làm việc nhóm.',
 
+  teacherDashboardTitle: 'Trang tổng quan Giảng viên',
+  teacherDashboardSubtitle: 'Tổng quan tình hình học tập, tiến độ nộp bài, chấm chéo và cảnh báo rủi ro nhóm.',
+
   filter: {
-    selectClass: 'Lọc theo lớp học',
-    allClasses: '-- Tất cả lớp học --',
+    selectClass: 'Chọn lớp học:',
+    allClasses: 'Tất cả các lớp',
   },
 
   overview: {
-    totalClasses: 'Tổng số lớp',
+    totalClasses: 'Tổng số lớp học',
     totalStudents: 'Tổng số sinh viên',
     totalAssignments: 'Tổng số bài tập',
     submissionRate: 'Tỷ lệ nộp bài',
     reviewCompletionRate: 'Tỷ lệ chấm chéo',
-    averageScore: 'Điểm trung bình',
+    averageScore: 'Điểm trung bình lớp',
+  },
+
+  riskTypes: {
+    DEAD_GROUP: 'Nhóm không hoạt động',
+    LOW_ACTIVITY: 'Tương tác cá nhân kém',
+    LOW_CONTRIBUTION: 'Rủi ro Free-rider (Đóng góp quá thấp)',
+    UNBALANCED_CONTRIBUTION: 'Phân chia công việc mất cân bằng',
+    INCOMPLETE_TASKS: 'Chậm tiến độ task sát deadline',
+    REVIEW_INACTIVITY: 'Trễ hạn chấm chéo bài nộp',
   },
 
   categories: {
@@ -69,8 +81,8 @@ export const analyticsMessages = {
     noDataDescription: 'Lớp học hoặc Nhóm hiện chưa phát sinh hoạt động làm việc nhóm nào.',
     noGroupsTitle: 'Chưa có nhóm học phần',
     noGroupsDescription: 'Hãy tạo nhóm học phần cho lớp học để bắt đầu theo dõi đóng góp.',
-    noRisksTitle: 'Không có cảnh báo rủi ro nào',
-    noRisksDescription: 'Tất cả các nhóm và thành viên trong lớp học đều đang làm việc ổn định và hiệu quả 🛡️.',
+    noRisksTitle: 'Tất cả các nhóm đang hoạt động tốt! 🛡️',
+    noRisksDescription: 'Hệ thống không phát hiện rủi ro hợp tác hoặc nghi vấn free-rider nào trong lớp này.',
   },
 
   tabs: {
@@ -87,6 +99,8 @@ export const analyticsMessages = {
   earlyWarning: {
     title: 'Bảng Cảnh Báo Sớm Rủi Ro',
     subtitle: 'Tự động phát hiện các nhóm hoặc cá nhân gặp rào cản trong quá trình làm việc nhóm.',
+    widgetTitle: '🚨 Cảnh báo sớm Rủi ro Nhóm',
+    viewAllBtn: 'Xem tất cả cảnh báo',
     filterSeverity: 'Mức độ rủi ro:',
     allSeverities: 'Tất cả mức độ',
     filterStatus: 'Trạng thái xử lý:',

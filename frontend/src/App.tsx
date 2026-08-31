@@ -19,6 +19,7 @@ import { TeacherAssignmentsPage } from './features/assignment/pages/TeacherAssig
 import { CreateAssignmentPage } from './features/assignment/pages/CreateAssignmentPage';
 import { EditAssignmentPage } from './features/assignment/pages/EditAssignmentPage';
 import { TeacherAnalyticsDashboardPage } from './features/analytics/pages/TeacherAnalyticsDashboardPage';
+import { TeacherDashboardPage } from './features/analytics/pages/TeacherDashboardPage';
 import { TeacherReviewSynthesisPage } from './features/synthesis/pages/TeacherReviewSynthesisPage';
 import { StudentGroupWorkspacePage } from './features/workspace/pages/StudentGroupWorkspacePage';
 import { StudentSubmissionPage } from './features/submission/pages/StudentSubmissionPage';
@@ -83,7 +84,7 @@ function App() {
               </ProtectedRoute>
             } 
           >
-            <Route path="dashboard" element={<div>Teacher Dashboard</div>} />
+            <Route path="dashboard" element={<TeacherDashboardPage />} />
             <Route path="classes" element={<TeacherClassesPage />} />
             <Route path="classes/:id" element={<TeacherClassDetailPage />} />
             <Route path="assignments" element={<TeacherAssignmentsPage />} />

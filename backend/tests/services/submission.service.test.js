@@ -192,13 +192,14 @@ describe('submission.service (MVP)', () => {
             expect(clientMock.release).toHaveBeenCalled();
         });
 
-        it('should throw 403 when student not in group (Auth Leakage test)', async () => {
-            poolMock.query.mockResolvedValueOnce({ rows: [] }); // auth fails
-            poolMock.query.mockResolvedValueOnce({ rows: [{ id: assignmentId }] }); // but assignment exists
+        it('should throw 409 MUST_JOIN_GROUP when student in class but not in group', async () => {
+            poolMock.query.mockResolvedValueOnce({ rows: [] }); // auth fails (no group)
+            poolMock.query.mockResolvedValueOnce({ rows: [{ id: assignmentId, class_id: 'c-1' }] }); // assignment exists
+            poolMock.query.mockResolvedValueOnce({ rows: [{ user_id: userId }] }); // in class_members
             
             const error = await submitAssignment(assignmentId, userId, fileUrl).catch(e => e);
-            expect(error.statusCode).toBe(403);
-            expect(error.message).toContain('Forbidden');
+            expect(error.statusCode).toBe(409);
+            expect(error.message).toContain('MUST_JOIN_GROUP');
         });
 
         it('should throw 404 if assignment does not exist', async () => {

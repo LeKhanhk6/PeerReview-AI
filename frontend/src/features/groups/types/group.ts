@@ -13,6 +13,7 @@ export interface Group {
   class_id?: string;
   teacherId?: string;
   created_at: string;
+  member_count?: number;
   members: GroupMember[];
 }
 

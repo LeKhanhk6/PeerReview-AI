@@ -10,7 +10,8 @@ interface GroupFileManagerProps {
 }
 
 export const GroupFileManager: React.FC<GroupFileManagerProps> = ({ groupId }) => {
-  const { data: files = [], isLoading, isError, refetch } = useGroupFiles(groupId);
+  const { data: rawFiles, isLoading, isError, refetch } = useGroupFiles(groupId);
+  const files: any[] = Array.isArray(rawFiles) ? rawFiles : (rawFiles as any)?.data || [];
   const createFile = useCreateGroupFile(groupId);
 
   const [isUploading, setIsUploading] = useState(false);

@@ -321,11 +321,12 @@ describe('group.service', () => {
             poolMock.query.mockResolvedValueOnce({ rows: [{}] }); // class membership check
             poolMock.query.mockResolvedValueOnce({ rows: [] }); // duplicate check
             poolMock.query.mockResolvedValueOnce({ rows: [] }); // class limit check
+            poolMock.query.mockResolvedValueOnce({ rows: [{ count: 1 }] }); // member count check
             poolMock.query.mockResolvedValueOnce({ rows: [{ group_id: 1, user_id: 'student1', is_leader: false }] }); // insert
 
             const result = await addMember(1, 'student1', currentUser);
             expect(result.group_id).toBe(1);
-            expect(poolMock.query).toHaveBeenCalledTimes(6);
+            expect(poolMock.query).toHaveBeenCalledTimes(7);
         });
 
         it('should throw 404 if group not found', async () => {
@@ -437,7 +438,9 @@ describe('group.service', () => {
             poolMock.query.mockResolvedValueOnce({ rows: [{}] }); // class membership check
             poolMock.query.mockResolvedValueOnce({ rows: [] }); // duplicate check
             poolMock.query.mockResolvedValueOnce({ rows: [] }); // class limit check
+            poolMock.query.mockResolvedValueOnce({ rows: [{ count: 1 }] }); // member count check
             poolMock.query.mockResolvedValueOnce({ rows: [{ group_id: 1, user_id: 'student1', is_leader: false }] }); // insert
+            poolMock.query.mockResolvedValueOnce({ rows: [{ id: 101 }] }); // logActivity insert
 
             const result = await studentJoinGroup(1, 'student1');
             expect(result.group_id).toBe(1);

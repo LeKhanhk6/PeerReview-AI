@@ -3,15 +3,23 @@ import type { Group, CreateGroupPayload, AddMemberPayload, RemoveMemberPayload, 
 
 export const groupsApi = {
   getGroups: async (classId: string): Promise<Group[]> => {
-    return api.get('/groups', { params: { classId } });
+    const res: any = await api.get('/groups', { params: { classId } });
+    if (Array.isArray(res)) return res;
+    if (res && Array.isArray(res.data)) return res.data;
+    return [];
   },
 
   getGroupDetail: async (id: string): Promise<Group> => {
-    return api.get(`/groups/${id}`);
+    const res: any = await api.get(`/groups/${id}`);
+    return res.data || res;
   },
 
   createGroup: async (data: CreateGroupPayload): Promise<Group> => {
     return api.post('/groups', data);
+  },
+
+  joinGroup: async (groupId: string): Promise<any> => {
+    return api.post(`/groups/${groupId}/join`);
   },
 
   addMember: async ({ groupId, user_id }: AddMemberPayload): Promise<any> => {

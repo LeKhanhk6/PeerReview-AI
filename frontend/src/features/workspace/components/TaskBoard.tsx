@@ -28,7 +28,8 @@ export const TaskBoard: React.FC<TaskBoardProps> = ({
   currentUserId,
   members = [],
 }) => {
-  const { data: tasks = [], isLoading, isError, refetch } = useGroupTasks(groupId);
+  const { data: rawTasks, isLoading, isError, refetch } = useGroupTasks(groupId);
+  const tasks: TaskItem[] = Array.isArray(rawTasks) ? rawTasks : (rawTasks as any)?.data || [];
   const createTask = useCreateTask(groupId);
   const updateTask = useUpdateTask(groupId);
   const deleteTask = useDeleteTask(groupId);

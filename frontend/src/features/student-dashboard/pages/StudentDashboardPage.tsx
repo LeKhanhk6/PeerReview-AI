@@ -11,6 +11,7 @@ import { calculateDaysLeftStatus } from '@/utils/date.utils';
 import { Button } from '@/components/ui/Button';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { Skeleton } from '@/components/ui/Skeleton';
+import { JoinGroupModal } from '@/features/groups/components/JoinGroupModal';
 
 // Sub-component for individual Group Workspace Task Progress (Handles Multiple Groups 1:1 per assignment)
 const AssignmentGroupWorkspaceWidget: React.FC<{ groupId?: string; currentUserId: string }> = ({
@@ -19,7 +20,7 @@ const AssignmentGroupWorkspaceWidget: React.FC<{ groupId?: string; currentUserId
 }) => {
   if (!groupId) return null;
 
-  const { data: tasks = [], isLoading } = useApiQuery(
+  const { data: tasksResult, isLoading } = useApiQuery(
     ['group-tasks', groupId],
     () => getGroupTasksApi(groupId),
     { enabled: Boolean(groupId) }
@@ -34,11 +35,13 @@ const AssignmentGroupWorkspaceWidget: React.FC<{ groupId?: string; currentUserId
     );
   }
 
-  const tasksList = Array.isArray(tasks) ? tasks : [];
+  const tasksList = Array.isArray(tasksResult)
+    ? tasksResult
+    : (tasksResult as any)?.data || [];
   const totalTasks = tasksList.length;
-  const doneTasks = tasksList.filter((t) => t.status === 'DONE').length;
+  const doneTasks = tasksList.filter((t: any) => t.status === 'DONE').length;
   const progressPct = totalTasks > 0 ? Math.round((doneTasks / totalTasks) * 100) : 0;
-  const myTasks = tasksList.filter((t) => t.assignee_id === currentUserId);
+  const myTasks = tasksList.filter((t: any) => t.assignee_id === currentUserId);
 
   return (
     <div className="mt-4 p-4 rounded-xl bg-slate-50 border border-slate-200/80 space-y-3">
@@ -68,7 +71,7 @@ const AssignmentGroupWorkspaceWidget: React.FC<{ groupId?: string; currentUserId
           </p>
         ) : (
           <ul className="space-y-1.5 max-h-28 overflow-y-auto pr-1">
-            {myTasks.map((task) => (
+            {myTasks.map((task: any) => (
               <li
                 key={task.id}
                 className="flex items-center justify-between text-xs p-1.5 rounded bg-white border border-slate-100"
@@ -103,6 +106,9 @@ const AssignmentGroupWorkspaceWidget: React.FC<{ groupId?: string; currentUserId
 export const StudentDashboardPage: React.FC = () => {
   const { user } = useAuthStore();
   const [filterMode, setFilterMode] = useState<'ALL' | 'URGENT' | 'NEEDS_REVIEW'>('ALL');
+  
+  // Join Group Modal state
+  const [joinClassTarget, setJoinClassTarget] = useState<{ classId: string; className: string } | null>(null);
 
   const {
     data: dashboardData,
@@ -121,6 +127,7 @@ export const StudentDashboardPage: React.FC = () => {
   // Filter calculations
   const urgentCount = assignments.filter((a) => (a.days_left ?? 999) <= 3).length;
   const pendingReviewCount = assignments.filter((a) => a.review?.status === 'UNDER_REVIEW').length;
+  const grouplessCount = assignments.filter((a) => !a.group_id).length;
 
   const filteredAssignments = assignments.filter((item) => {
     if (filterMode === 'URGENT') return (item.days_left ?? 999) <= 3;
@@ -178,6 +185,23 @@ export const StudentDashboardPage: React.FC = () => {
           </p>
         </div>
       </div>
+
+      {/* Global Alert Banner if Student has Groupless Classes (Giao diện A Alert) */}
+      {grouplessCount > 0 && (
+        <div className="bg-amber-50 border border-amber-200 rounded-2xl p-5 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="flex items-start gap-3">
+            <span className="text-2xl">🟡</span>
+            <div>
+              <h3 className="text-sm font-bold text-amber-900">
+                Bạn có {grouplessCount} môn học chưa thuộc nhóm nào
+              </h3>
+              <p className="text-xs text-amber-800 mt-0.5">
+                Vui lòng tham gia nhóm để mở khóa tính năng Nộp bài tập và sử dụng Không gian làm việc nhóm (Workspace).
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* 3 Quick Stats Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
@@ -272,11 +296,16 @@ export const StudentDashboardPage: React.FC = () => {
               const daysStatus = calculateDaysLeftStatus(assignment.deadline);
               const subStatus = assignment.submission?.status || 'NOT_STARTED';
               const revStatus = assignment.review?.status || 'NOT_REVIEWED';
+              const hasGroup = Boolean(assignment.group_id);
 
               return (
                 <div
                   key={assignment.assignment_id}
-                  className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm flex flex-col justify-between space-y-4 hover:border-slate-300 transition-colors"
+                  className={`p-6 rounded-2xl border shadow-sm flex flex-col justify-between space-y-4 transition-colors ${
+                    hasGroup
+                      ? 'bg-white border-slate-100 hover:border-slate-300'
+                      : 'bg-amber-50/20 border-amber-200/80 hover:border-amber-300'
+                  }`}
                 >
                   <div className="space-y-3">
                     {/* Header with Title and Days Left Badge */}
@@ -285,8 +314,17 @@ export const StudentDashboardPage: React.FC = () => {
                         <h3 className="text-base font-bold text-slate-900 line-clamp-1">
                           {assignment.title}
                         </h3>
-                        <p className="text-xs font-medium text-slate-500 mt-0.5">
-                          Nhóm: <span className="text-slate-800 font-semibold">{assignment.group_name}</span>
+                        <p className="text-xs font-medium text-slate-500 mt-0.5 flex items-center gap-1.5">
+                          <span>Nhóm:</span>
+                          {hasGroup ? (
+                            <span className="text-emerald-700 font-bold bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
+                              {assignment.group_name}
+                            </span>
+                          ) : (
+                            <span className="text-amber-800 font-bold bg-amber-100 px-2 py-0.5 rounded border border-amber-300">
+                              🟡 Chưa có nhóm
+                            </span>
+                          )}
                         </p>
                       </div>
 
@@ -295,6 +333,23 @@ export const StudentDashboardPage: React.FC = () => {
                         {daysStatus.label}
                       </span>
                     </div>
+
+                    {/* Giao diện A Groupless Card Callout */}
+                    {!hasGroup && (
+                      <div className="p-3 bg-amber-100/60 border border-amber-200 rounded-xl flex items-center justify-between gap-3">
+                        <span className="text-xs text-amber-900 font-medium">
+                          ⚠️ Bạn chưa thuộc nhóm nào. Cần tham gia nhóm để nộp bài.
+                        </span>
+                        <Button
+                          type="button"
+                          size="sm"
+                          onClick={() => setJoinClassTarget({ classId: assignment.class_id || '', className: assignment.title })}
+                          className="bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold shrink-0"
+                        >
+                          🚀 Tham gia nhóm
+                        </Button>
+                      </div>
+                    )}
 
                     {/* Status Badges Row */}
                     <div className="flex flex-wrap items-center gap-2 pt-1">
@@ -340,19 +395,32 @@ export const StudentDashboardPage: React.FC = () => {
                     </div>
 
                     {/* Group Workspace Progress Widget (1:1 per Group ID) */}
-                    <AssignmentGroupWorkspaceWidget
-                      groupId={assignment.group_id}
-                      currentUserId={user?.id || ''}
-                    />
+                    {hasGroup && (
+                      <AssignmentGroupWorkspaceWidget
+                        groupId={assignment.group_id}
+                        currentUserId={user?.id || ''}
+                      />
+                    )}
                   </div>
 
                   {/* Actions Footer */}
                   <div className="pt-3 border-t border-slate-100 flex flex-wrap items-center justify-between gap-3">
-                    <Link to={`/student/assignments/${assignment.assignment_id}/workspace`}>
-                      <Button variant="outline" size="sm">
-                        {studentDashboardMessages.actionWorkspace}
+                    {hasGroup ? (
+                      <Link to={`/student/assignments/${assignment.assignment_id}/workspace`}>
+                        <Button variant="outline" size="sm">
+                          {studentDashboardMessages.actionWorkspace}
+                        </Button>
+                      </Link>
+                    ) : (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setJoinClassTarget({ classId: assignment.class_id || '', className: assignment.title })}
+                        className="text-amber-800 border-amber-300 hover:bg-amber-50"
+                      >
+                        🚀 Tham gia nhóm
                       </Button>
-                    </Link>
+                    )}
 
                     <div className="flex items-center gap-2">
                       {revStatus === 'UNDER_REVIEW' && (
@@ -363,13 +431,26 @@ export const StudentDashboardPage: React.FC = () => {
                         </Link>
                       )}
 
-                      <Link to={`/student/assignments/${assignment.assignment_id}/submit`}>
-                        <Button variant="default" size="sm">
-                          {subStatus === 'SUBMITTED' || subStatus === 'LATE'
-                            ? studentDashboardMessages.actionEditSubmission
-                            : studentDashboardMessages.actionSubmit}
+                      {/* Submit Button: ACTIVE if hasGroup, DISABLED with tooltip if Groupless */}
+                      {hasGroup ? (
+                        <Link to={`/student/assignments/${assignment.assignment_id}/submit`}>
+                          <Button variant="default" size="sm">
+                            {subStatus === 'SUBMITTED' || subStatus === 'LATE'
+                              ? studentDashboardMessages.actionEditSubmission
+                              : studentDashboardMessages.actionSubmit}
+                          </Button>
+                        </Link>
+                      ) : (
+                        <Button
+                          variant="default"
+                          size="sm"
+                          disabled
+                          title="Cần tham gia nhóm trước khi nộp bài"
+                          className="opacity-50 cursor-not-allowed"
+                        >
+                          🔒 Nộp Bài (Cần Nhóm)
                         </Button>
-                      </Link>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -378,6 +459,15 @@ export const StudentDashboardPage: React.FC = () => {
           </div>
         )}
       </div>
+
+      {/* Join Group Modal Dialog */}
+      <JoinGroupModal
+        open={Boolean(joinClassTarget)}
+        onClose={() => setJoinClassTarget(null)}
+        classId={joinClassTarget?.classId}
+        className={joinClassTarget?.className}
+        onSuccess={() => refetch()}
+      />
     </div>
   );
 };

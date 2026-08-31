@@ -7,13 +7,24 @@ import type {
   GroupFileItem,
 } from '../types/workspace.types';
 
+export interface WorkspaceQueryResult<T> {
+  hasGroup: boolean;
+  data: T[];
+}
+
 export const workspaceApi = {
   // Tasks
-  getGroupTasks: async (groupId: string): Promise<TaskItem[]> => {
-    const res: any = await api.get(`/workspace/groups/${groupId}/tasks`);
-    if (Array.isArray(res)) return res;
-    if (res && Array.isArray(res.data)) return res.data;
-    return [];
+  getGroupTasks: async (groupId: string): Promise<WorkspaceQueryResult<TaskItem>> => {
+    try {
+      const res: any = await api.get(`/workspace/groups/${groupId}/tasks`);
+      if (res && typeof res.hasGroup === 'boolean') {
+        return { hasGroup: res.hasGroup, data: Array.isArray(res.data) ? res.data : [] };
+      }
+      const data = Array.isArray(res) ? res : Array.isArray(res?.data) ? res.data : [];
+      return { hasGroup: true, data };
+    } catch (_err) {
+      return { hasGroup: false, data: [] };
+    }
   },
 
   createTask: async (
@@ -38,11 +49,17 @@ export const workspaceApi = {
   },
 
   // Discussions
-  getGroupDiscussions: async (groupId: string): Promise<DiscussionMessage[]> => {
-    const res: any = await api.get(`/workspace/groups/${groupId}/discussions`);
-    if (Array.isArray(res)) return res;
-    if (res && Array.isArray(res.data)) return res.data;
-    return [];
+  getGroupDiscussions: async (groupId: string): Promise<WorkspaceQueryResult<DiscussionMessage>> => {
+    try {
+      const res: any = await api.get(`/workspace/groups/${groupId}/discussions`);
+      if (res && typeof res.hasGroup === 'boolean') {
+        return { hasGroup: res.hasGroup, data: Array.isArray(res.data) ? res.data : [] };
+      }
+      const data = Array.isArray(res) ? res : Array.isArray(res?.data) ? res.data : [];
+      return { hasGroup: true, data };
+    } catch (_err) {
+      return { hasGroup: false, data: [] };
+    }
   },
 
   createDiscussion: async (groupId: string, message: string): Promise<DiscussionMessage> => {
@@ -51,21 +68,33 @@ export const workspaceApi = {
   },
 
   // Activities (Paginated)
-  getGroupActivities: async (groupId: string, page = 1, limit = 50): Promise<ActivityLog[]> => {
-    const res: any = await api.get(`/workspace/groups/${groupId}/activities`, {
-      params: { page, limit },
-    });
-    if (Array.isArray(res)) return res;
-    if (res && Array.isArray(res.data)) return res.data;
-    return [];
+  getGroupActivities: async (groupId: string, page = 1, limit = 50): Promise<WorkspaceQueryResult<ActivityLog>> => {
+    try {
+      const res: any = await api.get(`/workspace/groups/${groupId}/activities`, {
+        params: { page, limit },
+      });
+      if (res && typeof res.hasGroup === 'boolean') {
+        return { hasGroup: res.hasGroup, data: Array.isArray(res.data) ? res.data : [] };
+      }
+      const data = Array.isArray(res) ? res : Array.isArray(res?.data) ? res.data : [];
+      return { hasGroup: true, data };
+    } catch (_err) {
+      return { hasGroup: false, data: [] };
+    }
   },
 
   // Group Files
-  getGroupFiles: async (groupId: string): Promise<GroupFileItem[]> => {
-    const res: any = await api.get(`/workspace/groups/${groupId}/files`);
-    if (Array.isArray(res)) return res;
-    if (res && Array.isArray(res.data)) return res.data;
-    return [];
+  getGroupFiles: async (groupId: string): Promise<WorkspaceQueryResult<GroupFileItem>> => {
+    try {
+      const res: any = await api.get(`/workspace/groups/${groupId}/files`);
+      if (res && typeof res.hasGroup === 'boolean') {
+        return { hasGroup: res.hasGroup, data: Array.isArray(res.data) ? res.data : [] };
+      }
+      const data = Array.isArray(res) ? res : Array.isArray(res?.data) ? res.data : [];
+      return { hasGroup: true, data };
+    } catch (_err) {
+      return { hasGroup: false, data: [] };
+    }
   },
 
   createGroupFile: async (

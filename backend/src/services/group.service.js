@@ -1,6 +1,7 @@
 import pool from '../config/db.js';
 import { AppError } from '../utils/AppError.js';
 import { withTransaction } from '../utils/db.util.js';
+import { logActivity } from './activity.service.js';
 
 // --- CONSTANTS ---
 const NOT_FOUND_MSG = 'Group not found or you do not have permission to view it';
@@ -46,10 +47,10 @@ export const checkStudentCanJoinGroup = async (groupInfo, userId) => {
         throw new AppError('Student is not enrolled in this class', 403);
     }
 
-    // Check duplicate membership in this group
+    // Check duplicate membership in this group (Idempotent: if already member of THIS group, flag it)
     const duplicateCheck = await pool.query('SELECT 1 FROM group_members WHERE group_id = $1 AND user_id = $2', [groupInfo.id, userId]);
     if (duplicateCheck.rows.length > 0) {
-        throw new AppError('User is already a member of this group', 409);
+        return { isAlreadyMember: true };
     }
 
     // Check 1 Student = Max 1 Group per Class
@@ -63,6 +64,15 @@ export const checkStudentCanJoinGroup = async (groupInfo, userId) => {
     if (classGroupCheck.rows.length > 0) {
         throw new AppError('Student already belongs to another group in this class', 409);
     }
+
+    // Check GROUP_FULL constraint (Max 6 members per group)
+    const countResult = await pool.query('SELECT COUNT(*)::int as count FROM group_members WHERE group_id = $1', [groupInfo.id]);
+    const memberCount = countResult.rows[0]?.count || 0;
+    if (memberCount >= 6) {
+        throw new AppError('GROUP_FULL: Nhóm này đã đủ số lượng thành viên tối đa (tối đa 6 sinh viên).', 409);
+    }
+
+    return { isAlreadyMember: false };
 };
 
 // --- CRUD OPERATIONS ---
@@ -329,7 +339,10 @@ export const addMember = async (groupId, userId, currentUser) => {
     }
 
     // 3. Common Membership Checks
-    await checkStudentCanJoinGroup(groupInfo, userId);
+    const { isAlreadyMember } = await checkStudentCanJoinGroup(groupInfo, userId);
+    if (isAlreadyMember) {
+        throw new AppError('User is already a member of this group', 409);
+    }
 
     return withTransaction(async (client) => {
         // 6. Insert Member
@@ -426,16 +439,29 @@ export const studentJoinGroup = async (groupId, studentId) => {
         throw error;
     }
 
-    await checkStudentCanJoinGroup(groupCheck.rows[0], studentId);
+    const { isAlreadyMember } = await checkStudentCanJoinGroup(groupCheck.rows[0], studentId);
+    if (isAlreadyMember) {
+        return { group_id: groupId, user_id: studentId, is_leader: false, isAlreadyMember: true };
+    }
 
     return withTransaction(async (client) => {
         const insertQuery = `
             INSERT INTO group_members (group_id, user_id, is_leader)
             VALUES ($1, $2, false)
+            ON CONFLICT (group_id, user_id) DO NOTHING
             RETURNING group_id, user_id, is_leader, joined_at;
         `;
         const insertResult = await client.query(insertQuery, [groupId, studentId]);
-        return insertResult.rows[0];
+        
+        await logActivity({
+            groupId,
+            userId: studentId,
+            actionType: 'GROUP_JOIN',
+            targetId: `GROUP_JOIN_${groupId}`,
+            contentSummary: 'Sinh viên đã tham gia nhóm thành công'
+        });
+
+        return insertResult.rows[0] || { group_id: groupId, user_id: studentId, is_leader: false };
     }, 'REPEATABLE READ');
 };
 

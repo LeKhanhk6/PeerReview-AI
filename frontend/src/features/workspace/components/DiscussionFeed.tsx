@@ -12,7 +12,8 @@ interface DiscussionFeedProps {
 }
 
 export const DiscussionFeed: React.FC<DiscussionFeedProps> = ({ groupId }) => {
-  const { data: messages = [], isLoading, isError, refetch } = useGroupDiscussions(groupId);
+  const { data: rawMessages, isLoading, isError, refetch } = useGroupDiscussions(groupId);
+  const messages: any[] = Array.isArray(rawMessages) ? rawMessages : (rawMessages as any)?.data || [];
   const createDiscussion = useCreateDiscussion(groupId);
 
   const [inputMessage, setInputMessage] = useState('');

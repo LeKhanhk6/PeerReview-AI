@@ -18,7 +18,8 @@ const ACTION_ICONS: Record<string, { emoji: string; badgeColor: string }> = {
 };
 
 export const ActivityTimeline: React.FC<ActivityTimelineProps> = ({ groupId }) => {
-  const { data: activities = [], isLoading, isError, refetch } = useGroupActivities(groupId);
+  const { data: rawActivities, isLoading, isError, refetch } = useGroupActivities(groupId);
+  const activities: any[] = Array.isArray(rawActivities) ? rawActivities : (rawActivities as any)?.data || [];
 
   if (isLoading) {
     return (

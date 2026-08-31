@@ -5,10 +5,16 @@ export const getDiscussions = async (req, res, next) => {
     try {
         const { id: groupId } = req.params;
 
-        await workspaceService.checkWorkspaceAccess(groupId, req.user);
-        const discussions = await workspaceService.getDiscussions(groupId);
-        
-        return res.ok(discussions);
+        try {
+            await workspaceService.checkWorkspaceAccess(groupId, req.user);
+            const discussions = await workspaceService.getDiscussions(groupId);
+            return res.ok({ hasGroup: true, data: discussions });
+        } catch (accessErr) {
+            if (accessErr.status === 404 || accessErr.status === 403 || accessErr.status === 400) {
+                return res.ok({ hasGroup: false, data: [] });
+            }
+            throw accessErr;
+        }
     } catch (error) {
         next(error);
     }

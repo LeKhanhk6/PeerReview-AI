@@ -2,12 +2,14 @@ import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { Button } from '@/components/ui/Button';
+import { EmptyState } from '@/components/ui/EmptyState';
 import { workspaceMessages } from '@/constants/messages/workspace';
 import { TaskBoard } from '../components/TaskBoard';
 import { DiscussionFeed } from '../components/DiscussionFeed';
 import { ActivityTimeline } from '../components/ActivityTimeline';
 import { GroupFileManager } from '../components/GroupFileManager';
 import { groupsApi } from '@/features/groups/api/groups.api';
+import { useGroupTasks } from '../hooks/useWorkspace';
 import { useAuthStore } from '@/features/auth/store/authStore';
 
 type WorkspaceTab = 'kanban' | 'discussions' | 'timeline' | 'files';
@@ -23,11 +25,28 @@ export const StudentGroupWorkspacePage: React.FC = () => {
 
   const isValidUuid = Boolean(targetGroupId && UUID_REGEX.test(targetGroupId));
 
-  const { data: groupData } = useQuery({
+  const { data: groupData, isError: isGroupError } = useQuery({
     queryKey: ['group', 'detail', targetGroupId],
     queryFn: () => groupsApi.getGroupDetail(targetGroupId),
     enabled: isValidUuid,
   });
+
+  const { data: tasksResult } = useGroupTasks(targetGroupId);
+  const hasGroup = tasksResult?.hasGroup !== false && !isGroupError;
+
+  if (!isValidUuid || !hasGroup) {
+    return (
+      <div className="max-w-4xl mx-auto py-12 p-4 space-y-4">
+        <EmptyState
+          type="no_permission"
+          title="Bạn chưa tham gia nhóm nào trong lớp học này"
+          description="Không gian làm việc nhóm (Kanban, Chat thảo luận, Chia sẻ file, Lịch sử hoạt động) chỉ dành cho sinh viên đã thuộc về một nhóm."
+          actionLabel="← Quay lại Trang chủ để Chọn nhóm"
+          onAction={() => navigate('/student/dashboard')}
+        />
+      </div>
+    );
+  }
 
   const group = (groupData as any)?.data || groupData || {};
   const groupName = group?.name || 'Nhóm làm việc';
@@ -45,10 +64,10 @@ export const StudentGroupWorkspacePage: React.FC = () => {
               type="button"
               variant="outline"
               size="sm"
-              onClick={() => navigate('/student/classes')}
+              onClick={() => navigate('/student/dashboard')}
               className="text-xs bg-white text-gray-700 hover:bg-gray-50"
             >
-              ← Quay lại danh sách lớp
+              ← Quay lại Trang chủ
             </Button>
             <span className="text-xs font-bold text-blue-700 bg-blue-50 px-2.5 py-0.5 rounded-full border border-blue-200">
               {isLeader ? '👑 Trưởng nhóm' : '👤 Thành viên'}

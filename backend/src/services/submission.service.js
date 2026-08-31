@@ -184,8 +184,19 @@ const verifyUserAssignmentAccess = async (assignmentId, userId) => {
     const authResult = await pool.query(authQuery, [assignmentId, userId]);
     
     if (authResult.rows.length === 0) {
-        const checkExists = await pool.query('SELECT id FROM assignments WHERE id = $1', [assignmentId]);
-        throw new AppError(checkExists.rows.length > 0 ? 'Forbidden access to this assignment' : 'Assignment not found', checkExists.rows.length > 0 ? 403 : 404);
+        const checkExists = await pool.query('SELECT id, class_id FROM assignments WHERE id = $1', [assignmentId]);
+        if (checkExists.rows.length > 0) {
+            const classId = checkExists.rows[0].class_id;
+            const checkClassMember = await pool.query(
+                'SELECT 1 FROM class_members WHERE class_id = $1 AND user_id = $2',
+                [classId, userId]
+            );
+            if (checkClassMember.rows.length > 0) {
+                throw new AppError('MUST_JOIN_GROUP: Bạn cần tham gia một nhóm trong lớp học trước khi nộp bài.', 409);
+            }
+            throw new AppError('Forbidden access to this assignment', 403);
+        }
+        throw new AppError('Assignment not found', 404);
     }
     
     return authResult.rows[0];

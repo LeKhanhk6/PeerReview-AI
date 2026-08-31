@@ -2,61 +2,90 @@ import React, { useState } from 'react';
 import { useClasses } from '../hooks/useClasses';
 import { Button } from '@/components/ui/Button';
 import { JoinClassDialog } from '../components/JoinClassDialog';
-import { Link } from 'react-router-dom';
+import { JoinGroupModal } from '@/features/groups/components/JoinGroupModal';
+import { useNavigate } from 'react-router-dom';
 import { EmptyState } from '@/components/ui/EmptyState';
+import { Skeleton } from '@/components/ui/Skeleton';
 import { Pagination } from '@/components/ui/Pagination';
 
 export const StudentClassesPage: React.FC = () => {
   const { data: classesData, isLoading, page, setPage } = useClasses();
+  const navigate = useNavigate();
   const [isJoinOpen, setIsJoinOpen] = useState(false);
+  const [selectedGroupClass, setSelectedGroupClass] = useState<{ id: string; name: string } | null>(null);
 
-  if (isLoading) return <div>Loading...</div>;
+  if (isLoading) {
+    return (
+      <div className="space-y-6 max-w-7xl mx-auto p-4">
+        <Skeleton className="h-10 w-64" />
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <Skeleton className="h-40 rounded-xl" />
+          <Skeleton className="h-40 rounded-xl" />
+          <Skeleton className="h-40 rounded-xl" />
+        </div>
+      </div>
+    );
+  }
+
+  const classes = classesData?.data || (Array.isArray(classesData) ? classesData : []);
 
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold text-gray-900">My Joined Classes</h1>
-        <Button onClick={() => setIsJoinOpen(true)}>Join Class</Button>
+    <div className="space-y-6 max-w-7xl mx-auto p-2">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-5 border border-gray-200 rounded-xl shadow-sm">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900">📚 Danh sách Lớp học đã tham gia</h1>
+          <p className="text-xs text-gray-500 mt-1">Quản lý danh sách các lớp học và nhóm học tập của bạn</p>
+        </div>
+        <Button onClick={() => setIsJoinOpen(true)} className="bg-blue-600 hover:bg-blue-700 text-white font-medium text-xs">
+          🔑 Tham gia Lớp mới (Mã Invite)
+        </Button>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {classesData?.data?.map((cls: any) => (
-          <div key={cls.id} className="bg-white rounded-lg shadow border border-gray-200 p-6">
-            <div className="flex justify-between items-start mb-4">
-              <div>
-                <h3 className="text-lg font-semibold text-gray-900">
-                  <Link to={`/student/classes/${cls.id}`} className="hover:text-blue-600">
+        {classes.map((cls: any) => (
+          <div key={cls.id} className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 flex flex-col justify-between hover:border-blue-300 transition-colors">
+            <div>
+              <div className="flex justify-between items-start mb-3">
+                <div>
+                  <h3 className="text-base font-bold text-gray-900">
                     {cls.course_code} - {cls.name}
-                  </Link>
-                </h3>
-                <p className="text-sm text-gray-500">{cls.course_name}</p>
+                  </h3>
+                  <p className="text-xs text-gray-500 mt-0.5">{cls.course_name}</p>
+                </div>
+                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-blue-50 text-blue-700 border border-blue-200">
+                  {cls.semester || 'Học kỳ chính'}
+                </span>
               </div>
-              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                {cls.semester || 'No Semester'}
-              </span>
             </div>
             
-            <div className="mt-4 pt-4 border-t border-gray-100 flex items-center justify-between gap-2 flex-wrap">
-              <Link to={`/student/assignments/a-101/workspace`}>
-                <Button size="sm" variant="outline" className="text-xs">
-                  🚀 Không Gian Nhóm
-                </Button>
-              </Link>
-              <Link to={`/student/assignments/a-101/submit`}>
-                <Button size="sm" className="bg-blue-600 hover:bg-blue-700 text-white text-xs">
-                  📥 Nộp Bài Tập
-                </Button>
-              </Link>
+            <div className="mt-6 pt-4 border-t border-gray-100 flex items-center justify-between gap-2">
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => setSelectedGroupClass({ id: cls.id, name: cls.name })}
+                className="text-xs text-amber-800 border-amber-300 hover:bg-amber-50"
+              >
+                🚀 Danh sách Nhóm
+              </Button>
+
+              <Button
+                size="sm"
+                onClick={() => navigate('/student/dashboard')}
+                className="bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold"
+              >
+                📥 Xem Bài Tập →
+              </Button>
             </div>
           </div>
         ))}
-        {classesData?.data?.length === 0 && (
+
+        {classes.length === 0 && (
           <div className="col-span-full">
             <EmptyState
               type="no_data"
-              title="No classes joined"
-              description="You haven't joined any classes yet. Click 'Join Class' and enter your invite code."
-              actionLabel="Join Class"
+              title="Chưa tham gia lớp học nào"
+              description="Bạn chưa đăng ký vào lớp học nào. Bấm 'Tham gia Lớp mới' và nhập mã mời từ Giảng viên."
+              actionLabel="Tham gia Lớp học"
               onAction={() => setIsJoinOpen(true)}
             />
           </div>
@@ -74,6 +103,13 @@ export const StudentClassesPage: React.FC = () => {
       )}
 
       <JoinClassDialog open={isJoinOpen} onClose={() => setIsJoinOpen(false)} />
+      
+      <JoinGroupModal
+        open={Boolean(selectedGroupClass)}
+        onClose={() => setSelectedGroupClass(null)}
+        classId={selectedGroupClass?.id}
+        className={selectedGroupClass?.name}
+      />
     </div>
   );
 };

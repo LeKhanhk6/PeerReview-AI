@@ -90,7 +90,10 @@ export const workspaceHandlers = [
     if (id === 'error-500') {
       return HttpResponse.json({ success: false, message: 'Internal Server Error' }, { status: 500 });
     }
-    return HttpResponse.json({ success: true, data: mockTasks });
+    if (id === 'no-group' || id === 'unassigned') {
+      return HttpResponse.json({ success: true, hasGroup: false, data: [] });
+    }
+    return HttpResponse.json({ success: true, hasGroup: true, data: mockTasks });
   }),
 
   http.post('/api/workspace/groups/:id/tasks', async ({ request, params }) => {
@@ -165,8 +168,12 @@ export const workspaceHandlers = [
   }),
 
   // Discussions
-  http.get('/api/workspace/groups/:id/discussions', () => {
-    return HttpResponse.json({ success: true, data: mockDiscussions });
+  http.get('/api/workspace/groups/:id/discussions', ({ params }) => {
+    const { id } = params;
+    if (id === 'no-group' || id === 'unassigned') {
+      return HttpResponse.json({ success: true, hasGroup: false, data: [] });
+    }
+    return HttpResponse.json({ success: true, hasGroup: true, data: mockDiscussions });
   }),
 
   http.post('/api/workspace/groups/:id/discussions', async ({ request, params }) => {
@@ -195,13 +202,21 @@ export const workspaceHandlers = [
   }),
 
   // Activities
-  http.get('/api/workspace/groups/:id/activities', () => {
-    return HttpResponse.json({ success: true, data: mockActivities });
+  http.get('/api/workspace/groups/:id/activities', ({ params }) => {
+    const { id } = params;
+    if (id === 'no-group' || id === 'unassigned') {
+      return HttpResponse.json({ success: true, hasGroup: false, data: [] });
+    }
+    return HttpResponse.json({ success: true, hasGroup: true, data: mockActivities });
   }),
 
   // Group Files
-  http.get('/api/workspace/groups/:id/files', () => {
-    return HttpResponse.json({ success: true, data: mockFiles });
+  http.get('/api/workspace/groups/:id/files', ({ params }) => {
+    const { id } = params;
+    if (id === 'no-group' || id === 'unassigned') {
+      return HttpResponse.json({ success: true, hasGroup: false, data: [] });
+    }
+    return HttpResponse.json({ success: true, hasGroup: true, data: mockFiles });
   }),
 
   http.post('/api/workspace/groups/:id/files', async ({ request, params }) => {

@@ -12,7 +12,7 @@ const registerSchema = z.object({
   full_name: z.string().min(2, 'Vui lòng nhập họ và tên (tối thiểu 2 ký tự)').max(255),
   email: z.string().email('Địa chỉ email không hợp lệ'),
   student_id: z.string().min(2, 'Mã số sinh viên (MSSV) là bắt buộc (tối thiểu 2 ký tự)').max(50),
-  password: z.string().min(6, 'Mật khẩu phải có ít nhất 6 ký tự'),
+  password: z.string().min(8, 'Mật khẩu phải có ít nhất 8 ký tự'),
   confirm_password: z.string()
 }).refine((data) => data.password === data.confirm_password, {
   message: "Mật khẩu xác nhận không khớp",

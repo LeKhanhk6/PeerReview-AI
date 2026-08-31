@@ -44,7 +44,7 @@ const registerSchema = {
     body: z.object({
         full_name: z.string().min(2).max(255).trim(),
         email: z.string().email().trim().toLowerCase(),
-        password: z.string().min(6).trim(),
+        password: z.string().min(8, 'Password must be at least 8 characters').trim(),
         student_id: z.string().min(2, 'Student ID (MSSV) must be at least 2 characters').max(50).trim()
     })
 };
@@ -65,7 +65,7 @@ const forgotPasswordSchema = {
 const resetPasswordSchema = {
     body: z.object({
         token: z.string().min(10).trim(),
-        password: z.string().min(6).trim(),
+        password: z.string().min(8, 'Password must be at least 8 characters').trim(),
     })
 };
 

@@ -37,9 +37,11 @@ export const StudentSubmissionPage: React.FC = () => {
             >
               ← Quay lại danh sách lớp
             </Button>
-            <span className="text-xs font-bold text-blue-700 bg-blue-50 px-2.5 py-0.5 rounded-full border border-blue-200">
-              📌 Lớp Kiến Trúc Phần Mềm (CS301)
-            </span>
+            {assignment?.class_name && (
+              <span className="text-xs font-bold text-blue-700 bg-blue-50 px-2.5 py-0.5 rounded-full border border-blue-200">
+                📌 Lớp {assignment.class_name} {assignment.course_code ? `(${assignment.course_code})` : ''}
+              </span>
+            )}
           </div>
 
           <h1 className="text-2xl font-bold text-gray-900 tracking-tight mt-2">

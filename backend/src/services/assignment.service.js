@@ -263,17 +263,25 @@ export const getAssignmentBasic = async (id, user) => {
     const values = [id];
 
     if (user.role === 'ADMIN') {
-        query = 'SELECT * FROM assignments WHERE id = $1';
+        query = `
+            SELECT a.*, c.name as class_name, c.course_code 
+            FROM assignments a 
+            JOIN classes c ON a.class_id = c.id 
+            WHERE a.id = $1
+        `;
     } else if (user.role === 'TEACHER') {
         query = `
-            SELECT a.* FROM assignments a 
+            SELECT a.*, c.name as class_name, c.course_code 
+            FROM assignments a 
             JOIN classes c ON a.class_id = c.id 
             WHERE a.id = $1 AND c.teacher_id = $2
         `;
         values.push(user.userId);
     } else if (user.role === 'STUDENT') {
         query = `
-            SELECT DISTINCT a.* FROM assignments a 
+            SELECT DISTINCT a.*, c.name as class_name, c.course_code 
+            FROM assignments a 
+            JOIN classes c ON a.class_id = c.id 
             JOIN groups g ON a.class_id = g.class_id 
             JOIN group_members gm ON g.id = gm.group_id 
             WHERE a.id = $1 AND gm.user_id = $2
@@ -371,6 +379,8 @@ export const getAssignmentDetailById = async (id, user) => {
         return {
             id: assignment.id,
             class_id: assignment.class_id,
+            class_name: assignment.class_name,
+            course_code: assignment.course_code,
             title: assignment.title,
             description: assignment.description,
             requirements: assignment.requirements,

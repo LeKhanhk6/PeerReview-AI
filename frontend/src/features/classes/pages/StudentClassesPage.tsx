@@ -42,42 +42,71 @@ export const StudentClassesPage: React.FC = () => {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {classes.map((cls: any) => (
-          <div key={cls.id} className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 flex flex-col justify-between hover:border-blue-300 transition-colors">
-            <div>
-              <div className="flex justify-between items-start mb-3">
-                <div>
-                  <h3 className="text-base font-bold text-gray-900">
-                    {cls.course_code} - {cls.name}
-                  </h3>
-                  <p className="text-xs text-gray-500 mt-0.5">{cls.course_name}</p>
+        {classes.map((cls: any) => {
+          const hasGroup = Boolean(cls.group_name || cls.group_id);
+
+          return (
+            <div key={cls.id} className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 flex flex-col justify-between hover:border-blue-300 transition-colors">
+              <div>
+                <div className="flex justify-between items-start mb-3">
+                  <div>
+                    <h3 className="text-base font-bold text-gray-900">
+                      {cls.course_code} - {cls.name}
+                    </h3>
+                    <p className="text-xs text-gray-500 mt-0.5">{cls.course_name}</p>
+                  </div>
+                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-blue-50 text-blue-700 border border-blue-200">
+                    {cls.semester || 'Học kỳ chính'}
+                  </span>
                 </div>
-                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-blue-50 text-blue-700 border border-blue-200">
-                  {cls.semester || 'Học kỳ chính'}
-                </span>
+
+                {/* Group Status Badge */}
+                <div className="mt-3 flex items-center gap-2">
+                  <span className="text-xs text-gray-500 font-medium">Trạng thái nhóm:</span>
+                  {hasGroup ? (
+                    <span className="text-xs font-bold text-emerald-800 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200">
+                      🟢 {cls.group_name || 'Đã vào nhóm'}
+                    </span>
+                  ) : (
+                    <span className="text-xs font-bold text-amber-800 bg-amber-100 px-2.5 py-0.5 rounded-full border border-amber-300">
+                      🟡 Chưa có nhóm
+                    </span>
+                  )}
+                </div>
+              </div>
+              
+              <div className="mt-6 pt-4 border-t border-gray-100 flex items-center justify-between gap-2">
+                {hasGroup ? (
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => navigate(`/student/assignments/${cls.group_id}/workspace`)}
+                    className="text-xs text-emerald-800 border-emerald-300 hover:bg-emerald-50 font-semibold"
+                  >
+                    🚀 Không gian Nhóm
+                  </Button>
+                ) : (
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => setSelectedGroupClass({ id: cls.id, name: cls.name })}
+                    className="text-xs text-amber-800 border-amber-300 hover:bg-amber-50 font-semibold"
+                  >
+                    🚀 Tham gia Nhóm
+                  </Button>
+                )}
+
+                <Button
+                  size="sm"
+                  onClick={() => navigate('/student/dashboard')}
+                  className="bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold"
+                >
+                  📥 Xem Bài Tập →
+                </Button>
               </div>
             </div>
-            
-            <div className="mt-6 pt-4 border-t border-gray-100 flex items-center justify-between gap-2">
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={() => setSelectedGroupClass({ id: cls.id, name: cls.name })}
-                className="text-xs text-amber-800 border-amber-300 hover:bg-amber-50"
-              >
-                🚀 Danh sách Nhóm
-              </Button>
-
-              <Button
-                size="sm"
-                onClick={() => navigate('/student/dashboard')}
-                className="bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold"
-              >
-                📥 Xem Bài Tập →
-              </Button>
-            </div>
-          </div>
-        ))}
+          );
+        })}
 
         {classes.length === 0 && (
           <div className="col-span-full">

@@ -52,9 +52,8 @@ export const getStudentDashboardData = async (userId, limit, offset, sortColumn,
         const countQuery = `
             SELECT COUNT(DISTINCT a.id) as total
             FROM assignments a
-            JOIN groups g ON g.class_id = a.class_id
-            JOIN group_members gm ON gm.group_id = g.id
-            WHERE gm.user_id = $1
+            JOIN class_members cm ON cm.class_id = a.class_id
+            WHERE cm.user_id = $1
         `;
         const countResult = await pool.query(countQuery, [userId]);
         const total = parseInt(countResult.rows[0].total, 10);
@@ -73,6 +72,7 @@ export const getStudentDashboardData = async (userId, limit, offset, sortColumn,
             WITH DashboardData AS (
                 SELECT DISTINCT ON (a.id)
                     a.id as assignment_id,
+                    a.class_id,
                     a.title,
                     a.deadline,
                     a.created_at as assignment_created_at,
@@ -86,8 +86,9 @@ export const getStudentDashboardData = async (userId, limit, offset, sortColumn,
                     ra.is_review_completed,
                     ra.review_assignment_id
                 FROM assignments a
-                JOIN groups g ON g.class_id = a.class_id
-                JOIN group_members gm ON gm.group_id = g.id
+                JOIN class_members cm ON cm.class_id = a.class_id AND cm.user_id = $1
+                LEFT JOIN group_members gm ON gm.user_id = $1
+                LEFT JOIN groups g ON g.id = gm.group_id AND g.class_id = a.class_id
                 LEFT JOIN submissions s ON s.assignment_id = a.id AND s.group_id = g.id
                 LEFT JOIN LATERAL (
                     SELECT id, created_at
@@ -98,21 +99,21 @@ export const getStudentDashboardData = async (userId, limit, offset, sortColumn,
                 ) sv ON true
                 LEFT JOIN (
                     SELECT 
-                    submission_id, 
-                    COALESCE(bool_and(status = 'COMPLETED'), false) as is_review_completed,
-                    MAX(id::text) as review_assignment_id
-                FROM review_assignments
-                GROUP BY submission_id
-            ) ra ON ra.submission_id = s.id
-            WHERE gm.user_id = $1
-            ORDER BY a.id
-        )
-        SELECT * FROM DashboardData
-        ORDER BY ${safeSortColumn} ${safeSortOrder}
-        LIMIT $2 OFFSET $3
-    `;
+                        submission_id, 
+                        COALESCE(bool_and(status = 'COMPLETED'), false) as is_review_completed,
+                        MAX(id::text) as review_assignment_id
+                    FROM review_assignments
+                    GROUP BY submission_id
+                ) ra ON ra.submission_id = s.id
+                WHERE cm.user_id = $1
+                ORDER BY a.id, (g.id IS NOT NULL) DESC
+            )
+            SELECT * FROM DashboardData
+            ORDER BY ${safeSortColumn} ${safeSortOrder}
+            LIMIT $2 OFFSET $3
+        `;
 
-    const result = await pool.query(sortedQuery, [userId, limit, offset]);
+        const result = await pool.query(sortedQuery, [userId, limit, offset]);
     logger.info({ event: 'dashboard_query_end', userId });
     const now = new Date();
 

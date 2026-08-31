@@ -116,7 +116,7 @@ export const RegisterPage: React.FC = () => {
 
             <div>
               <label htmlFor="student_id" className="block text-sm font-medium text-gray-700">
-                Mã số sinh viên (MSSV) <span className="text-red-500">*</span>
+                Mã số sinh viên (MSSV)
               </label>
               <div className="mt-1">
                 <input

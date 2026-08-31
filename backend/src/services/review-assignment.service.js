@@ -31,11 +31,25 @@ const validateId = (id, fieldName = 'ID') => {
 const REVIEWS_PER_GROUP = 2;
 
 /**
+ * Converts any string or numeric seed into a 32-bit integer seed for PRNG
+ */
+function stringToSeed(str) {
+    if (typeof str === 'number') return str;
+    let hash = 0;
+    const s = String(str);
+    for (let i = 0; i < s.length; i++) {
+        hash = (Math.imul(31, hash) + s.charCodeAt(i)) | 0;
+    }
+    return hash;
+}
+
+/**
  * Mulberry32 PRNG for deterministic random generation
  */
 function mulberry32(a) {
+    let seed = stringToSeed(a);
     return function() {
-      var t = a += 0x6D2B79F5;
+      var t = seed += 0x6D2B79F5;
       t = Math.imul(t ^ (t >>> 15), t | 1);
       t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
       return ((t ^ (t >>> 14)) >>> 0) / 4294967296;

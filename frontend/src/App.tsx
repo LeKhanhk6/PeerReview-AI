@@ -97,7 +97,6 @@ function App() {
             <Route path="assignments/:assignmentId/submissions" element={<TeacherSubmissionsMonitorPage />} />
             <Route path="assignments/:assignmentId/synthesis" element={<TeacherReviewSynthesisPage />} />
             <Route path="analytics" element={<TeacherAnalyticsDashboardPage />} />
-            <Route path="submissions" element={<div>Teacher Submissions</div>} />
             <Route path="profile" element={<ProfilePage />} />
             <Route index element={<Navigate to="dashboard" replace />} />
           </Route>

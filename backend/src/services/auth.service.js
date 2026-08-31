@@ -21,7 +21,7 @@ const getStudentRoleId = async () => {
     return cachedStudentRoleId;
 };
 
-export const registerUser = async (fullName, email, password) => {
+export const registerUser = async (fullName, email, password, studentId = null) => {
     // 1. Mã hoá mật khẩu
     const passwordHash = await bcrypt.hash(password, 10);
     
@@ -30,17 +30,23 @@ export const registerUser = async (fullName, email, password) => {
         
         // 2. Chèn vào DB (phòng tránh race condition, bỏ qua truy vấn SELECT trước khi INSERT)
         const query = `
-            INSERT INTO users (full_name, email, password_hash, role_id)
-            VALUES ($1, $2, $3, $4)
-            RETURNING id, email, created_at, (SELECT name FROM roles WHERE id = $4) as role
+            INSERT INTO users (full_name, email, password_hash, role_id, student_id)
+            VALUES ($1, $2, $3, $4, $5)
+            RETURNING id, email, full_name, student_id, created_at, (SELECT name FROM roles WHERE id = $4) as role
         `;
         
-        const result = await pool.query(query, [fullName, email, passwordHash, studentRoleId]);
+        const result = await pool.query(query, [
+            fullName,
+            email,
+            passwordHash,
+            studentRoleId,
+            studentId ? studentId.trim() : null
+        ]);
         return result.rows[0];
     } catch (err) {
         // Handle postgres unique violation error
         if (err instanceof AppError) throw err;
-        throw mapDbError(err, err.code === '23505' ? 'Email already exists' : null);
+        throw mapDbError(err, err.code === '23505' ? 'Email or Student ID already exists' : null);
     }
 };
 

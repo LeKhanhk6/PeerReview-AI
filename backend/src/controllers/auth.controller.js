@@ -4,9 +4,9 @@ import { AppError } from '../utils/AppError.js';
 
 export const register = async (req, res, next) => {
     try {
-        const { full_name, email, password } = req.body;
+        const { full_name, email, password, student_id } = req.body;
 
-        const user = await authService.registerUser(full_name, email, password);
+        const user = await authService.registerUser(full_name, email, password, student_id);
 
         console.info('User registered', { email: user.email, userId: user.id });
 
@@ -14,6 +14,7 @@ export const register = async (req, res, next) => {
             user: {
                 id: user.id,
                 email: user.email,
+                student_id: user.student_id,
                 role: user.role,
                 created_at: user.created_at
             }

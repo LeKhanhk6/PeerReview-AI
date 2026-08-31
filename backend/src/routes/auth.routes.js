@@ -44,7 +44,8 @@ const registerSchema = {
     body: z.object({
         full_name: z.string().min(2).max(255).trim(),
         email: z.string().email().trim().toLowerCase(),
-        password: z.string().min(6).trim()
+        password: z.string().min(6).trim(),
+        student_id: z.string().min(2).max(50).trim().optional()
     })
 };
 

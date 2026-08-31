@@ -228,7 +228,7 @@ describe('auth.service', () => {
             );
             expect(poolMock.query).toHaveBeenNthCalledWith(2, 
                 expect.stringContaining("INSERT INTO users"), 
-                [scenario.full_name, scenario.email, 'hashed_pw', scenario.role_id]
+                [scenario.full_name, scenario.email, 'hashed_pw', scenario.role_id, null]
             );
         });
 
@@ -245,7 +245,7 @@ describe('auth.service', () => {
 
             await expect(registerUser('Name', 'dup@example.com', 'pass'))
                 .rejects
-                .toThrow(new AppError('Email already exists', 400));
+                .toThrow(new AppError('Email or Student ID already exists', 400));
         });
 
         it('should throw and not swallow error if INSERT fails for non-unique reason', async () => {

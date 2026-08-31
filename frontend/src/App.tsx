@@ -14,11 +14,13 @@ import { TeacherLayout } from './components/layout/TeacherLayout';
 import { AdminLayout } from './components/layout/AdminLayout';
 import { TeacherClassesPage } from './features/classes/pages/TeacherClassesPage';
 import { TeacherClassDetailPage } from './features/classes/pages/TeacherClassDetailPage';
+import { StudentDashboardPage } from './features/student-dashboard/pages/StudentDashboardPage';
 import { StudentClassesPage } from './features/classes/pages/StudentClassesPage';
 import { TeacherAssignmentsPage } from './features/assignment/pages/TeacherAssignmentsPage';
 import { CreateAssignmentPage } from './features/assignment/pages/CreateAssignmentPage';
 import { EditAssignmentPage } from './features/assignment/pages/EditAssignmentPage';
 import { TeacherAnalyticsDashboardPage } from './features/analytics/pages/TeacherAnalyticsDashboardPage';
+import { TeacherDashboardPage } from './features/analytics/pages/TeacherDashboardPage';
 import { TeacherReviewSynthesisPage } from './features/synthesis/pages/TeacherReviewSynthesisPage';
 import { StudentGroupWorkspacePage } from './features/workspace/pages/StudentGroupWorkspacePage';
 import { StudentSubmissionPage } from './features/submission/pages/StudentSubmissionPage';
@@ -59,7 +61,7 @@ function App() {
               </ProtectedRoute>
             } 
           >
-            <Route path="dashboard" element={<div>Student Dashboard</div>} />
+            <Route path="dashboard" element={<StudentDashboardPage />} />
             <Route path="classes" element={<StudentClassesPage />} />
             <Route path="assignments" element={<div>Student Assignments</div>} />
             <Route path="assignments/:assignmentId/workspace" element={<StudentGroupWorkspacePage />} />
@@ -83,7 +85,7 @@ function App() {
               </ProtectedRoute>
             } 
           >
-            <Route path="dashboard" element={<div>Teacher Dashboard</div>} />
+            <Route path="dashboard" element={<TeacherDashboardPage />} />
             <Route path="classes" element={<TeacherClassesPage />} />
             <Route path="classes/:id" element={<TeacherClassDetailPage />} />
             <Route path="assignments" element={<TeacherAssignmentsPage />} />

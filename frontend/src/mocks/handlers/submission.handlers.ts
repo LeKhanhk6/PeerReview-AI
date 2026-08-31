@@ -88,6 +88,52 @@ export const submissionHandlers = [
     return HttpResponse.json({ success: true, data: newSubmission });
   }),
 
+  // GET /api/submissions/me/dashboard
+  http.get('/api/submissions/me/dashboard', () => {
+    return HttpResponse.json({
+      success: true,
+      data: {
+        rows: [
+          {
+            assignment_id: 'a-101',
+            title: 'Dự án báo cáo cuối kỳ Phân tích dữ liệu lớn',
+            deadline: new Date(Date.now() + 2 * 86400000).toISOString(), // 2 days left
+            group_id: 'g-101',
+            group_name: 'Nhóm 4 - Data Science',
+            is_late: false,
+            days_left: 2,
+            submission: {
+              id: 'sub-501',
+              status: 'IN_PROGRESS',
+              submitted_at: undefined,
+            },
+            review: {
+              status: 'UNDER_REVIEW',
+            },
+          },
+          {
+            assignment_id: 'a-102',
+            title: 'Thiết kế hệ thống cơ sở dữ liệu phân tán',
+            deadline: new Date(Date.now() + 10 * 86400000).toISOString(), // 10 days left
+            group_id: 'g-102',
+            group_name: 'Nhóm 2 - Software Architecture',
+            is_late: false,
+            days_left: 10,
+            submission: {
+              id: 'sub-502',
+              status: 'SUBMITTED',
+              submitted_at: '2026-08-28T14:00:00Z',
+            },
+            review: {
+              status: 'REVIEWED',
+            },
+          },
+        ],
+        total: 2,
+      },
+    });
+  }),
+
   // GET /api/submissions/assignments/:assignmentId/feedback
   http.get('/api/submissions/assignments/:assignmentId/feedback', () => {
     return HttpResponse.json({ success: true, data: mockSubmissionFeedback });

@@ -41,10 +41,18 @@
 - [x] **Files sửa**: `frontend/src/features/auth/pages/RegisterPage.tsx`
 - [x] **DoD Task 02**: `npx tsc --noEmit` pass · `npm run build` pass (462ms) · Đủ 3 states (Normal/Loading/Error Toast). (Commit: `a3e1798`)
 
-### 🟢 Task 03: Tích hợp Hộp thoại Quên Mật Khẩu (ForgotPasswordModal)
-- [x] **Nội dung**: Tái sử dụng endpoint `POST /api/auth/forgot-password` từ 09.0, xây dựng `ForgotPasswordModal.tsx` theo chuẩn Design System v2 token và tích hợp trực tiếp vào `LoginPage.tsx`.
-- [x] **Files sửa/tạo**: `frontend/src/features/auth/components/ForgotPasswordModal.tsx`, `frontend/src/features/auth/pages/LoginPage.tsx`, `frontend/src/features/auth/api/auth.api.ts`
-- [x] **DoD Task 03**: `npx tsc --noEmit` pass · `npm run build` pass (414ms) · Đủ 3 states (Normal/Loading/Error Toast). (Commit: `b5b199f`)
+### 🟢 Task 01b: Nâng cấp Bố cục `LoginPage.tsx` sang dạng 2 Cột Split-Screen (Modern UI)
+- [ ] **Phân tích điều chỉnh theo dự án**:
+  - **Bố cục tổng thể**: Container `bg-white rounded-2xl shadow-xl overflow-hidden max-w-5xl` căn giữa trên nền `bg-slate-50 min-h-screen`. Responsive: Mobile tự ẩn panel trái, tập trung 100% vào Form Đăng nhập.
+  - **Cột TRÁI (~50%, chỉ hiển thị screen $\ge$ md)**: Panel thương hiệu với background gradient `bg-gradient-to-br from-brand-primary via-blue-700 to-indigo-900`, vẽ SVG Pattern inline minh họa học thuật & peer-review (tài liệu, tương tác nhóm, AI mentor). Overlay tiêu đề tiếng Việt: *"Đánh giá Học thuật Thông minh & Đổi mới"* + 2 dòng mô tả từ `authMessages`.
+  - **Cột PHẢI (~50%)**:
+    - Header: *"Chào mừng trở lại"*, Subtext: *"Đăng nhập để tiếp tục công việc của bạn."*
+    - Inputs: Icon `Mail` (trái ô email), Icon `Lock` (trái ô mật khẩu) & Nút `Eye / EyeOff` toggle ẩn/hiện mật khẩu (phải ô password) từ `lucide-react`.
+    - Controls: Checkbox *"Ghi nhớ đăng nhập"* (Lưu email vào `localStorage`) + Liên kết *"Quên mật khẩu?"* (Mở `ForgotPasswordModal`).
+    - Nút Đăng nhập Full-width: `bg-brand-primary hover:bg-brand-hover text-white font-bold rounded-xl py-3`.
+    - Bỏ khối nút Google/Facebook (Out-of-Scope SSO Post-MVP), thay bằng đường kẻ phân cách nhẹ + Liên kết *"Chưa có tài khoản? Đăng ký ngay"*.
+- [ ] **Files sửa**: `frontend/src/features/auth/pages/LoginPage.tsx`, `frontend/src/constants/messages/auth.ts`
+- [ ] **DoD Task 01b**: `npx tsc --noEmit` 0 lỗi · `npm run build` pass dưới 1s · 100% token Design System v2 · Đủ 3 states biên (Normal/Loading/Error Toast) · Ghi nhớ email hoạt động chuẩn.
 
 ---
 

@@ -66,7 +66,7 @@ export const TeacherReviewSynthesisPage: React.FC = () => {
     return (
       <div className="max-w-4xl mx-auto py-12">
         <EmptyState
-          type="forbidden"
+          type="no_permission"
           title={synthesisMessages.errors.forbidden403Title}
           description={synthesisMessages.errors.forbidden403Desc}
           actionLabel={synthesisMessages.errors.backToClasses}

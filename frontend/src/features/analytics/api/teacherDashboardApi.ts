@@ -29,7 +29,7 @@ export interface CollaborationRiskItem {
 }
 
 export const getTeacherClassesApi = async (): Promise<Array<{ id: string; name: string }>> => {
-  const response = await api.get('/classes');
+  const response: any = await api.get('/classes');
   return response.data || response.classes || response || [];
 };
 

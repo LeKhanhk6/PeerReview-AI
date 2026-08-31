@@ -142,7 +142,7 @@ export const TeacherDashboardPage: React.FC = () => {
             className="px-3 py-2 border border-slate-300 rounded-xl text-xs font-medium text-slate-800 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-sm"
           >
             <option value="">{analyticsMessages.filter.allClasses}</option>
-            {classes.map((cls) => (
+            {classes.map((cls: any) => (
               <option key={cls.id} value={cls.id}>
                 {cls.name}
               </option>

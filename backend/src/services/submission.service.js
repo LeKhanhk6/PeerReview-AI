@@ -100,7 +100,7 @@ export const getStudentDashboardData = async (userId, limit, offset, sortColumn,
                     SELECT 
                     submission_id, 
                     COALESCE(bool_and(status = 'COMPLETED'), false) as is_review_completed,
-                    MAX(id) as review_assignment_id
+                    MAX(id::text) as review_assignment_id
                 FROM review_assignments
                 GROUP BY submission_id
             ) ra ON ra.submission_id = s.id

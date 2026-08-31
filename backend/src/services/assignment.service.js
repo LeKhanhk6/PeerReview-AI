@@ -88,9 +88,10 @@ export const getAllAssignments = async (user, classId) => {
                             EXISTS(SELECT 1 FROM rubrics r WHERE r.assignment_id = a.id) as has_rubric 
             FROM assignments a 
             JOIN classes c ON a.class_id = c.id
-            JOIN groups g ON a.class_id = g.class_id 
-            JOIN group_members gm ON g.id = gm.group_id 
-            WHERE gm.user_id = $1
+            LEFT JOIN class_members cm ON cm.class_id = c.id
+            LEFT JOIN groups g ON g.class_id = c.id 
+            LEFT JOIN group_members gm ON gm.group_id = g.id 
+            WHERE (cm.user_id = $1 OR gm.user_id = $1)
         `;
         values.push(user.userId);
         if (classId) {
@@ -126,10 +127,13 @@ export const getAssignmentById = async (id, user) => {
         values.push(user.userId);
     } else if (user.role === 'STUDENT') {
         query = `
-            SELECT DISTINCT a.* FROM assignments a 
-            JOIN groups g ON a.class_id = g.class_id 
-            JOIN group_members gm ON g.id = gm.group_id 
-            WHERE a.id = $1 AND gm.user_id = $2
+            SELECT DISTINCT a.*, c.name as class_name, c.course_code 
+            FROM assignments a 
+            JOIN classes c ON a.class_id = c.id
+            LEFT JOIN class_members cm ON cm.class_id = c.id
+            LEFT JOIN groups g ON g.class_id = c.id 
+            LEFT JOIN group_members gm ON gm.group_id = g.id 
+            WHERE a.id = $1 AND (cm.user_id = $2 OR gm.user_id = $2)
         `;
         values.push(user.userId);
     } else {
@@ -282,9 +286,10 @@ export const getAssignmentBasic = async (id, user) => {
             SELECT DISTINCT a.*, c.name as class_name, c.course_code 
             FROM assignments a 
             JOIN classes c ON a.class_id = c.id 
-            JOIN groups g ON a.class_id = g.class_id 
-            JOIN group_members gm ON g.id = gm.group_id 
-            WHERE a.id = $1 AND gm.user_id = $2
+            LEFT JOIN class_members cm ON cm.class_id = c.id
+            LEFT JOIN groups g ON g.class_id = c.id 
+            LEFT JOIN group_members gm ON gm.group_id = g.id 
+            WHERE a.id = $1 AND (cm.user_id = $2 OR gm.user_id = $2)
         `;
         values.push(user.userId);
     } else {

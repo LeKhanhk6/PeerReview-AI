@@ -123,7 +123,7 @@ export const TeacherDashboardPage: React.FC = () => {
       <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-slate-900 tracking-tight">
-            {analyticsMessages.teacherDashboardTitle} 👋
+            {analyticsMessages.teacherDashboardTitle}, {user?.full_name || 'Giảng viên'} 👋
           </h1>
           <p className="text-sm text-slate-600 mt-1">
             {analyticsMessages.teacherDashboardSubtitle}

@@ -14,7 +14,6 @@ import { useAuthStore } from '@/features/auth/store/authStore';
 
 type WorkspaceTab = 'kanban' | 'discussions' | 'timeline' | 'files';
 
-const UUID_REGEX = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/;
 
 export const StudentGroupWorkspacePage: React.FC = () => {
   const { assignmentId, groupId } = useParams<{ assignmentId?: string; groupId?: string }>();
@@ -23,18 +22,18 @@ export const StudentGroupWorkspacePage: React.FC = () => {
   const { user } = useAuthStore();
   const [activeTab, setActiveTab] = useState<WorkspaceTab>('kanban');
 
-  const isValidUuid = Boolean(targetGroupId && UUID_REGEX.test(targetGroupId));
+  const isValidGroup = Boolean(targetGroupId && targetGroupId !== 'null' && targetGroupId !== 'undefined');
 
   const { data: groupData, isError: isGroupError } = useQuery({
     queryKey: ['group', 'detail', targetGroupId],
     queryFn: () => groupsApi.getGroupDetail(targetGroupId),
-    enabled: isValidUuid,
+    enabled: isValidGroup,
   });
 
   const { data: tasksResult } = useGroupTasks(targetGroupId);
   const hasGroup = tasksResult?.hasGroup !== false && !isGroupError;
 
-  if (!isValidUuid || !hasGroup) {
+  if (!isValidGroup || !hasGroup) {
     return (
       <div className="max-w-4xl mx-auto py-12 p-4 space-y-4">
         <EmptyState

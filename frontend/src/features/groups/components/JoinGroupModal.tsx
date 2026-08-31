@@ -38,6 +38,9 @@ export const JoinGroupModal: React.FC<JoinGroupModalProps> = ({
       toast.success('🎉 Bạn đã tham gia nhóm thành công!');
       queryClient.invalidateQueries({ queryKey: ['student-dashboard-assignments'] });
       queryClient.invalidateQueries({ queryKey: ['class-groups'] });
+      queryClient.invalidateQueries({ queryKey: ['classes'] });
+      queryClient.invalidateQueries({ queryKey: ['user-classes'] });
+      queryClient.invalidateQueries({ queryKey: ['my-classes'] });
       queryClient.invalidateQueries({ queryKey: ['workspace'] });
       if (onSuccess) onSuccess();
       onClose();

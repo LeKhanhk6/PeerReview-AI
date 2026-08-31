@@ -43,7 +43,7 @@ export const StudentClassesPage: React.FC = () => {
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {classes.map((cls: any) => {
-          const hasGroup = Boolean(cls.group_name || cls.group_id);
+          const hasGroup = Boolean((cls.group_name || cls.group_id) && cls.group_id !== 'null' && cls.group_id !== 'undefined');
 
           return (
             <div key={cls.id} className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 flex flex-col justify-between hover:border-blue-300 transition-colors">

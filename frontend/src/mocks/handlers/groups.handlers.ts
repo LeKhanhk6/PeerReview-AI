@@ -85,6 +85,8 @@ export const groupsHandlers = [
       joined_at: new Date().toISOString(),
     });
 
+    sessionStorage.setItem('MSW_GROUPLESS', 'false');
+
     return HttpResponse.json({
       success: true,
       data: {

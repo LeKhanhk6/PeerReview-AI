@@ -104,7 +104,13 @@ export const SubmissionUploadForm: React.FC<SubmissionUploadFormProps> = ({
         setSelectedFile(null);
       } catch (err: any) {
         setHasError(true);
-        toast.error(err.message || submissionMessages.error.submitFailed);
+        const errMsg = err?.message || err?.response?.data?.message || err?.code || '';
+        if (errMsg.includes('MUST_JOIN_GROUP') || err?.status === 409) {
+          setFormError('⚠️ Bạn chưa thuộc về nhóm nào trong lớp học này. Vui lòng tham gia nhóm trước khi nộp bài.');
+          toast.error('Bạn cần tham gia một nhóm trong lớp học trước khi nộp bài.');
+        } else {
+          toast.error(errMsg || submissionMessages.error.submitFailed);
+        }
       } finally {
         setIsUploading(false);
         setUploadProgress(0);

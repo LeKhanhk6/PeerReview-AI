@@ -127,7 +127,7 @@ export const StudentDashboardPage: React.FC = () => {
   // Filter calculations
   const urgentCount = assignments.filter((a) => (a.days_left ?? 999) <= 3).length;
   const pendingReviewCount = assignments.filter((a) => a.review?.status === 'UNDER_REVIEW').length;
-  const grouplessCount = assignments.filter((a) => !a.group_id).length;
+  const grouplessCount = assignments.filter((a) => !a.group_id || a.group_id === 'null' || a.group_id === 'undefined').length;
 
   const filteredAssignments = assignments.filter((item) => {
     if (filterMode === 'URGENT') return (item.days_left ?? 999) <= 3;
@@ -296,7 +296,7 @@ export const StudentDashboardPage: React.FC = () => {
               const daysStatus = calculateDaysLeftStatus(assignment.deadline);
               const subStatus = assignment.submission?.status || 'NOT_STARTED';
               const revStatus = assignment.review?.status || 'NOT_REVIEWED';
-              const hasGroup = Boolean(assignment.group_id);
+              const hasGroup = Boolean(assignment.group_id && assignment.group_id !== 'null' && assignment.group_id !== 'undefined');
 
               return (
                 <div

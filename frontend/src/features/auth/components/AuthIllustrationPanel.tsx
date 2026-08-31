@@ -12,26 +12,34 @@ export const AuthIllustrationPanel: React.FC<AuthIllustrationPanelProps> = ({
   subtitle = authMessages.academicPlatformSubtitle,
 }) => {
   return (
-    <div className="hidden md:flex md:w-1/2 bg-gradient-to-br from-brand-primary via-brand-gradient-mid to-brand-gradient-deep p-10 lg:p-12 flex-col justify-between relative overflow-hidden text-white">
-      {/* Top Brand Tag */}
-      <div className="relative z-10 space-y-2">
-        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-xs font-semibold text-white">
-          <Sparkles className="w-4 h-4 text-amber-300" />
-          <span>{authMessages.title}</span>
+    <div className="hidden md:flex md:w-1/2 bg-gradient-to-br from-brand-primary via-brand-gradient-mid to-brand-gradient-deep p-8 lg:p-10 flex-col justify-between relative overflow-hidden text-white">
+      
+      {/* Top Header with Official Logo */}
+      <div className="relative z-10 space-y-3">
+        <div className="bg-white/95 backdrop-blur-md p-3.5 sm:p-4 rounded-2xl shadow-xl border border-white/30 inline-block max-w-[260px] transform hover:scale-[1.02] transition-transform">
+          <img
+            src="/logo_PeerReview-AI.png"
+            alt="PeerReview-AI Logo"
+            className="h-14 sm:h-16 w-auto object-contain drop-shadow-sm"
+          />
+        </div>
+        <div className="flex items-center gap-2 text-xs font-semibold text-blue-100 bg-white/10 backdrop-blur-md px-3 py-1.5 rounded-full border border-white/15 w-fit">
+          <Sparkles className="w-3.5 h-3.5 text-amber-300 shrink-0" />
+          <span>Đánh giá peer • Học hỏi cùng AI • Vươn xa cùng nhau</span>
         </div>
       </div>
 
-      {/* SVG Inline Academic Peer Review Illustration Pattern */}
-      <div className="relative z-10 my-8 space-y-6">
-        <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/15 space-y-4 shadow-lg">
+      {/* Center Hero Feature Card */}
+      <div className="relative z-10 my-6 space-y-4">
+        <div className="bg-white/10 backdrop-blur-md rounded-2xl p-5 border border-white/15 space-y-3.5 shadow-lg">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center font-bold">
-                <BookOpen className="w-5 h-5 text-white" />
+              <div className="w-9 h-9 rounded-xl bg-white/20 flex items-center justify-center font-bold">
+                <BookOpen className="w-4 h-4 text-white" />
               </div>
               <div>
-                <h3 className="text-sm font-bold text-white">Chấm chéo Ẩn danh 2 chiều</h3>
-                <p className="text-[11px] text-blue-100">Đánh giá khách quan & Công bằng</p>
+                <h3 className="text-xs sm:text-sm font-bold text-white">Chấm chéo Ẩn danh 2 chiều</h3>
+                <p className="text-[10px] sm:text-[11px] text-blue-100">Đánh giá khách quan & Công bằng</p>
               </div>
             </div>
             <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-400/20 text-emerald-200 border border-emerald-400/30">
@@ -41,17 +49,17 @@ export const AuthIllustrationPanel: React.FC<AuthIllustrationPanelProps> = ({
 
           <div className="pt-2 border-t border-white/10 flex items-center justify-between text-xs text-blue-100">
             <div className="flex items-center gap-1.5">
-              <Users className="w-4 h-4" />
+              <Users className="w-3.5 h-3.5" />
               <span>Cố vấn AI Real-time</span>
             </div>
             <div className="flex items-center gap-1.5">
-              <ShieldCheck className="w-4 h-4" />
+              <ShieldCheck className="w-3.5 h-3.5" />
               <span>Bảo mật 100%</span>
             </div>
           </div>
         </div>
 
-        {/* Decorative SVG Shapes */}
+        {/* Decorative Background SVG Pattern */}
         <svg
           className="absolute -top-16 -right-16 w-64 h-64 opacity-20 pointer-events-none"
           viewBox="0 0 200 200"
@@ -64,12 +72,12 @@ export const AuthIllustrationPanel: React.FC<AuthIllustrationPanelProps> = ({
         </svg>
       </div>
 
-      {/* Bottom Overlay Info */}
-      <div className="relative z-10 space-y-2">
-        <h2 className="text-xl lg:text-2xl font-bold tracking-tight text-white leading-snug">
+      {/* Bottom Overlay Title & Subtitle */}
+      <div className="relative z-10 space-y-1.5">
+        <h2 className="text-lg lg:text-xl font-bold tracking-tight text-white leading-snug">
           {title}
         </h2>
-        <p className="text-xs lg:text-sm text-blue-100 leading-relaxed opacity-90">
+        <p className="text-xs text-blue-100 leading-relaxed opacity-90">
           {subtitle}
         </p>
       </div>

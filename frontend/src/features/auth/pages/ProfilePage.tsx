@@ -220,10 +220,8 @@ export const ProfilePage: React.FC = () => {
                 placeholder="https://example.com/avatar.jpg"
                 className="w-full px-3 py-2 border border-slate-300 rounded-xl text-sm text-slate-900 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-sm"
               />
-              <p className="text-[11px] text-slate-500 mt-1 leading-normal">
-                Yêu cầu <strong>Link ảnh trực tiếp HTTPS</strong> (kết thúc bằng .jpg, .png, .webp, ví dụ: <code>https://i.ibb.co/.../image.jpg</code>).
-                <br />
-                <span className="text-amber-600 font-medium">⚠️ Lưu ý: Link xem trang web như <code>https://ibb.co/xKLXmyxZ</code> không phải là link ảnh trực tiếp. Hãy nhấp chuột phải vào hình ảnh chọn "Sao chép địa chỉ hình ảnh".</span>
+              <p className="text-[11px] text-slate-500 mt-1">
+                Yêu cầu URL sử dụng giao thức an toàn HTTPS (https://...)
               </p>
             </div>
 

@@ -9,6 +9,8 @@ import { toast } from 'sonner';
 import { Button } from '@/components/ui/Button';
 import { authMessages } from '@/constants/messages/auth';
 
+import { ForgotPasswordModal } from '../components/ForgotPasswordModal';
+
 const loginSchema = z.object({
   email: z.string().email(authMessages.emailInvalid),
   password: z.string().min(1, authMessages.passwordRequired),
@@ -20,6 +22,7 @@ export const LoginPage: React.FC = () => {
   const navigate = useNavigate();
   const { checkAuth, isAuthenticated, setAuth, user } = useAuthStore();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isForgotOpen, setIsForgotOpen] = useState(false);
 
   React.useEffect(() => {
     if (isAuthenticated && user) {
@@ -130,9 +133,13 @@ export const LoginPage: React.FC = () => {
                 <label htmlFor="password" className="block text-xs font-bold text-slate-700">
                   {authMessages.passwordLabel}
                 </label>
-                <span className="text-xs text-slate-500 font-medium hover:text-brand-primary cursor-not-allowed" title="Vui lòng liên hệ Quản trị viên để đặt lại mật khẩu">
+                <button
+                  type="button"
+                  onClick={() => setIsForgotOpen(true)}
+                  className="text-xs text-brand-primary font-bold hover:underline cursor-pointer"
+                >
                   {authMessages.forgotPassword}
-                </span>
+                </button>
               </div>
               <div className="mt-1">
                 <input
@@ -178,6 +185,12 @@ export const LoginPage: React.FC = () => {
           </div>
         </form>
       </div>
+
+      {/* Forgot Password Modal */}
+      <ForgotPasswordModal
+        open={isForgotOpen}
+        onClose={() => setIsForgotOpen(false)}
+      />
     </div>
   );
 };

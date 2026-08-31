@@ -25,3 +25,10 @@ export const changePasswordApi = async (data: { current_password: string; new_pa
   return api.post('/auth/change-password', data);
 };
 
+export const forgotPasswordApi = async (email: string): Promise<{ message: string }> => {
+  return api.post('/auth/forgot-password', { email });
+};
+
+export const resetPasswordApi = async (data: { token: string; password: string }): Promise<{ message: string }> => {
+  return api.post('/auth/reset-password', data);
+};

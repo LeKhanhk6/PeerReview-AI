@@ -24,3 +24,5 @@
   - Mật khẩu sai -> Trả về lỗi `401 Unauthorized` với message cụ thể (`Mật khẩu hiện tại không đúng`).
   - Mật khẩu mới -> Tối thiểu 8 ký tự, băm bcrypt trước khi lưu DB.
   - Sau khi đổi thành công -> Ghi nhật ký vết hoạt động (Audit log) và đăng xuất khỏi ứng dụng để yêu cầu đăng nhập lại với mật khẩu mới.
+  - 📌 **Ghi chú Nợ kỹ thuật / TODO Post-Pilot**: *Hiện tại đổi mật khẩu đã clear cookie session phiên hiện tại. Để hỗ trợ revoke toàn bộ phiên trên nhiều thiết bị dùng chung (máy công cộng/lab), hệ thống sẽ bổ sung cột `password_changed_at` trong CSDL và kiểm tra `iat < password_changed_at` trong JWT auth middleware.*
+

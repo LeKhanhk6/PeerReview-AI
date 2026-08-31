@@ -10,6 +10,7 @@ import {
   useUpdateSummaryItemMutation,
   useApproveSummaryMutation,
 } from '../hooks/useSynthesis';
+import { useTeacherSubmissionsMonitor } from '@/features/submission/hooks/useSubmission';
 import { SynthesisStatusCard } from '../components/SynthesisStatusCard';
 import { AssignmentSynthesisOverview } from '../components/AssignmentSynthesisOverview';
 import { SummaryItemCard } from '../components/SummaryItemCard';
@@ -22,8 +23,13 @@ export const TeacherReviewSynthesisPage: React.FC = () => {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
 
+  // Queries for real submissions monitor
+  const { data: monitorData } = useTeacherSubmissionsMonitor(assignmentId, 'SUBMITTED');
+  const submittedGroups = monitorData?.groups?.filter((g) => Boolean(g.submission)) || [];
+
   // Active Selected Submission ID synced with URL searchParams
-  const selectedSubmissionId = searchParams.get('submissionId') || 'sub-001';
+  const defaultSubmissionId = submittedGroups[0]?.submission?.id ? String(submittedGroups[0].submission.id) : '';
+  const selectedSubmissionId = searchParams.get('submissionId') || defaultSubmissionId;
 
   const handleSubmissionChange = (submissionId: string) => {
     const params = new URLSearchParams(searchParams);
@@ -35,7 +41,6 @@ export const TeacherReviewSynthesisPage: React.FC = () => {
     setSearchParams(params);
   };
 
-
   // Selected item for Source Review Drawer
   const [activeDrawerItem, setActiveDrawerItem] = useState<SummaryItem | null>(null);
 
@@ -44,7 +49,6 @@ export const TeacherReviewSynthesisPage: React.FC = () => {
     data: synthesisData,
     isLoading: isLoadingSynthesis,
     isError: isErrorSynthesis,
-    error: synthesisError,
     refetch: refetchSynthesis,
   } = useAssignmentSynthesis(assignmentId);
 
@@ -57,24 +61,6 @@ export const TeacherReviewSynthesisPage: React.FC = () => {
 
   const updateItemMutation = useUpdateSummaryItemMutation(selectedSubmissionId);
   const approveMutation = useApproveSummaryMutation(selectedSubmissionId);
-
-  // Check 403 Forbidden error on assignment level
-  const isForbidden =
-    (synthesisError as any)?.status === 403 || (synthesisError as any)?.code === 'FORBIDDEN';
-
-  if (isForbidden) {
-    return (
-      <div className="max-w-4xl mx-auto py-12">
-        <EmptyState
-          type="no_permission"
-          title={synthesisMessages.errors.forbidden403Title}
-          description={synthesisMessages.errors.forbidden403Desc}
-          actionLabel={synthesisMessages.errors.backToClasses}
-          onAction={() => navigate('/teacher/assignments')}
-        />
-      </div>
-    );
-  }
 
   const summaryHeader = summaryResponse?.summary;
   const items = summaryResponse?.items || [];
@@ -141,18 +127,19 @@ export const TeacherReviewSynthesisPage: React.FC = () => {
             <span>📑</span> Chi Tiết Tổng Hợp Theo Bài Nộp
           </h2>
 
-          {/* Submission Selector Dropdown */}
+          {/* Dynamic Submission Selector Dropdown */}
           <div className="w-full md:w-80">
             <select
               value={selectedSubmissionId}
               onChange={(e) => handleSubmissionChange(e.target.value)}
               className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm bg-white font-medium focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
-
-              <option value="sub-001">Bài nộp Nhóm 1 (Mã: sub-001)</option>
-              <option value="sub-002">Bài nộp Nhóm 2 (Mã: sub-002)</option>
-              <option value="sub-003">Bài nộp Nhóm 3 (Mã: sub-003)</option>
-              <option value="not-found-submission-id">Bài nộp chưa tổng hợp (Test 404)</option>
+              <option value="">-- Chọn bài nộp nhóm --</option>
+              {submittedGroups.map((g) => (
+                <option key={g.groupId} value={String(g.submission?.id || g.groupId)}>
+                  {g.groupName} - Bài nộp v{g.submission?.latestVersionNumber || 1}
+                </option>
+              ))}
             </select>
           </div>
         </div>
@@ -175,10 +162,10 @@ export const TeacherReviewSynthesisPage: React.FC = () => {
             <SkeletonCard />
             <SkeletonCard />
           </div>
-        ) : isErrorSummary ? (
+        ) : isErrorSummary || !selectedSubmissionId ? (
           <EmptyState
             type="no_data"
-            title="Chưa tạo bản tổng hợp cho bài nộp này"
+            title="Chưa chọn bài nộp hoặc chưa tạo bản tổng hợp"
             description={
               (summaryError as any)?.message || synthesisMessages.errors.fetchSummaryError
             }

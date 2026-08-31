@@ -1,27 +1,39 @@
 import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
 import { Button } from '@/components/ui/Button';
 import { workspaceMessages } from '@/constants/messages/workspace';
 import { TaskBoard } from '../components/TaskBoard';
 import { DiscussionFeed } from '../components/DiscussionFeed';
 import { ActivityTimeline } from '../components/ActivityTimeline';
 import { GroupFileManager } from '../components/GroupFileManager';
+import { groupsApi } from '@/features/groups/api/groups.api';
+import { useAuthStore } from '@/features/auth/store/authStore';
 
 type WorkspaceTab = 'kanban' | 'discussions' | 'timeline' | 'files';
 
+const UUID_REGEX = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/;
+
 export const StudentGroupWorkspacePage: React.FC = () => {
-  const { groupId = 'g-101' } = useParams<{ groupId: string }>();
+  const { assignmentId, groupId } = useParams<{ assignmentId?: string; groupId?: string }>();
+  const targetGroupId = groupId || assignmentId || '';
   const navigate = useNavigate();
+  const { user } = useAuthStore();
   const [activeTab, setActiveTab] = useState<WorkspaceTab>('kanban');
 
-  // Simulated group info - in real app fetched from group API
-  const groupName = `Nhóm ${groupId}`;
-  const userRole = 'LEADER'; // Simulated role for current student
-  const members = [
-    { id: 'u-1', name: 'Nguyen Van A (Leader)' },
-    { id: 'u-2', name: 'Tran Thi B' },
-    { id: 'u-3', name: 'Le Van C' },
-  ];
+  const isValidUuid = Boolean(targetGroupId && UUID_REGEX.test(targetGroupId));
+
+  const { data: groupData } = useQuery({
+    queryKey: ['group', 'detail', targetGroupId],
+    queryFn: () => groupsApi.getGroupDetail(targetGroupId),
+    enabled: isValidUuid,
+  });
+
+  const group = (groupData as any)?.data || groupData || {};
+  const groupName = group?.name || 'Nhóm làm việc';
+  const isLeader = group?.leader_id === user?.id;
+  const userRole = isLeader ? 'LEADER' : 'MEMBER';
+  const members = group?.members || [];
 
   return (
     <div className="space-y-6 max-w-7xl mx-auto">
@@ -39,7 +51,7 @@ export const StudentGroupWorkspacePage: React.FC = () => {
               ← Quay lại danh sách lớp
             </Button>
             <span className="text-xs font-bold text-blue-700 bg-blue-50 px-2.5 py-0.5 rounded-full border border-blue-200">
-              {userRole === 'LEADER' ? '👑 Trưởng nhóm' : '👤 Thành viên'}
+              {isLeader ? '👑 Trưởng nhóm' : '👤 Thành viên'}
             </span>
           </div>
 
@@ -105,18 +117,18 @@ export const StudentGroupWorkspacePage: React.FC = () => {
       <div>
         {activeTab === 'kanban' && (
           <TaskBoard
-            groupId={groupId}
+            groupId={targetGroupId}
             userRole={userRole}
-            currentUserId="u-1"
+            currentUserId={user?.id || ''}
             members={members}
           />
         )}
 
-        {activeTab === 'discussions' && <DiscussionFeed groupId={groupId} />}
+        {activeTab === 'discussions' && <DiscussionFeed groupId={targetGroupId} />}
 
-        {activeTab === 'timeline' && <ActivityTimeline groupId={groupId} />}
+        {activeTab === 'timeline' && <ActivityTimeline groupId={targetGroupId} />}
 
-        {activeTab === 'files' && <GroupFileManager groupId={groupId} />}
+        {activeTab === 'files' && <GroupFileManager groupId={targetGroupId} />}
       </div>
     </div>
   );

@@ -478,7 +478,7 @@ export const getAssignmentReviewAnalytics = async (currentUser, assignmentId) =>
         FROM rubric_criteria rc
         JOIN rubrics r ON rc.rubric_id = r.id
         WHERE r.assignment_id = $1
-    `, [assignmentId]);
+    `, [validAssignmentId]);
     const totalCriteria = parseInt(criteriaRes.rows[0].total_criteria, 10);
 
     const reviewsRes = await pool.query(`
@@ -493,7 +493,7 @@ export const getAssignmentReviewAnalytics = async (currentUser, assignmentId) =>
         JOIN submissions s ON ra.submission_id = s.id
         LEFT JOIN reviews r ON r.review_assignment_id = ra.id
         WHERE s.assignment_id = $1
-    `, [assignmentId]);
+    `, [validAssignmentId]);
 
     const reviewerMap = new Map();
     reviewsRes.rows.forEach(row => {

@@ -36,8 +36,11 @@ export const LoginPage: React.FC = () => {
     resolver: zodResolver(loginSchema),
   });
 
+  const [apiLockedError, setApiLockedError] = useState(false);
+
   const onSubmit = async (data: LoginFormValues) => {
     setIsSubmitting(true);
+    setApiLockedError(false);
     try {
       const response = await loginApi(data);
       const userObj = response.user;
@@ -56,14 +59,19 @@ export const LoginPage: React.FC = () => {
         navigate(`/${userObj.role.toLowerCase()}/dashboard`, { replace: true });
       }
     } catch (error: any) {
+      const status = error.response?.status || error.status;
       const errorMsg = error.response?.data?.message || error.message || authMessages.loginFailed;
+      
+      if (status === 403 || errorMsg.toLowerCase().includes('lock') || errorMsg.toLowerCase().includes('khóa')) {
+        setApiLockedError(true);
+      }
       toast.error(errorMsg);
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  const isLocked = new URLSearchParams(window.location.search).get('reason') === 'locked';
+  const isLocked = new URLSearchParams(window.location.search).get('reason') === 'locked' || apiLockedError;
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-slate-50 py-12 px-4 sm:px-6 lg:px-8">

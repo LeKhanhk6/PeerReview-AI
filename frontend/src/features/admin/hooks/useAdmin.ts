@@ -39,7 +39,10 @@ export const useUpdateUserRoleMutation = () => {
     onSuccess: () => {
       toast.success(adminMessages.userRoleModal.successToast);
       queryClient.invalidateQueries({ queryKey: ['admin-users'] });
+      queryClient.invalidateQueries({ queryKey: ['admin-audit-logs'] });
       queryClient.invalidateQueries({ queryKey: ADMIN_QUERY_KEYS.overview() });
+      queryClient.invalidateQueries({ queryKey: ['teacher-classes'] });
+      queryClient.invalidateQueries({ queryKey: ['teacher-dashboard-overview'] });
     },
     onError: (error: any) => {
       if (error?.status === 409 || error?.code === 'CONFLICT') {
@@ -65,7 +68,10 @@ export const useUpdateUserStatusMutation = () => {
     onSuccess: () => {
       toast.success(adminMessages.userStatusModal.successToast);
       queryClient.invalidateQueries({ queryKey: ['admin-users'] });
+      queryClient.invalidateQueries({ queryKey: ['admin-audit-logs'] });
       queryClient.invalidateQueries({ queryKey: ADMIN_QUERY_KEYS.overview() });
+      queryClient.invalidateQueries({ queryKey: ['teacher-classes'] });
+      queryClient.invalidateQueries({ queryKey: ['teacher-dashboard-overview'] });
     },
     onError: (error: any) => {
       if (error?.status === 409 || error?.code === 'CONFLICT') {
@@ -124,10 +130,10 @@ export const useUpdateSystemConfigMutation = () => {
       toast.success('Đã cập nhật cấu hình hệ thống thành công!');
       queryClient.invalidateQueries({ queryKey: ADMIN_QUERY_KEYS.systemConfig() });
       queryClient.invalidateQueries({ queryKey: ['admin-audit-logs'] });
+      queryClient.invalidateQueries({ queryKey: ADMIN_QUERY_KEYS.overview() });
     },
     onError: (error: any) => {
       toast.error(error?.message || 'Không thể cập nhật cấu hình hệ thống');
     },
   });
 };
-

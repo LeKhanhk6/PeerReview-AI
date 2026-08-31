@@ -11,6 +11,20 @@ export const classKeys = {
   members: (id: string) => [...classKeys.detail(id), 'members'] as const,
 };
 
+const invalidateAllClassRelatedQueries = (queryClient: any, classId?: string) => {
+  queryClient.invalidateQueries({ queryKey: classKeys.all });
+  queryClient.invalidateQueries({ queryKey: classKeys.lists() });
+  queryClient.invalidateQueries({ queryKey: ['teacher-classes'] });
+  queryClient.invalidateQueries({ queryKey: ['teacher-dashboard-overview'] });
+  queryClient.invalidateQueries({ queryKey: ['admin-dashboard-overview'] });
+  queryClient.invalidateQueries({ queryKey: ['student-dashboard-assignments'] });
+  queryClient.invalidateQueries({ queryKey: ['user-classes'] });
+  queryClient.invalidateQueries({ queryKey: ['my-classes'] });
+  if (classId) {
+    queryClient.invalidateQueries({ queryKey: classKeys.detail(classId) });
+  }
+};
+
 export const useClasses = () => {
   return usePaginatedQuery<{ data: Class[]; total: number; page: number; limit: number; totalPages: number }>(
     classKeys.lists() as unknown as unknown[],
@@ -41,7 +55,7 @@ export const useCreateClass = () => {
   return useMutation({
     mutationFn: (data: CreateClassDTO) => classesApi.create(data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: classKeys.lists() });
+      invalidateAllClassRelatedQueries(queryClient);
     },
   });
 };
@@ -52,8 +66,7 @@ export const useUpdateClass = () => {
   return useMutation({
     mutationFn: ({ id, data }: { id: string; data: UpdateClassDTO }) => classesApi.update(id, data),
     onSuccess: (_, variables) => {
-      queryClient.invalidateQueries({ queryKey: classKeys.lists() });
-      queryClient.invalidateQueries({ queryKey: classKeys.detail(variables.id) });
+      invalidateAllClassRelatedQueries(queryClient, variables.id);
     },
   });
 };
@@ -64,7 +77,7 @@ export const useDeleteClass = () => {
   return useMutation({
     mutationFn: (id: string) => classesApi.delete(id),
     onSuccess: (_, id) => {
-      queryClient.invalidateQueries({ queryKey: classKeys.lists() });
+      invalidateAllClassRelatedQueries(queryClient, id);
       queryClient.removeQueries({ queryKey: classKeys.detail(id) });
     },
   });
@@ -76,7 +89,7 @@ export const useJoinClass = () => {
   return useMutation({
     mutationFn: (invite_code: string) => classesApi.join(invite_code),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: classKeys.lists() });
+      invalidateAllClassRelatedQueries(queryClient);
     },
   });
 };

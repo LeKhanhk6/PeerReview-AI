@@ -42,15 +42,16 @@
 - [x] **DoD Task 02**: `npx tsc --noEmit` pass · `npm run build` pass (462ms) · Đủ 3 states (Normal/Loading/Error Toast). (Commit: `a3e1798`)
 
 ### 🟢 Task 03: Tích hợp Hộp thoại Quên Mật Khẩu (ForgotPasswordModal)
-- [ ] **Nội dung**: Bổ sung Modal Quên mật khẩu gọi API `POST /api/auth/forgot-password` với 3 trạng thái đầy đủ.
-- [ ] **Files sửa/tạo**: `frontend/src/features/auth/components/ForgotPasswordModal.tsx`
-- [ ] **DoD Task 03**: `npx tsc --noEmit` pass · `npm run build` pass.
+- [x] **Nội dung**: Tái sử dụng endpoint `POST /api/auth/forgot-password` từ 09.0, xây dựng `ForgotPasswordModal.tsx` theo chuẩn Design System v2 token và tích hợp trực tiếp vào `LoginPage.tsx`.
+- [x] **Files sửa/tạo**: `frontend/src/features/auth/components/ForgotPasswordModal.tsx`, `frontend/src/features/auth/pages/LoginPage.tsx`, `frontend/src/features/auth/api/auth.api.ts`
+- [x] **DoD Task 03**: `npx tsc --noEmit` pass · `npm run build` pass (414ms) · Đủ 3 states (Normal/Loading/Error Toast). (Commit: `b5b199f`)
 
 ---
 
 ## 5. DoD TỔNG THỂ (DEFINITION OF DONE MÀN AUTH LOGIN)
-- [ ] `npx tsc --noEmit` 0 lỗi.
-- [ ] `npm run build` thành công dưới 1s.
-- [ ] 100% chuỗi hiển thị sử dụng `authMessages` (không hardcode string).
-- [ ] Đủ 3 trạng thái biên: Normal / Loading Spinner / Error Alert & Toast.
-- [ ] Sử dụng 100% `brand-primary` (#0B57D0) — tuyệt đối không dùng alias cũ.
+- [x] `npx tsc --noEmit` 0 lỗi.
+- [x] `npm run build` thành công dưới 1s (414ms).
+- [x] 100% chuỗi hiển thị sử dụng `authMessages` (không hardcode string).
+- [x] Đủ 3 trạng thái biên: Normal / Loading Spinner / Error Alert & Toast.
+- [x] Sử dụng 100% `brand-primary` (#0B57D0) — tuyệt đối không dùng alias cũ.
+

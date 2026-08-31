@@ -100,7 +100,7 @@ export const AuditLogViewer: React.FC<AuditLogViewerProps> = ({
 
                     {/* User Info */}
                     <span className="font-bold text-gray-900">
-                      👤 {log.userName || 'Hệ thống'} ({log.userEmail})
+                      👤 {log.userName || 'Hệ thống'} {log.userEmail ? `(${log.userEmail})` : ''}
                     </span>
                   </div>
 

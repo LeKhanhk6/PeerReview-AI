@@ -87,12 +87,12 @@ export const AdminDashboardPage: React.FC = () => {
             </span>
           </div>
           <p className="text-3xl font-extrabold text-slate-900 tracking-tight">
-            {overview.users.TOTAL}
+            {overview?.users?.TOTAL ?? 0}
           </p>
           <div className="text-xs text-slate-600 pt-2.5 border-t border-slate-100 flex justify-between">
-            <span>📘 SV: <strong>{overview.users.STUDENT}</strong></span>
-            <span>🎓 GV: <strong>{overview.users.TEACHER}</strong></span>
-            <span>👑 AD: <strong>{overview.users.ADMIN}</strong></span>
+            <span>📘 SV: <strong>{overview?.users?.STUDENT ?? 0}</strong></span>
+            <span>🎓 GV: <strong>{overview?.users?.TEACHER ?? 0}</strong></span>
+            <span>👑 AD: <strong>{overview?.users?.ADMIN ?? 0}</strong></span>
           </div>
         </div>
 

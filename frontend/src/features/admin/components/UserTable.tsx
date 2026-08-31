@@ -170,7 +170,11 @@ export const UserTable: React.FC<UserTableProps> = ({
             </thead>
             <tbody className="divide-y divide-gray-100">
               {users.map((user) => {
-                const isSelf = String(user.id) === String(currentLoggedInUser?.id);
+                const isSelf = Boolean(
+                  user.id &&
+                  currentLoggedInUser?.id &&
+                  String(user.id) === String(currentLoggedInUser?.id)
+                );
 
                 return (
                   <tr key={user.id} className="hover:bg-gray-50/80 transition-colors">

@@ -72,6 +72,8 @@ function App() {
             {/* Peer Review Sub-routes */}
             <Route path="reviews" element={<ReviewInboxScreen />} />
             <Route path="reviews/:reviewAssignmentId" element={<ReviewWritingScreen />} />
+            <Route path="assignments/:assignmentId/reviews" element={<ReviewInboxScreen />} />
+            <Route path="assignments/:assignmentId/reviews/:reviewAssignmentId" element={<ReviewWritingScreen />} />
             <Route path="profile" element={<ProfilePage />} />
 
             <Route index element={<Navigate to="dashboard" replace />} />

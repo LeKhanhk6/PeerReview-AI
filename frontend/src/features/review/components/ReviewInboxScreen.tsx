@@ -23,7 +23,7 @@ export const ReviewInboxScreen: React.FC = () => {
       {/* Back Navigation */}
       <div>
         <Link
-          to={`/student/assignments/${assignmentId}`}
+          to={assignmentId ? `/student/assignments/${assignmentId}/submit` : '/student/dashboard'}
           className="inline-flex items-center gap-2 text-sm font-medium text-gray-600 hover:text-gray-900 transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500 rounded-md px-2 py-1"
         >
           <span aria-hidden="true">←</span>

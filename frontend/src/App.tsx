@@ -14,6 +14,7 @@ import { TeacherLayout } from './components/layout/TeacherLayout';
 import { AdminLayout } from './components/layout/AdminLayout';
 import { TeacherClassesPage } from './features/classes/pages/TeacherClassesPage';
 import { TeacherClassDetailPage } from './features/classes/pages/TeacherClassDetailPage';
+import { StudentDashboardPage } from './features/student-dashboard/pages/StudentDashboardPage';
 import { StudentClassesPage } from './features/classes/pages/StudentClassesPage';
 import { TeacherAssignmentsPage } from './features/assignment/pages/TeacherAssignmentsPage';
 import { CreateAssignmentPage } from './features/assignment/pages/CreateAssignmentPage';
@@ -59,7 +60,7 @@ function App() {
               </ProtectedRoute>
             } 
           >
-            <Route path="dashboard" element={<div>Student Dashboard</div>} />
+            <Route path="dashboard" element={<StudentDashboardPage />} />
             <Route path="classes" element={<StudentClassesPage />} />
             <Route path="assignments" element={<div>Student Assignments</div>} />
             <Route path="assignments/:assignmentId/workspace" element={<StudentGroupWorkspacePage />} />

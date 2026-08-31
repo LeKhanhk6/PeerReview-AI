@@ -54,6 +54,21 @@
 - [x] **Files sửa**: `frontend/src/features/auth/pages/LoginPage.tsx`, `frontend/src/constants/messages/auth.ts`, `frontend/src/index.css`
 - [x] **DoD Task 01b**: `npx tsc --noEmit` 0 lỗi · `npm run build` pass (545ms) · 100% token Design System v2 · Đủ 3 states biên (Normal/Loading/Error Toast) · Ghi nhớ email & eye-toggle hoạt động chuẩn. (Commit: `48d6ea4`)
 
+### 🟢 Task 02b: Tái thiết kế `RegisterPage.tsx` sang dạng 2 Cột Split-Screen (Đồng bộ với LoginPage)
+- [ ] **Phân tích điều chỉnh theo dự án & Xử lý 2 bẫy từ Mockup**:
+  - **Tách Component Khung Thương Hiệu (`AuthIllustrationPanel.tsx`)**: Tách panel cột trái dùng chung cho cả `LoginPage.tsx` và `RegisterPage.tsx` để đảm bảo DRY, tái sử dụng SVG Pattern & Gradient.
+  - **Cột TRÁI (~50%, chỉ hiển thị screen $\ge$ md)**: Panel thương hiệu đồng bộ với Login. H1: *"Tạo tài khoản mới"*, Subtitle: *"Tham gia nền tảng đánh giá đồng cấp thông minh bằng AI cho các khóa học đại học."*
+  - **Cột PHẢI (~50%)**: Form Đăng ký tài khoản Sinh viên:
+    - Input Họ và tên: Icon `User` (trái), Placeholder `Trần Hữu P.`.
+    - Input Email: Icon `Mail` (trái), Placeholder `tranhuup@truong.edu.vn`.
+    - Input MSSV: Icon `GraduationCap` / `IdCard` (trái), Placeholder `2026123456`.
+    - Input Mật khẩu: Icon `Lock` (trái) + Nút toggle `Eye / EyeOff` (phải).
+    - Input Xác nhận mật khẩu: Icon `KeyRound` (trái) + Nút toggle `Eye / EyeOff` (phải).
+  - **Bẫy 1 — Bỏ Radio 3 vai trò**: API `POST /api/auth/register` công khai CHỈ gán vai trò `STUDENT` và yêu cầu `student_id` (MSSV). Bỏ radio chọn role, giữ nguyên field MSSV bắt buộc và hiển thị ghi chú: *"💡 Lưu ý: Tài khoản Giảng viên do Quản trị viên cấp. Trang này dành cho Sinh viên đăng ký tài khoản."*
+  - **Bẫy 2 — Bỏ Nút SSO Google/Facebook**: Loại bỏ hoàn toàn khối nút SSO (Post-MVP), thay bằng liên kết *"Đã có tài khoản? Đăng nhập ngay"* sang `/login`.
+- [ ] **Files sửa/tạo**: `frontend/src/features/auth/pages/RegisterPage.tsx`, `frontend/src/features/auth/components/AuthIllustrationPanel.tsx`, `frontend/src/features/auth/pages/LoginPage.tsx`, `frontend/src/constants/messages/auth.ts`
+- [ ] **DoD Task 02b**: `npx tsc --noEmit` 0 lỗi · `npm run build` pass dưới 1s · 100% token Design System v2 · Đủ 3 states biên (Normal/Loading/Error Toast) · Eye-toggles & Validation match password hoạt động chuẩn.
+
 ---
 
 ## 5. DoD TỔNG THỂ (DEFINITION OF DONE MÀN AUTH LOGIN)

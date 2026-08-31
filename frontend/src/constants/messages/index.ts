@@ -9,5 +9,7 @@ export * from './submission';
 export * from './review';
 export * from './synthesis';
 export * from './admin';
+export * from './studentDashboard';
+
 
 

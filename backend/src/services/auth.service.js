@@ -94,7 +94,7 @@ export const loginUser = async (email, password) => {
 
 export const getUserById = async (userId) => {
     const query = `
-        SELECT u.id, u.email, u.full_name, u.student_id, u.avatar_url, r.name as role
+        SELECT u.id, u.email, u.full_name, u.student_id, NULL as avatar_url, r.name as role
         FROM users u
         LEFT JOIN roles r ON u.role_id = r.id
         WHERE u.id = $1
@@ -107,31 +107,19 @@ export const getUserById = async (userId) => {
 };
 
 export const updateUserProfile = async (userId, payload) => {
-    // Whitelist allowed fields only: full_name, avatar_url
-    const { full_name, avatar_url } = payload || {};
-    
-    if (avatar_url !== undefined && avatar_url !== null && avatar_url.trim() !== '') {
-        const trimmedUrl = avatar_url.trim();
-        if (!trimmedUrl.startsWith('https://')) {
-            throw new AppError('avatar_url must start with https://', 400);
-        }
-        if (trimmedUrl.length > 500) {
-            throw new AppError('avatar_url exceeds maximum length (500 chars)', 400);
-        }
-    }
+    // Whitelist allowed fields only: full_name
+    const { full_name } = payload || {};
 
     const query = `
         UPDATE users
         SET 
             full_name = COALESCE($1, full_name),
-            avatar_url = COALESCE($2, avatar_url),
             updated_at = NOW()
-        WHERE id = $3
+        WHERE id = $2
         RETURNING id
     `;
     const result = await pool.query(query, [
         full_name ? full_name.trim() : null,
-        avatar_url ? avatar_url.trim() : null,
         userId
     ]);
 

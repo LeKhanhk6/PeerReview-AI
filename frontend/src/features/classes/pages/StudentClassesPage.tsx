@@ -37,7 +37,7 @@ export const StudentClassesPage: React.FC = () => {
             </div>
             
             <div className="mt-4 pt-4 border-t border-gray-100 flex items-center justify-between gap-2 flex-wrap">
-              <Link to={`/student/groups/g-101`}>
+              <Link to={`/student/assignments/a-101/workspace`}>
                 <Button size="sm" variant="outline" className="text-xs">
                   🚀 Không Gian Nhóm
                 </Button>

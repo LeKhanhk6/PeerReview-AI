@@ -7,16 +7,19 @@ import { SubmissionUploadForm } from '../components/SubmissionUploadForm';
 import { SubmissionVersionHistory } from '../components/SubmissionVersionHistory';
 import { SubmissionFeedbackPanel } from '../components/SubmissionFeedbackPanel';
 
+import { useAssignmentDetail } from '@/features/assignment/hooks/useAssignments';
+
 export const StudentSubmissionPage: React.FC = () => {
   const { assignmentId = 'a-101' } = useParams<{ assignmentId: string }>();
   const navigate = useNavigate();
 
+  const { data: assignmentData } = useAssignmentDetail(assignmentId);
+  const assignment = (assignmentData as any)?.data || assignmentData || {};
+
   const [urgencyStatus, setUrgencyStatus] = useState<'OPEN' | 'URGENT' | 'EXPIRED'>('OPEN');
 
-  // Simulated Assignment details
-  const assignmentTitle = 'Bài Tập Giữa Kỳ - Thiết Kế Kiến Trúc Hệ Thống REST API';
-  // Mock deadline: 3 days from now
-  const deadlineStr = new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toISOString();
+  const assignmentTitle = assignment?.title || 'Bài Tập Giữa Kỳ - Thiết Kế Kiến Trúc Hệ Thống REST API';
+  const deadlineStr = assignment?.deadline || new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toISOString();
 
   return (
     <div className="space-y-6 max-w-5xl mx-auto">

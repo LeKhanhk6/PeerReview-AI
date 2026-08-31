@@ -71,21 +71,26 @@ export const RegisterPage: React.FC = () => {
         
         {/* LEFT COLUMN: Shared Brand Hero Panel (Visible >= md) */}
         <AuthIllustrationPanel
-          title="Tạo tài khoản Sinh viên mới"
-          subtitle="Tham gia nền tảng đánh giá đồng cấp thông minh bằng AI cho các khóa học đại học và cao đẳng."
+          title="Tạo tài khoản mới"
+          subtitle="Tham gia nền tảng đánh giá đồng cấp thông minh bằng AI."
         />
 
         {/* RIGHT COLUMN: Form Panel (~50%) */}
         <div className="w-full md:w-1/2 p-8 lg:p-12 flex flex-col justify-center bg-white">
           <div className="space-y-6">
-            {/* Header */}
-            <div>
-              <h2 className="text-2xl lg:text-3xl font-bold text-slate-900 tracking-tight">
-                {authMessages.registerHeader}
-              </h2>
-              <p className="text-xs sm:text-sm text-slate-600 font-medium mt-1">
-                {authMessages.registerSubheader}
-              </p>
+            {/* Header with Mascot Icon */}
+            <div className="flex items-start justify-between">
+              <div>
+                <h2 className="text-2xl lg:text-3xl font-extrabold text-slate-900 tracking-tight">
+                  {authMessages.registerHeader}
+                </h2>
+                <p className="text-xs sm:text-sm text-slate-600 font-medium mt-1">
+                  {authMessages.registerSubheader}
+                </p>
+              </div>
+              <div className="w-10 h-10 rounded-2xl bg-brand-soft-bg flex items-center justify-center text-xl shadow-xs border border-brand-soft-border shrink-0 ml-2" title="PeerReview AI Mascot">
+                🎨
+              </div>
             </div>
 
             {/* Teacher Registration Note */}

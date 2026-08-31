@@ -101,7 +101,10 @@ export const LoginPage: React.FC = () => {
       <div className="bg-white rounded-2xl shadow-xl overflow-hidden max-w-5xl w-full flex flex-col md:flex-row border border-slate-100/80">
         
         {/* LEFT COLUMN: Shared Brand Hero Panel (Visible >= md) */}
-        <AuthIllustrationPanel />
+        <AuthIllustrationPanel
+          title={authMessages.welcomeBack}
+          subtitle={authMessages.loginPageSubtext}
+        />
 
         {/* RIGHT COLUMN: Form Panel (~50%) */}
         <div className="w-full md:w-1/2 p-8 lg:p-12 flex flex-col justify-center bg-white">
@@ -109,10 +112,10 @@ export const LoginPage: React.FC = () => {
             {/* Header */}
             <div>
               <h2 className="text-2xl lg:text-3xl font-bold text-slate-900 tracking-tight">
-                {authMessages.welcomeBack}
+                {authMessages.loginHeader}
               </h2>
               <p className="text-xs sm:text-sm text-slate-600 font-medium mt-1">
-                {authMessages.loginPageSubtext}
+                {authMessages.loginSubheader}
               </p>
             </div>
 

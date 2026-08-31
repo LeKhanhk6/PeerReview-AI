@@ -150,9 +150,10 @@ export const StudentDashboardPage: React.FC = () => {
     return (
       <div className="p-6 max-w-7xl mx-auto">
         <EmptyState
+          type="error"
           title="Không thể tải dữ liệu Dashboard"
           description="Đã xảy ra lỗi khi kết nối với máy chủ. Vui lòng kiểm tra lại kết nối mạng."
-          actionText="Thử lại"
+          actionLabel="Thử lại"
           onAction={() => refetch()}
         />
       </div>
@@ -256,6 +257,7 @@ export const StudentDashboardPage: React.FC = () => {
         {/* Active Assignments Grid */}
         {filteredAssignments.length === 0 ? (
           <EmptyState
+            type="no_data"
             title={studentDashboardMessages.emptyAssignmentsTitle}
             description={studentDashboardMessages.emptyAssignmentsDesc}
           />

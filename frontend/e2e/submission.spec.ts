@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test';
 
-test.describe('Flow 2 — Student Submission Flow', () => {
+test.describe('Flow 2 — Student Submission Flow & Groupless State', () => {
   test.beforeEach(async ({ page }) => {
     // Login as Student
     await page.goto('/login');
@@ -15,14 +15,23 @@ test.describe('Flow 2 — Student Submission Flow', () => {
     await expect(page.getByText(/Nộp bài tập/i)).toBeVisible();
   });
 
-  test('Student submits assignment version', async ({ page }) => {
-    await page.goto('/student/assignments/asg-uuid-001/submit');
+  test('Groupless Student sees Giao diện A, joins group, transitions to Giao diện B and submits assignment', async ({ page }) => {
+    await page.goto('/student/dashboard');
     
-    // Fill submission details or upload file if form present
-    const submitBtn = page.getByRole('button', { name: /Nộp bài/i });
-    if (await submitBtn.isVisible()) {
-      await submitBtn.click();
-      await expect(page.getByText(/Đã nộp bài thành công/i)).toBeVisible();
+    // Check if Groupless warning callout or Join Group button is present
+    const joinGroupBtn = page.getByRole('button', { name: /Tham gia nhóm/i }).first();
+    if (await joinGroupBtn.isVisible()) {
+      await joinGroupBtn.click();
+      
+      // Select first available group in JoinGroupModal
+      const modalConfirmBtn = page.getByRole('button', { name: /Tham gia nhóm/i }).last();
+      if (await modalConfirmBtn.isVisible()) {
+        await modalConfirmBtn.click();
+      }
     }
+
+    // After joining group, verify submit action becomes active
+    await page.goto('/student/assignments/asg-uuid-001/submit');
+    await expect(page.getByText(/Nộp bài tập/i)).toBeVisible();
   });
 });

@@ -58,10 +58,8 @@ const getSubmissionOrFail = async (currentUser, submissionId) => {
     return row;
 };
 
-export const getSourceReviews = async (currentUser, submissionId, page, limit) => {
-    await getSubmissionOrFail(currentUser, submissionId);
-
-    const offset = (page - 1) * limit;
+export const getSourceReviews = async (currentUser, submissionId) => {
+    const targetSubmission = await getSubmissionOrFail(currentUser, submissionId);
 
     const result = await pool.query(`
         SELECT r.id, r.total_score, r.overall_comment, r.submitted_at, 
@@ -70,32 +68,29 @@ export const getSourceReviews = async (currentUser, submissionId, page, limit) =
         JOIN review_assignments ra ON r.review_assignment_id = ra.id
         WHERE ra.submission_id = $1
         ORDER BY r.submitted_at DESC NULLS LAST
-        LIMIT $2 OFFSET $3
-    `, [submissionId, limit, offset]);
+    `, [targetSubmission.submission_id]);
 
     const countRes = await pool.query(`
         SELECT COUNT(*) 
         FROM reviews r
         JOIN review_assignments ra ON r.review_assignment_id = ra.id
         WHERE ra.submission_id = $1
-    `, [submissionId]);
+    `, [targetSubmission.submission_id]);
 
     return {
         reviews: result.rows,
         total: parseInt(countRes.rows[0].count, 10),
-        page,
-        limit
     };
 };
 
 export const getReviewSummary = async (currentUser, submissionId) => {
-    await getSubmissionOrFail(currentUser, submissionId);
+    const targetSubmission = await getSubmissionOrFail(currentUser, submissionId);
 
     const summaryRes = await pool.query(`
         SELECT id, submission_id, status, updated_by, updated_at, generated_at
         FROM review_summaries
         WHERE submission_id = $1
-    `, [submissionId]);
+    `, [targetSubmission.submission_id]);
 
     if (summaryRes.rowCount === 0) {
         throw new AppError('Summary not generated yet', 404);
@@ -116,7 +111,7 @@ export const getReviewSummary = async (currentUser, submissionId) => {
         FROM reviews r
         JOIN review_assignments ra ON r.review_assignment_id = ra.id
         WHERE ra.submission_id = $1
-    `, [submissionId]);
+    `, [targetSubmission.submission_id]);
 
     return {
         summary: {

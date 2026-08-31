@@ -78,10 +78,10 @@ export const RubricScoringForm: React.FC<RubricScoringFormProps> = ({
     }
   }, [draftComment, draftScores, draftComments, existingReview, isReadOnly]);
 
-  // Compute live preview total score: SUM(score * weight / 100)
+  // Compute live preview total score: SUM(score)
   const computedTotalScore = criteriaList.reduce((acc, criterion) => {
     const s = scores[criterion.id] || 0;
-    return acc + (s * criterion.weight) / 100;
+    return acc + s;
   }, 0);
 
   const handleScoreChange = (criteriaId: string, valStr: string) => {

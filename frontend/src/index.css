@@ -57,6 +57,27 @@
   --color-ai-purple-text: #6B21A8;
   --color-ai-purple-bg: #F3E8FF;
   --color-ai-purple-border: #E9D5FF;
+
+  /* === AUTOMATIC UTILITY ALIAS OVERRIDES TO DESIGN SYSTEM V2 MOCKUP HEX === */
+  --color-blue-600: #0B57D0;
+  --color-blue-700: #0B4EB5;
+  --color-indigo-600: #0B57D0;
+  --color-indigo-700: #0B4EB5;
+
+  --color-emerald-700: #137333;
+  --color-emerald-800: #137333;
+  --color-emerald-50: #E6F4EA;
+  --color-emerald-200: #CEEAD6;
+
+  --color-amber-700: #B06000;
+  --color-amber-800: #B06000;
+  --color-amber-50: #FEF7E0;
+  --color-amber-200: #FDE293;
+
+  --color-rose-700: #C5221F;
+  --color-rose-800: #C5221F;
+  --color-rose-50: #FCE8E6;
+  --color-rose-200: #FAD2CF;
 }
 
 @layer base {

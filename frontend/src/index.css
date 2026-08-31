@@ -58,26 +58,63 @@
   --color-ai-purple-bg: #F3E8FF;
   --color-ai-purple-border: #E9D5FF;
 
-  /* === AUTOMATIC UTILITY ALIAS OVERRIDES TO DESIGN SYSTEM V2 MOCKUP HEX === */
+  /* === AUTOMATIC UTILITY ALIAS OVERRIDES TO DESIGN SYSTEM V2 MOCKUP HEX (FULL 50-900 SHADE RANGE) === */
+  --color-blue-50: #E8F0FE;
+  --color-blue-100: #DBEAFE;
+  --color-blue-200: #AECBFA;
+  --color-blue-300: #93C5FD;
+  --color-blue-400: #60A5FA;
+  --color-blue-500: #3B82F6;
   --color-blue-600: #0B57D0;
   --color-blue-700: #0B4EB5;
+  --color-blue-800: #1E40AF;
+  --color-blue-900: #1E3A8A;
+  --color-blue-950: #041E49;
+
+  --color-indigo-50: #E8F0FE;
+  --color-indigo-100: #DBEAFE;
+  --color-indigo-200: #AECBFA;
+  --color-indigo-300: #93C5FD;
+  --color-indigo-400: #60A5FA;
+  --color-indigo-500: #3B82F6;
   --color-indigo-600: #0B57D0;
   --color-indigo-700: #0B4EB5;
+  --color-indigo-800: #1E40AF;
+  --color-indigo-900: #1E3A8A;
+  --color-indigo-950: #041E49;
 
+  --color-emerald-50: #E6F4EA;
+  --color-emerald-100: #D1E7DD;
+  --color-emerald-200: #CEEAD6;
+  --color-emerald-300: #A3D9A5;
+  --color-emerald-400: #34D399;
+  --color-emerald-500: #10B981;
+  --color-emerald-600: #059669;
   --color-emerald-700: #137333;
   --color-emerald-800: #137333;
-  --color-emerald-50: #E6F4EA;
-  --color-emerald-200: #CEEAD6;
+  --color-emerald-900: #064E3B;
 
+  --color-amber-50: #FEF7E0;
+  --color-amber-100: #FEF0C7;
+  --color-amber-200: #FDE293;
+  --color-amber-300: #FCD34D;
+  --color-amber-400: #FBBF24;
+  --color-amber-500: #F59E0B;
+  --color-amber-600: #D97706;
   --color-amber-700: #B06000;
   --color-amber-800: #B06000;
-  --color-amber-50: #FEF7E0;
-  --color-amber-200: #FDE293;
+  --color-amber-900: #78350F;
 
+  --color-rose-50: #FCE8E6;
+  --color-rose-100: #FFE4E6;
+  --color-rose-200: #FAD2CF;
+  --color-rose-300: #FDA4AF;
+  --color-rose-400: #FB7185;
+  --color-rose-500: #F43F5E;
+  --color-rose-600: #E11D48;
   --color-rose-700: #C5221F;
   --color-rose-800: #C5221F;
-  --color-rose-50: #FCE8E6;
-  --color-rose-200: #FAD2CF;
+  --color-rose-900: #881337;
 }
 
 @layer base {

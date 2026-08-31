@@ -9,6 +9,10 @@ Tài liệu này định nghĩa chính thức **Hệ thống Design System v2** 
 1. **Nút Primary trong Mockup**: Sử dụng tông **Google Royal Blue (`#0B57D0` / `#1A73E8`)**, mang lại cảm giác hiện đại, sạch sẽ và chuẩn giáo dục đổi mới.
 2. **Lựa chọn Chuẩn hóa**: Chọn **Đường (a) — Khởi tạo Custom Tokens dựa trên 17 UI Mockups** để ứng dụng đạt **100% khớp thị giác với ảnh thiết kế**, đồng thời đăng ký tập trung vào `frontend/src/index.css` giúp toàn app kế thừa thống nhất, tuyệt đối không bị lệch shade màu giữa các màn hình.
 
+> 🚫 **QUY TẮC CẤM TÁI SỬ DỤNG ALIAS CŨ (DEPRECATED ALIASES NOTICE)**:
+> Các class Tailwind gốc như `indigo-600`, `blue-600`, `emerald-700`, `amber-700`, `rose-700` đã được override tự động trong `index.css` cho các code cũ. **Đối với tất cả các màn hình mới (từ màn Auth/Login trở đi), CẤM DÙNG trực tiếp các class tên màu cũ.**
+> **Bắt buộc dùng 100% Semantic Tokens**: `bg-brand-primary`, `text-brand-primary`, `bg-badge-success-bg`, `text-badge-success-text`, `bg-ai-blue-bg`, `text-ai-purple-text`...
+
 ---
 
 ## 📌 1. BẢNG MÀU CHỦ ĐẠO & THƯƠNG HIỆU (PRIMARY BRAND PALETTE)

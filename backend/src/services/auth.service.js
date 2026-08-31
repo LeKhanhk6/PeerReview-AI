@@ -21,7 +21,11 @@ const getStudentRoleId = async () => {
     return cachedStudentRoleId;
 };
 
-export const registerUser = async (fullName, email, password, studentId = null) => {
+export const registerUser = async (fullName, email, password, studentId) => {
+    if (!studentId || !studentId.trim()) {
+        throw new AppError('Student ID (MSSV) is required', 400);
+    }
+
     // 1. Mã hoá mật khẩu
     const passwordHash = await bcrypt.hash(password, 10);
     
@@ -40,7 +44,7 @@ export const registerUser = async (fullName, email, password, studentId = null) 
             email,
             passwordHash,
             studentRoleId,
-            studentId ? studentId.trim() : null
+            studentId.trim()
         ]);
         return result.rows[0];
     } catch (err) {

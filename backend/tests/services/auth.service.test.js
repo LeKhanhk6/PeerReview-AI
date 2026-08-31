@@ -217,7 +217,7 @@ describe('auth.service', () => {
                 rows: [{ id: scenario.id, email: scenario.email, created_at: '2025-01-01' }] 
             });
 
-            const result = await registerUser(scenario.full_name, scenario.email, 'password123');
+            const result = await registerUser(scenario.full_name, scenario.email, 'password123', 'SV123');
             
             expect(result.id).toBe(scenario.id);
             expect(result.email).toBe(scenario.email);
@@ -228,11 +228,17 @@ describe('auth.service', () => {
             );
             expect(poolMock.query).toHaveBeenNthCalledWith(2, 
                 expect.stringContaining("INSERT INTO users"), 
-                [scenario.full_name, scenario.email, 'hashed_pw', scenario.role_id, null]
+                [scenario.full_name, scenario.email, 'hashed_pw', scenario.role_id, 'SV123']
             );
         });
 
-        it('should throw 400 if email already exists (unique violation)', async () => {
+        it('should throw 400 if student_id is missing', async () => {
+            await expect(registerUser('Name', 'email@example.com', 'pass', ''))
+                .rejects
+                .toThrow(new AppError('Student ID (MSSV) is required', 400));
+        });
+
+        it('should throw 400 if email or student_id already exists (unique violation)', async () => {
             mockBcrypt.hash.mockResolvedValueOnce('hashed_pw');
             
             // Mock getStudentRoleId
@@ -243,7 +249,7 @@ describe('auth.service', () => {
             dbError.code = '23505';
             poolMock.query.mockRejectedValueOnce(dbError);
 
-            await expect(registerUser('Name', 'dup@example.com', 'pass'))
+            await expect(registerUser('Name', 'dup@example.com', 'pass', 'SV123'))
                 .rejects
                 .toThrow(new AppError('Email or Student ID already exists', 400));
         });
@@ -257,7 +263,7 @@ describe('auth.service', () => {
             // Mock general INSERT fail
             poolMock.query.mockRejectedValueOnce(new Error('insert fail'));
 
-            await expect(registerUser('Name', 'test@example.com', 'pass'))
+            await expect(registerUser('Name', 'test@example.com', 'pass', 'SV123'))
                 .rejects
                 .toThrow('insert fail');
                 
@@ -270,7 +276,7 @@ describe('auth.service', () => {
             // Mock getStudentRoleId empty
             poolMock.query.mockResolvedValueOnce({ rows: [] });
 
-            await expect(registerUser('Name', 'test@example.com', 'pass'))
+            await expect(registerUser('Name', 'test@example.com', 'pass', 'SV123'))
                 .rejects
                 .toThrow(new AppError('Role STUDENT not found in database', 500));
                 

@@ -45,7 +45,7 @@ const registerSchema = {
         full_name: z.string().min(2).max(255).trim(),
         email: z.string().email().trim().toLowerCase(),
         password: z.string().min(6).trim(),
-        student_id: z.string().min(2).max(50).trim().optional()
+        student_id: z.string().min(2, 'Student ID (MSSV) must be at least 2 characters').max(50).trim()
     })
 };
 

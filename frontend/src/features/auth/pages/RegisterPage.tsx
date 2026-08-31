@@ -9,13 +9,13 @@ import { toast } from 'sonner';
 import { Button } from '@/components/ui/Button';
 
 const registerSchema = z.object({
-  full_name: z.string().min(2, 'Name must be at least 2 characters').max(255),
-  email: z.string().email('Invalid email address'),
-  student_id: z.string().optional(),
-  password: z.string().min(6, 'Password must be at least 6 characters'),
+  full_name: z.string().min(2, 'Vui lòng nhập họ và tên (tối thiểu 2 ký tự)').max(255),
+  email: z.string().email('Địa chỉ email không hợp lệ'),
+  student_id: z.string().min(2, 'Mã số sinh viên (MSSV) là bắt buộc (tối thiểu 2 ký tự)').max(50),
+  password: z.string().min(6, 'Mật khẩu phải có ít nhất 6 ký tự'),
   confirm_password: z.string()
 }).refine((data) => data.password === data.confirm_password, {
-  message: "Passwords don't match",
+  message: "Mật khẩu xác nhận không khớp",
   path: ["confirm_password"], // path of error
 });
 
@@ -46,7 +46,7 @@ export const RegisterPage: React.FC = () => {
       await registerApi({
         full_name: data.full_name,
         email: data.email,
-        student_id: data.student_id ? data.student_id.trim() : undefined,
+        student_id: data.student_id.trim(),
         password: data.password
       });
       toast.success('Registration successful! Please login.');
@@ -116,17 +116,24 @@ export const RegisterPage: React.FC = () => {
 
             <div>
               <label htmlFor="student_id" className="block text-sm font-medium text-gray-700">
-                Mã số sinh viên (MSSV) <span className="text-gray-400 text-xs font-normal">(Tùy chọn)</span>
+                Mã số sinh viên (MSSV) <span className="text-red-500">*</span>
               </label>
               <div className="mt-1">
                 <input
                   id="student_id"
                   type="text"
                   placeholder="VD: SV123456"
-                  className="appearance-none block w-full px-3 py-2.5 border border-gray-300 rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm transition-colors"
+                  className={`appearance-none block w-full px-3 py-2.5 border rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 sm:text-sm transition-colors ${
+                    errors.student_id 
+                      ? 'border-red-300 text-red-900 focus:ring-red-500 focus:border-red-500' 
+                      : 'border-gray-300 focus:ring-blue-500 focus:border-blue-500'
+                  }`}
                   {...register('student_id')}
                 />
               </div>
+              {errors.student_id && (
+                <p className="mt-1.5 text-sm text-red-600">{errors.student_id.message}</p>
+              )}
             </div>
 
             <div>

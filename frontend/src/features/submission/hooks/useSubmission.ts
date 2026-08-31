@@ -3,6 +3,8 @@ import { useApiQuery } from '@/hooks/useApiQuery';
 import { submissionApi } from '../api/submission.api';
 import type { SubmissionVersion } from '../types/submission.types';
 
+const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
 export const submissionKeys = {
   all: ['submissions'] as const,
   history: (assignmentId: string) => ['submissions', 'history', assignmentId] as const,
@@ -11,26 +13,29 @@ export const submissionKeys = {
 };
 
 export const useSubmissionHistory = (assignmentId: string) => {
+  const isValidUuid = Boolean(assignmentId && UUID_REGEX.test(assignmentId));
   return useQuery({
     queryKey: submissionKeys.history(assignmentId),
     queryFn: () => submissionApi.getSubmissionHistory(assignmentId),
-    enabled: Boolean(assignmentId),
+    enabled: isValidUuid,
   });
 };
 
 export const useSubmissionFeedback = (assignmentId: string) => {
+  const isValidUuid = Boolean(assignmentId && UUID_REGEX.test(assignmentId));
   return useQuery({
     queryKey: submissionKeys.feedback(assignmentId),
     queryFn: () => submissionApi.getSubmissionFeedback(assignmentId),
-    enabled: Boolean(assignmentId),
+    enabled: isValidUuid,
   });
 };
 
 export const useTeacherSubmissionsMonitor = (assignmentId: string, status?: string) => {
+  const isValidUuid = Boolean(assignmentId && UUID_REGEX.test(assignmentId));
   return useApiQuery(
     submissionKeys.monitor(assignmentId, status),
     () => submissionApi.getTeacherSubmissionsMonitor(assignmentId, status),
-    { enabled: Boolean(assignmentId) }
+    { enabled: isValidUuid }
   );
 };
 
@@ -52,4 +57,3 @@ export const useSubmitAssignment = (assignmentId: string) => {
     },
   });
 };
-

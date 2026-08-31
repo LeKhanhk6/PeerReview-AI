@@ -276,13 +276,13 @@ _(Bản đã chỉnh sửa theo Technical Review — các thay đổi so với v
 - [x] Lighthouse audit target: Performance ≥ 80, Accessibility ≥ 90 trên 5 màn hình chính
 
 
-### Task 08.3 — Deployment Prep & Pilot Hardening
+### Task 08.3 — Deployment Prep & Pilot Hardening ✅
 
-- [ ] Environment configs (.env staging/prod)
-- [ ] Error reporting verify end-to-end (frontend → `/api/client-errors` → log)
-- [ ] Smoke test script post-deploy (kiểm tra chunk loading, auth flow)
-- [ ] Giả lập 300 concurrent users load test frontend
-- [ ] Chụp ảnh / ghi hình demo các luồng màn hình chính cho báo cáo & dự thi
+- [x] Environment configs (.env staging/prod)
+- [x] Error reporting verify end-to-end (frontend → `/api/client-errors` → log)
+- [x] Smoke test script post-deploy (kiểm tra chunk loading, auth flow, groupless student join->submit) (`docs/SmokeTestChecklist.md`)
+- [x] Giả lập 300 concurrent users load test frontend & backend
+- [x] Chụp ảnh / ghi hình demo các luồng màn hình chính cho báo cáo & dự thi
 
 ---
 
@@ -305,6 +305,12 @@ _(Bản đã chỉnh sửa theo Technical Review — các thay đổi so với v
 
 ### Task 09.3 — Student Profile & Security ✅
 - [x] Trang thông tin sinh viên & Đổi mật khẩu (`PATCH /api/auth/profile` + `POST /api/auth/change-password` + `ProfilePage.tsx` dùng chung 3 roles)
+
+### Task 09.6 — Student Class View: Groupless State & Bug Fixes ✅
+- [x] Phân nhánh Dual-UI (Giao diện A: Chưa có nhóm / Giao diện B: Đã có nhóm)
+- [x] Modal chọn nhóm `JoinGroupModal.tsx` gọi API `POST /api/groups/:id/join` với kiểm tra `GROUP_FULL`, Idempotency & Audit Log
+- [x] Xử lý lỗi 409 `MUST_JOIN_GROUP` và cờ `hasGroup: false` cho Workspace APIs
+- [x] E2E Test case cho luồng Sinh viên mới chưa nhóm -> Chọn nhóm -> Nộp bài (`submission.spec.ts`)
 
 ### Task 09.4 — Admin Classes View (Read-Only)
 - [ ] Màn hình xem danh sách lớp học dành cho Admin (Post-pilot, read-only view)

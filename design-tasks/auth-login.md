@@ -32,9 +32,9 @@
 ## 4. DANH SÁCH TASK CHI TIẾT (TASK LIST)
 
 ### 🟢 Task 01: Chuẩn hóa `LoginPage.tsx` theo Design System v2 Token
-- [ ] **Nội dung**: Cập nhật `LoginPage.tsx` sử dụng 100% token `bg-brand-primary`, `text-brand-primary`, `rounded-2xl border-slate-100 shadow-md`, copy 100% i18n messages từ `authMessages`.
-- [ ] **Files sửa**: `frontend/src/features/auth/pages/LoginPage.tsx`
-- [ ] **DoD Task 01**: `npx tsc --noEmit` pass · `npm run build` pass · Đủ 3 states (Normal/Loading/Error Toast).
+- [x] **Nội dung**: Cập nhật `LoginPage.tsx` sử dụng 100% token `bg-brand-primary`, `text-brand-primary`, `rounded-2xl border-slate-100 shadow-md`, copy 100% i18n messages từ `authMessages`.
+- [x] **Files sửa**: `frontend/src/features/auth/pages/LoginPage.tsx`
+- [x] **DoD Task 01**: `npx tsc --noEmit` pass · `npm run build` pass (429ms) · Đủ 3 states (Normal/Loading/Error Toast). (Commit: `800af63`)
 
 ### 🟢 Task 02: Chuẩn hóa `RegisterPage.tsx` theo Design System v2 Token
 - [ ] **Nội dung**: Cập nhật `RegisterPage.tsx` chọn vai trò Sinh viên / Giảng viên, validate MSSV nếu là Sinh viên, dùng token màu chuẩn `bg-brand-primary`.

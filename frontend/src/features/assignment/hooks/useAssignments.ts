@@ -29,11 +29,12 @@ export const useAssignmentsList = (params?: AssignmentFilterParams) => {
   });
 };
 
-export const useAssignmentDetail = (id: string) => {
+export const useAssignmentDetail = (id?: string) => {
+  const isValidUuid = Boolean(id && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id));
   return useQuery({
-    queryKey: assignmentKeys.detail(id),
-    queryFn: () => assignmentApi.getAssignmentById(id),
-    enabled: Boolean(id),
+    queryKey: assignmentKeys.detail(id || ''),
+    queryFn: () => assignmentApi.getAssignmentById(id || ''),
+    enabled: isValidUuid,
   });
 };
 

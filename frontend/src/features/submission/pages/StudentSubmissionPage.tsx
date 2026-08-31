@@ -10,10 +10,11 @@ import { SubmissionFeedbackPanel } from '../components/SubmissionFeedbackPanel';
 import { useAssignmentDetail } from '@/features/assignment/hooks/useAssignments';
 
 export const StudentSubmissionPage: React.FC = () => {
-  const { assignmentId = 'a-101' } = useParams<{ assignmentId: string }>();
+  const { assignmentId } = useParams<{ assignmentId: string }>();
+  const targetAssignmentId = assignmentId || '';
   const navigate = useNavigate();
 
-  const { data: assignmentData } = useAssignmentDetail(assignmentId);
+  const { data: assignmentData } = useAssignmentDetail(targetAssignmentId);
   const assignment = (assignmentData as any)?.data || assignmentData || {};
 
   const [urgencyStatus, setUrgencyStatus] = useState<'OPEN' | 'URGENT' | 'EXPIRED'>('OPEN');
@@ -57,15 +58,15 @@ export const StudentSubmissionPage: React.FC = () => {
       {/* Upload Form & Version History Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <SubmissionUploadForm
-          assignmentId={assignmentId}
+          assignmentId={targetAssignmentId}
           isExpired={urgencyStatus === 'EXPIRED'}
         />
 
-        <SubmissionVersionHistory assignmentId={assignmentId} />
+        <SubmissionVersionHistory assignmentId={targetAssignmentId} />
       </div>
 
       {/* Feedback Panel */}
-      <SubmissionFeedbackPanel assignmentId={assignmentId} />
+      <SubmissionFeedbackPanel assignmentId={targetAssignmentId} />
     </div>
   );
 };

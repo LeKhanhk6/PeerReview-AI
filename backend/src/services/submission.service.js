@@ -59,6 +59,16 @@ export const getStudentDashboardData = async (userId, limit, offset, sortColumn,
         const countResult = await pool.query(countQuery, [userId]);
         const total = parseInt(countResult.rows[0].total, 10);
 
+        const validSortColumns = {
+            deadline: 'deadline',
+            'a.deadline': 'deadline',
+            created_at: 'assignment_created_at',
+            'a.created_at': 'assignment_created_at',
+            assignment_created_at: 'assignment_created_at'
+        };
+        const safeSortColumn = validSortColumns[sortColumn] || 'deadline';
+        const safeSortOrder = sortOrder === 'DESC' ? 'DESC' : 'ASC';
+
         const sortedQuery = `
             WITH DashboardData AS (
                 SELECT DISTINCT ON (a.id)
@@ -98,7 +108,7 @@ export const getStudentDashboardData = async (userId, limit, offset, sortColumn,
             ORDER BY a.id
         )
         SELECT * FROM DashboardData
-        ORDER BY ${sortColumn || 'deadline'} ${sortOrder || 'ASC'}
+        ORDER BY ${safeSortColumn} ${safeSortOrder}
         LIMIT $2 OFFSET $3
     `;
 

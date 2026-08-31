@@ -9,14 +9,14 @@ export const getStudentDashboard = async (req, res, next) => {
 
         // Sort whitelist + DESC
         const allowedSort = {
-            deadline: 'a.deadline',
-            created_at: 'a.created_at'
+            deadline: 'deadline',
+            created_at: 'assignment_created_at'
         };
 
         const isDesc = sort?.startsWith('-');
         const field = sort?.replace(/^-+/, '');
 
-        const sortColumn = allowedSort[field] || 'a.deadline';
+        const sortColumn = allowedSort[field] || 'deadline';
         const sortOrder = isDesc ? 'DESC' : 'ASC';
 
         const { rows, total } = await submissionService.getStudentDashboardData(

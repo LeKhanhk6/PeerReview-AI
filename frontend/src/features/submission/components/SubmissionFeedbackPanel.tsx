@@ -11,7 +11,7 @@ interface SubmissionFeedbackPanelProps {
 export const SubmissionFeedbackPanel: React.FC<SubmissionFeedbackPanelProps> = ({
   assignmentId,
 }) => {
-  const { data: feedback, isLoading, isError, refetch } = useSubmissionFeedback(assignmentId);
+  const { data: feedback, isLoading, isError, error, refetch } = useSubmissionFeedback(assignmentId);
 
   if (isLoading) {
     return (
@@ -23,6 +23,17 @@ export const SubmissionFeedbackPanel: React.FC<SubmissionFeedbackPanelProps> = (
   }
 
   if (isError) {
+    const is404 = (error as any)?.response?.status === 404 || (error as any)?.status === 404;
+    if (is404) {
+      return (
+        <EmptyState
+          type="no_data"
+          title={submissionMessages.feedback.emptyTitle}
+          description={submissionMessages.feedback.emptyDesc}
+        />
+      );
+    }
+
     return (
       <EmptyState
         type="error"

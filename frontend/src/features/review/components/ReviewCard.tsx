@@ -110,7 +110,7 @@ export const ReviewCard: React.FC<ReviewCardProps> = ({
       <div className="pt-2 flex justify-end">
         {isCompleted ? (
           <Link
-            to={`/student/assignments/${assignmentId}/reviews/${item.id}`}
+            to={assignmentId ? `/student/assignments/${assignmentId}/reviews/${item.id}` : `/student/reviews/${item.id}`}
             className="inline-flex items-center justify-center px-4 py-2.5 rounded-xl text-sm font-bold text-brand-primary bg-brand-soft-bg hover:bg-brand-primary/10 border border-brand-primary/20 transition-colors focus:outline-none focus:ring-2 focus:ring-brand-primary focus:ring-offset-2"
           >
             <span>{reviewMessages.card.actionView}</span>
@@ -125,7 +125,7 @@ export const ReviewCard: React.FC<ReviewCardProps> = ({
           </button>
         ) : (
           <Link
-            to={`/student/assignments/${assignmentId}/reviews/${item.id}`}
+            to={assignmentId ? `/student/assignments/${assignmentId}/reviews/${item.id}` : `/student/reviews/${item.id}`}
             className="inline-flex items-center justify-center px-5 py-2.5 rounded-xl text-sm font-bold text-white bg-brand-primary hover:bg-brand-primary/90 shadow-sm transition-all focus:outline-none focus:ring-2 focus:ring-brand-primary focus:ring-offset-2"
           >
             <span>{reviewMessages.card.actionStart}</span>

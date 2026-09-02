@@ -60,7 +60,7 @@ export const DiscussionFeed: React.FC<DiscussionFeedProps> = ({ groupId }) => {
   }
 
   return (
-    <div className="bg-white border border-gray-200 rounded-xl shadow-sm flex flex-col h-[550px]">
+    <div className="bg-white border border-gray-200 rounded-xl shadow-sm flex flex-col flex-1 min-h-0">
       {/* Header Bar */}
       <div className="p-4 border-b border-gray-200 flex items-center justify-between">
         <div>

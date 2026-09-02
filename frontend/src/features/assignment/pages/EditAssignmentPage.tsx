@@ -29,7 +29,7 @@ export const EditAssignmentPage: React.FC = () => {
 
   if (isLoadingAssignment || isLoadingRubric) {
     return (
-      <div className="space-y-4 max-w-4xl mx-auto pb-12 pr-1 pt-4">
+      <div className="h-full w-full min-w-0 overflow-y-auto space-y-4 max-w-4xl mx-auto pb-12 pr-2 pt-4">
         <Skeleton className="h-24 w-full rounded-2xl" />
         <Skeleton className="h-64 w-full rounded-2xl" />
         <Skeleton className="h-48 w-full rounded-2xl" />
@@ -39,7 +39,7 @@ export const EditAssignmentPage: React.FC = () => {
 
   if (isError || !assignment) {
     return (
-      <div className="max-w-4xl mx-auto">
+      <div className="h-full w-full min-w-0 overflow-y-auto max-w-4xl mx-auto flex items-center justify-center">
         <EmptyState
           type="error"
           title="Không tìm thấy bài tập"
@@ -82,7 +82,7 @@ export const EditAssignmentPage: React.FC = () => {
   };
 
   return (
-    <div className="space-y-6 max-w-4xl mx-auto pb-12 pr-1 pt-4">
+    <div className="h-full w-full min-w-0 overflow-y-auto space-y-6 max-w-4xl mx-auto pb-12 pr-2 pt-4">
       {/* Page Header */}
       <div className="bg-white p-6 border border-slate-100 rounded-2xl shadow-sm space-y-1.5 shrink-0">
         <h1 className="text-xl md:text-2xl font-bold text-slate-900 tracking-tight">

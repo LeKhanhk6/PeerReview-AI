@@ -46,6 +46,9 @@ const synthesisQuerySchema = {
     })
 };
 
+// Student: Get ALL assignments they are supposed to review (across all assignments)
+router.get('/my-reviews', authorizeRoles('STUDENT'), paginationMiddleware, reviewController.getMyReviewAssignments);
+
 // Student: Get assignments they are supposed to review (Double-blind mapped)
 router.get('/assignments/:assignmentId/my-reviews', authorizeRoles('STUDENT'), validate({ params: assignmentIdParamSchema }), paginationMiddleware, reviewController.getMyReviewAssignments);
 

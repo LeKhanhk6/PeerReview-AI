@@ -66,7 +66,7 @@ export const StudentGroupWorkspacePage: React.FC = () => {
   const members = group?.members || [];
 
   return (
-    <div className="space-y-4 md:space-y-5 max-w-7xl mx-auto">
+    <div className="flex flex-col flex-1 min-h-0 w-full space-y-4 md:space-y-5">
       {/* Page Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white p-4 md:p-5 border border-slate-200 rounded-xl shadow-xs">
         <div>
@@ -144,7 +144,7 @@ export const StudentGroupWorkspacePage: React.FC = () => {
       </div>
 
       {/* Tab Panels */}
-      <div>
+      <div className="flex flex-col flex-1 min-h-0">
         {activeTab === 'kanban' && (
           <TaskBoard
             groupId={resolvedGroupId}

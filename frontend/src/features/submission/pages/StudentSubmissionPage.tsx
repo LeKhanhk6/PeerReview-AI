@@ -47,7 +47,7 @@ export const StudentSubmissionPage: React.FC = () => {
   }
 
   return (
-    <div className="space-y-6 max-w-5xl mx-auto pb-12 pr-1 pt-4">
+    <div className="h-full overflow-y-auto space-y-6 max-w-5xl mx-auto pb-12 pr-2 pt-4">
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 bg-white p-6 border border-slate-100 rounded-2xl shadow-sm shrink-0">
         <div>

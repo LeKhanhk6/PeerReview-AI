@@ -18,7 +18,8 @@ export const getMyReviews = async (
   assignmentId: string,
   params?: Record<string, any>
 ): Promise<GetMyReviewsResult> => {
-  const response = await api.get(`/assignments/${assignmentId}/my-reviews`, { params });
+  const url = assignmentId ? `/assignments/${assignmentId}/my-reviews` : '/my-reviews';
+  const response = await api.get(url, { params });
 
   if (Array.isArray(response)) {
     return {

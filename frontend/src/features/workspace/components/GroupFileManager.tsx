@@ -78,9 +78,9 @@ export const GroupFileManager: React.FC<GroupFileManagerProps> = ({ groupId }) =
   }
 
   return (
-    <div className="bg-white border border-gray-200 rounded-xl p-5 shadow-sm space-y-4">
+    <div className="bg-white border border-gray-200 rounded-xl p-5 shadow-sm space-y-4 flex flex-col flex-1 min-h-0">
       {/* Header & Upload Action */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-gray-200 pb-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-gray-200 pb-4 shrink-0">
         <div>
           <h2 className="text-base font-bold text-gray-900">
             📁 {workspaceMessages.files.title}
@@ -132,7 +132,7 @@ export const GroupFileManager: React.FC<GroupFileManagerProps> = ({ groupId }) =
           description={workspaceMessages.files.emptyDesc}
         />
       ) : (
-        <div className="overflow-x-auto border border-gray-200 rounded-lg">
+        <div className="overflow-auto border border-gray-200 rounded-lg flex-1 min-h-0">
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="bg-gray-50 border-b border-gray-200 text-xs font-bold text-gray-600 uppercase">

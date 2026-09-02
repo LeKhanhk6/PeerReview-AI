@@ -115,7 +115,7 @@ export const TaskBoard: React.FC<TaskBoardProps> = ({
   }
 
   return (
-    <div className="space-y-4">
+    <div className="flex-1 flex flex-col space-y-4 min-h-0">
       {/* Header & Create Action */}
       <div className="flex items-center justify-between gap-4 bg-white p-4 border border-gray-200 rounded-xl shadow-sm">
         <div>
@@ -133,12 +133,12 @@ export const TaskBoard: React.FC<TaskBoardProps> = ({
       </div>
 
       {/* Kanban 3-Column Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 flex-1 min-h-0 overflow-x-auto">
         {KANBAN_COLUMNS.map((col) => {
           const colTasks = tasks.filter((t) => t.status === col.status);
 
           return (
-            <div key={col.status} className="bg-gray-50 border border-gray-200 rounded-xl p-4 space-y-3 flex flex-col min-h-[400px]">
+            <div key={col.status} className="bg-gray-50 border border-gray-200 rounded-xl p-4 space-y-3 flex flex-col min-h-0">
               {/* Column Header */}
               <div className="flex items-center justify-between border-b border-gray-200 pb-3">
                 <h3 className="text-sm font-bold text-gray-800 flex items-center gap-1.5">

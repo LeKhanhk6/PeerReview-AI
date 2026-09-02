@@ -32,14 +32,13 @@ const validateId = (id, fieldName = 'ID') => {
 };
 
 export const getMyReviewAssignments = async (assignmentId, userId, limit, offset) => {
-    const validAssignmentId = validateId(assignmentId, 'assignment ID');
-    // Use COUNT(*) OVER() to avoid a separate query
-    const query = `
+    let query = `
         SELECT 
             ra.id as review_assignment_id,
             ra.status as review_status,
             ra.assigned_at,
             s.id as submission_id,
+            s.assignment_id as raw_assignment_id,
             sv.version_number,
             sv.created_at,
             sv.file_url,
@@ -53,15 +52,25 @@ export const getMyReviewAssignments = async (assignmentId, userId, limit, offset
             ORDER BY sv_inner.version_number DESC
             LIMIT 1
         ) sv ON true
-        WHERE s.assignment_id = $1
-        AND ra.reviewer_group_id IN (
-            SELECT group_id FROM group_members WHERE user_id = $2
+        WHERE ra.reviewer_group_id IN (
+            SELECT group_id FROM group_members WHERE user_id = $1
         )
-        ORDER BY ra.assigned_at DESC
-        LIMIT $3 OFFSET $4
     `;
 
-    const result = await pool.query(query, [validAssignmentId, userId, limit, offset]);
+    const values = [userId];
+    let paramIndex = 2;
+
+    if (assignmentId) {
+        const validAssignmentId = validateId(assignmentId, 'assignment ID');
+        query += ` AND s.assignment_id = $${paramIndex}`;
+        values.push(validAssignmentId);
+        paramIndex++;
+    }
+
+    query += ` ORDER BY ra.assigned_at DESC LIMIT $${paramIndex} OFFSET $${paramIndex + 1}`;
+    values.push(limit, offset);
+
+    const result = await pool.query(query, values);
 
     if (result.rows.length === 0) {
         return { rows: [], total: 0 };
@@ -135,7 +144,7 @@ export const getReviewAssignmentDetail = async (reviewAssignmentId, userId) => {
     // 2. Fetch rubric and attachments
     const { getRubricAndCriteria } = await import('./rubric.service.js');
     const [rubricData, attachmentsRes] = await Promise.all([
-        getRubricAndCriteria(row.assignment_id),
+        getRubricAndCriteria(row.assignment_id, { role: 'STUDENT', userId }),
         pool.query(`SELECT id, file_name, file_url, file_size FROM assignment_attachments WHERE assignment_id = $1`, [row.assignment_id])
     ]);
 

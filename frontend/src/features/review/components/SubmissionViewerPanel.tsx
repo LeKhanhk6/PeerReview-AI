@@ -1,4 +1,5 @@
 import React from 'react';
+import { toast } from 'sonner';
 import { reviewMessages } from '@/constants/messages/review';
 import type { MaskedSubmission, AssignmentDetailInfo } from '../types/review.types';
 
@@ -20,6 +21,13 @@ export const SubmissionViewerPanel: React.FC<SubmissionViewerPanelProps> = ({
         year: 'numeric',
       })
     : 'N/A';
+
+  const handleSimulatedDownload = (e: React.MouseEvent<HTMLAnchorElement>) => {
+    if (submission.fileUrl?.includes('storage.googleapis.com/peer-review-bucket')) {
+      e.preventDefault();
+      toast.info('Tính năng xem/tải file bài nộp đang ở chế độ mô phỏng.');
+    }
+  };
 
   return (
     <div
@@ -71,6 +79,7 @@ export const SubmissionViewerPanel: React.FC<SubmissionViewerPanelProps> = ({
                 href={submission.fileUrl}
                 target="_blank"
                 rel="noopener noreferrer"
+                onClick={handleSimulatedDownload}
                 className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-xs font-semibold text-indigo-700 bg-white border border-indigo-200 hover:bg-indigo-50 transition-colors shadow-2xs"
               >
                 <span>↗</span>
@@ -79,6 +88,7 @@ export const SubmissionViewerPanel: React.FC<SubmissionViewerPanelProps> = ({
               <a
                 href={submission.fileUrl}
                 download
+                onClick={handleSimulatedDownload}
                 className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-700 transition-colors shadow-2xs"
               >
                 <span>⬇</span>

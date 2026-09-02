@@ -3,6 +3,7 @@ import { SkeletonCard } from '@/components/ui/Skeleton';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { submissionMessages } from '@/constants/messages/submission';
 import { useSubmissionHistory } from '../hooks/useSubmission';
+import { toast } from 'sonner';
 
 interface SubmissionVersionHistoryProps {
   assignmentId: string;
@@ -114,6 +115,12 @@ export const SubmissionVersionHistory: React.FC<SubmissionVersionHistoryProps> =
                         download={ver.file_name || `Bản_Nộp_v${ver.version_number}.pdf`}
                         target="_blank"
                         rel="noopener noreferrer"
+                        onClick={(e) => {
+                          if (ver.file_url.includes('storage.googleapis.com/peer-review-bucket')) {
+                            e.preventDefault();
+                            toast.info('Tính năng Tải về đang ở chế độ mô phỏng. File thực tế không được lưu trên Cloud.');
+                          }
+                        }}
                         className="inline-flex items-center gap-1 text-xs font-bold text-blue-600 hover:text-blue-800 bg-white px-2.5 py-1 rounded border border-gray-200 shadow-sm transition-colors"
                       >
                         📥 {submissionMessages.history.downloadColumn}

@@ -43,8 +43,8 @@ export const ActivityTimeline: React.FC<ActivityTimelineProps> = ({ groupId }) =
   }
 
   return (
-    <div className="bg-white border border-gray-200 rounded-xl p-5 shadow-sm space-y-4">
-      <div className="flex items-center justify-between border-b border-gray-200 pb-3">
+    <div className="bg-white border border-gray-200 rounded-xl p-5 shadow-sm space-y-4 flex flex-col flex-1 min-h-0">
+      <div className="flex items-center justify-between border-b border-gray-200 pb-3 shrink-0">
         <div>
           <h2 className="text-base font-bold text-gray-900">
             📜 {workspaceMessages.timeline.title}
@@ -64,7 +64,7 @@ export const ActivityTimeline: React.FC<ActivityTimelineProps> = ({ groupId }) =
           description={workspaceMessages.timeline.emptyDesc}
         />
       ) : (
-        <div className="relative border-l-2 border-gray-200 ml-4 space-y-6 py-2">
+        <div className="relative border-l-2 border-gray-200 ml-4 space-y-6 py-2 flex-1 overflow-y-auto pr-2">
           {activities.map((act) => {
             const iconConfig = ACTION_ICONS[act.action_type] || ACTION_ICONS.DEFAULT;
             const dateStr = new Date(act.created_at).toLocaleString('vi-VN', {

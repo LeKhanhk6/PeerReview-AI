@@ -428,8 +428,8 @@ export const StudentDashboardPage: React.FC = () => {
 
                     <div className="flex items-center gap-2">
                       {revStatus === 'UNDER_REVIEW' && (
-                        <Link to="/student/reviews">
-                          <Button variant="secondary" size="sm" className="text-xs px-3 py-1.5 bg-amber-500 hover:bg-amber-600 text-white">
+                        <Link to={`/student/assignments/${assignment.assignment_id}/reviews`}>
+                          <Button variant="secondary" size="sm" className="text-xs px-3 py-1.5 bg-amber-500 hover:bg-amber-600 text-white border-0">
                             {studentDashboardMessages.actionReview}
                           </Button>
                         </Link>

@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/Button';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { calculateDaysLeftStatus } from '@/utils/date.utils';
+import { toast } from 'sonner';
 
 export const TeacherSubmissionsMonitorPage: React.FC = () => {
   const { assignmentId = '' } = useParams<{ assignmentId: string }>();
@@ -277,6 +278,12 @@ export const TeacherSubmissionsMonitorPage: React.FC = () => {
                             href={group.submission.latestFileUrl}
                             target="_blank"
                             rel="noopener noreferrer"
+                            onClick={(e) => {
+                              if (group.submission?.latestFileUrl?.includes('storage.googleapis.com/peer-review-bucket')) {
+                                e.preventDefault();
+                                toast.info('Tính năng tải về file bài nộp đang ở chế độ mô phỏng.');
+                              }
+                            }}
                           >
                             <Button variant="outline" size="sm" className="text-xs">
                               📥 Xem file bài nộp

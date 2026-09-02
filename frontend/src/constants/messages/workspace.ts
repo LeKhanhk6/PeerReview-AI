@@ -76,4 +76,12 @@ export const workspaceMessages = {
     deleteTaskFailed: 'Không thể xóa công việc.',
     sendMessageFailed: 'Không thể gửi tin nhắn.',
   },
+
+  deadline: {
+    unspecified: 'Không xác định',
+    expiredToday: 'Quá hạn nộp bài',
+    expiredDaysAgo: 'Đã quá hạn {days} ngày',
+    dueToday: 'Hạn nộp hôm nay',
+    daysLeft: 'Còn {days} ngày',
+  },
 };

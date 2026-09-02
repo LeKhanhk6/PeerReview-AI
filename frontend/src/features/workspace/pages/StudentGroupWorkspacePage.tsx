@@ -17,7 +17,6 @@ import { getStudentDashboardAssignmentsApi } from '@/features/student-dashboard/
 
 type WorkspaceTab = 'kanban' | 'discussions' | 'timeline' | 'files';
 
-
 export const StudentGroupWorkspacePage: React.FC = () => {
   const { assignmentId, groupId } = useParams<{ assignmentId?: string; groupId?: string }>();
   const navigate = useNavigate();
@@ -48,7 +47,7 @@ export const StudentGroupWorkspacePage: React.FC = () => {
 
   if (!isValidGroup || !hasGroup) {
     return (
-      <div className="max-w-4xl mx-auto py-12 p-4 space-y-4">
+      <div className="max-w-3xl mx-auto py-8 p-3 space-y-4">
         <EmptyState
           type="no_permission"
           title="Bạn chưa tham gia nhóm nào trong lớp học này"
@@ -67,9 +66,9 @@ export const StudentGroupWorkspacePage: React.FC = () => {
   const members = group?.members || [];
 
   return (
-    <div className="space-y-6 max-w-7xl mx-auto">
+    <div className="space-y-4 md:space-y-5 max-w-7xl mx-auto">
       {/* Page Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white p-5 border border-gray-200 rounded-xl shadow-sm">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white p-4 md:p-5 border border-slate-200 rounded-xl shadow-xs">
         <div>
           <div className="flex items-center gap-2">
             <Button
@@ -77,7 +76,7 @@ export const StudentGroupWorkspacePage: React.FC = () => {
               variant="outline"
               size="sm"
               onClick={() => navigate('/student/dashboard')}
-              className="text-xs bg-white text-gray-700 hover:bg-gray-50"
+              className="text-xs bg-white text-slate-700 border-slate-200 hover:bg-slate-50 rounded-lg px-2.5 py-1"
             >
               ← Quay lại Trang chủ
             </Button>
@@ -86,22 +85,22 @@ export const StudentGroupWorkspacePage: React.FC = () => {
             </span>
           </div>
 
-          <h1 className="text-2xl font-bold text-gray-900 tracking-tight mt-2">
+          <h1 className="text-xl md:text-2xl font-bold text-slate-900 tracking-tight mt-2">
             🚀 {workspaceMessages.title} - {groupName}
           </h1>
-          <p className="text-sm text-gray-600 mt-1">{workspaceMessages.subtitle}</p>
+          <p className="text-xs md:text-sm text-slate-500 mt-0.5">{workspaceMessages.subtitle}</p>
         </div>
       </div>
 
       {/* Navigation Tabs Bar */}
-      <div className="flex border-b border-gray-200 space-x-6 overflow-x-auto">
+      <div className="flex border-b border-slate-200 space-x-4 md:space-x-6 overflow-x-auto bg-white px-3 pt-2.5 rounded-t-xl border border-slate-200 shadow-2xs">
         <button
           type="button"
           onClick={() => setActiveTab('kanban')}
-          className={`pb-3 text-sm font-bold border-b-2 transition-colors whitespace-nowrap ${
+          className={`pb-2.5 text-xs md:text-sm font-bold border-b-2 transition-colors whitespace-nowrap px-1 ${
             activeTab === 'kanban'
               ? 'border-blue-600 text-blue-600'
-              : 'border-transparent text-gray-500 hover:text-gray-700'
+              : 'border-transparent text-slate-500 hover:text-slate-700'
           }`}
         >
           {workspaceMessages.tabs.kanban}
@@ -110,10 +109,10 @@ export const StudentGroupWorkspacePage: React.FC = () => {
         <button
           type="button"
           onClick={() => setActiveTab('discussions')}
-          className={`pb-3 text-sm font-bold border-b-2 transition-colors whitespace-nowrap ${
+          className={`pb-2.5 text-xs md:text-sm font-bold border-b-2 transition-colors whitespace-nowrap px-1 ${
             activeTab === 'discussions'
               ? 'border-blue-600 text-blue-600'
-              : 'border-transparent text-gray-500 hover:text-gray-700'
+              : 'border-transparent text-slate-500 hover:text-slate-700'
           }`}
         >
           {workspaceMessages.tabs.discussions}
@@ -122,10 +121,10 @@ export const StudentGroupWorkspacePage: React.FC = () => {
         <button
           type="button"
           onClick={() => setActiveTab('timeline')}
-          className={`pb-3 text-sm font-bold border-b-2 transition-colors whitespace-nowrap ${
+          className={`pb-2.5 text-xs md:text-sm font-bold border-b-2 transition-colors whitespace-nowrap px-1 ${
             activeTab === 'timeline'
               ? 'border-blue-600 text-blue-600'
-              : 'border-transparent text-gray-500 hover:text-gray-700'
+              : 'border-transparent text-slate-500 hover:text-slate-700'
           }`}
         >
           {workspaceMessages.tabs.timeline}
@@ -134,10 +133,10 @@ export const StudentGroupWorkspacePage: React.FC = () => {
         <button
           type="button"
           onClick={() => setActiveTab('files')}
-          className={`pb-3 text-sm font-bold border-b-2 transition-colors whitespace-nowrap ${
+          className={`pb-2.5 text-xs md:text-sm font-bold border-b-2 transition-colors whitespace-nowrap px-1 ${
             activeTab === 'files'
               ? 'border-blue-600 text-blue-600'
-              : 'border-transparent text-gray-500 hover:text-gray-700'
+              : 'border-transparent text-slate-500 hover:text-slate-700'
           }`}
         >
           {workspaceMessages.tabs.files}

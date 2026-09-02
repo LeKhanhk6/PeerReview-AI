@@ -16,12 +16,12 @@ export const StudentClassesPage: React.FC = () => {
 
   if (isLoading) {
     return (
-      <div className="space-y-6 max-w-7xl mx-auto p-4">
-        <Skeleton className="h-10 w-64" />
+      <div className="h-full w-full min-w-0 overflow-y-auto space-y-6 max-w-7xl mx-auto pb-12 pr-1 pt-4">
+        <Skeleton className="h-24 w-full rounded-2xl" />
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <Skeleton className="h-40 rounded-xl" />
-          <Skeleton className="h-40 rounded-xl" />
-          <Skeleton className="h-40 rounded-xl" />
+          <Skeleton className="h-40 rounded-2xl" />
+          <Skeleton className="h-40 rounded-2xl" />
+          <Skeleton className="h-40 rounded-2xl" />
         </div>
       </div>
     );
@@ -30,13 +30,14 @@ export const StudentClassesPage: React.FC = () => {
   const classes = classesData?.data || (Array.isArray(classesData) ? classesData : []);
 
   return (
-    <div className="space-y-6 max-w-7xl mx-auto p-2">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-5 border border-gray-200 rounded-xl shadow-sm">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">📚 Danh sách Lớp học đã tham gia</h1>
-          <p className="text-xs text-gray-500 mt-1">Quản lý danh sách các lớp học và nhóm học tập của bạn</p>
+    <div className="h-full w-full min-w-0 overflow-y-auto space-y-6 max-w-7xl mx-auto pb-12 pr-1 pt-4">
+      {/* Page Header */}
+      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 bg-white p-6 border border-slate-100 rounded-2xl shadow-sm shrink-0">
+        <div className="space-y-1.5">
+          <h1 className="text-xl md:text-2xl font-bold text-slate-900 tracking-tight">📚 Danh sách Lớp học đã tham gia</h1>
+          <p className="text-xs md:text-sm text-slate-500">Quản lý danh sách các lớp học và nhóm học tập của bạn</p>
         </div>
-        <Button onClick={() => setIsJoinOpen(true)} className="bg-blue-600 hover:bg-blue-700 text-white font-medium text-xs">
+        <Button onClick={() => setIsJoinOpen(true)} className="font-bold text-xs shrink-0">
           🔑 Tham gia Lớp mới (Mã Invite)
         </Button>
       </div>
@@ -46,16 +47,16 @@ export const StudentClassesPage: React.FC = () => {
           const hasGroup = Boolean((cls.group_name || cls.group_id) && cls.group_id !== 'null' && cls.group_id !== 'undefined');
 
           return (
-            <div key={cls.id} className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 flex flex-col justify-between hover:border-blue-300 transition-colors">
+            <div key={cls.id} className="bg-white rounded-2xl shadow-sm border border-slate-100 p-6 flex flex-col justify-between hover:border-brand-primary/30 hover:shadow-md transition-all group">
               <div>
-                <div className="flex justify-between items-start mb-3">
+                <div className="flex justify-between items-start mb-3 gap-2">
                   <div>
-                    <h3 className="text-base font-bold text-gray-900">
+                    <h3 className="text-base font-bold text-slate-900 group-hover:text-brand-primary transition-colors">
                       {cls.course_code} - {cls.name}
                     </h3>
-                    <p className="text-xs text-gray-500 mt-0.5">{cls.course_name}</p>
+                    <p className="text-xs text-slate-500 mt-0.5">{cls.course_name}</p>
                   </div>
-                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-blue-50 text-blue-700 border border-blue-200">
+                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-brand-soft-bg text-brand-primary border border-brand-primary/20 shrink-0">
                     {cls.semester || 'Học kỳ chính'}
                   </span>
                 </div>

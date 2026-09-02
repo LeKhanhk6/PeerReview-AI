@@ -75,7 +75,7 @@ export const ReviewCard: React.FC<ReviewCardProps> = ({
       {/* Header Info */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-gray-100 pb-4">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-lg bg-indigo-50 border border-indigo-100 flex items-center justify-center text-indigo-600 font-mono font-bold text-sm">
+          <div className="w-10 h-10 rounded-xl bg-brand-soft-bg border border-brand-primary/20 flex items-center justify-center text-brand-primary font-mono font-bold text-sm">
             🔒
           </div>
           <div>
@@ -111,7 +111,7 @@ export const ReviewCard: React.FC<ReviewCardProps> = ({
         {isCompleted ? (
           <Link
             to={`/student/assignments/${assignmentId}/reviews/${item.id}`}
-            className="inline-flex items-center justify-center px-4 py-2.5 rounded-lg text-sm font-semibold text-indigo-700 bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+            className="inline-flex items-center justify-center px-4 py-2.5 rounded-xl text-sm font-bold text-brand-primary bg-brand-soft-bg hover:bg-brand-primary/10 border border-brand-primary/20 transition-colors focus:outline-none focus:ring-2 focus:ring-brand-primary focus:ring-offset-2"
           >
             <span>{reviewMessages.card.actionView}</span>
             <span className="ml-1.5" aria-hidden="true">→</span>
@@ -126,7 +126,7 @@ export const ReviewCard: React.FC<ReviewCardProps> = ({
         ) : (
           <Link
             to={`/student/assignments/${assignmentId}/reviews/${item.id}`}
-            className="inline-flex items-center justify-center px-5 py-2.5 rounded-lg text-sm font-semibold text-white bg-indigo-600 hover:bg-indigo-700 shadow-sm transition-all focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+            className="inline-flex items-center justify-center px-5 py-2.5 rounded-xl text-sm font-bold text-white bg-brand-primary hover:bg-brand-primary/90 shadow-sm transition-all focus:outline-none focus:ring-2 focus:ring-brand-primary focus:ring-offset-2"
           >
             <span>{reviewMessages.card.actionStart}</span>
             <span className="ml-1.5" aria-hidden="true">→</span>

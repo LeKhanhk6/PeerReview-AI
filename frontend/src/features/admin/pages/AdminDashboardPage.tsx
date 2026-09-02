@@ -52,12 +52,15 @@ export const AdminDashboardPage: React.FC = () => {
         {/* Header Banner */}
         <div className="bg-white p-4 md:p-5 rounded-2xl shadow-sm border border-slate-100 flex flex-col md:flex-row md:items-center justify-between gap-3 shrink-0">
           <div>
-            <div className="flex items-center gap-2 mb-0.5">
+            <div className="flex flex-wrap items-center gap-2 mb-0.5">
               <h1 className="text-xl md:text-2xl font-bold text-slate-900 tracking-tight">
                 {adminMessages.header.dashboardTitle}
               </h1>
               <span className="inline-flex items-center gap-1 bg-amber-50 text-amber-700 text-xs font-bold px-2.5 py-0.5 rounded-full border border-amber-200">
                 <Zap className="w-3 h-3" /> ADMIN MODE
+              </span>
+              <span className="inline-flex items-center gap-1.5 bg-emerald-50 text-emerald-700 text-xs font-bold px-2.5 py-0.5 rounded-full border border-emerald-200">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span> API Online
               </span>
             </div>
             <p className="text-xs md:text-sm text-slate-500">

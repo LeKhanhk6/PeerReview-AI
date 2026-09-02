@@ -141,7 +141,7 @@ export const TeacherDashboardPage: React.FC = () => {
       <div className="shrink-0 bg-white p-4 md:p-5 rounded-2xl shadow-sm border border-slate-100 flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h1 className="text-xl md:text-2xl font-bold text-slate-900 tracking-tight">
-            {analyticsMessages.teacherDashboardTitle}, {user?.full_name || 'Giảng viên'} 👋
+            {analyticsMessages.teacherDashboardTitle}, {user?.full_name || 'Giảng viên'}
           </h1>
           <p className="text-xs md:text-sm text-slate-500 mt-1">
             {analyticsMessages.teacherDashboardSubtitle}
@@ -218,7 +218,7 @@ export const TeacherDashboardPage: React.FC = () => {
                 className="bg-brand-primary hover:bg-brand-hover text-white rounded-xl shadow-md px-3.5 py-2 text-xs font-semibold inline-flex items-center gap-1.5 transition-colors"
               >
                 <Plus className="w-4 h-4" />
-                <span>+ Tạo bài tập mới</span>
+                <span>Tạo bài tập mới</span>
               </Button>
             </Link>
           </div>
@@ -236,55 +236,55 @@ export const TeacherDashboardPage: React.FC = () => {
                   const daysStatus = calculateDaysLeftStatus(assignment.deadline);
                   const badgeText = formatDaysLeftLabel(daysStatus, workspaceMessages.deadline);
 
-                return (
-                  <div
-                    key={assignment.id}
-                    className="py-3.5 first:pt-0 last:pb-0 flex flex-col gap-1.5 hover:bg-slate-50/60 transition-colors rounded-xl px-2 -mx-2"
-                  >
-                    {/* Hàng 1: Title */}
-                    <h3 className="text-xs md:text-sm font-bold text-slate-900 line-clamp-1" title={assignment.title}>
-                      {assignment.title}
-                    </h3>
-                    
-                    {/* Hàng 2: Hạn nộp + badge */}
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <p className="text-xs text-slate-500">
-                        Hạn nộp: {new Date(assignment.deadline).toLocaleDateString('vi-VN')}
-                      </p>
-                      <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium border ${getBadgeColorClass(daysStatus.variant)}`}>
-                        {badgeText}
-                      </span>
-                    </div>
+                  return (
+                    <div
+                      key={assignment.id}
+                      className="py-3.5 first:pt-0 last:pb-0 flex flex-col gap-1.5 hover:bg-slate-50/60 transition-colors rounded-xl px-2 -mx-2"
+                    >
+                      {/* Hàng 1: Title */}
+                      <h3 className="text-xs md:text-sm font-bold text-slate-900 line-clamp-1" title={assignment.title}>
+                        {assignment.title}
+                      </h3>
 
-                    {/* Hàng 3: 2 nút action */}
-                    <div className="flex flex-wrap items-center gap-2 mt-1">
-                      <Link to={`/teacher/assignments/${assignment.id}/submissions`}>
-                        <Button variant="outline" size="sm" className="text-xs px-2.5 py-1 rounded-lg border-slate-200 text-slate-700 hover:bg-slate-50 inline-flex items-center gap-1">
-                          <FolderOpen className="w-3.5 h-3.5 text-slate-500" />
-                          <span>Theo dõi bài nộp</span>
-                        </Button>
-                      </Link>
+                      {/* Hàng 2: Hạn nộp + badge */}
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <p className="text-xs text-slate-500">
+                          Hạn nộp: {new Date(assignment.deadline).toLocaleDateString('vi-VN')}
+                        </p>
+                        <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium border ${getBadgeColorClass(daysStatus.variant)}`}>
+                          {badgeText}
+                        </span>
+                      </div>
 
-                      <Link to={`/teacher/assignments/${assignment.id}/synthesis`}>
-                        <Button variant="outline" size="sm" className="text-xs px-2.5 py-1 rounded-lg border-slate-200 text-slate-700 hover:bg-slate-50 inline-flex items-center gap-1">
-                          <Sparkles className="w-3.5 h-3.5 text-amber-500" />
-                          <span>Xem tổng hợp AI</span>
-                        </Button>
-                      </Link>
+                      {/* Hàng 3: 2 nút action */}
+                      <div className="flex flex-wrap items-center gap-2 mt-1">
+                        <Link to={`/teacher/assignments/${assignment.id}/submissions`}>
+                          <Button variant="outline" size="sm" className="text-xs px-2.5 py-1 rounded-lg border-slate-200 text-slate-700 hover:bg-slate-50 inline-flex items-center gap-1">
+                            <FolderOpen className="w-3.5 h-3.5 text-slate-500" />
+                            <span>Theo dõi bài nộp</span>
+                          </Button>
+                        </Link>
+
+                        <Link to={`/teacher/assignments/${assignment.id}/synthesis`}>
+                          <Button variant="outline" size="sm" className="text-xs px-2.5 py-1 rounded-lg border-slate-200 text-slate-700 hover:bg-slate-50 inline-flex items-center gap-1">
+                            <Sparkles className="w-3.5 h-3.5 text-amber-500" />
+                            <span>Xem tổng hợp AI</span>
+                          </Button>
+                        </Link>
+                      </div>
                     </div>
-                  </div>
-                );
-              })}
-            </div>
-            
-            <div className="shrink-0 pt-3 border-t border-slate-100 mt-auto">
-              <p className="text-xs text-slate-500 text-center">
-                Đang hiển thị {assignments.length} bài tập & đợt đánh giá
-              </p>
-            </div>
-          </>
-        )}
-      </div>
+                  );
+                })}
+              </div>
+
+              <div className="shrink-0 pt-3 border-t border-slate-100 mt-auto">
+                <p className="text-xs text-slate-500 text-center">
+                  Đang hiển thị {assignments.length} bài tập & đợt đánh giá
+                </p>
+              </div>
+            </>
+          )}
+        </div>
 
         {/* Right Column: Early Warning Risk Panel */}
         <div className="bg-white p-5 md:p-6 rounded-2xl border border-slate-100 shadow-sm flex flex-col h-full min-h-0 space-y-4 overflow-x-hidden">
@@ -322,65 +322,63 @@ export const TeacherDashboardPage: React.FC = () => {
             <>
               <div className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden scrollbar-thin space-y-3 pr-1">
                 {topRisks.map((risk) => {
-                const isHigh = risk.severity === 'HIGH';
-                const riskLabel =
-                  analyticsMessages.riskTypes[risk.riskType] || risk.riskType;
+                  const isHigh = risk.severity === 'HIGH';
+                  const riskLabel =
+                    analyticsMessages.riskTypes[risk.riskType] || risk.riskType;
 
-                return (
-                  <div
-                    key={risk.id}
-                    onClick={() => {
-                      if (selectedClassId) {
-                        navigate(`/teacher/classes/${selectedClassId}`);
-                      } else {
-                        navigate('/teacher/analytics');
-                      }
-                    }}
-                    className={`p-3.5 rounded-xl cursor-pointer transition-all hover:shadow-sm ${
-                      isHigh
-                        ? 'bg-rose-50 border border-rose-100 hover:border-rose-200'
-                        : 'bg-amber-50 border border-amber-100 hover:border-amber-200'
-                    }`}
-                  >
-                    <div className="flex items-center justify-between gap-2 mb-1">
-                      <span
-                        className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold whitespace-nowrap ${
-                          isHigh
-                            ? 'bg-rose-50 text-rose-700 border border-rose-200'
-                            : 'bg-amber-50 text-amber-700 border border-amber-200'
+                  return (
+                    <div
+                      key={risk.id}
+                      onClick={() => {
+                        if (selectedClassId) {
+                          navigate(`/teacher/classes/${selectedClassId}`);
+                        } else {
+                          navigate('/teacher/analytics');
+                        }
+                      }}
+                      className={`p-3.5 rounded-xl cursor-pointer transition-all hover:shadow-sm ${isHigh
+                          ? 'bg-rose-50 border border-rose-100 hover:border-rose-200'
+                          : 'bg-amber-50 border border-amber-100 hover:border-amber-200'
                         }`}
-                      >
-                        {isHigh
-                          ? analyticsMessages.severities.HIGH.label
-                          : analyticsMessages.severities.MEDIUM.label}
-                      </span>
+                    >
+                      <div className="flex items-center justify-between gap-2 mb-1">
+                        <span
+                          className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold whitespace-nowrap ${isHigh
+                              ? 'bg-rose-50 text-rose-700 border border-rose-200'
+                              : 'bg-amber-50 text-amber-700 border border-amber-200'
+                            }`}
+                        >
+                          {isHigh
+                            ? analyticsMessages.severities.HIGH.label
+                            : analyticsMessages.severities.MEDIUM.label}
+                        </span>
 
-                      <span className="text-[11px] font-semibold text-slate-700">
-                        {risk.groupName}
-                      </span>
+                        <span className="text-[11px] font-semibold text-slate-700">
+                          {risk.groupName}
+                        </span>
+                      </div>
+
+                      <h4 className="text-xs font-bold text-slate-900 mb-1 flex items-center gap-1.5">
+                        <AlertTriangle className={`w-3.5 h-3.5 ${isHigh ? 'text-rose-600' : 'text-amber-600'}`} />
+                        <span>{riskLabel}</span>
+                      </h4>
+
+                      <p className="text-xs text-slate-600 line-clamp-2 leading-relaxed">
+                        {risk.message}
+                      </p>
                     </div>
+                  );
+                })}
+              </div>
 
-                    <h4 className="text-xs font-bold text-slate-900 mb-1 flex items-center gap-1.5">
-                      <AlertTriangle className={`w-3.5 h-3.5 ${isHigh ? 'text-rose-600' : 'text-amber-600'}`} />
-                      <span>{riskLabel}</span>
-                    </h4>
-
-                    <p className="text-xs text-slate-600 line-clamp-2 leading-relaxed">
-                      {risk.message}
-                    </p>
-                  </div>
-                );
-              })}
-            </div>
-
-            <div className="shrink-0 pt-3 border-t border-slate-100 mt-auto">
-              <p className="text-xs text-slate-500 text-center">
-                Đang hiển thị {topRisks.length} cảnh báo rủi ro cao nhất
-              </p>
-            </div>
-          </>
-        )}
-      </div>
+              <div className="shrink-0 pt-3 border-t border-slate-100 mt-auto">
+                <p className="text-xs text-slate-500 text-center">
+                  Đang hiển thị {topRisks.length} cảnh báo rủi ro cao nhất
+                </p>
+              </div>
+            </>
+          )}
+        </div>
       </div>
     </div>
   );

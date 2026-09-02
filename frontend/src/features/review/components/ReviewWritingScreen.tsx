@@ -56,12 +56,12 @@ export const ReviewWritingScreen: React.FC = () => {
   };
 
   return (
-    <div className="max-w-7xl mx-auto px-4 py-6 space-y-6">
+    <div className="h-full w-full min-w-0 overflow-y-auto space-y-6 max-w-7xl mx-auto pb-12 pr-1 pt-4">
       {/* Back Navigation */}
       <div>
         <Link
           to={`/student/assignments/${assignmentId}/reviews`}
-          className="inline-flex items-center gap-2 text-sm font-medium text-gray-600 hover:text-gray-900 transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500 rounded-md px-2 py-1"
+          className="inline-flex items-center gap-2 text-xs font-bold text-slate-500 hover:text-brand-primary transition-colors focus:outline-none focus:ring-2 focus:ring-brand-primary rounded-md px-2 py-1"
         >
           <span aria-hidden="true">←</span>
           <span>{reviewMessages.writing.backToInbox}</span>
@@ -69,13 +69,13 @@ export const ReviewWritingScreen: React.FC = () => {
       </div>
 
       {/* Screen Title Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-gray-200 pb-4">
-        <div>
-          <h1 className="text-2xl font-black text-gray-900 tracking-tight flex items-center gap-2">
+      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 border-b border-slate-200 pb-4">
+        <div className="space-y-1.5">
+          <h1 className="text-xl md:text-2xl font-black text-slate-900 tracking-tight flex items-center gap-2">
             <span>✍️</span>
             <span>{reviewMessages.writing.pageTitle}</span>
           </h1>
-          <p className="text-sm text-gray-600 mt-0.5">
+          <p className="text-xs md:text-sm font-bold text-brand-primary mt-0.5">
             {assignment?.title || 'Bài tập phản biện'}
           </p>
         </div>
@@ -98,8 +98,8 @@ export const ReviewWritingScreen: React.FC = () => {
       {/* Loading Skeleton */}
       {isLoading && (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6" aria-busy="true" role="status">
-          <Skeleton className="h-[600px] rounded-xl" />
-          <Skeleton className="h-[600px] rounded-xl" />
+          <Skeleton className="h-[600px] rounded-2xl" />
+          <Skeleton className="h-[600px] rounded-2xl" />
         </div>
       )}
 

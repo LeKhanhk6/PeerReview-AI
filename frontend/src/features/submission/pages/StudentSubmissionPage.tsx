@@ -22,9 +22,9 @@ export const StudentSubmissionPage: React.FC = () => {
 
   if (isLoading) {
     return (
-      <div className="space-y-6 max-w-5xl mx-auto p-4">
-        <Skeleton className="h-20 w-full rounded-xl" />
-        <Skeleton className="h-32 w-full rounded-xl" />
+      <div className="space-y-6 max-w-5xl mx-auto pb-12 pr-1 pt-4">
+        <Skeleton className="h-24 w-full rounded-2xl" />
+        <Skeleton className="h-32 w-full rounded-2xl" />
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <SkeletonCard />
           <SkeletonCard />
@@ -32,10 +32,9 @@ export const StudentSubmissionPage: React.FC = () => {
       </div>
     );
   }
-
   if (isError || !assignment) {
     return (
-      <div className="max-w-5xl mx-auto p-4">
+      <div className="h-full w-full min-w-0 flex items-center justify-center">
         <EmptyState
           type="error"
           title="Không thể tải thông tin bài tập"
@@ -48,32 +47,32 @@ export const StudentSubmissionPage: React.FC = () => {
   }
 
   return (
-    <div className="space-y-6 max-w-5xl mx-auto">
+    <div className="space-y-6 max-w-5xl mx-auto pb-12 pr-1 pt-4">
       {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white p-5 border border-gray-200 rounded-xl shadow-sm">
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 bg-white p-6 border border-slate-100 rounded-2xl shadow-sm shrink-0">
         <div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 mb-3">
             <Button
               type="button"
               variant="outline"
               size="sm"
               onClick={() => navigate('/student/dashboard')}
-              className="text-xs bg-white text-gray-700 hover:bg-gray-50"
+              className="text-xs bg-white text-slate-700 hover:bg-slate-50 border-slate-200"
             >
               ← Quay lại Trang chủ
             </Button>
 
             {assignment.class_name && (
-              <span className="text-xs font-bold text-blue-700 bg-blue-50 px-2.5 py-0.5 rounded-full border border-blue-200">
-                📌 Lớp {assignment.class_name} {assignment.course_code ? `(${assignment.course_code})` : ''}
+              <span className="text-xs font-bold text-brand-primary bg-brand-soft-bg px-2.5 py-0.5 rounded-full border border-brand-primary/20">
+                Lớp {assignment.class_name} {assignment.course_code ? `(${assignment.course_code})` : ''}
               </span>
             )}
           </div>
 
-          <h1 className="text-2xl font-bold text-gray-900 tracking-tight mt-2">
+          <h1 className="text-xl md:text-2xl font-bold text-slate-900 tracking-tight">
             📥 {submissionMessages.title}
           </h1>
-          <p className="text-sm font-semibold text-blue-800 mt-1">{assignment.title}</p>
+          <p className="text-xs md:text-sm font-bold text-brand-primary mt-1">{assignment.title}</p>
         </div>
       </div>
 

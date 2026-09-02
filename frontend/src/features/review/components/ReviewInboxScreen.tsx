@@ -19,12 +19,12 @@ export const ReviewInboxScreen: React.FC = () => {
   const reviewItems = data?.data || [];
 
   return (
-    <div className="max-w-5xl mx-auto px-4 py-8 space-y-6">
+    <div className="h-full w-full min-w-0 overflow-y-auto space-y-6 max-w-5xl mx-auto pb-12 pr-1 pt-4">
       {/* Back Navigation */}
       <div>
         <Link
           to={assignmentId ? `/student/assignments/${assignmentId}/submit` : '/student/dashboard'}
-          className="inline-flex items-center gap-2 text-sm font-medium text-gray-600 hover:text-gray-900 transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500 rounded-md px-2 py-1"
+          className="inline-flex items-center gap-2 text-xs font-bold text-slate-500 hover:text-brand-primary transition-colors focus:outline-none focus:ring-2 focus:ring-brand-primary rounded-md px-2 py-1"
         >
           <span aria-hidden="true">←</span>
           <span>{reviewMessages.inbox.backToAssignment}</span>
@@ -32,20 +32,20 @@ export const ReviewInboxScreen: React.FC = () => {
       </div>
 
       {/* Page Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-gray-200 pb-5">
-        <div>
-          <h1 className="text-2xl font-black text-gray-900 tracking-tight flex items-center gap-2">
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-slate-200 pb-5">
+        <div className="space-y-1.5">
+          <h1 className="text-xl md:text-2xl font-black text-slate-900 tracking-tight flex items-center gap-2">
             <span>📝</span>
             <span>{reviewMessages.inbox.title}</span>
           </h1>
-          <p className="text-sm text-gray-600 mt-1">
+          <p className="text-xs md:text-sm text-slate-600">
             {reviewMessages.inbox.subtitle}
           </p>
         </div>
 
         {/* Status Filter Buttons */}
         <div
-          className="inline-flex items-center bg-gray-100 p-1 rounded-xl border border-gray-200"
+          className="inline-flex items-center bg-slate-100 p-1 rounded-xl border border-slate-200 shrink-0"
           role="group"
           aria-label="Lọc theo trạng thái chấm"
         >
@@ -87,7 +87,7 @@ export const ReviewInboxScreen: React.FC = () => {
 
       {/* Double-Blind Anonymous Security Notice */}
       <div
-        className="bg-indigo-50/80 border border-indigo-100 rounded-xl p-4 text-xs font-medium text-indigo-900 flex items-start gap-3 shadow-xs"
+        className="bg-brand-soft-bg border border-brand-primary/20 rounded-xl p-4 text-xs font-bold text-brand-primary flex items-start gap-3 shadow-sm"
         role="note"
       >
         <span className="text-base leading-none">🛡️</span>
@@ -97,8 +97,8 @@ export const ReviewInboxScreen: React.FC = () => {
       {/* Loading Skeleton */}
       {isLoading && (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6" aria-busy="true" role="status">
-          <Skeleton className="h-64 rounded-xl" />
-          <Skeleton className="h-64 rounded-xl" />
+          <Skeleton className="h-64 rounded-2xl" />
+          <Skeleton className="h-64 rounded-2xl" />
         </div>
       )}
 

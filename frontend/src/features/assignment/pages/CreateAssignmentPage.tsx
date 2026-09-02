@@ -41,12 +41,13 @@ export const CreateAssignmentPage: React.FC = () => {
   };
 
   return (
-    <div className="space-y-6 max-w-4xl mx-auto">
-      <div>
-        <h1 className="text-2xl font-bold text-gray-900 tracking-tight">
+    <div className="space-y-6 max-w-4xl mx-auto pb-12 pr-1 pt-4">
+      {/* Page Header */}
+      <div className="bg-white p-6 border border-slate-100 rounded-2xl shadow-sm space-y-1.5 shrink-0">
+        <h1 className="text-xl md:text-2xl font-bold text-slate-900 tracking-tight">
           {assignmentMessages.createTitle}
         </h1>
-        <p className="text-sm text-gray-600 mt-1">
+        <p className="text-xs md:text-sm text-slate-500">
           Điền các thông tin bài tập, yêu cầu và thiết lập khung tiêu chí chấm điểm (Rubric).
         </p>
       </div>

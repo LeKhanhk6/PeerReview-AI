@@ -57,7 +57,7 @@ export const AssignmentList: React.FC = () => {
   return (
     <div className="space-y-6">
       {/* Header & Filter Toolbar */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-4 border border-gray-200 rounded-lg shadow-sm">
+      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 bg-white p-4 border border-slate-100 rounded-2xl shadow-sm shrink-0">
         <div className="flex-1 min-w-[240px] max-w-xs">
           <label htmlFor="filter-class" className="block text-xs font-medium text-gray-700 mb-1">
             Lọc theo lớp học
@@ -67,7 +67,7 @@ export const AssignmentList: React.FC = () => {
             value={selectedClassId}
             onChange={(e) => handleClassFilterChange(e.target.value)}
             disabled={isLoadingClasses}
-            className="w-full px-3 py-1.5 border border-gray-300 rounded-md text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full h-10 px-3 border border-slate-200 rounded-xl text-sm bg-white focus:outline-none focus:ring-2 focus:ring-brand-primary"
           >
             <option value="">-- Tất cả lớp học --</option>
             {classes.map((cls: any) => (
@@ -85,10 +85,10 @@ export const AssignmentList: React.FC = () => {
 
       {/* Loading Skeleton */}
       {isLoadingAssignments ? (
-        <div className="space-y-3">
-          <Skeleton className="h-24 w-full rounded-lg" />
-          <Skeleton className="h-24 w-full rounded-lg" />
-          <Skeleton className="h-24 w-full rounded-lg" />
+        <div className="space-y-4">
+          <Skeleton className="h-28 w-full rounded-2xl" />
+          <Skeleton className="h-28 w-full rounded-2xl" />
+          <Skeleton className="h-28 w-full rounded-2xl" />
         </div>
       ) : isError ? (
         <EmptyState
@@ -116,11 +116,11 @@ export const AssignmentList: React.FC = () => {
             return (
               <div
                 key={assignment.id}
-                className="bg-white border border-gray-200 rounded-lg p-5 hover:border-gray-300 transition-all shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4"
+                className="bg-white border border-slate-100 rounded-2xl p-5 hover:border-slate-300 hover:shadow-md transition-all shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4"
               >
                 <div className="space-y-2 flex-1">
                   <div className="flex flex-wrap items-center gap-2">
-                    <h3 className="text-base font-bold text-gray-900 hover:text-blue-600 transition-colors">
+                    <h3 className="text-base font-bold text-slate-900 hover:text-brand-primary transition-colors">
                       {assignment.title}
                     </h3>
 
@@ -143,27 +143,27 @@ export const AssignmentList: React.FC = () => {
                   </div>
 
                   {assignment.class_name && (
-                    <p className="text-xs font-medium text-blue-700">
-                      🏫 Lớp: {assignment.class_name}
+                    <p className="text-xs font-bold text-brand-primary bg-brand-soft-bg inline-flex px-2 py-0.5 rounded border border-brand-primary/20">
+                      Lớp: {assignment.class_name}
                     </p>
                   )}
 
                   {assignment.description && (
-                    <p className="text-sm text-gray-600 line-clamp-2">{assignment.description}</p>
+                    <p className="text-sm text-slate-600 line-clamp-2">{assignment.description}</p>
                   )}
 
-                  <div className="flex flex-wrap items-center gap-4 text-xs text-gray-500 pt-1">
+                  <div className="flex flex-wrap items-center gap-4 text-xs text-slate-500 pt-1 font-medium">
                     <span>
-                      📅 Hạn nộp: <strong className="text-gray-700">{deadlineDate.toLocaleString()}</strong>
+                      Hạn nộp: <strong className="text-slate-800">{deadlineDate.toLocaleString('vi-VN')}</strong>
                     </span>
                     <span>
-                      🕒 Ngày tạo: {new Date(assignment.created_at).toLocaleDateString()}
+                      Tạo ngày: {new Date(assignment.created_at).toLocaleDateString('vi-VN')}
                     </span>
                   </div>
                 </div>
 
                 {/* Actions */}
-                <div className="flex items-center gap-2 pt-2 md:pt-0 border-t md:border-t-0 border-gray-100">
+                <div className="flex items-center gap-2 pt-4 md:pt-0 border-t md:border-t-0 border-slate-100 mt-2 md:mt-0">
                   {!hasRubric && (
                     <Button
                       variant="outline"
@@ -179,9 +179,9 @@ export const AssignmentList: React.FC = () => {
                     variant="outline"
                     size="sm"
                     onClick={() => navigate(`/teacher/assignments/${assignment.id}/synthesis`)}
-                    className="border-blue-200 text-blue-700 hover:bg-blue-50 font-medium"
+                    className="border-brand-primary/30 text-brand-primary hover:bg-brand-soft-bg font-bold"
                   >
-                    🤖 AI Synthesis
+                    AI Synthesis
                   </Button>
 
                   <Button

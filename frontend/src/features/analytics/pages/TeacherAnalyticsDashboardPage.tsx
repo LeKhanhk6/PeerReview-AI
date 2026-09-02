@@ -38,18 +38,18 @@ export const TeacherAnalyticsDashboardPage: React.FC = () => {
   };
 
   return (
-    <div className="space-y-6 max-w-7xl mx-auto">
+    <div className="space-y-6 max-w-7xl mx-auto pb-12 pr-1 pt-4">
       {/* Page Header & Filter */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white p-5 border border-gray-200 rounded-xl shadow-sm">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900 tracking-tight">
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 bg-white p-6 border border-slate-100 rounded-2xl shadow-sm shrink-0">
+        <div className="space-y-1.5">
+          <h1 className="text-xl md:text-2xl font-bold text-slate-900 tracking-tight">
             📊 {analyticsMessages.title}
           </h1>
-          <p className="text-sm text-gray-600 mt-1">{analyticsMessages.subtitle}</p>
+          <p className="text-xs md:text-sm text-slate-500">{analyticsMessages.subtitle}</p>
         </div>
 
         <div className="w-full md:w-72">
-          <label htmlFor="filter-analytics-class" className="block text-xs font-medium text-gray-700 mb-1">
+          <label htmlFor="filter-analytics-class" className="block text-xs font-bold text-slate-700 mb-1.5">
             {analyticsMessages.filter.selectClass}
           </label>
           <select
@@ -57,7 +57,7 @@ export const TeacherAnalyticsDashboardPage: React.FC = () => {
             value={selectedClassId}
             onChange={(e) => handleClassFilterChange(e.target.value)}
             disabled={isLoadingClasses}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full h-10 px-3 border border-slate-200 rounded-xl text-sm bg-white focus:outline-none focus:ring-2 focus:ring-brand-primary"
           >
             <option value="">{analyticsMessages.filter.allClasses}</option>
             {classes.map((cls: any) => (

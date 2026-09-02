@@ -83,7 +83,7 @@ export const TeacherReviewSynthesisPage: React.FC = () => {
   };
 
   return (
-    <div className="space-y-6 max-w-7xl mx-auto pb-12">
+    <div className="h-full w-full min-w-0 overflow-y-auto space-y-6 max-w-7xl mx-auto pb-12 pr-1 pt-4">
       {/* Top Header & Navigation */}
       <div className="bg-white p-5 border border-gray-200 rounded-xl shadow-sm space-y-2">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">

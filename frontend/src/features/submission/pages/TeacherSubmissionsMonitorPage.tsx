@@ -57,7 +57,7 @@ export const TeacherSubmissionsMonitorPage: React.FC = () => {
 
   if (isLoading) {
     return (
-      <div className="p-6 max-w-7xl mx-auto space-y-8 bg-slate-50/50 min-h-screen">
+      <div className="h-full w-full min-w-0 overflow-y-auto space-y-6 max-w-7xl mx-auto pb-12 pr-1 pt-4">
         <div className="space-y-2">
           <Skeleton className="h-8 w-64" />
           <Skeleton className="h-4 w-96" />
@@ -74,7 +74,7 @@ export const TeacherSubmissionsMonitorPage: React.FC = () => {
 
   if (isError || !monitorData) {
     return (
-      <div className="p-6 max-w-7xl mx-auto min-h-screen bg-slate-50/50 flex items-center justify-center">
+      <div className="h-full w-full min-w-0 flex items-center justify-center">
         <EmptyState
           type="error"
           title="Không thể tải dữ liệu theo dõi bài nộp"
@@ -90,7 +90,7 @@ export const TeacherSubmissionsMonitorPage: React.FC = () => {
   const deadlineDaysStatus = calculateDaysLeftStatus(assignment.deadline);
 
   return (
-    <div className="p-6 max-w-7xl mx-auto space-y-8 bg-slate-50/50 min-h-screen">
+    <div className="h-full w-full min-w-0 overflow-y-auto space-y-6 max-w-7xl mx-auto pb-12 pr-1 pt-4">
       {/* Top Header & Actions */}
       <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
@@ -227,7 +227,7 @@ export const TeacherSubmissionsMonitorPage: React.FC = () => {
                   const isSubmittedLate = group.isLate || group.status === 'LATE';
 
                   return (
-                    <tr key={group.groupId} className="hover:bg-slate-50/80 transition-colors">
+                    <tr key={group.groupId} className="hover:bg-slate-50 transition-colors">
                       <td className="py-3.5 px-4 font-bold text-slate-900">
                         {group.groupName}
                       </td>

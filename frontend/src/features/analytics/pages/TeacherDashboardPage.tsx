@@ -87,19 +87,19 @@ export const TeacherDashboardPage: React.FC = () => {
 
   if (isOverviewLoading) {
     return (
-      <div className="space-y-4">
-        <div className="space-y-2">
+      <div className="flex-1 flex flex-col min-h-0 space-y-4">
+        <div className="shrink-0 space-y-2">
           <Skeleton className="h-7 w-56" />
           <Skeleton className="h-4 w-80" />
         </div>
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+        <div className="shrink-0 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
           {[...Array(5)].map((_, i) => (
             <Skeleton key={i} className="h-24 rounded-2xl" />
           ))}
         </div>
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
-          <Skeleton className="h-80 lg:col-span-2 rounded-2xl" />
-          <Skeleton className="h-80 rounded-2xl" />
+        <div className="flex-1 min-h-0 grid grid-cols-1 lg:grid-cols-3 gap-5">
+          <Skeleton className="h-full lg:col-span-2 rounded-2xl" />
+          <Skeleton className="h-full rounded-2xl" />
         </div>
       </div>
     );
@@ -136,9 +136,9 @@ export const TeacherDashboardPage: React.FC = () => {
   const hasAverageScore = (overview?.averageScore || 0) > 0;
 
   return (
-    <div className="space-y-5">
-      {/* Top Header & Class Selector Dropdown */}
-      <div className="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 flex flex-col md:flex-row md:items-center justify-between gap-4">
+    <div className="flex-1 flex flex-col min-h-0 space-y-4 md:space-y-5 overflow-y-auto lg:overflow-hidden">
+      {/* 1. Top Header & Class Selector Dropdown (shrink-0) */}
+      <div className="shrink-0 bg-white p-4 md:p-5 rounded-2xl shadow-sm border border-slate-100 flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h1 className="text-xl md:text-2xl font-bold text-slate-900 tracking-tight">
             {analyticsMessages.teacherDashboardTitle}, {user?.full_name || 'Giảng viên'} 👋
@@ -169,8 +169,8 @@ export const TeacherDashboardPage: React.FC = () => {
         </div>
       </div>
 
-      {/* 5 Stat Cards Row */}
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+      {/* 2. 5 Stat Cards Row (shrink-0) */}
+      <div className="shrink-0 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
         <div className="bg-white p-4 md:p-5 rounded-2xl border border-slate-100 shadow-sm flex flex-col justify-between">
           <div className="text-xs md:text-sm font-medium text-slate-500">{analyticsMessages.overview.totalClasses}</div>
           <div className="text-xl md:text-2xl font-bold text-slate-900 mt-1">{overview?.totalClasses || 0}</div>
@@ -203,84 +203,82 @@ export const TeacherDashboardPage: React.FC = () => {
         </div>
       </div>
 
-      {/* Main Content: Left = Active Assignments, Right = Early Warning Panel */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-5 items-start">
+      {/* 3. Bottom Row: Left = Active Assignments, Right = Early Warning Panel (flex-1 min-h-0) */}
+      <div className="flex-1 min-h-0 grid grid-cols-1 lg:grid-cols-[1fr_380px] gap-5 items-stretch">
         {/* Left Column: Active Assignments Card */}
-        <div className="lg:col-span-2 space-y-5">
-          <div className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm space-y-4">
-            <div className="flex items-center justify-between gap-4 pb-4 border-b border-slate-100">
-              <h2 className="text-sm md:text-base font-bold text-slate-900">
-                Bài tập & Đợt đánh giá chéo đang diễn ra
-              </h2>
-              <Link to="/teacher/assignments/new">
-                <Button
-                  variant="default"
-                  size="sm"
-                  className="bg-brand-primary hover:bg-brand-hover text-white rounded-xl shadow-md px-3.5 py-2 text-xs font-semibold inline-flex items-center gap-1.5 transition-colors"
-                >
-                  <Plus className="w-4 h-4" />
-                  <span>+ Tạo bài tập mới</span>
-                </Button>
-              </Link>
-            </div>
-
-            {assignments.length === 0 ? (
-              <EmptyState
-                type="no_data"
-                title="Chưa có bài tập nào"
-                description="Lớp học này hiện chưa tạo bài tập hoặc đợt chấm chéo nào."
-              />
-            ) : (
-              <div className="divide-y divide-slate-100">
-                {assignments.map((assignment: any) => {
-                  const daysStatus = calculateDaysLeftStatus(assignment.deadline);
-                  const badgeText = formatDaysLeftLabel(daysStatus, workspaceMessages.deadline);
-
-                  return (
-                    <div
-                      key={assignment.id}
-                      className="py-3.5 first:pt-0 last:pb-0 flex flex-col sm:flex-row sm:items-center justify-between gap-3 hover:bg-slate-50/60 transition-colors rounded-xl px-2 -mx-2"
-                    >
-                      <div className="space-y-0.5">
-                        <h3 className="text-xs md:text-sm font-bold text-slate-900">{assignment.title}</h3>
-                        <p className="text-xs text-slate-500">
-                          Hạn nộp: {new Date(assignment.deadline).toLocaleDateString('vi-VN')}
-                        </p>
-                      </div>
-
-                      <div className="flex flex-wrap items-center gap-2 shrink-0">
-                        {/* Compact 1-line Badge Pill (Fixes line-break / circular bubble issue) */}
-                        <span
-                          className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium whitespace-nowrap shrink-0 border ${getBadgeColorClass(daysStatus.variant)}`}
-                        >
-                          {badgeText}
-                        </span>
-
-                        <Link to={`/teacher/assignments/${assignment.id}/submissions`}>
-                          <Button variant="outline" size="sm" className="text-xs px-2.5 py-1 rounded-lg border-slate-200 text-slate-700 hover:bg-slate-50 inline-flex items-center gap-1">
-                            <FolderOpen className="w-3.5 h-3.5 text-slate-500" />
-                            <span>Theo dõi bài nộp</span>
-                          </Button>
-                        </Link>
-
-                        <Link to={`/teacher/assignments/${assignment.id}/synthesis`}>
-                          <Button variant="outline" size="sm" className="text-xs px-2.5 py-1 rounded-lg border-slate-200 text-slate-700 hover:bg-slate-50 inline-flex items-center gap-1">
-                            <Sparkles className="w-3.5 h-3.5 text-amber-500" />
-                            <span>Xem tổng hợp AI</span>
-                          </Button>
-                        </Link>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            )}
+        <div className="bg-white p-5 md:p-6 rounded-2xl border border-slate-100 shadow-sm flex flex-col h-full min-h-0 space-y-4">
+          <div className="shrink-0 flex items-center justify-between gap-4 pb-4 border-b border-slate-100">
+            <h2 className="text-sm md:text-base font-bold text-slate-900">
+              Bài tập & Đợt đánh giá chéo đang diễn ra
+            </h2>
+            <Link to="/teacher/assignments/new">
+              <Button
+                variant="default"
+                size="sm"
+                className="bg-brand-primary hover:bg-brand-hover text-white rounded-xl shadow-md px-3.5 py-2 text-xs font-semibold inline-flex items-center gap-1.5 transition-colors"
+              >
+                <Plus className="w-4 h-4" />
+                <span>+ Tạo bài tập mới</span>
+              </Button>
+            </Link>
           </div>
+
+          {assignments.length === 0 ? (
+            <EmptyState
+              type="no_data"
+              title="Chưa có bài tập nào"
+              description="Lớp học này hiện chưa tạo bài tập hoặc đợt chấm chéo nào."
+            />
+          ) : (
+            <div className="flex-1 min-h-0 overflow-y-auto divide-y divide-slate-100 pr-1">
+              {assignments.map((assignment: any) => {
+                const daysStatus = calculateDaysLeftStatus(assignment.deadline);
+                const badgeText = formatDaysLeftLabel(daysStatus, workspaceMessages.deadline);
+
+                return (
+                  <div
+                    key={assignment.id}
+                    className="py-3.5 first:pt-0 last:pb-0 flex flex-col sm:flex-row sm:items-center justify-between gap-3 hover:bg-slate-50/60 transition-colors rounded-xl px-2 -mx-2"
+                  >
+                    <div className="space-y-0.5">
+                      <h3 className="text-xs md:text-sm font-bold text-slate-900">{assignment.title}</h3>
+                      <p className="text-xs text-slate-500">
+                        Hạn nộp: {new Date(assignment.deadline).toLocaleDateString('vi-VN')}
+                      </p>
+                    </div>
+
+                    <div className="flex flex-wrap items-center gap-2 shrink-0">
+                      {/* Compact 1-line Badge Pill */}
+                      <span
+                        className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium whitespace-nowrap shrink-0 border ${getBadgeColorClass(daysStatus.variant)}`}
+                      >
+                        {badgeText}
+                      </span>
+
+                      <Link to={`/teacher/assignments/${assignment.id}/submissions`}>
+                        <Button variant="outline" size="sm" className="text-xs px-2.5 py-1 rounded-lg border-slate-200 text-slate-700 hover:bg-slate-50 inline-flex items-center gap-1">
+                          <FolderOpen className="w-3.5 h-3.5 text-slate-500" />
+                          <span>Theo dõi bài nộp</span>
+                        </Button>
+                      </Link>
+
+                      <Link to={`/teacher/assignments/${assignment.id}/synthesis`}>
+                        <Button variant="outline" size="sm" className="text-xs px-2.5 py-1 rounded-lg border-slate-200 text-slate-700 hover:bg-slate-50 inline-flex items-center gap-1">
+                          <Sparkles className="w-3.5 h-3.5 text-amber-500" />
+                          <span>Xem tổng hợp AI</span>
+                        </Button>
+                      </Link>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
         </div>
 
         {/* Right Column: Early Warning Risk Panel */}
-        <div className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm space-y-4">
-          <div className="flex items-center justify-between gap-2 pb-3 border-b border-slate-100">
+        <div className="bg-white p-5 md:p-6 rounded-2xl border border-slate-100 shadow-sm flex flex-col h-full min-h-0 space-y-4">
+          <div className="shrink-0 flex items-center justify-between gap-2 pb-3 border-b border-slate-100">
             <h2 className="text-sm md:text-base font-bold text-slate-900 flex items-center gap-2">
               <Siren className="w-4 h-4 text-rose-600" />
               <span>{analyticsMessages.earlyWarning.widgetTitle}</span>
@@ -309,7 +307,7 @@ export const TeacherDashboardPage: React.FC = () => {
               </p>
             </div>
           ) : (
-            <div className="space-y-3">
+            <div className="flex-1 min-h-0 overflow-y-auto space-y-3 pr-1">
               {topRisks.map((risk) => {
                 const isHigh = risk.severity === 'HIGH';
                 const riskLabel =
@@ -325,13 +323,13 @@ export const TeacherDashboardPage: React.FC = () => {
                         navigate('/teacher/analytics');
                       }
                     }}
-                    className={`p-4 rounded-xl cursor-pointer transition-all hover:shadow-sm ${
+                    className={`p-3.5 rounded-xl cursor-pointer transition-all hover:shadow-sm ${
                       isHigh
                         ? 'bg-rose-50 border border-rose-100 hover:border-rose-200'
                         : 'bg-amber-50 border border-amber-100 hover:border-amber-200'
                     }`}
                   >
-                    <div className="flex items-center justify-between gap-2 mb-1.5">
+                    <div className="flex items-center justify-between gap-2 mb-1">
                       <span
                         className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold whitespace-nowrap ${
                           isHigh

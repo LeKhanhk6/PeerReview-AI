@@ -77,4 +77,30 @@ Tách biệt thị giác giữa các tác vụ thường và gợi ý thông min
 ## 📐 5. QUY ĐỊNH BO GÓC & BÓNG NỔI (RADIUS & SHADOW TOKENS)
 - **Main Container Card**: `rounded-2xl` (16px) với `border border-slate-100 shadow-sm`.
 - **Sub-Widgets & Buttons**: `rounded-xl` (12px) hoặc `rounded-lg` (8px).
-- **Status Badges**: `rounded-full` (Pill shape).
+- **Status Badges**: `rounded-full` (Pill shape: `inline-flex items-center px-2.5 py-0.5 text-xs font-medium whitespace-nowrap shrink-0`).
+
+---
+
+## 🖥️ 6. QUY TẮC LAYOUT FULL-VIEWPORT SHELL (100VH - NO PAGE SCROLL)
+
+Quy định cấu trúc Flexbox chuẩn cho tất cả màn hình Dashboard & Workspace sau khi đăng nhập:
+
+```
+App Shell: h-screen flex overflow-hidden (Gốc 100vh)
+├── Sidebar: h-full flex flex-col shrink-0 (Menu cuộn riêng: overflow-y-auto flex-1)
+└── Main Content: flex flex-col flex-1 min-w-0 h-full overflow-hidden
+    ├── Topbar: shrink-0 (Chiều cao cố định h-16)
+    └── Page Content: flex-1 flex flex-col min-h-0 overflow-y-auto lg:overflow-hidden p-3 sm:p-4 md:p-5
+        ├── Top Header: shrink-0
+        ├── Stat Cards: shrink-0 (grid-cols-2 md:grid-cols-3 lg:grid-cols-5)
+        └── Main Columns Row: flex-1 min-h-0 grid lg:grid-cols-[1fr_380px] gap-5 items-stretch
+            ├── Left Card: flex flex-col h-full min-h-0
+            │   └── Scrollable List: flex-1 min-h-0 overflow-y-auto
+            └── Right Card: flex flex-col h-full min-h-0
+                └── Scrollable Warnings: flex-1 min-h-0 overflow-y-auto
+```
+
+### Nguyên tắc bắt buộc:
+1. **Không cuộn toàn trang trên Desktop (`lg:` breakpoint trở lên)**: Trang chủ/Dashboard không có scrollbar dọc toàn trang trên màn hình máy tính (1920x1080, 1536x864, 1366x768). Chỉ các danh sách dài bên trong Card mới tự cuộn (`overflow-y-auto`).
+2. **Quy tắc `min-h-0` cho Flex Children**: Mọi khối `flex-1` có chứa container cuộn `overflow-y-auto` bắt buộc phải đi kèm class `min-h-0` để flexbox không bị vỡ tràn chiều cao.
+3. **Responsive Mobile (< lg)**: Giữ `overflow-y-auto` ở màn hình di động/tablet nhỏ để cuộn trang tự nhiên, tránh bị tràn chữ.

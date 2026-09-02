@@ -6,83 +6,139 @@ import { Link } from 'react-router-dom';
 import { toast } from 'sonner';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { Pagination } from '@/components/ui/Pagination';
+import { SkeletonCard } from '@/components/ui/Skeleton';
+import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
+import { Copy, Plus, Trash2 } from 'lucide-react';
 
 export const TeacherClassesPage: React.FC = () => {
   const { data: classesData, isLoading, page, setPage } = useClasses();
   const deleteClass = useDeleteClass();
   const [isCreateOpen, setIsCreateOpen] = useState(false);
+  const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null);
 
-  const handleDelete = async (id: string) => {
-    if (window.confirm('Are you sure you want to delete this class?')) {
-      try {
-        await deleteClass.mutateAsync(id);
-        toast.success('Class deleted successfully');
-      } catch (error: any) {
-        toast.error(error.message || 'Failed to delete class');
-      }
+  const handleDelete = async () => {
+    if (!deleteTargetId) return;
+    try {
+      await deleteClass.mutateAsync(deleteTargetId);
+      toast.success('Đã xóa lớp học thành công');
+      setDeleteTargetId(null);
+    } catch (error: any) {
+      toast.error(error.message || 'Không thể xóa lớp học');
     }
   };
 
-  if (isLoading) return <div>Loading...</div>;
+  const copyInviteCode = (code: string) => {
+    navigator.clipboard.writeText(code);
+    toast.success('Đã copy mã mời: ' + code);
+  };
 
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold text-gray-900">My Classes</h1>
-        <Button onClick={() => setIsCreateOpen(true)}>Create Class</Button>
+    <div className="h-full flex flex-col min-h-0 bg-slate-50">
+      <div className="bg-white p-5 border-b border-slate-200 shrink-0 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <h1 className="text-xl md:text-2xl font-bold text-slate-900 tracking-tight">Quản lý Lớp học</h1>
+          <p className="text-xs md:text-sm text-slate-500 mt-0.5">Quản lý danh sách các lớp học, học kỳ và mã mời</p>
+        </div>
+        <Button onClick={() => setIsCreateOpen(true)} className="gap-2 shrink-0">
+          <Plus className="w-4 h-4" /> Tạo lớp mới
+        </Button>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {classesData?.data?.map((cls: any) => (
-          <div key={cls.id} className="bg-white rounded-lg shadow border border-gray-200 p-6">
-            <div className="flex justify-between items-start mb-4">
-              <div>
-                <h3 className="text-lg font-semibold text-gray-900">
-                  <Link to={`/teacher/classes/${cls.id}`} className="hover:text-blue-600">
-                    {cls.course_code} - {cls.name}
-                  </Link>
-                </h3>
-                <p className="text-sm text-gray-500">{cls.course_name}</p>
-              </div>
-              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                {cls.semester || 'No Semester'}
-              </span>
-            </div>
-            
-            <div className="mt-4 pt-4 border-t border-gray-100 flex items-center justify-between">
-              <div className="text-sm text-gray-500">
-                Invite Code: <span className="font-mono font-bold text-gray-900">{cls.invite_code}</span>
-              </div>
-              <Button variant="outline" size="sm" onClick={() => handleDelete(cls.id)}>
-                Delete
-              </Button>
-            </div>
+      <div className="flex-1 min-h-0 overflow-y-auto p-5">
+        {isLoading ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5" aria-busy="true">
+            <SkeletonCard />
+            <SkeletonCard />
+            <SkeletonCard />
           </div>
-        ))}
-        {classesData?.data?.length === 0 && (
-          <div className="col-span-full">
-            <EmptyState
-              type="no_data"
-              title="No classes found"
-              description="You haven't created any classes yet. Create one to get started."
-              actionLabel="Create Class"
-              onAction={() => setIsCreateOpen(true)}
-            />
-          </div>
+        ) : (
+          <>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+              {classesData?.data?.map((cls: any) => (
+                <div key={cls.id} className="bg-white rounded-2xl border border-slate-100 shadow-sm p-5 flex flex-col gap-3 hover:shadow-md hover:border-brand-primary/20 transition-all group">
+                  <div className="flex items-start justify-between gap-2">
+                    <div>
+                      <span className="text-xs font-mono font-bold text-slate-500 bg-slate-50 px-2 py-0.5 rounded border border-slate-100">
+                        {cls.course_code}
+                      </span>
+                      <h3 className="text-base font-bold text-slate-900 mt-1 line-clamp-1" title={cls.name}>
+                        <Link to={`/teacher/classes/${cls.id}`} className="hover:text-brand-primary transition-colors">
+                          {cls.name}
+                        </Link>
+                      </h3>
+                      <p className="text-xs text-slate-500 line-clamp-1 mt-0.5" title={cls.course_name}>
+                        {cls.course_name}
+                      </p>
+                    </div>
+                    <span className="shrink-0 inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-brand-soft-bg text-brand-primary border border-brand-primary/20">
+                      {cls.semester || 'Chưa xếp HK'}
+                    </span>
+                  </div>
+                  
+                  <div className="mt-auto pt-3 border-t border-slate-100 flex items-center justify-between">
+                    <div className="flex items-center gap-1.5 bg-slate-50 border border-slate-200 px-2.5 py-1 rounded-lg hover:bg-slate-100 transition-colors cursor-pointer" onClick={() => copyInviteCode(cls.invite_code)}>
+                      <span className="text-xs text-slate-500">Mã:</span>
+                      <span className="text-xs font-mono font-bold text-slate-900">{cls.invite_code}</span>
+                      <Copy className="w-3.5 h-3.5 text-slate-400 ml-1" />
+                    </div>
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      onClick={() => setDeleteTargetId(cls.id)}
+                      className="text-slate-400 hover:text-rose-600 hover:bg-rose-50 h-8 px-2.5"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </Button>
+                  </div>
+                </div>
+              ))}
+              
+              {classesData?.data?.length === 0 && (
+                <div className="col-span-full py-8">
+                  <EmptyState
+                    type="no_data"
+                    title="Chưa có lớp học nào"
+                    description="Bạn chưa tạo lớp học nào. Hãy tạo lớp đầu tiên để bắt đầu."
+                    actionLabel="Tạo Lớp Học"
+                    onAction={() => setIsCreateOpen(true)}
+                  />
+                </div>
+              )}
+            </div>
+
+            {classesData && (
+              <div className="mt-6 pt-4 flex items-center justify-between border-t border-slate-200 text-xs text-slate-500">
+                <span>
+                  {classesData.totalPages > 1 ? (
+                    <>Trang <strong>{page}</strong> / {classesData.totalPages} (Tổng số lớp: {classesData.total})</>
+                  ) : (
+                    <>Tổng số lớp: {classesData.total}</>
+                  )}
+                </span>
+                {classesData.totalPages > 1 && (
+                  <Pagination
+                    page={page}
+                    totalPages={classesData.totalPages}
+                    onPageChange={setPage}
+                  />
+                )}
+              </div>
+            )}
+          </>
         )}
       </div>
 
-      {classesData && classesData.totalPages > 1 && (
-        <div className="mt-8">
-          <Pagination
-            page={page}
-            totalPages={classesData.totalPages}
-            onPageChange={setPage}
-          />
-        </div>
-      )}
-
       <CreateClassDialog open={isCreateOpen} onClose={() => setIsCreateOpen(false)} />
+
+      <ConfirmDialog
+        open={Boolean(deleteTargetId)}
+        onClose={() => setDeleteTargetId(null)}
+        onConfirm={handleDelete}
+        title="Xác nhận xóa lớp học"
+        description="Toàn bộ sinh viên, bài tập và điểm số trong lớp này sẽ bị xóa. Hành động này không thể hoàn tác."
+        isDestructive={true}
+        isLoading={deleteClass.isPending}
+      />
     </div>
   );
 };

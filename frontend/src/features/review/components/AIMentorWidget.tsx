@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Sparkles } from 'lucide-react';
 import { toast } from 'sonner';
 import { reviewMessages } from '@/constants/messages/review';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
@@ -140,7 +141,7 @@ export const AIMentorWidget: React.FC<AIMentorWidgetProps> = ({
             {analysis.suggested_rewrite && (
               <div className="bg-white border border-emerald-100 rounded-lg p-3 text-xs text-emerald-900 space-y-2">
                 <div className="flex items-center justify-between gap-2">
-                  <span className="font-bold text-emerald-900">✨ Câu gợi ý tham khảo:</span>
+                  <span className="font-bold text-emerald-900 flex items-center gap-1"><Sparkles className="w-4 h-4" /> Câu gợi ý tham khảo:</span>
                   <button
                     type="button"
                     onClick={() => setIsConfirmOpen(true)}

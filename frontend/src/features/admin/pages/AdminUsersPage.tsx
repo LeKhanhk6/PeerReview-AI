@@ -28,7 +28,7 @@ export const AdminUsersPage: React.FC = () => {
     role: (role as any) || undefined,
     status: (status as any) || undefined,
     page,
-    limit: 20,
+    limit: 15,
   });
 
   const updateRoleMutation = useUpdateUserRoleMutation();
@@ -77,13 +77,13 @@ export const AdminUsersPage: React.FC = () => {
   };
 
   return (
-    <div className="space-y-6 max-w-7xl mx-auto pb-12">
+    <div className="h-full w-full min-w-0 overflow-y-auto space-y-6 max-w-7xl mx-auto pb-12 pr-1">
       {/* Page Header */}
-      <div className="bg-white p-6 border border-gray-200 rounded-xl shadow-sm space-y-2">
-        <h1 className="text-2xl font-bold text-gray-900 tracking-tight">
+      <div className="bg-white p-6 border border-slate-100 rounded-2xl shadow-sm space-y-1.5 shrink-0">
+        <h1 className="text-xl md:text-2xl font-bold text-slate-900 tracking-tight">
           {adminMessages.header.usersTitle}
         </h1>
-        <p className="text-sm text-gray-600">{adminMessages.header.usersSubtitle}</p>
+        <p className="text-xs md:text-sm text-slate-500">{adminMessages.header.usersSubtitle}</p>
       </div>
 
       {/* Main User Table Component */}
@@ -91,7 +91,7 @@ export const AdminUsersPage: React.FC = () => {
         users={users}
         total={total}
         page={page}
-        limit={20}
+        limit={15}
         hasNext={hasNext}
         isLoading={isLoading}
         searchTerm={search}

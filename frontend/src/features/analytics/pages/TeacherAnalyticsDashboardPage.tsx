@@ -76,7 +76,7 @@ export const TeacherAnalyticsDashboardPage: React.FC = () => {
           onClick={() => setActiveTab('contribution')}
           className={`pb-3 text-sm font-bold border-b-2 transition-colors flex items-center gap-2 ${
             activeTab === 'contribution'
-              ? 'border-blue-600 text-blue-600'
+              ? 'border-brand-primary text-brand-primary'
               : 'border-transparent text-gray-500 hover:text-gray-700'
           }`}
         >
@@ -88,7 +88,7 @@ export const TeacherAnalyticsDashboardPage: React.FC = () => {
           onClick={() => setActiveTab('earlyWarning')}
           className={`pb-3 text-sm font-bold border-b-2 transition-colors flex items-center gap-2 ${
             activeTab === 'earlyWarning'
-              ? 'border-blue-600 text-blue-600'
+              ? 'border-brand-primary text-brand-primary'
               : 'border-transparent text-gray-500 hover:text-gray-700'
           }`}
         >
@@ -137,7 +137,7 @@ export const TeacherAnalyticsDashboardPage: React.FC = () => {
                   <span className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
                     {analyticsMessages.overview.submissionRate}
                   </span>
-                  <p className="text-2xl font-black text-blue-600">{overviewMetrics.submissionRate}%</p>
+                  <p className="text-2xl font-black text-brand-primary">{overviewMetrics.submissionRate}%</p>
                   <p className="text-xs text-gray-400">
                     {overviewMetrics.actualSubmissions} / {overviewMetrics.expectedSubmissions} bài nộp
                   </p>

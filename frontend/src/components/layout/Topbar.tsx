@@ -1,9 +1,7 @@
 import React from 'react';
-import { Menu, LogOut, User as UserIcon } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Menu, LogOut } from 'lucide-react';
 import { useAuthStore } from '../../features/auth/store/authStore';
 import { Button } from '../ui/Button';
-import { layoutMessages } from '../../constants/messages/layout';
 
 interface TopbarProps {
   onOpenSidebar: () => void;
@@ -11,10 +9,7 @@ interface TopbarProps {
 }
 
 export const Topbar: React.FC<TopbarProps> = ({ onOpenSidebar, badge }) => {
-  const { user, logout } = useAuthStore();
-
-  const rolePath =
-    user?.role === 'ADMIN' ? 'admin' : user?.role === 'TEACHER' ? 'teacher' : 'student';
+  const { logout } = useAuthStore();
 
   return (
     <header className="sticky top-0 z-30 flex h-16 w-full items-center justify-between bg-white px-4 shadow-sm border-b border-gray-200">
@@ -27,7 +22,11 @@ export const Topbar: React.FC<TopbarProps> = ({ onOpenSidebar, badge }) => {
           <Menu className="w-6 h-6" />
         </button>
         <div className="flex items-center gap-3">
-          <span className="text-xl font-bold text-gray-900 hidden sm:block">PeerReview AI</span>
+          <img 
+            src="/logo.png" 
+            alt="Logo" 
+            className="h-12 w-auto object-contain md:hidden -ml-2" 
+          />
           {badge && (
             <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
               {badge}
@@ -36,40 +35,15 @@ export const Topbar: React.FC<TopbarProps> = ({ onOpenSidebar, badge }) => {
         </div>
       </div>
 
-      <div className="flex items-center gap-4">
-        <Link
-          to={`/${rolePath}/profile`}
-          className="flex items-center gap-3 p-1.5 rounded-xl hover:bg-slate-100 transition-colors"
-          title="Xem trang cá nhân & đổi mật khẩu"
-        >
-          <div className="hidden sm:flex flex-col items-end">
-            <span className="text-sm font-medium text-gray-900">{user?.full_name}</span>
-            <span className="text-xs text-gray-500">{user?.role}</span>
-          </div>
-          <div className="flex items-center justify-center w-10 h-10 bg-blue-100 text-blue-700 rounded-full overflow-hidden shrink-0 border border-blue-200">
-            {user?.avatar_url ? (
-              <img
-                src={user.avatar_url}
-                alt={user.full_name}
-                className="w-full h-full object-cover"
-                onError={(e) => {
-                  (e.target as HTMLElement).style.display = 'none';
-                }}
-              />
-            ) : (
-              <UserIcon className="w-5 h-5" />
-            )}
-          </div>
-        </Link>
-
+      <div className="flex items-center gap-2">
         <Button 
-          variant="outline" 
+          variant="ghost" 
           size="sm" 
           onClick={() => logout()}
-          className="flex items-center gap-2 text-slate-700 hover:text-rose-700 hover:bg-rose-50"
+          className="text-slate-500 hover:text-rose-600"
+          title="Đăng xuất"
         >
           <LogOut className="w-4 h-4" />
-          <span className="hidden sm:inline">{layoutMessages.action.logout}</span>
         </Button>
       </div>
     </header>

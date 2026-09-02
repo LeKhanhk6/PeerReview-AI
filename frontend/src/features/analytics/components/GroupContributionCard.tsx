@@ -1,4 +1,5 @@
 import React from 'react';
+import { Siren } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { analyticsMessages } from '@/constants/messages/analytics';
 import type { GroupContributionSummary } from '../types/analytics.types';
@@ -24,7 +25,7 @@ export const GroupContributionCard: React.FC<GroupContributionCardProps> = ({
               role="status"
               className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-red-100 text-red-800 border border-red-300 animate-pulse whitespace-nowrap"
             >
-              <span aria-hidden="true">🚨</span> {analyticsMessages.groupCard.freeRiderWarning}
+              <span aria-hidden="true" className="text-rose-600 mr-1"><Siren className="w-4 h-4 inline" /></span> {analyticsMessages.groupCard.freeRiderWarning}
             </span>
           ) : (
             <span

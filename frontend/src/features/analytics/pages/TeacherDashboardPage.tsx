@@ -136,7 +136,7 @@ export const TeacherDashboardPage: React.FC = () => {
   const hasAverageScore = (overview?.averageScore || 0) > 0;
 
   return (
-    <div className="flex-1 flex flex-col min-h-0 space-y-4 md:space-y-5 overflow-y-auto lg:overflow-hidden">
+    <div className="h-full min-h-0 flex flex-col overflow-hidden space-y-4 md:space-y-5">
       {/* 1. Top Header & Class Selector Dropdown (shrink-0) */}
       <div className="shrink-0 bg-white p-4 md:p-5 rounded-2xl shadow-sm border border-slate-100 flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
@@ -206,7 +206,7 @@ export const TeacherDashboardPage: React.FC = () => {
       {/* 3. Bottom Row: Left = Active Assignments, Right = Early Warning Panel (flex-1 min-h-0) */}
       <div className="flex-1 min-h-0 grid grid-cols-1 lg:grid-cols-[1fr_380px] gap-5 items-stretch">
         {/* Left Column: Active Assignments Card */}
-        <div className="bg-white p-5 md:p-6 rounded-2xl border border-slate-100 shadow-sm flex flex-col h-full min-h-0 space-y-4">
+        <div className="bg-white p-5 md:p-6 rounded-2xl border border-slate-100 shadow-sm flex flex-col h-full min-h-0 space-y-4 overflow-x-hidden">
           <div className="shrink-0 flex items-center justify-between gap-4 pb-4 border-b border-slate-100">
             <h2 className="text-sm md:text-base font-bold text-slate-900">
               Bài tập & Đợt đánh giá chéo đang diễn ra
@@ -230,31 +230,34 @@ export const TeacherDashboardPage: React.FC = () => {
               description="Lớp học này hiện chưa tạo bài tập hoặc đợt chấm chéo nào."
             />
           ) : (
-            <div className="flex-1 min-h-0 overflow-y-auto divide-y divide-slate-100 pr-1">
-              {assignments.map((assignment: any) => {
-                const daysStatus = calculateDaysLeftStatus(assignment.deadline);
-                const badgeText = formatDaysLeftLabel(daysStatus, workspaceMessages.deadline);
+            <>
+              <div className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden scrollbar-thin divide-y divide-slate-100 pr-1">
+                {assignments.map((assignment: any) => {
+                  const daysStatus = calculateDaysLeftStatus(assignment.deadline);
+                  const badgeText = formatDaysLeftLabel(daysStatus, workspaceMessages.deadline);
 
                 return (
                   <div
                     key={assignment.id}
-                    className="py-3.5 first:pt-0 last:pb-0 flex flex-col sm:flex-row sm:items-center justify-between gap-3 hover:bg-slate-50/60 transition-colors rounded-xl px-2 -mx-2"
+                    className="py-3.5 first:pt-0 last:pb-0 flex flex-col gap-1.5 hover:bg-slate-50/60 transition-colors rounded-xl px-2 -mx-2"
                   >
-                    <div className="space-y-0.5">
-                      <h3 className="text-xs md:text-sm font-bold text-slate-900">{assignment.title}</h3>
+                    {/* Hàng 1: Title */}
+                    <h3 className="text-xs md:text-sm font-bold text-slate-900 line-clamp-1" title={assignment.title}>
+                      {assignment.title}
+                    </h3>
+                    
+                    {/* Hàng 2: Hạn nộp + badge */}
+                    <div className="flex items-center gap-2 flex-wrap">
                       <p className="text-xs text-slate-500">
                         Hạn nộp: {new Date(assignment.deadline).toLocaleDateString('vi-VN')}
                       </p>
-                    </div>
-
-                    <div className="flex flex-wrap items-center gap-2 shrink-0">
-                      {/* Compact 1-line Badge Pill */}
-                      <span
-                        className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium whitespace-nowrap shrink-0 border ${getBadgeColorClass(daysStatus.variant)}`}
-                      >
+                      <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium border ${getBadgeColorClass(daysStatus.variant)}`}>
                         {badgeText}
                       </span>
+                    </div>
 
+                    {/* Hàng 3: 2 nút action */}
+                    <div className="flex flex-wrap items-center gap-2 mt-1">
                       <Link to={`/teacher/assignments/${assignment.id}/submissions`}>
                         <Button variant="outline" size="sm" className="text-xs px-2.5 py-1 rounded-lg border-slate-200 text-slate-700 hover:bg-slate-50 inline-flex items-center gap-1">
                           <FolderOpen className="w-3.5 h-3.5 text-slate-500" />
@@ -273,22 +276,31 @@ export const TeacherDashboardPage: React.FC = () => {
                 );
               })}
             </div>
-          )}
-        </div>
+            
+            <div className="shrink-0 pt-3 border-t border-slate-100 mt-auto">
+              <p className="text-xs text-slate-500 text-center">
+                Đang hiển thị {assignments.length} bài tập & đợt đánh giá
+              </p>
+            </div>
+          </>
+        )}
+      </div>
 
         {/* Right Column: Early Warning Risk Panel */}
-        <div className="bg-white p-5 md:p-6 rounded-2xl border border-slate-100 shadow-sm flex flex-col h-full min-h-0 space-y-4">
-          <div className="shrink-0 flex items-center justify-between gap-2 pb-3 border-b border-slate-100">
-            <h2 className="text-sm md:text-base font-bold text-slate-900 flex items-center gap-2">
-              <Siren className="w-4 h-4 text-rose-600" />
-              <span>{analyticsMessages.earlyWarning.widgetTitle}</span>
-            </h2>
+        <div className="bg-white p-5 md:p-6 rounded-2xl border border-slate-100 shadow-sm flex flex-col h-full min-h-0 space-y-4 overflow-x-hidden">
+          <div className="shrink-0 flex items-center justify-between gap-3 pb-3 border-b border-slate-100">
+            <div className="flex items-center gap-2 min-w-0">
+              <Siren className="w-4 h-4 text-rose-600 shrink-0" />
+              <h2 className="text-sm md:text-base font-bold text-slate-900 truncate" title={analyticsMessages.earlyWarning.widgetTitle}>
+                {analyticsMessages.earlyWarning.widgetTitle}
+              </h2>
+            </div>
             <Link
               to="/teacher/analytics"
-              className="text-xs md:text-sm font-medium text-brand-primary hover:text-brand-hover inline-flex items-center gap-0.5 transition-colors"
+              className="text-xs md:text-sm font-medium text-brand-primary hover:text-brand-hover inline-flex items-center gap-0.5 transition-colors whitespace-nowrap shrink-0"
             >
               <span>{analyticsMessages.earlyWarning.viewAllBtn}</span>
-              <ArrowRight className="w-3.5 h-3.5" />
+              <ArrowRight className="w-3.5 h-3.5 shrink-0" />
             </Link>
           </div>
 
@@ -307,8 +319,9 @@ export const TeacherDashboardPage: React.FC = () => {
               </p>
             </div>
           ) : (
-            <div className="flex-1 min-h-0 overflow-y-auto space-y-3 pr-1">
-              {topRisks.map((risk) => {
+            <>
+              <div className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden scrollbar-thin space-y-3 pr-1">
+                {topRisks.map((risk) => {
                 const isHigh = risk.severity === 'HIGH';
                 const riskLabel =
                   analyticsMessages.riskTypes[risk.riskType] || risk.riskType;
@@ -359,8 +372,15 @@ export const TeacherDashboardPage: React.FC = () => {
                 );
               })}
             </div>
-          )}
-        </div>
+
+            <div className="shrink-0 pt-3 border-t border-slate-100 mt-auto">
+              <p className="text-xs text-slate-500 text-center">
+                Đang hiển thị {topRisks.length} cảnh báo rủi ro cao nhất
+              </p>
+            </div>
+          </>
+        )}
+      </div>
       </div>
     </div>
   );

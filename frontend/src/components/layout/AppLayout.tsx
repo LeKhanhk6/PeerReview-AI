@@ -28,8 +28,8 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ navItems, badge }) => {
           badge={badge}
         />
         
-        <main className="flex-1 flex flex-col min-h-0 overflow-y-auto lg:overflow-hidden p-3 sm:p-4 md:p-5">
-          <div className="max-w-7xl mx-auto w-full flex-1 flex flex-col min-h-0">
+        <main className="flex-1 flex flex-col min-h-0 min-w-0 p-3 sm:p-4 md:p-5">
+          <div className="max-w-7xl mx-auto w-full flex-1 flex flex-col min-h-0 min-w-0">
             <Outlet />
           </div>
         </main>

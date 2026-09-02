@@ -7,7 +7,8 @@ import {
   getGroupTasksApi,
 } from '../api/studentDashboardApi';
 import { studentDashboardMessages } from '@/constants/messages/studentDashboard';
-import { calculateDaysLeftStatus } from '@/utils/date.utils';
+import { workspaceMessages } from '@/constants/messages/workspace';
+import { calculateDaysLeftStatus, formatDaysLeftLabel } from '@/utils/date.utils';
 import { Button } from '@/components/ui/Button';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { Skeleton } from '@/components/ui/Skeleton';
@@ -49,13 +50,13 @@ const AssignmentGroupWorkspaceWidget: React.FC<{ groupId?: string; currentUserId
         <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-600">
           {studentDashboardMessages.groupWorkspaceProgressLabel}
         </span>
-        <span className="text-xs font-bold text-blue-600">{progressPct}%</span>
+        <span className="text-xs font-bold text-brand-primary">{progressPct}%</span>
       </div>
 
       {/* Progress Bar */}
       <div className="w-full bg-slate-200 rounded-full h-1.5 overflow-hidden">
         <div
-          className="bg-blue-600 h-1.5 rounded-full transition-all duration-500"
+          className="bg-brand-primary h-1.5 rounded-full transition-all duration-500"
           style={{ width: `${progressPct}%` }}
         />
       </div>
@@ -171,8 +172,9 @@ export const StudentDashboardPage: React.FC = () => {
   }
 
   return (
-    <div className="space-y-4 md:space-y-5">
-      {/* Top Welcome Header */}
+    <div className="h-full min-h-0 flex flex-col bg-slate-50">
+      <div className="shrink-0 space-y-4 md:space-y-5 pb-4 md:pb-5">
+        {/* Top Welcome Header */}
       <div className="bg-white p-4 md:p-5 rounded-xl shadow-xs border border-slate-200 flex flex-col md:flex-row md:items-center justify-between gap-3">
         <div>
           <h1 className="text-xl md:text-2xl font-bold text-slate-900 tracking-tight">
@@ -204,7 +206,7 @@ export const StudentDashboardPage: React.FC = () => {
       {/* 3 Quick Stats Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 md:gap-4">
         <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-xs flex items-center gap-3.5">
-          <div className="p-2.5 rounded-lg bg-blue-50 text-blue-600">
+          <div className={`p-2.5 rounded-lg ${assignments.length > 0 ? 'bg-brand-soft-bg text-brand-primary' : 'bg-slate-50 text-slate-500'}`}>
             <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
             </svg>
@@ -216,7 +218,7 @@ export const StudentDashboardPage: React.FC = () => {
         </div>
 
         <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-xs flex items-center gap-3.5">
-          <div className="p-2.5 rounded-lg bg-amber-50 text-amber-600">
+          <div className={`p-2.5 rounded-lg ${urgentCount > 0 ? 'bg-amber-50 text-amber-600' : 'bg-slate-50 text-slate-500'}`}>
             <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
@@ -228,7 +230,7 @@ export const StudentDashboardPage: React.FC = () => {
         </div>
 
         <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-xs flex items-center gap-3.5">
-          <div className="p-2.5 rounded-lg bg-purple-50 text-purple-600">
+          <div className={`p-2.5 rounded-lg ${pendingReviewCount > 0 ? 'bg-emerald-50 text-emerald-600' : 'bg-slate-50 text-slate-500'}`}>
             <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
@@ -240,9 +242,11 @@ export const StudentDashboardPage: React.FC = () => {
         </div>
       </div>
 
+      </div>
+
       {/* Main Section Header & Filter Tabs */}
-      <div className="space-y-3">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+      <div className="flex-1 min-h-0 flex flex-col space-y-3">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 shrink-0">
           <h2 className="text-sm md:text-base font-bold text-slate-900">
             {studentDashboardMessages.activeAssignmentsHeader}
           </h2>
@@ -282,8 +286,9 @@ export const StudentDashboardPage: React.FC = () => {
         </div>
 
         {/* Active Assignments Grid */}
-        {filteredAssignments.length === 0 ? (
-          <EmptyState
+        <div className="flex-1 min-h-0 overflow-y-auto pr-1 pb-4">
+          {filteredAssignments.length === 0 ? (
+            <EmptyState
             type="no_data"
             title={studentDashboardMessages.emptyAssignmentsTitle}
             description={studentDashboardMessages.emptyAssignmentsDesc}
@@ -292,6 +297,7 @@ export const StudentDashboardPage: React.FC = () => {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-5">
             {filteredAssignments.map((assignment) => {
               const daysStatus = calculateDaysLeftStatus(assignment.deadline);
+              const badgeText = formatDaysLeftLabel(daysStatus, workspaceMessages.deadline);
               const subStatus = assignment.submission?.status || 'NOT_STARTED';
               const revStatus = assignment.review?.status || 'NOT_REVIEWED';
               const hasGroup = Boolean(assignment.group_id && assignment.group_id !== 'null' && assignment.group_id !== 'undefined');
@@ -328,7 +334,7 @@ export const StudentDashboardPage: React.FC = () => {
 
                       {/* Single Source of Truth Days Left Badge */}
                       <span className={`px-2.5 py-0.5 rounded-full text-xs font-semibold border ${daysStatus.badgeClasses}`}>
-                        {daysStatus.label}
+                        {badgeText}
                       </span>
                     </div>
 
@@ -381,7 +387,7 @@ export const StudentDashboardPage: React.FC = () => {
                             ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
                             : revStatus === 'UNDER_REVIEW'
                             ? 'bg-amber-50 text-amber-700 border-amber-200'
-                            : 'bg-slate-100 text-slate-600 border-slate-200'
+                            : 'bg-slate-100 text-slate-700 border-slate-200'
                         }`}
                       >
                         {revStatus === 'REVIEWED'
@@ -456,6 +462,7 @@ export const StudentDashboardPage: React.FC = () => {
             })}
           </div>
         )}
+        </div>
       </div>
 
       {/* Join Group Modal Dialog */}

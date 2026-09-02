@@ -13,7 +13,7 @@ export const ContributionProgressBar: React.FC<ContributionProgressBarProps> = (
 }) => {
   const percent = Math.min(100, Math.max(0, Math.round(score * 100)));
 
-  let barColor = 'bg-blue-600';
+  let barColor = 'bg-brand-primary';
   if (percent >= 75) barColor = 'bg-emerald-600';
   else if (percent < 20) barColor = 'bg-red-600';
   else if (percent < 35) barColor = 'bg-amber-500';

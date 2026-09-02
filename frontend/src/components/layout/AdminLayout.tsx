@@ -13,16 +13,19 @@ const adminNavItems = [
     icon: Users,
     label: layoutMessages.navigation.users,
     href: '/admin/users',
+    group: 'Management',
   },
   {
     icon: FileText,
     label: 'Audit Logs',
     href: '/admin/audit-logs',
+    group: 'System',
   },
   {
     icon: Settings,
     label: layoutMessages.navigation.settings,
     href: '/admin/settings',
+    group: 'System',
   },
 ];
 

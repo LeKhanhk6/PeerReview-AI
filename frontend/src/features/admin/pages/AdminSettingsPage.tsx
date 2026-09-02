@@ -4,17 +4,26 @@ import { SkeletonCard } from '@/components/ui/Skeleton';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { adminMessages } from '@/constants/messages/admin';
 import { useSystemConfig, useUpdateSystemConfigMutation, useAuditLogs } from '../hooks/useAdmin';
+import { AlertTriangle, Settings, Check, Save, History, User, Clock } from 'lucide-react';
 
 export const AdminSettingsPage: React.FC = () => {
   const { data: configData, isLoading: isLoadingConfig } = useSystemConfig();
   const updateMutation = useUpdateSystemConfigMutation();
 
+  const [auditLogPage, setAuditLogPage] = useState(1);
+  const auditLogLimit = 10;
+
   // Audit Logs query filtered by ADMIN_UPDATE_SYS_CONFIG
   const { data: auditLogsData } = useAuditLogs({
     action_type: 'ADMIN_UPDATE_SYS_CONFIG',
-    page: 1,
-    limit: 10,
+    page: auditLogPage,
+    limit: auditLogLimit,
   });
+
+  const auditLogs = auditLogsData?.logs || [];
+  const totalAuditLogs = auditLogsData?.total || 0;
+  const auditLogHasNext = auditLogsData?.hasNext || false;
+  const totalAuditLogPages = Math.ceil(totalAuditLogs / auditLogLimit) || 1;
 
   // Local Form State
   const [auditLoggingEnabled, setAuditLoggingEnabled] = useState('true');
@@ -107,7 +116,7 @@ export const AdminSettingsPage: React.FC = () => {
 
   return (
 
-    <div className="space-y-6 max-w-7xl mx-auto pb-12">
+    <div className="h-full w-full min-w-0 overflow-y-auto space-y-6 max-w-7xl mx-auto pb-12 pr-1">
       {/* Page Header */}
       <div className="bg-white p-6 border border-gray-200 rounded-xl shadow-sm space-y-2">
         <h1 className="text-2xl font-bold text-gray-900 tracking-tight">
@@ -124,18 +133,18 @@ export const AdminSettingsPage: React.FC = () => {
         </div>
       ) : (
         <form onSubmit={handleOpenConfirm} className="bg-white border border-gray-200 rounded-xl p-6 shadow-sm space-y-6">
-          <div className="flex items-center justify-between border-b border-gray-100 pb-3">
-            <h3 className="text-base font-bold text-gray-900 flex items-center gap-2">
-              <span>⚙️</span> Cấu hình Tham số Vận hành Hệ thống
+          <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+            <h3 className="text-base font-bold text-slate-900 flex items-center gap-2">
+              <Settings className="w-5 h-5 text-brand-primary" /> Cấu hình Tham số Vận hành Hệ thống
             </h3>
-            <span className="text-xs bg-emerald-100 text-emerald-800 font-bold px-2.5 py-1 rounded-full border border-emerald-200">
-              ✓ Active System Config Engine
+            <span className="text-xs bg-emerald-50 text-emerald-700 font-bold px-2.5 py-1 rounded-full border border-emerald-200 flex items-center gap-1">
+              <Check className="w-3.5 h-3.5" /> Active System Config Engine
             </span>
           </div>
 
           {validationError && (
-            <div className="p-3 bg-red-50 border border-red-200 text-red-700 text-xs rounded-md font-medium">
-              ⚠️ {validationError}
+            <div className="p-3 bg-red-50 border border-red-200 text-red-700 text-xs rounded-md font-medium flex items-center gap-1.5">
+              <AlertTriangle className="w-4 h-4 shrink-0" /> {validationError}
             </div>
           )}
 
@@ -149,7 +158,7 @@ export const AdminSettingsPage: React.FC = () => {
               <select
                 value={auditLoggingEnabled}
                 onChange={(e) => setAuditLoggingEnabled(e.target.value)}
-                className="w-full mt-1 px-3 py-2 border border-gray-300 rounded-md text-sm bg-white font-medium focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full mt-1 px-3 py-2 border border-slate-200 rounded-md text-sm bg-white font-medium focus:outline-none focus:ring-2 focus:ring-brand-primary"
               >
                 <option value="true">Active (Khuyên dùng cho Pilot)</option>
                 <option value="false">Inactive (Tắt ghi nhật ký)</option>
@@ -165,7 +174,7 @@ export const AdminSettingsPage: React.FC = () => {
               <select
                 value={telemetryEnabled}
                 onChange={(e) => setTelemetryEnabled(e.target.value)}
-                className="w-full mt-1 px-3 py-2 border border-gray-300 rounded-md text-sm bg-white font-medium focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full mt-1 px-3 py-2 border border-slate-200 rounded-md text-sm bg-white font-medium focus:outline-none focus:ring-2 focus:ring-brand-primary"
               >
                 <option value="true">Active (Thu thập lỗi tự động)</option>
                 <option value="false">Inactive (Tắt thu thập lỗi)</option>
@@ -184,7 +193,7 @@ export const AdminSettingsPage: React.FC = () => {
                 max="300"
                 value={rateLimitAiMentor}
                 onChange={(e) => setRateLimitAiMentor(e.target.value)}
-                className="w-full mt-1 px-3 py-2 border border-gray-300 rounded-md text-sm bg-white font-medium focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full mt-1 px-3 py-2 border border-slate-200 rounded-md text-sm bg-white font-medium focus:outline-none focus:ring-2 focus:ring-brand-primary"
               />
             </div>
 
@@ -197,7 +206,7 @@ export const AdminSettingsPage: React.FC = () => {
               <select
                 value={piiSanitizationMode}
                 onChange={(e) => setPiiSanitizationMode(e.target.value)}
-                className="w-full mt-1 px-3 py-2 border border-gray-300 rounded-md text-sm bg-white font-medium focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full mt-1 px-3 py-2 border border-slate-200 rounded-md text-sm bg-white font-medium focus:outline-none focus:ring-2 focus:ring-brand-primary"
               >
                 <option value="STRICT">STRICT (Mã hóa nghiêm ngặt Email/Full Name)</option>
                 <option value="RELAXED">RELAXED (Chỉ ẩn thông tin nhạy cảm chính)</option>
@@ -211,31 +220,31 @@ export const AdminSettingsPage: React.FC = () => {
               type="submit"
               variant="default"
               size="default"
+              className="gap-1.5"
               isLoading={updateMutation.isPending}
             >
-
-              💾 Lưu thay đổi cấu hình
+              <Save className="w-4 h-4" /> Lưu thay đổi cấu hình
             </Button>
           </div>
         </form>
       )}
 
       {/* System Config Change Audit Trail */}
-      <div className="bg-white border border-gray-200 rounded-xl p-6 shadow-sm space-y-4">
-        <h3 className="text-base font-bold text-gray-900 border-b border-gray-100 pb-3 flex items-center gap-2">
-          <span>📜</span> Lịch sử Thay đổi Cấu hình (Audit Trail)
+      <div className="bg-white border border-slate-200 rounded-xl p-6 shadow-sm space-y-4">
+        <h3 className="text-base font-bold text-slate-900 border-b border-slate-100 pb-3 flex items-center gap-2">
+          <History className="w-5 h-5 text-brand-primary" /> Lịch sử Thay đổi Cấu hình (Audit Trail)
         </h3>
 
-        {auditLogsData?.logs && auditLogsData.logs.length > 0 ? (
+        {auditLogs.length > 0 ? (
           <div className="space-y-3">
-            {auditLogsData.logs.map((log) => (
+            {auditLogs.map((log) => (
               <div key={log.id} className="border border-gray-200 rounded-lg p-3 bg-gray-50/50 text-xs space-y-1.5">
                 <div className="flex justify-between items-center border-b border-gray-200 pb-1">
-                  <span className="font-bold text-gray-900">
-                    👤 {log.userName || 'Admin'} ({log.userEmail})
+                  <span className="font-bold text-gray-900 flex items-center gap-1.5">
+                    <User className="w-3.5 h-3.5 text-gray-500" /> {log.userName || 'Admin'} ({log.userEmail})
                   </span>
-                  <span className="text-gray-500 font-mono">
-                    🕒 {log.createdAt ? new Date(log.createdAt).toLocaleString('vi-VN') : '—'}
+                  <span className="text-gray-500 font-mono flex items-center gap-1.5">
+                    <Clock className="w-3.5 h-3.5 text-gray-400" /> {log.createdAt ? new Date(log.createdAt).toLocaleString('vi-VN') : '—'}
                   </span>
                 </div>
                 <p className="text-gray-700 font-medium">{log.contentSummary}</p>
@@ -261,6 +270,37 @@ export const AdminSettingsPage: React.FC = () => {
           <p className="text-xs text-gray-500 italic py-2">
             Chưa có lịch sử thay đổi cấu hình nào được ghi nhận.
           </p>
+        )}
+
+        {/* Pagination Footer */}
+        {totalAuditLogPages > 1 && (
+          <div className="flex items-center justify-between border-t border-slate-100 pt-4 mt-2 text-xs text-slate-500 shrink-0">
+            <span>
+              Trang <strong>{auditLogPage}</strong> / {totalAuditLogPages} (Tổng {totalAuditLogs} nhật ký)
+            </span>
+            <div className="flex items-center gap-2">
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                disabled={auditLogPage <= 1}
+                onClick={() => setAuditLogPage(auditLogPage - 1)}
+                className="text-xs"
+              >
+                Trang trước
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                disabled={!auditLogHasNext || auditLogPage >= totalAuditLogPages}
+                onClick={() => setAuditLogPage(auditLogPage + 1)}
+                className="text-xs"
+              >
+                Trang sau
+              </Button>
+            </div>
+          </div>
         )}
       </div>
 

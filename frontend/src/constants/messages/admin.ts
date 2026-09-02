@@ -1,12 +1,12 @@
 export const adminMessages = {
   header: {
-    dashboardTitle: '📊 Tổng Quan Hệ Thống Quản Trị',
+    dashboardTitle: 'Tổng Quan Hệ Thống Quản Trị',
     dashboardSubtitle: 'Theo dõi chỉ số tổng quan người dùng, lớp học và hoạt động AI toàn hệ thống',
-    usersTitle: '👥 Quản Lý Người Dùng & Phân Quyền',
+    usersTitle: 'Quản Lý Người Dùng & Phân Quyền',
     usersSubtitle: 'Danh sách tài khoản, cập nhật vai trò (Role) và quản lý trạng thái tài khoản',
-    auditLogsTitle: '📋 Nhật Ký Vết Hoạt Động (Read-Only Audit Logs)',
+    auditLogsTitle: 'Nhật Ký Vết Hoạt Động (Read-Only Audit Logs)',
     auditLogsSubtitle: 'Lưu vết lịch sử thao tác hệ thống, bảo vệ tính toàn vẹn vết audit (100% Read-Only & PII Masked)',
-    settingsTitle: '⚙️ Cấu Hình Hệ Thống',
+    settingsTitle: 'Cấu Hình Hệ Thống',
     settingsSubtitle: 'Giám sát trạng thái ghi log, telemetry và giới hạn tần suất truy cập',
   },
   roles: {
@@ -39,7 +39,7 @@ export const adminMessages = {
     title: 'Cập nhật vai trò người dùng',
     subtitle: 'Chọn vai trò mới cho tài khoản người dùng trong hệ thống',
     selectRoleLabel: 'Chọn vai trò mới:',
-    consequencesWarning: '⚠️ Thay đổi vai trò có thể làm thay đổi quyền hạn quản lý lớp học hoặc nộp bài của tài khoản này.',
+    consequencesWarning: 'Thay đổi vai trò có thể làm thay đổi quyền hạn quản lý lớp học hoặc nộp bài của tài khoản này.',
     confirmBtn: 'Lưu thay đổi',
     cancelBtn: 'Hủy bỏ',
     confirmTitle: 'Xác nhận thay đổi phân quyền',

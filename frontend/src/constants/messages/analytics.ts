@@ -32,7 +32,7 @@ export const analyticsMessages = {
     HIGH: { label: 'Đóng góp cao', emoji: '🌟' },
     NORMAL: { label: 'Bình thường', emoji: '👍' },
     LOW: { label: 'Đóng góp thấp', emoji: '⚠️' },
-    FREE_RIDER: { label: 'Cảnh báo Free-rider', emoji: '🚨' },
+    FREE_RIDER: { label: 'Cảnh báo Free-rider', emoji: '⚠️' },
     INACTIVE: { label: 'Không hoạt động', emoji: '💤' },
   },
 
@@ -99,7 +99,7 @@ export const analyticsMessages = {
   earlyWarning: {
     title: 'Bảng Cảnh Báo Sớm Rủi Ro',
     subtitle: 'Tự động phát hiện các nhóm hoặc cá nhân gặp rào cản trong quá trình làm việc nhóm.',
-    widgetTitle: '🚨 Cảnh báo sớm Rủi ro Nhóm',
+    widgetTitle: 'Cảnh báo sớm',
     viewAllBtn: 'Xem tất cả cảnh báo',
     filterSeverity: 'Mức độ rủi ro:',
     allSeverities: 'Tất cả mức độ',

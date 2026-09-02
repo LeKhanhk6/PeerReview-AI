@@ -13,16 +13,19 @@ const studentNavItems = [
     icon: Users,
     label: layoutMessages.navigation.classes,
     href: '/student/classes',
+    group: 'Management',
   },
   {
     icon: MessageSquare,
     label: layoutMessages.navigation.reviews,
     href: '/student/reviews',
+    group: 'Management',
   },
   {
     icon: User,
     label: layoutMessages.navigation.profile,
     href: '/student/profile',
+    group: 'System',
   },
 ];
 

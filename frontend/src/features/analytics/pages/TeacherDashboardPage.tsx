@@ -85,19 +85,19 @@ export const TeacherDashboardPage: React.FC = () => {
 
   if (isOverviewLoading) {
     return (
-      <div className="p-6 max-w-7xl mx-auto space-y-8">
+      <div className="space-y-4">
         <div className="space-y-2">
-          <Skeleton className="h-8 w-64" />
-          <Skeleton className="h-4 w-96" />
+          <Skeleton className="h-7 w-56" />
+          <Skeleton className="h-4 w-80" />
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
           {[...Array(5)].map((_, i) => (
-            <Skeleton key={i} className="h-24 rounded-xl" />
+            <Skeleton key={i} className="h-20 rounded-xl" />
           ))}
         </div>
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <Skeleton className="h-96 lg:col-span-2 rounded-xl" />
-          <Skeleton className="h-96 rounded-xl" />
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+          <Skeleton className="h-80 lg:col-span-2 rounded-xl" />
+          <Skeleton className="h-80 rounded-xl" />
         </div>
       </div>
     );
@@ -105,33 +105,31 @@ export const TeacherDashboardPage: React.FC = () => {
 
   if (isOverviewError) {
     return (
-      <div className="p-6 max-w-7xl mx-auto">
-        <EmptyState
-          type="error"
-          title="Không thể tải dữ liệu Tổng quan Giảng viên"
-          description={analyticsMessages.error.fetchFailed}
-          actionLabel="Thử lại"
-          onAction={() => window.location.reload()}
-        />
-      </div>
+      <EmptyState
+        type="error"
+        title="Không thể tải dữ liệu Tổng quan Giảng viên"
+        description={analyticsMessages.error.fetchFailed}
+        actionLabel="Thử lại"
+        onAction={() => window.location.reload()}
+      />
     );
   }
 
   return (
-    <div className="p-6 max-w-7xl mx-auto space-y-8 bg-slate-50/50 min-h-screen">
+    <div className="space-y-4 md:space-y-5">
       {/* Top Header & Class Selector Dropdown */}
-      <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="bg-white p-4 md:p-5 rounded-xl shadow-xs border border-slate-200 flex flex-col md:flex-row md:items-center justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900 tracking-tight">
+          <h1 className="text-xl md:text-2xl font-bold text-slate-900 tracking-tight">
             {analyticsMessages.teacherDashboardTitle}, {user?.full_name || 'Giảng viên'} 👋
           </h1>
-          <p className="text-sm text-slate-600 mt-1">
+          <p className="text-xs md:text-sm text-slate-500 mt-0.5">
             {analyticsMessages.teacherDashboardSubtitle}
           </p>
         </div>
 
-        {/* Class Filter Selector (Option a) */}
-        <div className="flex items-center gap-3">
+        {/* Class Filter Selector */}
+        <div className="flex items-center gap-2">
           <label htmlFor="class-select" className="text-xs font-semibold text-slate-700 whitespace-nowrap">
             {analyticsMessages.filter.selectClass}
           </label>
@@ -139,7 +137,7 @@ export const TeacherDashboardPage: React.FC = () => {
             id="class-select"
             value={selectedClassId}
             onChange={(e) => setSelectedClassId(e.target.value)}
-            className="px-3 py-2 border border-slate-300 rounded-xl text-xs font-medium text-slate-800 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-sm"
+            className="px-3 py-1.5 border border-slate-300 rounded-lg text-xs font-medium text-slate-800 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-xs"
           >
             <option value="">{analyticsMessages.filter.allClasses}</option>
             {classes.map((cls: any) => (
@@ -152,50 +150,50 @@ export const TeacherDashboardPage: React.FC = () => {
       </div>
 
       {/* 5 Stats Cards Row */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
-        <div className="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 md:gap-4">
+        <div className="bg-white p-3.5 rounded-xl border border-slate-200 shadow-xs">
           <div className="text-xs font-medium text-slate-500">{analyticsMessages.overview.totalClasses}</div>
-          <div className="text-2xl font-bold text-slate-900 mt-1">{overview?.totalClasses || 0}</div>
+          <div className="text-xl font-bold text-slate-900 mt-0.5">{overview?.totalClasses || 0}</div>
         </div>
 
-        <div className="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm">
+        <div className="bg-white p-3.5 rounded-xl border border-slate-200 shadow-xs">
           <div className="text-xs font-medium text-slate-500">{analyticsMessages.overview.totalStudents}</div>
-          <div className="text-2xl font-bold text-slate-900 mt-1">{overview?.totalStudents || 0}</div>
+          <div className="text-xl font-bold text-slate-900 mt-0.5">{overview?.totalStudents || 0}</div>
         </div>
 
-        <div className="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm">
+        <div className="bg-white p-3.5 rounded-xl border border-slate-200 shadow-xs">
           <div className="text-xs font-medium text-slate-500">{analyticsMessages.overview.submissionRate}</div>
-          <div className="text-2xl font-bold text-blue-600 mt-1">
+          <div className="text-xl font-bold text-blue-600 mt-0.5">
             {formatPercentage(overview?.submissionRate)}
           </div>
         </div>
 
-        <div className="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm">
+        <div className="bg-white p-3.5 rounded-xl border border-slate-200 shadow-xs">
           <div className="text-xs font-medium text-slate-500">{analyticsMessages.overview.reviewCompletionRate}</div>
-          <div className="text-2xl font-bold text-purple-600 mt-1">
+          <div className="text-xl font-bold text-purple-600 mt-0.5">
             {formatPercentage(overview?.reviewCompletionRate)}
           </div>
         </div>
 
-        <div className="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm">
+        <div className="bg-white p-3.5 rounded-xl border border-slate-200 shadow-xs">
           <div className="text-xs font-medium text-slate-500">{analyticsMessages.overview.averageScore}</div>
-          <div className="text-2xl font-bold text-emerald-600 mt-1">
+          <div className="text-xl font-bold text-emerald-600 mt-0.5">
             {formatScore(overview?.averageScore, 100)}
           </div>
         </div>
       </div>
 
       {/* Main Content: Left = Active Assignments, Right = Early Warning Panel */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
-        {/* Left Column: Active Assignments & Classes Overview (2 cols) */}
-        <div className="lg:col-span-2 space-y-6">
-          <div className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm space-y-4">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-5 items-start">
+        {/* Left Column: Active Assignments & Classes Overview */}
+        <div className="lg:col-span-2 space-y-4">
+          <div className="bg-white p-4 md:p-5 rounded-xl border border-slate-200 shadow-xs space-y-3">
             <div className="flex items-center justify-between">
-              <h2 className="text-base font-bold text-slate-900">
+              <h2 className="text-sm md:text-base font-bold text-slate-900">
                 Bài tập & Đợt đánh giá chéo đang diễn ra
               </h2>
               <Link to="/teacher/assignments/new">
-                <Button variant="default" size="sm">
+                <Button variant="default" size="sm" className="text-xs px-3 py-1.5">
                   + Tạo bài tập mới
                 </Button>
               </Link>
@@ -208,34 +206,34 @@ export const TeacherDashboardPage: React.FC = () => {
                 description="Lớp học này hiện chưa tạo bài tập hoặc đợt chấm chéo nào."
               />
             ) : (
-              <div className="space-y-3">
+              <div className="space-y-2.5">
                 {assignments.map((assignment: any) => {
                   const daysStatus = calculateDaysLeftStatus(assignment.deadline);
                   return (
                     <div
                       key={assignment.id}
-                      className="p-4 rounded-xl border border-slate-100 bg-slate-50/50 flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:border-slate-300 transition-colors"
+                      className="p-3.5 rounded-lg border border-slate-200 bg-slate-50/50 flex flex-col sm:flex-row sm:items-center justify-between gap-3 hover:border-slate-300 transition-colors"
                     >
-                      <div className="space-y-1">
-                        <h3 className="text-sm font-bold text-slate-900">{assignment.title}</h3>
+                      <div className="space-y-0.5">
+                        <h3 className="text-xs md:text-sm font-bold text-slate-900">{assignment.title}</h3>
                         <p className="text-xs text-slate-500">
                           Hạn nộp: {new Date(assignment.deadline).toLocaleDateString('vi-VN')}
                         </p>
                       </div>
 
-                      <div className="flex items-center gap-3">
-                        <span className={`px-2.5 py-1 rounded-full text-xs font-semibold border ${daysStatus.badgeClasses}`}>
+                      <div className="flex items-center gap-2">
+                        <span className={`px-2.5 py-0.5 rounded-full text-xs font-semibold border ${daysStatus.badgeClasses}`}>
                           {daysStatus.label}
                         </span>
 
                         <Link to={`/teacher/assignments/${assignment.id}/submissions`}>
-                          <Button variant="outline" size="sm">
+                          <Button variant="outline" size="sm" className="text-xs px-2.5 py-1">
                             📂 Theo dõi bài nộp
                           </Button>
                         </Link>
 
                         <Link to={`/teacher/assignments/${assignment.id}/synthesis`}>
-                          <Button variant="outline" size="sm">
+                          <Button variant="outline" size="sm" className="text-xs px-2.5 py-1">
                             Xem tổng hợp AI
                           </Button>
                         </Link>
@@ -248,10 +246,10 @@ export const TeacherDashboardPage: React.FC = () => {
           </div>
         </div>
 
-        {/* Right Column: Early Warning Panel (NỔI BẬT PHÍA TRÊN PHẢI) */}
-        <div className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm space-y-4">
+        {/* Right Column: Early Warning Panel */}
+        <div className="bg-white p-4 md:p-5 rounded-xl border border-slate-200 shadow-xs space-y-3">
           <div className="flex items-center justify-between">
-            <h2 className="text-base font-bold text-slate-900 flex items-center gap-2">
+            <h2 className="text-sm md:text-base font-bold text-slate-900 flex items-center gap-1.5">
               <span>🚨</span> {analyticsMessages.earlyWarning.widgetTitle}
             </h2>
             <Link to="/teacher/analytics">
@@ -262,22 +260,21 @@ export const TeacherDashboardPage: React.FC = () => {
           </div>
 
           {isRisksLoading ? (
-            <div className="space-y-3">
-              <Skeleton className="h-20 rounded-xl" />
-              <Skeleton className="h-20 rounded-xl" />
+            <div className="space-y-2">
+              <Skeleton className="h-16 rounded-lg" />
+              <Skeleton className="h-16 rounded-lg" />
             </div>
           ) : topRisks.length === 0 ? (
-            /* Positive Emerald Empty State when 0 risks exist */
-            <div className="p-5 rounded-xl bg-emerald-50 border border-emerald-200 text-center space-y-2">
-              <div className="text-emerald-600 font-bold text-sm">
+            <div className="p-4 rounded-lg bg-emerald-50 border border-emerald-200 text-center space-y-1">
+              <div className="text-emerald-700 font-bold text-xs">
                 {analyticsMessages.empty.noRisksTitle}
               </div>
-              <p className="text-xs text-emerald-700 leading-relaxed">
+              <p className="text-xs text-emerald-800 leading-relaxed">
                 {analyticsMessages.empty.noRisksDescription}
               </p>
             </div>
           ) : (
-            <div className="space-y-3">
+            <div className="space-y-2.5">
               {topRisks.map((risk) => {
                 const isHigh = risk.severity === 'HIGH';
                 const riskLabel =
@@ -293,13 +290,13 @@ export const TeacherDashboardPage: React.FC = () => {
                         navigate('/teacher/analytics');
                       }
                     }}
-                    className={`p-4 rounded-xl border cursor-pointer transition-all hover:shadow-sm ${
+                    className={`p-3 rounded-lg border cursor-pointer transition-all hover:shadow-2xs ${
                       isHigh
                         ? 'bg-rose-50/60 border-rose-200 hover:border-rose-300'
                         : 'bg-amber-50/60 border-amber-200 hover:border-amber-300'
                     }`}
                   >
-                    <div className="flex items-center justify-between gap-2 mb-1.5">
+                    <div className="flex items-center justify-between gap-2 mb-1">
                       <span
                         className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider ${
                           isHigh
@@ -317,7 +314,7 @@ export const TeacherDashboardPage: React.FC = () => {
                       </span>
                     </div>
 
-                    <h4 className="text-xs font-bold text-slate-900 mb-1">
+                    <h4 className="text-xs font-bold text-slate-900 mb-0.5">
                       {riskLabel}
                     </h4>
 

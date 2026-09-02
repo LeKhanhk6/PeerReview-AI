@@ -13,7 +13,7 @@ import { EmptyState } from '@/components/ui/EmptyState';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { JoinGroupModal } from '@/features/groups/components/JoinGroupModal';
 
-// Sub-component for individual Group Workspace Task Progress (Handles Multiple Groups 1:1 per assignment)
+// Sub-component for individual Group Workspace Task Progress
 const AssignmentGroupWorkspaceWidget: React.FC<{ groupId?: string; currentUserId: string }> = ({
   groupId,
   currentUserId,
@@ -28,9 +28,9 @@ const AssignmentGroupWorkspaceWidget: React.FC<{ groupId?: string; currentUserId
 
   if (isLoading) {
     return (
-      <div className="mt-4 p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-3">
-        <Skeleton className="h-4 w-40" />
-        <Skeleton className="h-3 w-full" />
+      <div className="mt-3 p-3 rounded-lg bg-slate-50 border border-slate-200 space-y-2">
+        <Skeleton className="h-3 w-32" />
+        <Skeleton className="h-2 w-full" />
       </div>
     );
   }
@@ -44,39 +44,39 @@ const AssignmentGroupWorkspaceWidget: React.FC<{ groupId?: string; currentUserId
   const myTasks = tasksList.filter((t: any) => t.assignee_id === currentUserId);
 
   return (
-    <div className="mt-4 p-4 rounded-xl bg-slate-50 border border-slate-200/80 space-y-3">
+    <div className="mt-3 p-3 rounded-lg bg-slate-50 border border-slate-200 space-y-2">
       <div className="flex items-center justify-between">
-        <span className="text-xs font-semibold uppercase tracking-wider text-slate-600">
+        <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-600">
           {studentDashboardMessages.groupWorkspaceProgressLabel}
         </span>
         <span className="text-xs font-bold text-blue-600">{progressPct}%</span>
       </div>
 
       {/* Progress Bar */}
-      <div className="w-full bg-slate-200 rounded-full h-2 overflow-hidden">
+      <div className="w-full bg-slate-200 rounded-full h-1.5 overflow-hidden">
         <div
-          className="bg-blue-600 h-2 rounded-full transition-all duration-500"
+          className="bg-blue-600 h-1.5 rounded-full transition-all duration-500"
           style={{ width: `${progressPct}%` }}
         />
       </div>
 
       {/* Personal Tasks List */}
-      <div className="pt-2 border-t border-slate-200/60">
-        <div className="text-xs font-medium text-slate-700 mb-1">
+      <div className="pt-1.5 border-t border-slate-200/60">
+        <div className="text-[11px] font-semibold text-slate-700 mb-1">
           {studentDashboardMessages.myTasksHeader} ({myTasks.length})
         </div>
         {myTasks.length === 0 ? (
-          <p className="text-xs text-slate-500 italic">
+          <p className="text-[11px] text-slate-500 italic">
             {studentDashboardMessages.noTasksAssigned}
           </p>
         ) : (
-          <ul className="space-y-1.5 max-h-28 overflow-y-auto pr-1">
+          <ul className="space-y-1 max-h-24 overflow-y-auto pr-1">
             {myTasks.map((task: any) => (
               <li
                 key={task.id}
                 className="flex items-center justify-between text-xs p-1.5 rounded bg-white border border-slate-100"
               >
-                <span className="truncate max-w-[200px] text-slate-800 font-medium">
+                <span className="truncate max-w-[180px] text-slate-800 font-medium">
                   {task.title}
                 </span>
                 <span
@@ -137,21 +137,21 @@ export const StudentDashboardPage: React.FC = () => {
 
   if (isLoading) {
     return (
-      <div className="p-6 max-w-7xl mx-auto space-y-8">
+      <div className="space-y-4">
         <div className="space-y-2">
-          <Skeleton className="h-8 w-64" />
-          <Skeleton className="h-4 w-96" />
+          <Skeleton className="h-7 w-56" />
+          <Skeleton className="h-4 w-80" />
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <Skeleton className="h-28 rounded-xl" />
-          <Skeleton className="h-28 rounded-xl" />
-          <Skeleton className="h-28 rounded-xl" />
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <Skeleton className="h-24 rounded-xl" />
+          <Skeleton className="h-24 rounded-xl" />
+          <Skeleton className="h-24 rounded-xl" />
         </div>
-        <div className="space-y-4">
-          <Skeleton className="h-6 w-48" />
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <Skeleton className="h-64 rounded-xl" />
-            <Skeleton className="h-64 rounded-xl" />
+        <div className="space-y-3">
+          <Skeleton className="h-5 w-40" />
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            <Skeleton className="h-48 rounded-xl" />
+            <Skeleton className="h-48 rounded-xl" />
           </div>
         </div>
       </div>
@@ -160,39 +160,37 @@ export const StudentDashboardPage: React.FC = () => {
 
   if (isError) {
     return (
-      <div className="p-6 max-w-7xl mx-auto">
-        <EmptyState
-          type="error"
-          title="Không thể tải dữ liệu Dashboard"
-          description="Đã xảy ra lỗi khi kết nối với máy chủ. Vui lòng kiểm tra lại kết nối mạng."
-          actionLabel="Thử lại"
-          onAction={() => refetch()}
-        />
-      </div>
+      <EmptyState
+        type="error"
+        title="Không thể tải dữ liệu Dashboard"
+        description="Đã xảy ra lỗi khi kết nối với máy chủ. Vui lòng kiểm tra lại kết nối mạng."
+        actionLabel="Thử lại"
+        onAction={() => refetch()}
+      />
     );
   }
 
   return (
-    <div className="p-6 max-w-7xl mx-auto space-y-8 bg-slate-50/50 min-h-screen">
+    <div className="space-y-4 md:space-y-5">
       {/* Top Welcome Header */}
-      <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="bg-white p-4 md:p-5 rounded-xl shadow-xs border border-slate-200 flex flex-col md:flex-row md:items-center justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900 tracking-tight">
+          <h1 className="text-xl md:text-2xl font-bold text-slate-900 tracking-tight">
             {studentDashboardMessages.welcomeHeader} {user?.full_name || 'Sinh viên'} 👋
           </h1>
-          <p className="text-sm text-slate-600 mt-1">
+          <p className="text-xs md:text-sm text-slate-500 mt-0.5">
             {studentDashboardMessages.subtitle}
           </p>
         </div>
       </div>
 
-      {/* Global Alert Banner if Student has Groupless Classes (Giao diện A Alert) */}
+      {/* Global Alert Banner if Student has Groupless Classes */}
       {grouplessCount > 0 && (
-        <div className="bg-amber-50 border border-amber-200 rounded-2xl p-5 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div className="bg-amber-50 border border-amber-200/80 rounded-xl p-4 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div className="flex items-start gap-3">
-            <span className="text-2xl">🟡</span>
+            <span className="text-xl">🟡</span>
             <div>
-              <h3 className="text-sm font-bold text-amber-900">
+              <h3 className="text-xs md:text-sm font-bold text-amber-900">
                 Bạn có {grouplessCount} môn học chưa thuộc nhóm nào
               </h3>
               <p className="text-xs text-amber-800 mt-0.5">
@@ -204,57 +202,57 @@ export const StudentDashboardPage: React.FC = () => {
       )}
 
       {/* 3 Quick Stats Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-        <div className="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm flex items-center gap-4">
-          <div className="p-3.5 rounded-xl bg-blue-50 text-blue-600">
-            <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 md:gap-4">
+        <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-xs flex items-center gap-3.5">
+          <div className="p-2.5 rounded-lg bg-blue-50 text-blue-600">
+            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
             </svg>
           </div>
           <div>
-            <div className="text-2xl font-bold text-slate-900">{assignments.length}</div>
+            <div className="text-xl font-extrabold text-slate-900">{assignments.length}</div>
             <div className="text-xs font-medium text-slate-500">{studentDashboardMessages.statsClasses}</div>
           </div>
         </div>
 
-        <div className="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm flex items-center gap-4">
-          <div className="p-3.5 rounded-xl bg-amber-50 text-amber-600">
-            <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-xs flex items-center gap-3.5">
+          <div className="p-2.5 rounded-lg bg-amber-50 text-amber-600">
+            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
           </div>
           <div>
-            <div className="text-2xl font-bold text-slate-900">{urgentCount}</div>
+            <div className="text-xl font-extrabold text-slate-900">{urgentCount}</div>
             <div className="text-xs font-medium text-slate-500">{studentDashboardMessages.statsAssignments}</div>
           </div>
         </div>
 
-        <div className="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm flex items-center gap-4">
-          <div className="p-3.5 rounded-xl bg-purple-50 text-purple-600">
-            <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-xs flex items-center gap-3.5">
+          <div className="p-2.5 rounded-lg bg-purple-50 text-purple-600">
+            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
           </div>
           <div>
-            <div className="text-2xl font-bold text-slate-900">{pendingReviewCount}</div>
+            <div className="text-xl font-extrabold text-slate-900">{pendingReviewCount}</div>
             <div className="text-xs font-medium text-slate-500">{studentDashboardMessages.statsReviews}</div>
           </div>
         </div>
       </div>
 
       {/* Main Section Header & Filter Tabs */}
-      <div className="space-y-4">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <h2 className="text-lg font-bold text-slate-900">
+      <div className="space-y-3">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <h2 className="text-sm md:text-base font-bold text-slate-900">
             {studentDashboardMessages.activeAssignmentsHeader}
           </h2>
 
-          <div className="inline-flex p-1 bg-slate-200/60 rounded-xl text-xs font-medium">
+          <div className="inline-flex p-1 bg-slate-200/60 rounded-lg text-xs font-medium self-start sm:self-auto">
             <button
               onClick={() => setFilterMode('ALL')}
-              className={`px-3 py-1.5 rounded-lg transition-colors ${
+              className={`px-2.5 py-1 rounded-md transition-colors ${
                 filterMode === 'ALL'
-                  ? 'bg-white text-slate-900 shadow-sm font-semibold'
+                  ? 'bg-white text-slate-900 shadow-xs font-semibold'
                   : 'text-slate-600 hover:text-slate-900'
               }`}
             >
@@ -262,9 +260,9 @@ export const StudentDashboardPage: React.FC = () => {
             </button>
             <button
               onClick={() => setFilterMode('URGENT')}
-              className={`px-3 py-1.5 rounded-lg transition-colors ${
+              className={`px-2.5 py-1 rounded-md transition-colors ${
                 filterMode === 'URGENT'
-                  ? 'bg-white text-slate-900 shadow-sm font-semibold'
+                  ? 'bg-white text-slate-900 shadow-xs font-semibold'
                   : 'text-slate-600 hover:text-slate-900'
               }`}
             >
@@ -272,9 +270,9 @@ export const StudentDashboardPage: React.FC = () => {
             </button>
             <button
               onClick={() => setFilterMode('NEEDS_REVIEW')}
-              className={`px-3 py-1.5 rounded-lg transition-colors ${
+              className={`px-2.5 py-1 rounded-md transition-colors ${
                 filterMode === 'NEEDS_REVIEW'
-                  ? 'bg-white text-slate-900 shadow-sm font-semibold'
+                  ? 'bg-white text-slate-900 shadow-xs font-semibold'
                   : 'text-slate-600 hover:text-slate-900'
               }`}
             >
@@ -291,7 +289,7 @@ export const StudentDashboardPage: React.FC = () => {
             description={studentDashboardMessages.emptyAssignmentsDesc}
           />
         ) : (
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-5">
             {filteredAssignments.map((assignment) => {
               const daysStatus = calculateDaysLeftStatus(assignment.deadline);
               const subStatus = assignment.submission?.status || 'NOT_STARTED';
@@ -301,27 +299,27 @@ export const StudentDashboardPage: React.FC = () => {
               return (
                 <div
                   key={assignment.assignment_id}
-                  className={`p-6 rounded-2xl border shadow-sm flex flex-col justify-between space-y-4 transition-colors ${
+                  className={`p-4 md:p-5 rounded-xl border shadow-xs flex flex-col justify-between space-y-3 transition-colors ${
                     hasGroup
-                      ? 'bg-white border-slate-100 hover:border-slate-300'
+                      ? 'bg-white border-slate-200 hover:border-slate-300'
                       : 'bg-amber-50/20 border-amber-200/80 hover:border-amber-300'
                   }`}
                 >
-                  <div className="space-y-3">
+                  <div className="space-y-2.5">
                     {/* Header with Title and Days Left Badge */}
                     <div className="flex items-start justify-between gap-3">
                       <div>
-                        <h3 className="text-base font-bold text-slate-900 line-clamp-1">
+                        <h3 className="text-sm md:text-base font-bold text-slate-900 line-clamp-1">
                           {assignment.title}
                         </h3>
                         <p className="text-xs font-medium text-slate-500 mt-0.5 flex items-center gap-1.5">
                           <span>Nhóm:</span>
                           {hasGroup ? (
-                            <span className="text-emerald-700 font-bold bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
+                            <span className="text-emerald-700 font-bold bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200 text-[11px]">
                               {assignment.group_name}
                             </span>
                           ) : (
-                            <span className="text-amber-800 font-bold bg-amber-100 px-2 py-0.5 rounded border border-amber-300">
+                            <span className="text-amber-800 font-bold bg-amber-100 px-2 py-0.5 rounded border border-amber-300 text-[11px]">
                               🟡 Chưa có nhóm
                             </span>
                           )}
@@ -329,14 +327,14 @@ export const StudentDashboardPage: React.FC = () => {
                       </div>
 
                       {/* Single Source of Truth Days Left Badge */}
-                      <span className={`px-2.5 py-1 rounded-full text-xs font-semibold border ${daysStatus.badgeClasses}`}>
+                      <span className={`px-2.5 py-0.5 rounded-full text-xs font-semibold border ${daysStatus.badgeClasses}`}>
                         {daysStatus.label}
                       </span>
                     </div>
 
-                    {/* Giao diện A Groupless Card Callout */}
+                    {/* Groupless Card Callout */}
                     {!hasGroup && (
-                      <div className="p-3 bg-amber-100/60 border border-amber-200 rounded-xl flex items-center justify-between gap-3">
+                      <div className="p-2.5 bg-amber-100/60 border border-amber-200 rounded-lg flex items-center justify-between gap-2">
                         <span className="text-xs text-amber-900 font-medium">
                           ⚠️ Bạn chưa thuộc nhóm nào. Cần tham gia nhóm để nộp bài.
                         </span>
@@ -344,7 +342,7 @@ export const StudentDashboardPage: React.FC = () => {
                           type="button"
                           size="sm"
                           onClick={() => setJoinClassTarget({ classId: assignment.class_id || '', className: assignment.title })}
-                          className="bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold shrink-0"
+                          className="bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold shrink-0 px-2.5 py-1"
                         >
                           🚀 Tham gia nhóm
                         </Button>
@@ -352,11 +350,11 @@ export const StudentDashboardPage: React.FC = () => {
                     )}
 
                     {/* Status Badges Row */}
-                    <div className="flex flex-wrap items-center gap-2 pt-1">
+                    <div className="flex flex-wrap items-center gap-2 pt-0.5">
                       {/* Submission Status Badge */}
                       <span className="text-xs text-slate-500 font-medium">Bài nộp:</span>
                       <span
-                        className={`px-2 py-0.5 rounded-md text-xs font-semibold border ${
+                        className={`px-2 py-0.5 rounded text-xs font-semibold border ${
                           subStatus === 'SUBMITTED'
                             ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
                             : subStatus === 'LATE'
@@ -378,7 +376,7 @@ export const StudentDashboardPage: React.FC = () => {
                       {/* Review Status Badge */}
                       <span className="text-xs text-slate-500 font-medium ml-2">Chấm chéo:</span>
                       <span
-                        className={`px-2 py-0.5 rounded-md text-xs font-semibold border ${
+                        className={`px-2 py-0.5 rounded text-xs font-semibold border ${
                           revStatus === 'REVIEWED'
                             ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
                             : revStatus === 'UNDER_REVIEW'
@@ -394,7 +392,7 @@ export const StudentDashboardPage: React.FC = () => {
                       </span>
                     </div>
 
-                    {/* Group Workspace Progress Widget (1:1 per Group ID) */}
+                    {/* Group Workspace Progress Widget */}
                     {hasGroup && (
                       <AssignmentGroupWorkspaceWidget
                         groupId={assignment.group_id}
@@ -404,10 +402,10 @@ export const StudentDashboardPage: React.FC = () => {
                   </div>
 
                   {/* Actions Footer */}
-                  <div className="pt-3 border-t border-slate-100 flex flex-wrap items-center justify-between gap-3">
+                  <div className="pt-2.5 border-t border-slate-100 flex flex-wrap items-center justify-between gap-2">
                     {hasGroup ? (
                       <Link to={`/student/groups/${assignment.group_id}/workspace`}>
-                        <Button variant="outline" size="sm">
+                        <Button variant="outline" size="sm" className="text-xs px-3 py-1.5">
                           {studentDashboardMessages.actionWorkspace}
                         </Button>
                       </Link>
@@ -416,7 +414,7 @@ export const StudentDashboardPage: React.FC = () => {
                         variant="outline"
                         size="sm"
                         onClick={() => setJoinClassTarget({ classId: assignment.class_id || '', className: assignment.title })}
-                        className="text-amber-800 border-amber-300 hover:bg-amber-50"
+                        className="text-xs px-3 py-1.5 text-amber-800 border-amber-300 hover:bg-amber-50"
                       >
                         🚀 Tham gia nhóm
                       </Button>
@@ -425,16 +423,16 @@ export const StudentDashboardPage: React.FC = () => {
                     <div className="flex items-center gap-2">
                       {revStatus === 'UNDER_REVIEW' && (
                         <Link to="/student/reviews">
-                          <Button variant="secondary" size="sm" className="bg-amber-500 hover:bg-amber-600 text-white">
+                          <Button variant="secondary" size="sm" className="text-xs px-3 py-1.5 bg-amber-500 hover:bg-amber-600 text-white">
                             {studentDashboardMessages.actionReview}
                           </Button>
                         </Link>
                       )}
 
-                      {/* Submit Button: ACTIVE if hasGroup, DISABLED with tooltip if Groupless */}
+                      {/* Submit Button */}
                       {hasGroup ? (
                         <Link to={`/student/assignments/${assignment.assignment_id}/submit`}>
-                          <Button variant="default" size="sm">
+                          <Button variant="default" size="sm" className="text-xs px-3 py-1.5">
                             {subStatus === 'SUBMITTED' || subStatus === 'LATE'
                               ? studentDashboardMessages.actionEditSubmission
                               : studentDashboardMessages.actionSubmit}
@@ -446,7 +444,7 @@ export const StudentDashboardPage: React.FC = () => {
                           size="sm"
                           disabled
                           title="Cần tham gia nhóm trước khi nộp bài"
-                          className="opacity-50 cursor-not-allowed"
+                          className="text-xs px-3 py-1.5 opacity-50 cursor-not-allowed"
                         >
                           🔒 Nộp Bài (Cần Nhóm)
                         </Button>

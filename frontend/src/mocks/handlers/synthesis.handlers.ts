@@ -62,8 +62,8 @@ const mockSummaryItems: SummaryItem[] = [
 ];
 
 export const synthesisHandlers = [
-  // 1. GET /api/reviews/assignments/:assignmentId/reviews/synthesis
-  http.get('/api/reviews/assignments/:assignmentId/reviews/synthesis', ({ params }) => {
+  // 1. GET /api/assignments/:assignmentId/reviews/synthesis
+  http.get('/api/assignments/:assignmentId/reviews/synthesis', ({ params }) => {
     const { assignmentId } = params;
 
     // Test case assignment without enough reviews
@@ -106,8 +106,8 @@ export const synthesisHandlers = [
     return HttpResponse.json({ success: true, data: synthesisData });
   }),
 
-  // 2. GET /api/summary/submissions/:submissionId/summary
-  http.get('/api/summary/submissions/:submissionId/summary', ({ params }) => {
+  // 2. GET /api/submissions/:submissionId/summary
+  http.get('/api/submissions/:submissionId/summary', ({ params }) => {
     const { submissionId } = params;
 
     if (submissionId === 'not-found-submission-id') {
@@ -133,9 +133,9 @@ export const synthesisHandlers = [
     return HttpResponse.json({ success: true, data: response });
   }),
 
-  // 3. GET /api/summary/submissions/:submissionId/reviews (Traceability source reviews)
+  // 3. GET /api/submissions/:submissionId/reviews (Traceability source reviews)
   // CRITICAL SECURITY RULE: No PII (Student Name, Student ID, Group Name/ID) in output!
-  http.get('/api/summary/submissions/:submissionId/reviews', ({ request }) => {
+  http.get('/api/submissions/:submissionId/reviews', ({ request }) => {
     const url = new URL(request.url);
     const page = parseInt(url.searchParams.get('page') || '1', 10);
     const limit = parseInt(url.searchParams.get('limit') || '10', 10);
@@ -184,8 +184,8 @@ export const synthesisHandlers = [
     });
   }),
 
-  // 4. PATCH /api/summary/summary-items/:itemId
-  http.patch('/api/summary/summary-items/:itemId', async ({ params, request }) => {
+  // 4. PATCH /api/summary-items/:itemId
+  http.patch('/api/summary-items/:itemId', async ({ params, request }) => {
     const { itemId } = params;
     const body = (await request.json()) as { content?: string; note?: string; updatedAt: string };
 
@@ -231,8 +231,8 @@ export const synthesisHandlers = [
     });
   }),
 
-  // 5. PATCH /api/summary/submissions/:submissionId/summary/approve
-  http.patch('/api/summary/submissions/:submissionId/summary/approve', ({ params }) => {
+  // 5. PATCH /api/submissions/:submissionId/summary/approve
+  http.patch('/api/submissions/:submissionId/summary/approve', ({ params }) => {
     const { submissionId } = params;
 
     if (mockSummaryStatus === 'APPROVED') {

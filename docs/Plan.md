@@ -626,20 +626,20 @@ Potential Collaboration Risk
 - [x]  Submission.
 - [x]  Peer Review.
 - [x]  AI Mentor.
-- [ ]  Contribution Analytics.
-- [ ]  Review Summary.
-- [ ]  Teacher Dashboard.
+- [x]  Contribution Analytics.
+- [x]  Review Summary.
+- [x]  Teacher Dashboard.
 
 ## TASK 13.3 — Security Testing
 
-- [ ]  JWT.
-- [ ]  Authorization.
-- [ ]  Input validation.
-- [ ]  File validation.
-- [ ]  API Key protection.
-- [ ]  Double-Blind privacy.
-- [ ]  PII detection/sanitization.
-- [ ]  Rate limiting.
+- [x]  JWT.
+- [x]  Authorization.
+- [x]  Input validation.
+- [x]  File validation.
+- [x]  API Key protection.
+- [x]  Double-Blind privacy.
+- [x]  PII detection/sanitization.
+- [x]  Rate limiting.
 
 ## TASK 13.4 — End-to-End Test
 ```

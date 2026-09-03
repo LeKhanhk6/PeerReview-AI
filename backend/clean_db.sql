@@ -1,0 +1,11 @@
+DELETE FROM review_assignments;
+DELETE FROM submission_versions;
+DELETE FROM submissions;
+DELETE FROM group_members;
+DELETE FROM groups;
+DELETE FROM rubric_criteria;
+DELETE FROM rubrics;
+DELETE FROM assignments;
+DELETE FROM class_members;
+DELETE FROM classes WHERE invite_code LIKE 'INVITE_%';
+DELETE FROM users WHERE email LIKE '%@example.com';

@@ -13,7 +13,7 @@ router.use(verifyToken);
 const uuidSchema = z.string().uuid();
 const assignmentIdParamSchema = z.object({ assignmentId: uuidSchema });
 
-const submitSchema = {
+export const submitSchema = {
     params: assignmentIdParamSchema,
     body: z.object({
         file_url: z.string().url().refine(val => {

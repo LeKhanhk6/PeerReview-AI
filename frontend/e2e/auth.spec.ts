@@ -49,6 +49,6 @@ test.describe('Flow 1 — Authentication & Role Redirection Assertions', () => {
 
     // Try navigating to admin route
     await page.goto('/admin/users');
-    await expect(page).not.toHaveURL(/\/admin\/users/);
+    await expect(page.getByText('Access Denied')).toBeVisible();
   });
 });

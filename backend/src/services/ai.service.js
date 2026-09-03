@@ -91,7 +91,7 @@ const callProvider = async (prompt, requestId, customTimeout = null, maxRetries 
 
         try {
             const baseUrl = process.env.AI_API_URL || 'https://generativelanguage.googleapis.com/v1beta';
-            const url = `${baseUrl}/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
+            const url = `${baseUrl}/models/gemini-3.6-flash:generateContent?key=${apiKey}`;
             const bodyPayload = {
                 contents: [{ parts: [{ text: prompt }] }],
                 generationConfig: { responseMimeType: "application/json" }

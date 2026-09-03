@@ -12,7 +12,7 @@ export const synthesisApi = {
     assignmentId: string,
     params?: { from?: string; to?: string }
   ): Promise<AssignmentSynthesisResponse> => {
-    const res: any = await api.get(`/reviews/assignments/${assignmentId}/reviews/synthesis`, {
+    const res: any = await api.get(`/assignments/${assignmentId}/reviews/synthesis`, {
       params,
     });
     if (res && typeof res === 'object' && 'data' in res && res.data && typeof res.data === 'object' && 'summary' in res.data) {
@@ -23,7 +23,7 @@ export const synthesisApi = {
 
   // 2. Lấy bản tổng hợp nhận xét của một Bài nộp cụ thể (Submission-level)
   getSubmissionSummary: async (submissionId: string): Promise<SubmissionSummaryResponse> => {
-    const res: any = await api.get(`/summary/submissions/${submissionId}/summary`);
+    const res: any = await api.get(`/submissions/${submissionId}/summary`);
     if (res && typeof res === 'object' && 'data' in res && res.data && typeof res.data === 'object' && 'summary' in res.data) {
       return res.data;
     }
@@ -37,7 +37,7 @@ export const synthesisApi = {
     page = 1,
     limit = 10
   ): Promise<GetSourceReviewsResponse> => {
-    const res: any = await api.get(`/summary/submissions/${submissionId}/reviews`, {
+    const res: any = await api.get(`/submissions/${submissionId}/reviews`, {
       params: { page, limit },
     });
 
@@ -63,7 +63,7 @@ export const synthesisApi = {
     itemId: string,
     payload: UpdateSummaryItemPayload
   ): Promise<{ id: string; updatedAt: string }> => {
-    const res: any = await api.patch(`/summary/summary-items/${itemId}`, payload);
+    const res: any = await api.patch(`/summary-items/${itemId}`, payload);
     return res.data || res;
   },
 
@@ -71,7 +71,7 @@ export const synthesisApi = {
   approveSummary: async (
     submissionId: string
   ): Promise<{ id: string; status: 'APPROVED'; updatedAt: string }> => {
-    const res: any = await api.patch(`/summary/submissions/${submissionId}/summary/approve`);
+    const res: any = await api.patch(`/submissions/${submissionId}/summary/approve`);
     return res.data || res;
   },
 };

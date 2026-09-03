@@ -406,7 +406,7 @@ export const getDashboardOverview = async () => {
       pool.query('SELECT COUNT(*) FROM submissions'),
       pool.query('SELECT COUNT(*) FROM reviews'),
       pool.query(
-        "SELECT COUNT(*) FROM activity_logs WHERE action_type ILIKE '%AI%' AND created_at >= NOW() - INTERVAL '24 HOURS'"
+        "SELECT COUNT(*) FROM ai_requests WHERE created_at >= NOW() - INTERVAL '24 HOURS'"
       ),
     ]);
 

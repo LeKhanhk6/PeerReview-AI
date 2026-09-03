@@ -619,9 +619,9 @@ Potential Collaboration Risk
 
 ## TASK 13.2 — Frontend Testing
 
-- [ ]  Login.
-- [ ]  Student Dashboard.
-- [ ]  Assignment.
+- [x]  Login.
+- [x]  Student Dashboard.
+- [x]  Assignment.
 - [ ]  Group Workspace.
 - [ ]  Submission.
 - [ ]  Peer Review.

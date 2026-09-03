@@ -27,6 +27,12 @@ dist/
 dist-ssr/
 
 # ========================
+# Testing
+# ========================
+playwright-report/
+test-results/
+
+# ========================
 # OS & Editor Files
 # ========================
 .DS_Store

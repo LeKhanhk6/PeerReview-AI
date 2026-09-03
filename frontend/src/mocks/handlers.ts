@@ -45,17 +45,22 @@ export const handlers = [
       return new Promise(() => {}); // Never resolves
     }
 
-    const role = sessionStorage.getItem('MSW_ROLE') || 'STUDENT';
+    const role = sessionStorage.getItem('MSW_ROLE');
+    if (!role) {
+      return HttpResponse.json({ success: false, message: 'Unauthorized' }, { status: 401 });
+    }
 
     return HttpResponse.json({
       success: true,
       data: {
-        id: '123',
-        email: 'mockuser@example.com',
-        full_name: 'Mock User',
-        role: role,
-        capabilities: {
-          audit_enabled: auditEnabled
+        user: {
+          id: '123',
+          email: 'mockuser@example.com',
+          full_name: 'Mock User',
+          role: role,
+          capabilities: {
+            audit_enabled: auditEnabled
+          }
         }
       }
     });

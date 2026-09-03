@@ -68,8 +68,8 @@ export const assignmentHandlers = [
     });
   }),
 
-  // GET /api/assignments/:id
-  http.get('/api/assignments/:id', ({ params }) => {
+  // GET /api/assignments/:id/detail
+  http.get('/api/assignments/:id/detail', ({ params }) => {
     const { id } = params;
     if (id === 'error-500') {
       return HttpResponse.json({ success: false, message: 'Internal Server Error' }, { status: 500 });

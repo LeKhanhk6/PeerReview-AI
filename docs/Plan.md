@@ -622,7 +622,7 @@ Potential Collaboration Risk
 - [x]  Login.
 - [x]  Student Dashboard.
 - [x]  Assignment.
-- [ ]  Group Workspace.
+- [x]  Group Workspace.
 - [ ]  Submission.
 - [ ]  Peer Review.
 - [ ]  AI Mentor.

@@ -100,23 +100,23 @@ export const reviewHandlers = [
           ],
         },
         rubric: {
-          id: 'rubric-1',
+          id: 'b6e32d56-74b8-4d32-9c42-5f6a29e1d88b',
           description: 'Khung tiêu chí đánh giá chéo bài làm nhóm',
           criteria: [
             {
-              id: 'crit-1',
+              id: 'd4e5f6a1-b2c3-4d5e-8f9a-0b1c2d3e4f5a',
               name: 'Tính đúng đắn và Kiến trúc thuật toán',
               description: 'Đánh giá mức độ hoàn thiện kiến trúc hệ thống và tính chính xác.',
               weight: 40.0,
             },
             {
-              id: 'crit-2',
+              id: 'a1b2c3d4-e5f6-4a5b-8c7d-9e0f1a2b3c4d',
               name: 'Chất lượng Mã nguồn & Quy tắc Code',
               description: 'Đánh giá cấu trúc code, phân lớp và tuân thủ coding conventions.',
               weight: 30.0,
             },
             {
-              id: 'crit-3',
+              id: 'f1e2d3c4-b5a6-4f7e-9d8c-7b6a5f4e3d2c',
               name: 'Trình bày Báo cáo & Sáng tạo',
               description: 'Đánh giá tính mạch lạc, trực quan của sơ đồ và điểm sáng tạo.',
               weight: 30.0,
@@ -127,9 +127,9 @@ export const reviewHandlers = [
           status === 'COMPLETED'
             ? {
                 scores: [
-                  { criteriaId: 'crit-1', score: 36, comment: 'Thiết kế kiến trúc rất đầy đủ' },
-                  { criteriaId: 'crit-2', score: 27, comment: 'Code phân lớp tốt' },
-                  { criteriaId: 'crit-3', score: 25, comment: 'Báo cáo mạch lạc' },
+                  { criteriaId: 'd4e5f6a1-b2c3-4d5e-8f9a-0b1c2d3e4f5a', score: 36, comment: 'Thiết kế kiến trúc rất đầy đủ' },
+                  { criteriaId: 'a1b2c3d4-e5f6-4a5b-8c7d-9e0f1a2b3c4d', score: 27, comment: 'Code phân lớp tốt' },
+                  { criteriaId: 'f1e2d3c4-b5a6-4f7e-9d8c-7b6a5f4e3d2c', score: 25, comment: 'Báo cáo mạch lạc' },
                 ],
                 comment: 'Bài làm xuất sắc, cấu trúc rõ ràng và tuân thủ các quy tắc thiết kế.',
                 totalScore: 88.0,

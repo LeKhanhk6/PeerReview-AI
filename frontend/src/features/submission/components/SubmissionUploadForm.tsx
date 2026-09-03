@@ -61,61 +61,30 @@ export const SubmissionUploadForm: React.FC<SubmissionUploadFormProps> = ({
 
     setIsUploading(true);
     setHasError(false);
-    setUploadProgress(15);
+    const formData = new FormData();
+    formData.append('file', selectedFile);
+    if (isExpired) {
+      formData.append('is_late', 'true');
+    }
 
-    // Simulated cloud storage upload (Firebase/S3/Google Cloud Storage)
-    // TODO Phase 10: Connect with S3 Multipart Presigned Upload API
-    const simulatedCloudUrl = `https://storage.googleapis.com/peer-review-bucket/${encodeURIComponent(
-      selectedFile.name
-    )}`;
+    try {
+      await submitAssignment.mutateAsync(formData);
 
-    const interval = setInterval(() => {
-      setUploadProgress((prev) => {
-        if (prev >= 85) {
-          clearInterval(interval);
-          return 85;
-        }
-        return prev + 25;
-      });
-    }, 200);
-
-    setTimeout(async () => {
-      clearInterval(interval);
-
-      // Validate URL with Zod schema
-      const validation = submitAssignmentSchema.safeParse({ file_url: simulatedCloudUrl });
-      if (!validation.success) {
-        setIsUploading(false);
-        setHasError(true);
-        setFormError(validation.error.issues[0]?.message || 'URL file không hợp lệ.');
-        return;
+      toast.success(submissionMessages.form.uploadSuccess);
+      setSelectedFile(null);
+    } catch (err: any) {
+      setHasError(true);
+      const errMsg = err?.message || err?.response?.data?.message || err?.code || '';
+      if (errMsg.includes('MUST_JOIN_GROUP') || err?.status === 409) {
+        setFormError('⚠️ Bạn chưa thuộc về nhóm nào trong lớp học này. Vui lòng tham gia nhóm trước khi nộp bài.');
+        toast.error('Bạn cần tham gia một nhóm trong lớp học trước khi nộp bài.');
+      } else {
+        toast.error(errMsg || submissionMessages.error.submitFailed);
       }
-
-      setUploadProgress(100);
-
-      try {
-        await submitAssignment.mutateAsync({
-          file_url: simulatedCloudUrl,
-          file_name: selectedFile.name,
-          is_late: isExpired,
-        });
-
-        toast.success(submissionMessages.form.uploadSuccess);
-        setSelectedFile(null);
-      } catch (err: any) {
-        setHasError(true);
-        const errMsg = err?.message || err?.response?.data?.message || err?.code || '';
-        if (errMsg.includes('MUST_JOIN_GROUP') || err?.status === 409) {
-          setFormError('⚠️ Bạn chưa thuộc về nhóm nào trong lớp học này. Vui lòng tham gia nhóm trước khi nộp bài.');
-          toast.error('Bạn cần tham gia một nhóm trong lớp học trước khi nộp bài.');
-        } else {
-          toast.error(errMsg || submissionMessages.error.submitFailed);
-        }
-      } finally {
-        setIsUploading(false);
-        setUploadProgress(0);
-      }
-    }, 1200);
+    } finally {
+      setIsUploading(false);
+      setUploadProgress(0);
+    }
   };
 
   return (

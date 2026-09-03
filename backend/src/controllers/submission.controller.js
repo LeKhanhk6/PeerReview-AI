@@ -1,5 +1,6 @@
 import * as submissionService from '../services/submission.service.js';
 import { AppError } from '../utils/AppError.js';
+import { uploadSubmissionFile } from '../services/storage.service.js';
 
 export const getStudentDashboard = async (req, res, next) => {
     try {
@@ -44,8 +45,18 @@ export const getStudentDashboard = async (req, res, next) => {
 export const submit = async (req, res, next) => {
     try {
         const { assignmentId } = req.params;
-        const { file_url } = req.body;
         const userId = req.user?.id;
+        
+        let file_url = req.body.file_url;
+
+        // Process file upload if provided
+        if (req.file) {
+            file_url = await uploadSubmissionFile(req.file.buffer, req.file.originalname, req.file.mimetype);
+        }
+
+        if (!file_url) {
+            throw new AppError('Vui lòng chọn file bài nộp', 400);
+        }
 
         const result = await submissionService.submitAssignment(assignmentId, userId, file_url);
         return res.ok(result);

@@ -5,9 +5,14 @@ export const submissionApi = {
   // Submit assignment
   submitAssignment: async (
     assignmentId: string,
-    payload: { file_url: string; file_name?: string; is_late?: boolean }
+    payload: FormData
   ): Promise<SubmissionVersion> => {
-    const res: any = await api.post(`/submissions/assignments/${assignmentId}`, payload);
+    // Explicitly delete Content-Type so Axios/browser automatically sets the boundary for FormData
+    const res: any = await api.post(`/submissions/assignments/${assignmentId}`, payload, {
+      headers: {
+        'Content-Type': undefined
+      }
+    });
     return res.data || res;
   },
 

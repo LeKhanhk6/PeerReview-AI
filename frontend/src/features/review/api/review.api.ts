@@ -56,3 +56,11 @@ export const analyzeReviewText = async (
   const response = await api.post('/analyze', { comment }, { signal });
   return (response as unknown) as AIMentorAnalysis;
 };
+
+export const generateReviewAssignments = async (
+  assignmentId: string,
+  reviewsPerGroup?: number
+): Promise<{ success: boolean; message: string; count: number }> => {
+  const response = await api.post(`/assignments/${assignmentId}/review-assignments/generate`, { reviewsPerGroup });
+  return (response as unknown) as { success: boolean; message: string; count: number };
+};

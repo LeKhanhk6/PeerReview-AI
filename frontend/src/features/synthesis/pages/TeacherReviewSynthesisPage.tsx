@@ -48,6 +48,7 @@ export const TeacherReviewSynthesisPage: React.FC = () => {
   const {
     data: synthesisData,
     isLoading: isLoadingSynthesis,
+    isFetching: isFetchingSynthesis,
     isError: isErrorSynthesis,
     refetch: refetchSynthesis,
   } = useAssignmentSynthesis(assignmentId);

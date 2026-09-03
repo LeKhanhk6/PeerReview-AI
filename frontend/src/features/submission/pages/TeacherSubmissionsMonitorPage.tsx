@@ -6,11 +6,13 @@ import { Skeleton } from '@/components/ui/Skeleton';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { calculateDaysLeftStatus } from '@/utils/date.utils';
 import { toast } from 'sonner';
+import { useGenerateReviews } from '@/features/review/hooks/useGenerateReviews';
 
 export const TeacherSubmissionsMonitorPage: React.FC = () => {
   const { assignmentId = '' } = useParams<{ assignmentId: string }>();
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
+  const generateReviews = useGenerateReviews();
 
   const currentStatusFilter = searchParams.get('status') || 'ALL';
 
@@ -129,9 +131,23 @@ export const TeacherSubmissionsMonitorPage: React.FC = () => {
             📥 Xuất CSV danh sách
           </Button>
 
+          <Button
+            type="button"
+            variant="default"
+            size="sm"
+            onClick={() => {
+              const safeReviewsPerGroup = Math.min(2, Math.max(1, groups.length - 1));
+              generateReviews.mutate({ assignmentId, reviewsPerGroup: safeReviewsPerGroup });
+            }}
+            disabled={!groups.length || generateReviews.isPending}
+            className="gap-2 bg-indigo-600 hover:bg-indigo-700"
+          >
+            {generateReviews.isPending ? '⏳ Đang phân công...' : '🎲 Phân công chấm chéo'}
+          </Button>
+
           <Link to={`/teacher/assignments/${assignment.id}/synthesis`}>
-            <Button variant="default" size="sm">
-              🔗 Phân công chấm chéo & AI Synthesis →
+            <Button variant="outline" size="sm" className="border-indigo-200 text-indigo-700 hover:bg-indigo-50">
+              🤖 AI Synthesis →
             </Button>
           </Link>
         </div>

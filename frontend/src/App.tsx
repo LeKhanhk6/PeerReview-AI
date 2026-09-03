@@ -9,6 +9,7 @@ import { ProtectedRoute } from './features/auth/components/ProtectedRoute';
 import { RoleRoute } from './features/auth/components/RoleRoute';
 import { LoginPage } from './features/auth/pages/LoginPage';
 import { RegisterPage } from './features/auth/pages/RegisterPage';
+import { ResetPasswordPage } from './features/auth/pages/ResetPasswordPage';
 import { StudentLayout } from './components/layout/StudentLayout';
 import { TeacherLayout } from './components/layout/TeacherLayout';
 import { AdminLayout } from './components/layout/AdminLayout';
@@ -51,6 +52,7 @@ function App() {
           {/* Public Routes */}
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
+          <Route path="/reset-password" element={<ResetPasswordPage />} />
           
           {/* Student Routes */}
           <Route 

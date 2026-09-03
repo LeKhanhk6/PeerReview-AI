@@ -40,7 +40,7 @@ export const useTeacherSubmissionsMonitor = (assignmentId: string, status?: stri
 export const useSubmitAssignment = (assignmentId: string) => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (payload: { file_url: string; file_name?: string; is_late?: boolean }) =>
+    mutationFn: (payload: FormData) =>
       submissionApi.submitAssignment(assignmentId, payload),
     onSuccess: (newSubmission) => {
       queryClient.setQueryData<SubmissionVersion[]>(

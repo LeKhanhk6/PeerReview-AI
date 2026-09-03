@@ -9,7 +9,7 @@ export const getSourceReviews = async (req, res, next) => {
 
         const result = await summaryService.getSourceReviews(req.user, submissionId, page, limit);
         
-        return res.paginate(result.reviews, page, limit, result.total);
+        return res.paginate(result.reviews, { page, limit, total: result.total });
     } catch (error) {
         next(error);
     }

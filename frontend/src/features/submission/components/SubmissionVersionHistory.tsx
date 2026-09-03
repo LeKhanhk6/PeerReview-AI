@@ -79,6 +79,20 @@ export const SubmissionVersionHistory: React.FC<SubmissionVersionHistoryProps> =
                   year: 'numeric',
                 });
 
+                let displayFileName = ver.file_name;
+                if (!displayFileName && ver.file_url) {
+                  try {
+                    const urlObj = new URL(ver.file_url);
+                    const downloadParam = urlObj.searchParams.get('download');
+                    if (downloadParam) {
+                      displayFileName = decodeURIComponent(downloadParam);
+                    }
+                  } catch (e) {
+                    // Ignore
+                  }
+                }
+                displayFileName = displayFileName || `Bản_Nộp_v${ver.version_number}.pdf`;
+
                 return (
                   <tr
                     key={ver.id}
@@ -105,14 +119,14 @@ export const SubmissionVersionHistory: React.FC<SubmissionVersionHistoryProps> =
                         )}
                       </div>
                     </td>
-                    <td className="p-3 text-gray-900 truncate max-w-xs">
-                      📄 {ver.file_name || `Bản_Nộp_v${ver.version_number}.pdf`}
+                    <td className="p-3 text-gray-900 truncate max-w-xs" title={displayFileName}>
+                      📄 {displayFileName}
                     </td>
                     <td className="p-3 text-xs text-gray-500 font-mono">{dateStr}</td>
                     <td className="p-3 text-right">
                       <a
                         href={ver.file_url}
-                        download={ver.file_name || `Bản_Nộp_v${ver.version_number}.pdf`}
+                        download={displayFileName}
                         target="_blank"
                         rel="noopener noreferrer"
                         onClick={(e) => {

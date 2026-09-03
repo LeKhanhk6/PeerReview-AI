@@ -86,7 +86,7 @@ export const SubmissionViewerPanel: React.FC<SubmissionViewerPanelProps> = ({
                 <span>{reviewMessages.writing.openInNewTab}</span>
               </a>
               <a
-                href={submission.fileUrl}
+                href={`${submission.fileUrl}?download=Submission_${submission.publicId || 'Anonymous'}.${submission.fileUrl.split('.').pop()?.split('?')[0] || 'pdf'}`}
                 download
                 onClick={handleSimulatedDownload}
                 className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-700 transition-colors shadow-2xs"

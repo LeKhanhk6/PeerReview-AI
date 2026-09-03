@@ -21,13 +21,25 @@ export const maskSubmissionEntity = (submission, assignmentId) => {
     const id = submission.submission_id || submission.id;
     const anonId = generateAnonymousId(id, assignmentId);
     
+    let safeFileUrl = null;
+    if (submission.file_url) {
+        try {
+            // Strip the ?download=... query parameter from the Supabase URL
+            // This ensures the original filename is not leaked to the reviewer
+            const urlObj = new URL(submission.file_url);
+            urlObj.search = '';
+            safeFileUrl = urlObj.toString();
+        } catch (e) {
+            // Fallback for invalid URLs or legacy mock data
+            safeFileUrl = submission.file_url.split('?')[0];
+        }
+    }
+
     return {
         publicId: anonId, // Explicitly hiding the raw internal ID
         title: `Anonymous Submission ${anonId}`,
         submittedAt: submission.created_at || submission.submitted_at,
-        // Provide a proxy URL instead of raw S3/storage URL to prevent identity leak via filename
-        // Using anonId in the URL prevents leaking the raw submission_id
-        fileUrl: `/api/v1/submissions/${anonId}/download`
+        fileUrl: safeFileUrl
     };
 };
 

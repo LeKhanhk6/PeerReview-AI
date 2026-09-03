@@ -83,9 +83,8 @@ export const getMyReviewAssignments = async (assignmentId, userId, limit, offset
     const rows = result.rows.map(row => {
         const maskedSubmission = maskSubmissionEntity({
             id: row.submission_id,
-            created_at: row.created_at
-            // We intentionally do not pass version_number to strict double-blind
-            // We intentionally do not pass file_url to masking to enforce proxy usage
+            created_at: row.created_at,
+            file_url: row.file_url
         }, assignmentId);
 
         return {
@@ -113,6 +112,7 @@ export const getReviewAssignmentDetail = async (reviewAssignmentId, userId) => {
             s.id as submission_id,
             s.assignment_id,
             sv.created_at as submission_created_at,
+            sv.file_url as file_url,
             a.title as assignment_title,
             a.description as assignment_description,
             a.deadline as assignment_deadline
@@ -120,7 +120,7 @@ export const getReviewAssignmentDetail = async (reviewAssignmentId, userId) => {
         JOIN submissions s ON s.id = ra.submission_id
         JOIN assignments a ON a.id = s.assignment_id
         LEFT JOIN LATERAL (
-            SELECT sv_inner.created_at
+            SELECT sv_inner.created_at, sv_inner.file_url
             FROM submission_versions sv_inner
             WHERE sv_inner.submission_id = s.id
             ORDER BY sv_inner.version_number DESC
@@ -204,7 +204,8 @@ export const getReviewAssignmentDetail = async (reviewAssignmentId, userId) => {
     // 5. Apply masking
     const maskedSubmission = maskSubmissionEntity({
         id: row.submission_id,
-        created_at: row.submission_created_at
+        created_at: row.submission_created_at,
+        file_url: result.rows[0].file_url
     }, row.assignment_id);
 
     // 6. Build final structured response

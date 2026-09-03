@@ -64,7 +64,7 @@ export const SynthesisStatusCard: React.FC<SynthesisStatusCardProps> = ({
           <h3 className="font-bold">{synthesisMessages.status.notEnoughReviews}</h3>
         </div>
         <p className="text-xs text-amber-700">
-          Hiện tại bài tập chỉ có {synthesis.totalReviews} bài phản biện. Cần tối thiểu 5 bài phản biện để AI tổng hợp thông số chính xác.
+          Hiện tại bài tập chỉ có {synthesis.totalReviews} bài phản biện. Cần tối thiểu 1 bài phản biện để AI tổng hợp thông số chính xác.
         </p>
       </div>
     );

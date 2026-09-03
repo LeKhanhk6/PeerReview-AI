@@ -625,7 +625,7 @@ Potential Collaboration Risk
 - [x]  Group Workspace.
 - [x]  Submission.
 - [x]  Peer Review.
-- [ ]  AI Mentor.
+- [x]  AI Mentor.
 - [ ]  Contribution Analytics.
 - [ ]  Review Summary.
 - [ ]  Teacher Dashboard.

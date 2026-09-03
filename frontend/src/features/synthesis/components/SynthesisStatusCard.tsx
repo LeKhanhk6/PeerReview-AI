@@ -6,6 +6,7 @@ import type { AssignmentSynthesisResponse } from '../types/synthesis.types';
 interface SynthesisStatusCardProps {
   synthesis?: AssignmentSynthesisResponse;
   isLoading: boolean;
+  isFetching?: boolean;
   isError: boolean;
   onRefresh: () => void;
 }
@@ -13,6 +14,7 @@ interface SynthesisStatusCardProps {
 export const SynthesisStatusCard: React.FC<SynthesisStatusCardProps> = ({
   synthesis,
   isLoading,
+  isFetching,
   isError,
   onRefresh,
 }) => {
@@ -86,8 +88,8 @@ export const SynthesisStatusCard: React.FC<SynthesisStatusCardProps> = ({
           </p>
         </div>
 
-        <Button variant="secondary" size="sm" onClick={onRefresh} disabled={isLoading}>
-          🔄 {synthesisMessages.header.refreshSynthesis}
+        <Button variant="secondary" size="sm" onClick={onRefresh} disabled={isLoading || isFetching}>
+          🔄 {isFetching ? "Đang tạo lại..." : synthesisMessages.header.refreshSynthesis}
         </Button>
       </div>
 

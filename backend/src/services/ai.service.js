@@ -303,6 +303,19 @@ export const synthesizeReviews = async (assignmentId, timeframeKey, reviews, tot
             return cached;
         }
 
+        if (process.env.AI_MOCK === 'true') {
+            return {
+                summary: "Đây là kết quả tổng hợp tự động từ AI (Chế độ Mock). Nhìn chung các bài tập đều hoàn thành khá tốt các yêu cầu cơ bản, tuy nhiên một số nhóm vẫn mắc lỗi trình bày. Hãy chú ý hơn về cấu trúc dữ liệu và thuật toán tối ưu.",
+                strengths: ["Phân tích logic rõ ràng", "Số liệu và tính toán chính xác", "Cấu trúc báo cáo mạch lạc"],
+                weaknesses: ["Chưa có phần mở rộng vấn đề", "Thiếu ví dụ thực tế minh họa", "Cách đặt tên biến chưa chuẩn"],
+                suggestions: ["Nên bổ sung thêm các case study thực tế", "Nghiên cứu thêm về thuật toán nâng cao", "Cải thiện phần kết luận để ấn tượng hơn"],
+                importantQuestions: ["Làm sao để tối ưu hóa thời gian chạy của thuật toán?", "Phương án xử lý nếu dữ liệu đầu vào quá lớn là gì?"],
+                keywords: ["Tối ưu thuật toán", "Cấu trúc dữ liệu", "Mock AI"],
+                sentiment: "positive",
+                confidence: 0.95
+            };
+        }
+
         if (!reviews || reviews.length === 0) {
             return {
                 summary: "Không có dữ liệu đánh giá.",

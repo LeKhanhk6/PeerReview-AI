@@ -25,7 +25,7 @@ const submitReviewSchema = {
         criteriaScores: z.array(z.object({
             criteriaId: uuidSchema,
             score: z.coerce.number().min(0).max(100)
-        })).min(1).max(50).refine((items) => {
+        })).max(50).refine((items) => {
             const ids = items.map(i => i.criteriaId);
             return new Set(ids).size === ids.length;
         }, { message: "Duplicate criteriaId found" })

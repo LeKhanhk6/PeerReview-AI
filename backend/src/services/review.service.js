@@ -354,21 +354,23 @@ export const submitReview = async (reviewAssignmentId, userId, payload) => {
         const reviewId = reviewRow.id;
 
         // 7. Insert review criteria (Bulk insert for performance)
-        const insertParams = [reviewId];
-        const insertValues = [];
-        let paramIndex = 2;
-        
-        for (const ps of processedScores) {
-            insertValues.push(`($1, $${paramIndex}, $${paramIndex + 1}, $${paramIndex + 2})`);
-            insertParams.push(ps.criteriaId, ps.score, ps.comment);
-            paramIndex += 3;
+        if (processedScores.length > 0) {
+            const insertParams = [reviewId];
+            const insertValues = [];
+            let paramIndex = 2;
+            
+            for (const ps of processedScores) {
+                insertValues.push(`($1, $${paramIndex}, $${paramIndex + 1}, $${paramIndex + 2})`);
+                insertParams.push(ps.criteriaId, ps.score, ps.comment);
+                paramIndex += 3;
+            }
+            
+            const bulkInsertQuery = `
+                INSERT INTO review_criteria (review_id, rubric_criteria_id, score, comment)
+                VALUES ${insertValues.join(', ')}
+            `;
+            await client.query(bulkInsertQuery, insertParams);
         }
-        
-        const bulkInsertQuery = `
-            INSERT INTO review_criteria (review_id, rubric_criteria_id, score, comment)
-            VALUES ${insertValues.join(', ')}
-        `;
-        await client.query(bulkInsertQuery, insertParams);
 
         // 8. Activity Tracking
         try {

@@ -56,7 +56,7 @@ export const generateAssignmentReviewSynthesis = async (req, res, next) => {
 
         const { reviewsText, totalReviews, reviewsUsed } = await reviewService.getAssignmentReviewsForSynthesis(assignmentId, timeframe);
         
-        if (totalReviews < 5) {
+        if (totalReviews < 1) {
             return res.ok({
                 requestId,
                 summary: "Chưa có đủ dữ liệu để phân tích.",
@@ -84,6 +84,9 @@ export const generateAssignmentReviewSynthesis = async (req, res, next) => {
 
             return res.ok({
                 requestId,
+                totalReviews,
+                reviewsUsed,
+                confidence: synthesis.confidence !== undefined ? synthesis.confidence : (synthesis.summary.startsWith("Lỗi") ? 0 : 0.85),
                 ...synthesis
             });
         } finally {

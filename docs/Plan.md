@@ -626,8 +626,8 @@ Potential Collaboration Risk
 - [x]  Submission.
 - [x]  Peer Review.
 - [x]  AI Mentor.
-- [ ]  Contribution Analytics.
-- [ ]  Review Summary.
+- [x]  Contribution Analytics.
+- [x]  Review Summary.
 - [ ]  Teacher Dashboard.
 
 ## TASK 13.3 — Security Testing

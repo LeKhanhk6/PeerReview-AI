@@ -623,7 +623,7 @@ Potential Collaboration Risk
 - [x]  Student Dashboard.
 - [x]  Assignment.
 - [x]  Group Workspace.
-- [ ]  Submission.
+- [x]  Submission.
 - [ ]  Peer Review.
 - [ ]  AI Mentor.
 - [ ]  Contribution Analytics.

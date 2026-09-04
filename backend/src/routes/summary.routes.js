@@ -62,5 +62,12 @@ router.patch(
     summaryController.approveReviewSummary
 );
 
+// Tạo mới bản tổng hợp AI cho 1 bài nộp (On-demand)
+router.post(
+    '/submissions/:submissionId/summary/generate',
+    validate({ params: submissionIdParamSchema }),
+    summaryController.generateSubmissionSummary
+);
+
 export default router;
 

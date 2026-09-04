@@ -58,6 +58,27 @@ export const useSubmissionSummary = (submissionId: string) => {
 };
 
 /**
+ * Hook tạo mới bản tổng hợp AI (On-Demand)
+ */
+export const useGenerateSubmissionSummaryMutation = (submissionId: string) => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: () => synthesisApi.generateSubmissionSummary(submissionId),
+    onSuccess: () => {
+      toast.success('Bắt đầu tạo bản tổng hợp thành công!');
+      queryClient.invalidateQueries({
+        queryKey: SYNTHESIS_QUERY_KEYS.submissionSummary(submissionId),
+      });
+    },
+    onError: (error: any) => {
+      const msg = error.response?.data?.message || 'Có lỗi xảy ra khi gọi AI tổng hợp.';
+      toast.error(msg);
+    },
+  });
+};
+
+/**
  * Hook lấy danh sách Vết nguồn phản biện (Source reviews) phân trang
  */
 export const useSourceReviews = (submissionId: string, page = 1, limit = 10) => {

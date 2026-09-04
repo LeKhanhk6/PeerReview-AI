@@ -30,6 +30,11 @@ export const synthesisApi = {
     return res;
   },
 
+  // 2.1 Kích hoạt tạo mới bản tổng hợp bằng AI (On-demand)
+  generateSubmissionSummary: async (submissionId: string): Promise<void> => {
+    await api.post(`/submissions/${submissionId}/summary/generate`);
+  },
+
 
   // 3. Lấy danh sách vết nguồn bài phản biện gốc (Traceability - Double-Blind Safe)
   getSourceReviews: async (

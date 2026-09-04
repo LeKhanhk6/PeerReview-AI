@@ -9,9 +9,12 @@ import {
   useSubmissionSummary,
   useUpdateSummaryItemMutation,
   useApproveSummaryMutation,
+  useGenerateSubmissionSummaryMutation,
 } from '../hooks/useSynthesis';
 import { useTeacherSubmissionsMonitor } from '@/features/submission/hooks/useSubmission';
 import { SynthesisStatusCard } from '../components/SynthesisStatusCard';
+import { FileText, RefreshCw, Loader2 } from 'lucide-react';
+
 import { AssignmentSynthesisOverview } from '../components/AssignmentSynthesisOverview';
 import { SummaryItemCard } from '../components/SummaryItemCard';
 import { SourceReviewDrawer } from '../components/SourceReviewDrawer';
@@ -61,6 +64,7 @@ export const TeacherReviewSynthesisPage: React.FC = () => {
 
   const updateItemMutation = useUpdateSummaryItemMutation(selectedSubmissionId);
   const approveMutation = useApproveSummaryMutation(selectedSubmissionId);
+  const generateMutation = useGenerateSubmissionSummaryMutation(selectedSubmissionId);
 
   const summaryHeader = summaryResponse?.summary;
   const items = summaryResponse?.items || [];
@@ -80,6 +84,18 @@ export const TeacherReviewSynthesisPage: React.FC = () => {
 
   const handleApproveSummary = async () => {
     await approveMutation.mutateAsync();
+  };
+
+  const handleGenerateSummary = () => {
+    if (generateMutation.isPending) return;
+    
+    // Nếu đã có dữ liệu, hiển thị confirm dialog trước khi tạo lại
+    if (!isErrorSummary && items.length > 0) {
+      if (!window.confirm(synthesisMessages.header.confirmRegenerateDesc)) {
+        return;
+      }
+    }
+    generateMutation.mutate();
   };
 
   return (
@@ -124,23 +140,43 @@ export const TeacherReviewSynthesisPage: React.FC = () => {
       <div className="space-y-6">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <h2 className="text-xl font-bold text-gray-900 flex items-center gap-2">
-            <span>📑</span> Chi Tiết Tổng Hợp Theo Bài Nộp
+            <FileText className="h-5 w-5 text-gray-700" /> Chi Tiết Tổng Hợp Theo Bài Nộp
           </h2>
 
-          {/* Dynamic Submission Selector Dropdown */}
-          <div className="w-full md:w-80">
-            <select
-              value={selectedSubmissionId}
-              onChange={(e) => handleSubmissionChange(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm bg-white font-medium focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
-              <option value="">-- Chọn bài nộp nhóm --</option>
-              {submittedGroups.map((g) => (
-                <option key={g.groupId} value={String(g.submission?.id || g.groupId)}>
-                  {g.groupName} - Bài nộp v{g.submission?.latestVersionNumber || 1}
-                </option>
-              ))}
-            </select>
+          <div className="flex items-center gap-3 w-full md:w-auto">
+            {/* Dynamic Submission Selector Dropdown */}
+            <div className="w-full md:w-80">
+              <select
+                value={selectedSubmissionId}
+                onChange={(e) => handleSubmissionChange(e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm bg-white font-medium focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                <option value="">-- Chọn bài nộp nhóm --</option>
+                {submittedGroups.map((g) => (
+                  <option key={g.groupId} value={String(g.submission?.id || g.groupId)}>
+                    {g.groupName} - Bài nộp v{g.submission?.latestVersionNumber || 1}
+                  </option>
+                ))}
+              </select>
+            </div>
+            
+            {/* Action Button: Generate / Regenerate */}
+            {selectedSubmissionId && !isErrorSummary && items.length > 0 && !isApproved && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleGenerateSummary}
+                disabled={generateMutation.isPending}
+                className="whitespace-nowrap hidden md:flex"
+              >
+                {generateMutation.isPending ? (
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                ) : (
+                  <RefreshCw className="h-4 w-4 mr-2" />
+                )}
+                {synthesisMessages.header.refreshSynthesis}
+              </Button>
+            )}
           </div>
         </div>
 
@@ -156,8 +192,14 @@ export const TeacherReviewSynthesisPage: React.FC = () => {
         )}
 
         {/* Summary Items List */}
-        {isLoadingSummary ? (
+        {isLoadingSummary || generateMutation.isPending ? (
           <div className="space-y-4" aria-busy="true">
+            {generateMutation.isPending && (
+              <div className="text-center py-4 text-blue-600 flex flex-col items-center gap-2">
+                <Loader2 className="h-8 w-8 animate-spin" />
+                <span className="font-medium">{synthesisMessages.header.generateSummarySub}</span>
+              </div>
+            )}
             <SkeletonCard />
             <SkeletonCard />
             <SkeletonCard />
@@ -169,6 +211,8 @@ export const TeacherReviewSynthesisPage: React.FC = () => {
             description={
               (summaryError as any)?.message || synthesisMessages.errors.fetchSummaryError
             }
+            actionLabel={selectedSubmissionId ? synthesisMessages.header.generateSummary : undefined}
+            onAction={selectedSubmissionId ? handleGenerateSummary : undefined}
           />
         ) : items.length === 0 ? (
           <EmptyState

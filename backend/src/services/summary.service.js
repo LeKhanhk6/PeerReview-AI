@@ -4,6 +4,12 @@ import { SUMMARY_STATUS, ACTIVITY_TYPES } from '../constants/index.js';
 import logger from '../utils/logger.util.js';
 import { mapDbError } from '../utils/dbError.util.js';
 import { withTransaction } from '../utils/db.util.js';
+import { synthesizeReviews } from './ai.service.js';
+import crypto from 'crypto';
+
+// In-memory lock for preventing concurrent generation per submission
+const generationLocks = new Set();
+
 
 const UUID_REGEX = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/;
 
@@ -315,5 +321,124 @@ export const getSummaryStatus = async (currentUser, submissionId) => {
         status,
         errorReason: status === 'failed' ? 'LLM_PROCESSING_FAILED' : null,
     };
+};
+
+export const generateSubmissionSummary = async (currentUser, submissionId) => {
+    // 1. Kiểm tra quyền theo ngữ cảnh (throws 404/403)
+    const targetSubmission = await getSubmissionOrFail(currentUser, submissionId);
+    const validSubmissionId = targetSubmission.submission_id;
+    
+    // 2. In-memory concurrency lock (prevents parallel calls)
+    if (generationLocks.has(validSubmissionId)) {
+        throw new AppError('Synthesis is already generating for this submission', 409);
+    }
+    generationLocks.add(validSubmissionId);
+
+    try {
+        // 2. Fetch all reviews for this submission
+        const reviewsQuery = `
+            SELECT r.overall_comment, rc.comment as criteria_comment
+            FROM reviews r
+            JOIN review_assignments ra ON r.review_assignment_id = ra.id
+            LEFT JOIN review_criteria rc ON rc.review_id = r.id
+            WHERE ra.submission_id = $1
+        `;
+        const reviewsRes = await pool.query(reviewsQuery, [validSubmissionId]);
+        
+        let textChunks = [];
+        for (const row of reviewsRes.rows) {
+            if (row.overall_comment) textChunks.push(row.overall_comment.trim());
+            if (row.criteria_comment) textChunks.push(row.criteria_comment.trim());
+        }
+        
+        textChunks = textChunks.filter(t => t.length > 5); // Filter empty/short
+        if (textChunks.length === 0) {
+            throw new AppError('Chưa có nhận xét nào để tổng hợp', 400);
+        }
+
+        // Generate a request ID for logging
+        const requestId = crypto.randomUUID();
+
+        // 3. Call AI Service (reuses assignment synthesis logic)
+        // synthesizeReviews handles AI_MOCK internally!
+        const synthesis = await synthesizeReviews(
+            validSubmissionId, // Used as cache key segment
+            'submission',
+            textChunks,
+            textChunks.length,
+            textChunks.length,
+            requestId
+        );
+
+        if (synthesis.summary?.startsWith("Lỗi")) {
+            throw new AppError('AI synthesis failed. Please try again later.', 500);
+        }
+
+        // 4. Database Transaction for Upsert
+        await withTransaction(async (client) => {
+            // Check if existing summary (SELECT FOR UPDATE)
+            const checkRes = await client.query(
+                `SELECT id FROM review_summaries WHERE submission_id = $1 FOR UPDATE`, 
+                [validSubmissionId]
+            );
+
+            let summaryId;
+            if (checkRes.rowCount > 0) {
+                // Upsert: REGENERATE
+                summaryId = checkRes.rows[0].id;
+                
+                // Delete old items
+                await client.query(`DELETE FROM review_summary_items WHERE summary_id = $1`, [summaryId]);
+                
+                // Update summary metadata
+                await client.query(`
+                    UPDATE review_summaries 
+                    SET status = 'DRAFT', updated_by = $1, updated_at = NOW(), generated_at = NOW()
+                    WHERE id = $2
+                `, [currentUser.userId, summaryId]);
+            } else {
+                // Insert new
+                const insertRes = await client.query(`
+                    INSERT INTO review_summaries (submission_id, status, updated_by)
+                    VALUES ($1, 'DRAFT', $2)
+                    RETURNING id
+                `, [validSubmissionId, currentUser.userId]);
+                summaryId = insertRes.rows[0].id;
+            }
+
+            // Insert new items
+            const insertItemQuery = `
+                INSERT INTO review_summary_items (summary_id, topic_category, content, frequency_count)
+                VALUES ($1, $2, $3, $4)
+            `;
+
+            const categories = [
+                { key: 'STRENGTHS', items: synthesis.strengths },
+                { key: 'WEAKNESSES', items: synthesis.weaknesses },
+                { key: 'SUGGESTIONS', items: synthesis.suggestions }
+            ];
+
+            for (const cat of categories) {
+                if (Array.isArray(cat.items)) {
+                    for (const text of cat.items) {
+                        if (text && text.trim().length > 0) {
+                            await client.query(insertItemQuery, [
+                                summaryId, 
+                                cat.key, 
+                                text.trim(), 
+                                1 // Default frequency
+                            ]);
+                        }
+                    }
+                }
+            }
+        });
+
+        return { message: 'Success' };
+
+    } finally {
+        // MUST release lock
+        generationLocks.delete(validSubmissionId);
+    }
 };
 

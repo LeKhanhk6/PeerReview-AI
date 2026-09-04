@@ -1,11 +1,15 @@
 export const synthesisMessages = {
   header: {
-    title: '🤖 Tổng Hợp Đánh Giá Bằng AI & Phê Duyệt Nhanh',
+    title: 'Tổng Hợp Đánh Giá Bằng AI & Phê Duyệt Nhanh',
     subtitle: 'Tổng hợp nhận xét chéo của sinh viên, hỗ trợ giáo viên duyệt và tùy chỉnh nội dung phản hồi',
     backToAssignments: 'Quay lại danh sách bài tập',
     selectSubmissionPlaceholder: '-- Chọn bài nộp của nhóm để xem tổng hợp chi tiết --',
     refreshSynthesis: 'Tạo lại tổng hợp AI',
     retriggering: 'Đang gửi yêu cầu phân tích...',
+    generateSummary: 'Tạo tổng hợp AI ngay',
+    generateSummarySub: 'AI đang phân tích nhận xét...',
+    confirmRegenerateTitle: 'Xác nhận tạo lại',
+    confirmRegenerateDesc: 'Tạo lại sẽ thay thế bản tổng hợp hiện tại. Bạn có chắc chắn?',
   },
   status: {
     draft: 'Bản nháp AI',
@@ -16,17 +20,17 @@ export const synthesisMessages = {
     processing: 'AI đang phân tích và tổng hợp nhận xét...',
     notEnoughReviews: 'Chưa có đủ số lượng bài phản biện (tối thiểu 1 bài) để thực hiện tổng hợp tự động.',
     confidenceLabel: 'Độ tin cậy AI:',
-    confidenceLowWarning: '⚠️ Điểm tin cậy AI dưới 60%. Khuyến nghị Giáo viên xem xét kỹ các bài phản biện gốc trước khi duyệt.',
+    confidenceLowWarning: 'Điểm tin cậy AI dưới 60%. Khuyến nghị Giáo viên xem xét kỹ các bài phản biện gốc trước khi duyệt.',
   },
   categories: {
-    strength: '🟢 Ưu điểm nổi bật',
-    weakness: '🔴 Nhược điểm cần cải thiện',
-    suggestion: '🔵 Gợi ý phát triển',
-    question: '🟣 Câu hỏi & Thắc mắc',
-    unknown: '⚪ Khác',
+    strength: 'Ưu điểm nổi bật',
+    weakness: 'Nhược điểm cần cải thiện',
+    suggestion: 'Gợi ý phát triển',
+    question: 'Câu hỏi & Thắc mắc',
+    unknown: 'Khác',
   },
   itemCard: {
-    editedBadge: '✏️ Đã chỉnh sửa bởi GV',
+    editedBadge: 'Đã chỉnh sửa bởi GV',
     editButton: 'Chỉnh sửa',
     editDisabledApproved: 'Không thể chỉnh sửa bản tổng hợp đã phê duyệt',
     saveButton: 'Lưu thay đổi',
@@ -40,7 +44,8 @@ export const synthesisMessages = {
     updatedAt: 'Thời điểm cập nhật:',
   },
   drawer: {
-    title: '🔍 Vết Nguồn Phản Biện (Traceability)',
+    title: 'Vết Nguồn Phản Biện (Traceability)',
+
     subtitle: 'Danh sách các bài phản biện gốc đã đóng góp vào cụm chủ đề này (Tuân thủ Double-Blind)',
     closeDrawer: 'Đóng cửa sổ',
     paginationPage: 'Trang',

@@ -57,3 +57,13 @@ export const getSummaryStatus = async (req, res, next) => {
     }
 };
 
+export const generateSubmissionSummary = async (req, res, next) => {
+    try {
+        const { submissionId } = req.params;
+        const result = await summaryService.generateSubmissionSummary(req.user, submissionId);
+        return res.ok(result);
+    } catch (error) {
+        next(error);
+    }
+};
+

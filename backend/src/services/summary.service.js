@@ -193,17 +193,7 @@ export const updateSummaryItem = async (currentUser, itemId, updates) => {
             }
         }
 
-        // Insert into activity logs
-        await client.query(`
-            INSERT INTO activity_logs (group_id, user_id, action_type, target_id, metadata, content_summary)
-            VALUES (NULL, $1, $2, $3, $4, $5)
-        `, [
-            currentUser.userId, 
-            ACTIVITY_TYPES.EDIT_SUMMARY, 
-            validItemId, 
-            JSON.stringify({ submission_id: item.submission_id, item_id: validItemId }),
-            'Teacher edited summary item'
-        ]);
+        // Insert into activity logs removed as per user request
 
         return {
             id: validItemId,
@@ -212,6 +202,59 @@ export const updateSummaryItem = async (currentUser, itemId, updates) => {
     }, 'REPEATABLE READ').catch(error => {
         if (error.isOperational || (error.status >= 400 && error.status < 600)) throw error;
         throw mapDbError(error, error.code === '55P03' ? 'The summary is currently being updated by another teacher. Please try again.' : null);
+    });
+};
+
+export const deleteSummaryItem = async (currentUser, itemId) => {
+    const validItemId = parseUUID(itemId, 'Item ID');
+
+    const itemRes = await pool.query(`
+        SELECT rsi.*, rs.status, rs.submission_id, a.class_id, tc.teacher_id
+        FROM review_summary_items rsi
+        JOIN review_summaries rs ON rsi.summary_id = rs.id
+        JOIN submissions s ON rs.submission_id = s.id
+        JOIN assignments a ON s.assignment_id = a.id
+        LEFT JOIN teacher_classes tc ON a.class_id = tc.class_id AND tc.teacher_id = $1
+        WHERE rsi.id = $2
+    `, [currentUser.userId, validItemId]);
+
+    if (itemRes.rowCount === 0) {
+        throw new AppError('Summary item not found', 404);
+    }
+
+    const item = itemRes.rows[0];
+    if (currentUser.role === 'TEACHER' && item.teacher_id !== currentUser.userId) {
+        throw new AppError('Forbidden: You do not have access to this summary', 403);
+    }
+
+    if (item.status === SUMMARY_STATUS.APPROVED) {
+        throw new AppError('Cannot delete an item from an approved summary', 400);
+    }
+
+    return withTransaction(async (client) => {
+        const deleteRes = await client.query(`
+            DELETE FROM review_summary_items
+            WHERE id = $1
+            RETURNING id
+        `, [validItemId]);
+
+        if (deleteRes.rowCount === 0) {
+            throw new AppError('Failed to delete item, it might have been already deleted', 409);
+        }
+        
+        // Update status to REVIEWING if it was DRAFT
+        if (item.status === SUMMARY_STATUS.DRAFT) {
+            await client.query(`
+                UPDATE review_summaries
+                SET status = $1, updated_by = $2, updated_at = NOW()
+                WHERE id = $3 AND status = $4
+            `, [SUMMARY_STATUS.REVIEWING, currentUser.userId, item.summary_id, SUMMARY_STATUS.DRAFT]);
+        }
+
+        return { id: validItemId };
+    }, 'REPEATABLE READ').catch(error => {
+        if (error.isOperational || (error.status >= 400 && error.status < 600)) throw error;
+        throw mapDbError(error, null);
     });
 };
 

@@ -72,6 +72,12 @@ export const synthesisApi = {
     return res.data || res;
   },
 
+  // 4.5 Xóa một cụm nhận xét (Summary Item)
+  deleteSummaryItem: async (itemId: string): Promise<{ id: string }> => {
+    const res: any = await api.delete(`/summary-items/${itemId}`);
+    return res.data || res;
+  },
+
   // 5. Phê duyệt bản tổng hợp nhận xét của bài nộp (Approve Summary)
   approveSummary: async (
     submissionId: string

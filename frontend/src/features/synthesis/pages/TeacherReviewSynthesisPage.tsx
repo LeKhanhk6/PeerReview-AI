@@ -10,6 +10,7 @@ import {
   useUpdateSummaryItemMutation,
   useApproveSummaryMutation,
   useGenerateSubmissionSummaryMutation,
+  useDeleteSummaryItemMutation,
 } from '../hooks/useSynthesis';
 import { useTeacherSubmissionsMonitor } from '@/features/submission/hooks/useSubmission';
 import { SynthesisStatusCard } from '../components/SynthesisStatusCard';
@@ -63,6 +64,7 @@ export const TeacherReviewSynthesisPage: React.FC = () => {
   } = useSubmissionSummary(selectedSubmissionId);
 
   const updateItemMutation = useUpdateSummaryItemMutation(selectedSubmissionId);
+  const deleteItemMutation = useDeleteSummaryItemMutation(selectedSubmissionId);
   const approveMutation = useApproveSummaryMutation(selectedSubmissionId);
   const generateMutation = useGenerateSubmissionSummaryMutation(selectedSubmissionId);
 
@@ -232,6 +234,7 @@ export const TeacherReviewSynthesisPage: React.FC = () => {
                 isApproved={Boolean(isApproved)}
                 isUpdating={updateItemMutation.isPending}
                 onSaveItem={handleSaveItem}
+                onDeleteItem={async (itemId) => { await deleteItemMutation.mutateAsync(itemId); }}
                 onOpenSourceReviews={(selectedItem) => setActiveDrawerItem(selectedItem)}
               />
             ))}

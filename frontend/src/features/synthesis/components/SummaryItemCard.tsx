@@ -2,13 +2,14 @@ import React, { useState } from 'react';
 import { Button } from '@/components/ui/Button';
 import { synthesisMessages } from '@/constants/messages/synthesis';
 import type { SummaryItem, TopicCategory } from '../types/synthesis.types';
-import { Search, Edit2, Pin } from 'lucide-react';
+import { Search, Edit2, Pin, Trash2 } from 'lucide-react';
 
 interface SummaryItemCardProps {
   item: SummaryItem;
   isApproved: boolean;
   isUpdating: boolean;
   onSaveItem: (itemId: string, content: string, note: string, updatedAt: string) => Promise<void>;
+  onDeleteItem: (itemId: string) => Promise<void>;
   onOpenSourceReviews: (item: SummaryItem) => void;
 }
 
@@ -47,9 +48,11 @@ export const SummaryItemCard: React.FC<SummaryItemCardProps> = ({
   isApproved,
   isUpdating,
   onSaveItem,
+  onDeleteItem,
   onOpenSourceReviews,
 }) => {
   const [isEditing, setIsEditing] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
   const [editContent, setEditContent] = useState(item.content);
   const [editNote, setEditNote] = useState(item.note || '');
 
@@ -81,6 +84,17 @@ export const SummaryItemCard: React.FC<SummaryItemCardProps> = ({
     setEditContent(item.content);
     setEditNote(item.note || '');
     setIsEditing(false);
+  };
+
+  const handleDelete = async () => {
+    if (window.confirm('Bạn có chắc chắn muốn xóa ý này không? Thao tác này không thể hoàn tác.')) {
+      try {
+        setIsDeleting(true);
+        await onDeleteItem(item.id);
+      } finally {
+        setIsDeleting(false);
+      }
+    }
   };
 
   return (
@@ -144,6 +158,22 @@ export const SummaryItemCard: React.FC<SummaryItemCardProps> = ({
                   {synthesisMessages.status.approvedTooltip}
                 </span>
               )}
+            </div>
+          )}
+
+          {/* Delete Button */}
+          {!isEditing && (
+            <div className="relative group">
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                disabled={isApproved || isUpdating || isDeleting}
+                onClick={handleDelete}
+                className="text-xs text-red-600 hover:text-red-700 hover:bg-red-50 border-red-200"
+              >
+                <Trash2 className="w-3.5 h-3.5 mr-1" /> Xóa
+              </Button>
             </div>
           )}
         </div>

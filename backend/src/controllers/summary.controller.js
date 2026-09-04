@@ -37,6 +37,16 @@ export const updateSummaryItem = async (req, res, next) => {
     }
 };
 
+export const deleteSummaryItem = async (req, res, next) => {
+    try {
+        const { itemId } = req.params;
+        const result = await summaryService.deleteSummaryItem(req.user, itemId);
+        return res.ok(result);
+    } catch (error) {
+        next(error);
+    }
+};
+
 export const approveReviewSummary = async (req, res, next) => {
     try {
         const { submissionId } = req.params;

@@ -142,4 +142,25 @@ export const useApproveSummaryMutation = (submissionId: string) => {
   });
 };
 
+/**
+ * Hook Mutation Xóa 1 cụm nhận xét (Summary Item)
+ */
+export const useDeleteSummaryItemMutation = (submissionId: string) => {
+  const queryClient = useQueryClient();
 
+  return useMutation({
+    mutationFn: (itemId: string) => synthesisApi.deleteSummaryItem(itemId),
+    onSuccess: () => {
+      toast.success('Đã xóa ý kiến nhận xét!');
+      queryClient.invalidateQueries({
+        queryKey: SYNTHESIS_QUERY_KEYS.submissionSummary(submissionId),
+      });
+      queryClient.invalidateQueries({
+        queryKey: ['assignment-synthesis'],
+      });
+    },
+    onError: (error: any) => {
+      toast.error(error?.message || 'Không thể xóa ý kiến này.');
+    },
+  });
+};

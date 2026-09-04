@@ -48,6 +48,13 @@ router.patch(
     summaryController.updateSummaryItem
 );
 
+// Xóa một summary item
+router.delete(
+    '/summary-items/:itemId',
+    validate({ params: itemIdParamSchema }),
+    summaryController.deleteSummaryItem
+);
+
 // Kiểm tra trạng thái synthesis job (Task B3 - Polling endpoint)
 router.get(
     '/submissions/:submissionId/summary/status',

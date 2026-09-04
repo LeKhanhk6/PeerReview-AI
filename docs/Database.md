@@ -497,7 +497,7 @@ Quản lý bài tập về nhà/đồ án và các tiêu chí đánh giá (Rubri
     
 - `file_url TEXT NOT NULL`: Đường dẫn tới file.
     
-- `file_type VARCHAR(50)`: Loại định dạng file (vd: pdf, docx).
+- `file_type VARCHAR(255)`: Loại định dạng file (vd: pdf, docx, mime-types).
     
 - `file_size INT`: Kích thước file (bytes).
     

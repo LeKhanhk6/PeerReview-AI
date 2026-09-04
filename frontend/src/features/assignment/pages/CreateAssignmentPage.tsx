@@ -18,7 +18,10 @@ export const CreateAssignmentPage: React.FC = () => {
     setIsSubmitting(true);
     try {
       // 1. Create Assignment
-      const newAssignment = await createAssignment.mutateAsync(formData.assignment);
+      const newAssignment = await createAssignment.mutateAsync({
+        ...formData.assignment,
+        attachments: formData.attachments
+      });
 
       // 2. Save Rubric if included
       if (formData.rubric) {

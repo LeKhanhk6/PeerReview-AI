@@ -9,7 +9,7 @@ const addAttachmentsTable = async () => {
                 assignment_id UUID REFERENCES assignments(id) ON DELETE CASCADE,
                 file_name TEXT NOT NULL,
                 file_url TEXT NOT NULL,
-                file_type VARCHAR(50),
+                file_type VARCHAR(255),
                 file_size INT,
                 created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
             );

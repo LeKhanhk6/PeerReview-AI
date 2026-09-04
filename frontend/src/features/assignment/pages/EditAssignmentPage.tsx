@@ -62,7 +62,13 @@ export const EditAssignmentPage: React.FC = () => {
     setIsSubmitting(true);
     try {
       // 1. Update Assignment Details
-      await updateAssignment.mutateAsync({ id, data: formData.assignment });
+      await updateAssignment.mutateAsync({ 
+        id, 
+        data: {
+          ...formData.assignment,
+          attachments: formData.attachments
+        } 
+      });
 
       // 2. Save / Upsert Rubric if provided
       if (formData.rubric) {

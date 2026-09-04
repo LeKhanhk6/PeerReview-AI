@@ -2,6 +2,7 @@ import { api } from '@/lib/axios';
 
 export interface StudentDashboardAssignmentItem {
   assignment_id: string;
+  class_id: string;
   title: string;
   deadline: string;
   group_id: string;

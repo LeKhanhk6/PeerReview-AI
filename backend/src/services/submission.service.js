@@ -144,6 +144,7 @@ export const getStudentDashboardData = async (userId, limit, offset, sortColumn,
 
             return {
                 assignment_id: row.assignment_id,
+                class_id: row.class_id,
                 title: row.title,
                 deadline: row.deadline,
                 group_id: row.group_id,

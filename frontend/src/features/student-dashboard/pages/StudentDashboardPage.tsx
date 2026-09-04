@@ -126,6 +126,9 @@ export const StudentDashboardPage: React.FC = () => {
     : dashboardData?.rows || [];
 
   // Filter calculations
+  const classesCount = new Set(assignments.map(a => a.class_id).filter(Boolean)).size;
+  const pendingSubmissionCount = assignments.filter((a) => a.submission?.status === 'NOT_STARTED' || a.submission?.status === 'IN_PROGRESS' || !a.submission).length;
+  
   const urgentCount = assignments.filter((a) => (a.days_left ?? 999) <= 3).length;
   const pendingReviewCount = assignments.filter((a) => a.review?.status === 'UNDER_REVIEW').length;
   const grouplessCount = assignments.filter((a) => !a.group_id || a.group_id === 'null' || a.group_id === 'undefined').length;
@@ -206,25 +209,25 @@ export const StudentDashboardPage: React.FC = () => {
       {/* 3 Quick Stats Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 md:gap-4">
         <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-xs flex items-center gap-3.5">
-          <div className={`p-2.5 rounded-lg ${assignments.length > 0 ? 'bg-brand-soft-bg text-brand-primary' : 'bg-slate-50 text-slate-500'}`}>
+          <div className={`p-2.5 rounded-lg ${classesCount > 0 ? 'bg-brand-soft-bg text-brand-primary' : 'bg-slate-50 text-slate-500'}`}>
             <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
             </svg>
           </div>
           <div>
-            <div className="text-xl font-extrabold text-slate-900">{assignments.length}</div>
+            <div className="text-xl font-extrabold text-slate-900">{classesCount}</div>
             <div className="text-xs font-medium text-slate-500">{studentDashboardMessages.statsClasses}</div>
           </div>
         </div>
 
         <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-xs flex items-center gap-3.5">
-          <div className={`p-2.5 rounded-lg ${urgentCount > 0 ? 'bg-amber-50 text-amber-600' : 'bg-slate-50 text-slate-500'}`}>
+          <div className={`p-2.5 rounded-lg ${pendingSubmissionCount > 0 ? 'bg-amber-50 text-amber-600' : 'bg-slate-50 text-slate-500'}`}>
             <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
           </div>
           <div>
-            <div className="text-xl font-extrabold text-slate-900">{urgentCount}</div>
+            <div className="text-xl font-extrabold text-slate-900">{pendingSubmissionCount}</div>
             <div className="text-xs font-medium text-slate-500">{studentDashboardMessages.statsAssignments}</div>
           </div>
         </div>

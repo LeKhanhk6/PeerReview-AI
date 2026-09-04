@@ -3,7 +3,6 @@ import { Button } from '@/components/ui/Button';
 import { submissionMessages } from '@/constants/messages/submission';
 import { toast } from 'sonner';
 import { useSubmitAssignment } from '../hooks/useSubmission';
-import { submitAssignmentSchema } from '../schemas/submission.schema';
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 
 interface SubmissionUploadFormProps {

@@ -155,7 +155,7 @@ export const createAssignment = async (assignmentData, user) => {
         throw new AppError('Forbidden: Only teachers can create assignments', 403);
     }
 
-    const { class_id, title, description, requirements, deadline } = assignmentData;
+    const { class_id, title, description, requirements, deadline, attachments } = assignmentData;
     const validClassId = validateId(class_id, 'class ID');
     
     if (!title || typeof title !== 'string' || title.trim() === '') {
@@ -179,7 +179,26 @@ export const createAssignment = async (assignmentData, user) => {
         `;
         const values = [validClassId, title.trim(), description, requirements, deadline];
         const result = await client.query(query, values);
-        return result.rows[0];
+        const newAssignment = result.rows[0];
+
+        if (assignmentData.attachments && assignmentData.attachments.length > 0) {
+            let attachmentValues = [];
+            let insertParams = [];
+            let paramIndex = 1;
+            
+            for (const att of assignmentData.attachments) {
+                insertParams.push(`($${paramIndex++}, $${paramIndex++}, $${paramIndex++}, $${paramIndex++}, $${paramIndex++})`);
+                attachmentValues.push(newAssignment.id, att.file_name, att.file_url, att.file_type || null, att.file_size || null);
+            }
+
+            const insertQuery = `
+                INSERT INTO assignment_attachments (assignment_id, file_name, file_url, file_type, file_size)
+                VALUES ${insertParams.join(', ')}
+            `;
+            await client.query(insertQuery, attachmentValues);
+        }
+
+        return newAssignment;
     }, 'REPEATABLE READ');
 };
 
@@ -223,7 +242,32 @@ export const updateAssignment = async (id, assignmentData, user) => {
         if (result.rowCount === 0) {
             throw new AppError(NOT_FOUND_MSG, 404);
         }
-        return result.rows[0];
+
+        const assignment = result.rows[0];
+
+        if (assignmentData.attachments) {
+            // Delete old attachments and insert new ones
+            await client.query('DELETE FROM assignment_attachments WHERE assignment_id = $1', [validId]);
+            
+            if (assignmentData.attachments.length > 0) {
+                let attachmentValues = [];
+                let insertParams = [];
+                let paramIndex = 1;
+                
+                for (const att of assignmentData.attachments) {
+                    insertParams.push(`($${paramIndex++}, $${paramIndex++}, $${paramIndex++}, $${paramIndex++}, $${paramIndex++})`);
+                    attachmentValues.push(validId, att.file_name, att.file_url, att.file_type || null, att.file_size || null);
+                }
+
+                const insertQuery = `
+                    INSERT INTO assignment_attachments (assignment_id, file_name, file_url, file_type, file_size)
+                    VALUES ${insertParams.join(', ')}
+                `;
+                await client.query(insertQuery, attachmentValues);
+            }
+        }
+
+        return assignment;
     }, 'REPEATABLE READ');
 };
 

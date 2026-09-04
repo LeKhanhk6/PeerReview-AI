@@ -69,12 +69,11 @@ export const assignmentApi = {
     return res.data || res;
   },
 
-  // TODO: Tích hợp thật với backend endpoint khi có dịch vụ file upload chuyên dụng (S3/Cloudinary/Supabase Storage)
-  // Hiện tại AttachmentManager chạy trên UI state local & MSW simulated upload
-  uploadAttachment: async (assignmentId: string, file: File): Promise<any> => {
+  // Upload attachment file thực tế lên Supabase
+  uploadAttachment: async (file: File): Promise<{ file_name: string; file_url: string; file_type: string; file_size: number }> => {
     const formData = new FormData();
     formData.append('file', file);
-    const res: any = await api.post(`/assignments/${assignmentId}/attachments`, formData, {
+    const res: any = await api.post('/assignments/upload-attachment', formData, {
       headers: { 'Content-Type': 'multipart/form-data' }
     });
     return res.data || res;

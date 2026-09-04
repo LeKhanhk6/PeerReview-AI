@@ -52,7 +52,6 @@ export const assignmentMessages = {
   },
 
   attachment: {
-    uploadNotice: 'Attachment upload là UI-only (mô phỏng tiến trình). Tích hợp lưu trữ thực tế đang chờ backend endpoint.',
     addAttachment: 'Thêm tệp / liên kết',
     fileNamePlaceholder: 'Tên tệp đính kèm',
     fileUrlPlaceholder: 'Đường dẫn (URL)',

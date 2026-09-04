@@ -1,7 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { Button } from '@/components/ui/Button';
 import { assignmentMessages } from '@/constants/messages/assignment';
 import type { AssignmentAttachment } from '../types/assignment.types';
+import { assignmentApi } from '../api/assignment.api';
+import { toast } from 'sonner';
 
 interface AttachmentManagerProps {
   attachments: AssignmentAttachment[];
@@ -16,7 +18,9 @@ export const AttachmentManager: React.FC<AttachmentManagerProps> = ({
 }) => {
   const [fileName, setFileName] = useState('');
   const [fileUrl, setFileUrl] = useState('');
-  const [isAdding, setIsAdding] = useState(false);
+  const [isAddingLink, setIsAddingLink] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleAddLink = (e: React.FormEvent) => {
     e.preventDefault();
@@ -26,46 +30,68 @@ export const AttachmentManager: React.FC<AttachmentManagerProps> = ({
       id: `att-${Date.now()}`,
       file_name: fileName.trim(),
       file_url: fileUrl.trim(),
-      status: 'uploading',
-      progress: 0,
+      status: 'success',
+      progress: 100,
     };
 
     const updated = [...attachments, newAttachment];
     onChange(updated);
     setFileName('');
     setFileUrl('');
-    setIsAdding(false);
-
-    // Simulate progress bar upload
-    simulateUpload(newAttachment.id, updated);
+    setIsAddingLink(false);
   };
 
-  const simulateUpload = (id: string, currentList: AssignmentAttachment[]) => {
-    let progress = 0;
-    const interval = setInterval(() => {
-      progress += 25;
-      if (progress >= 100) {
-        clearInterval(interval);
-        const finishedList = currentList.map((item) =>
-          item.id === id ? { ...item, status: 'success' as const, progress: 100 } : item
-        );
-        onChange(finishedList);
-      } else {
-        const progressList = currentList.map((item) =>
-          item.id === id ? { ...item, progress } : item
-        );
-        onChange(progressList);
+  const processUpload = async (file: File, tempId: string, currentAttachments: AssignmentAttachment[]) => {
+      try {
+          const result = await assignmentApi.uploadAttachment(file);
+          // Find the temp attachment in the current list and replace it
+          onChange(currentAttachments.map(item => 
+              item.id === tempId ? {
+                  ...item,
+                  file_url: result.file_url,
+                  file_type: result.file_type,
+                  file_size: result.file_size,
+                  status: 'success',
+                  progress: 100
+              } : item
+          ));
+      } catch (err: any) {
+          console.error(err);
+          toast.error('Lỗi khi tải lên file đính kèm: ' + (err.message || ''));
+          onChange(currentAttachments.map(item => 
+              item.id === tempId ? { ...item, status: 'error' } : item
+          ));
+      } finally {
+          setIsUploading(false);
       }
-    }, 200);
   };
 
-  const handleRetry = (id: string) => {
-    const retriedList = attachments.map((item) =>
-      item.id === id ? { ...item, status: 'uploading' as const, progress: 0 } : item
-    );
-    onChange(retriedList);
-    simulateUpload(id, retriedList);
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+
+    const tempId = `att-${Date.now()}`;
+    const newAttachment: AssignmentAttachment = {
+      id: tempId,
+      file_name: file.name,
+      file_url: '',
+      file_type: file.type,
+      file_size: file.size,
+      status: 'uploading',
+      progress: 50, // Fake progress for UI since axios onUploadProgress is not hooked up
+    };
+
+    const updated = [...attachments, newAttachment];
+    onChange(updated);
+    setIsUploading(true);
+    
+    processUpload(file, tempId, updated);
   };
+
 
   const handleCancel = (id: string) => {
     const filtered = attachments.filter((item) => item.id !== id);
@@ -79,29 +105,46 @@ export const AttachmentManager: React.FC<AttachmentManagerProps> = ({
 
   return (
     <div className="space-y-3">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
         <label className="block text-sm font-medium text-gray-700">
           {assignmentMessages.form.attachmentsLabel}
         </label>
-        {!isAdding && (
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            onClick={() => setIsAdding(true)}
-            disabled={disabled}
-          >
-            + {assignmentMessages.attachment.addAttachment}
-          </Button>
-        )}
+        <div className="flex gap-2">
+          {!isAddingLink && (
+            <>
+              <input
+                type="file"
+                ref={fileInputRef}
+                onChange={handleFileSelect}
+                className="hidden"
+                disabled={disabled || isUploading}
+                accept=".pdf,.doc,.docx,.zip,.rar,.txt,.jpg,.png"
+              />
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => fileInputRef.current?.click()}
+                disabled={disabled || isUploading}
+              >
+                + Tải tệp lên
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => setIsAddingLink(true)}
+                disabled={disabled || isUploading}
+              >
+                + Thêm liên kết URL
+              </Button>
+            </>
+          )}
+        </div>
       </div>
 
-      <p className="text-xs text-amber-700 bg-amber-50 p-2 rounded border border-amber-200">
-        💡 {assignmentMessages.attachment.uploadNotice}
-      </p>
-
-      {/* Add Attachment Form */}
-      {isAdding && (
+      {/* Add Attachment Link Form */}
+      {isAddingLink && (
         <form onSubmit={handleAddLink} className="p-3 border border-gray-200 rounded-md bg-gray-50 space-y-3">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             <div>
@@ -138,7 +181,7 @@ export const AttachmentManager: React.FC<AttachmentManagerProps> = ({
               type="button"
               variant="outline"
               size="sm"
-              onClick={() => setIsAdding(false)}
+              onClick={() => setIsAddingLink(false)}
             >
               {assignmentMessages.form.cancelBtn}
             </Button>
@@ -155,24 +198,32 @@ export const AttachmentManager: React.FC<AttachmentManagerProps> = ({
           {attachments.map((item) => (
             <li key={item.id} className="p-3 flex items-center justify-between gap-3 text-sm">
               <div className="flex-1 min-w-0">
-                <a
-                  href={item.file_url}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="font-medium text-blue-600 hover:underline truncate block"
-                >
-                  📎 {item.file_name}
-                </a>
-                <span className="text-xs text-gray-400 truncate block">{item.file_url}</span>
+                {item.status === 'success' || !item.status ? (
+                  <a
+                    href={item.file_url}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="font-medium text-blue-600 hover:underline truncate block"
+                  >
+                    📎 {item.file_name}
+                  </a>
+                ) : (
+                  <span className="font-medium text-gray-600 truncate block">📎 {item.file_name}</span>
+                )}
+                
+                {item.file_url && <span className="text-xs text-gray-400 truncate block">{item.file_url}</span>}
 
                 {/* Progress bar */}
                 {item.status === 'uploading' && (
                   <div className="mt-1.5 w-full bg-gray-200 rounded-full h-1.5 overflow-hidden">
                     <div
-                      className="bg-blue-600 h-1.5 transition-all duration-200"
-                      style={{ width: `${item.progress || 0}%` }}
+                      className="bg-blue-600 h-1.5 transition-all duration-200 animate-pulse"
+                      style={{ width: `${item.progress || 50}%` }}
                     />
                   </div>
+                )}
+                {item.status === 'error' && (
+                  <span className="text-xs text-red-500 block mt-1">Lỗi tải lên</span>
                 )}
               </div>
 
@@ -188,23 +239,12 @@ export const AttachmentManager: React.FC<AttachmentManagerProps> = ({
                   </button>
                 )}
 
-                {item.status === 'error' && (
-                  <button
-                    type="button"
-                    onClick={() => handleRetry(item.id)}
-                    className="text-xs text-blue-600 hover:underline"
-                    aria-label={`${assignmentMessages.attachment.retryBtn} ${item.file_name}`}
-                  >
-                    {assignmentMessages.attachment.retryBtn}
-                  </button>
-                )}
-
                 <button
                   type="button"
                   onClick={() => handleRemove(item.id)}
                   className="text-xs text-red-600 hover:text-red-800 p-1"
                   aria-label={`${assignmentMessages.attachment.removeBtn} ${item.file_name}`}
-                  disabled={disabled}
+                  disabled={disabled || item.status === 'uploading'}
                 >
                   ✕
                 </button>

@@ -46,3 +46,42 @@ export const uploadSubmissionFile = async (fileBuffer, originalName, mimeType) =
         throw new AppError('Không thể xử lý tiến trình nộp file', 500);
     }
 };
+
+/**
+ * Upload a file buffer to Supabase Storage for assignments
+ * @param {Buffer} fileBuffer - The file buffer from multer
+ * @param {string} originalName - Original filename
+ * @param {string} mimeType - File mime type
+ * @returns {Promise<string>} - The public URL of the uploaded file
+ */
+export const uploadAssignmentAttachment = async (fileBuffer, originalName, mimeType) => {
+    if (!supabase) {
+        throw new AppError('Storage configuration is missing in .env', 500);
+    }
+
+    const fileExt = originalName.split('.').pop();
+    const uniqueFileName = `attachment_${crypto.randomUUID()}.${fileExt}`;
+
+    try {
+        const { data, error } = await supabase.storage
+            .from('assignments')
+            .upload(uniqueFileName, fileBuffer, {
+                contentType: mimeType,
+                upsert: false
+            });
+
+        if (error) {
+            logger.error('Supabase assignment storage upload error:', error);
+            throw new AppError('Lỗi khi lưu file đính kèm lên Cloud Storage', 500);
+        }
+
+        const { data: publicUrlData } = supabase.storage
+            .from('assignments')
+            .getPublicUrl(uniqueFileName);
+
+        return publicUrlData.publicUrl + '?download=' + encodeURIComponent(originalName);
+    } catch (error) {
+        logger.error('Assignment storage upload exception:', error);
+        throw new AppError('Không thể xử lý upload file đính kèm', 500);
+    }
+};

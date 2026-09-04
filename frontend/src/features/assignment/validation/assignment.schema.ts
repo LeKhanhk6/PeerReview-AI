@@ -33,6 +33,12 @@ export const createAssignmentSchema = z.object({
       const d = new Date(val);
       return !isNaN(d.getTime()) && d > new Date();
     }, { message: assignmentMessages.validation.deadlineFuture }),
+  attachments: z.array(z.object({
+    file_name: z.string(),
+    file_url: z.string(),
+    file_type: z.string().optional(),
+    file_size: z.number().optional()
+  })).optional(),
 });
 
 export const updateAssignmentSchema = z.object({
@@ -45,6 +51,12 @@ export const updateAssignmentSchema = z.object({
       const d = new Date(val);
       return !isNaN(d.getTime()) && d > new Date();
     }, { message: assignmentMessages.validation.deadlineFuture }),
+  attachments: z.array(z.object({
+    file_name: z.string(),
+    file_url: z.string(),
+    file_type: z.string().optional(),
+    file_size: z.number().optional()
+  })).optional(),
 });
 
 export type CreateAssignmentFormValues = z.infer<typeof createAssignmentSchema>;

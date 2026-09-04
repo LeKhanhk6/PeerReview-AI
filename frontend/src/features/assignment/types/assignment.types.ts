@@ -47,6 +47,7 @@ export interface CreateAssignmentInput {
   description?: string | null;
   requirements?: string | null;
   deadline: string;
+  attachments?: Omit<AssignmentAttachment, 'id' | 'status' | 'progress'>[];
 }
 
 export interface UpdateAssignmentInput {
@@ -54,6 +55,7 @@ export interface UpdateAssignmentInput {
   description?: string | null;
   requirements?: string | null;
   deadline: string;
+  attachments?: Omit<AssignmentAttachment, 'id' | 'status' | 'progress'>[];
 }
 
 export interface SaveRubricInput {

@@ -5,8 +5,10 @@ import { verifyToken } from '../middleware/auth.middleware.js';
 import { authorizeRoles } from '../middleware/role.middleware.js';
 import { validate } from '../middleware/validation.middleware.js';
 import { paginationMiddleware } from '../middleware/pagination.middleware.js';
+import multer from 'multer';
 
 const router = express.Router();
+const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 50 * 1024 * 1024 } }); // 50MB limit
 
 // Bắt buộc đăng nhập cho tất cả
 router.use(verifyToken);
@@ -27,7 +29,13 @@ const createSchema = {
         title: z.string().min(1).max(255).trim(),
         description: z.string().trim().optional().nullable(),
         requirements: z.string().trim().optional().nullable(),
-        deadline: z.string().datetime().refine(val => new Date(val) > new Date(), { message: 'Deadline must be in the future' })
+        deadline: z.string().datetime().refine(val => new Date(val) > new Date(), { message: 'Deadline must be in the future' }),
+        attachments: z.array(z.object({
+            file_name: z.string(),
+            file_url: z.string(),
+            file_type: z.string().optional(),
+            file_size: z.number().optional()
+        })).optional()
     })
 };
 
@@ -37,9 +45,18 @@ const updateSchema = {
         title: z.string().min(1).max(255).trim(),
         description: z.string().trim().optional().nullable(),
         requirements: z.string().trim().optional().nullable(),
-        deadline: z.string().datetime()
+        deadline: z.string().datetime(),
+        attachments: z.array(z.object({
+            file_name: z.string(),
+            file_url: z.string(),
+            file_type: z.string().optional(),
+            file_size: z.number().optional()
+        })).optional()
     })
 };
+
+// Upload attachment
+router.post('/upload-attachment', authorizeRoles('TEACHER', 'ADMIN'), upload.single('file'), assignmentController.uploadAttachment);
 
 // Tất cả roles (đã được phân loại logic bên trong service)
 router.get('/', validate(getAllSchema), paginationMiddleware, assignmentController.getAll);

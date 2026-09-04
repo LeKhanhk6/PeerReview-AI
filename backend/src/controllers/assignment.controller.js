@@ -1,5 +1,29 @@
 import * as assignmentService from '../services/assignment.service.js';
+import * as storageService from '../services/storage.service.js';
 import { AppError } from '../utils/AppError.js';
+
+export const uploadAttachment = async (req, res, next) => {
+    try {
+        if (!req.file) {
+            throw new AppError('No file uploaded', 400);
+        }
+
+        const file_url = await storageService.uploadAssignmentAttachment(
+            req.file.buffer,
+            req.file.originalname,
+            req.file.mimetype
+        );
+
+        return res.ok({
+            file_name: req.file.originalname,
+            file_url,
+            file_type: req.file.mimetype,
+            file_size: req.file.size
+        });
+    } catch (error) {
+        next(error);
+    }
+};
 
 export const getAll = async (req, res, next) => {
     try {
@@ -40,7 +64,7 @@ export const getAssignmentDetail = async (req, res, next) => {
 export const create = async (req, res, next) => {
     try {
         const user = req.user;
-        const { class_id, title, description, requirements, deadline } = req.body;
+        const { class_id, title, description, requirements, deadline, attachments } = req.body;
 
         // 2. Class Existence & Ownership Check
         const classInfo = await assignmentService.getClassOwnershipInfo(class_id);
@@ -58,7 +82,8 @@ export const create = async (req, res, next) => {
             title,
             description,
             requirements,
-            deadline
+            deadline,
+            attachments
         }, user);
         return res.ok(newAssignment);
     } catch (error) {
@@ -70,7 +95,7 @@ export const update = async (req, res, next) => {
     try {
         const { id } = req.params;
         const user = req.user;
-        const { title, description, requirements, deadline } = req.body;
+        const { title, description, requirements, deadline, attachments } = req.body;
 
         // 2. Existence & Ownership Check
         const assignmentInfo = await assignmentService.getAssignmentOwnershipInfo(id);
@@ -87,7 +112,8 @@ export const update = async (req, res, next) => {
             title,
             description,
             requirements,
-            deadline
+            deadline,
+            attachments
         }, user);
         return res.ok(updatedAssignment);
     } catch (error) {

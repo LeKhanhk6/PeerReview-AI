@@ -96,6 +96,7 @@ function App() {
             <Route path="dashboard" element={<TeacherDashboardPage />} />
             <Route path="classes" element={<TeacherClassesPage />} />
             <Route path="classes/:id" element={<TeacherClassDetailPage />} />
+            <Route path="classes/:classId/groups/:groupId/workspace" element={<StudentGroupWorkspacePage />} />
             <Route path="assignments" element={<TeacherAssignmentsPage />} />
             <Route path="assignments/new" element={<CreateAssignmentPage />} />
             <Route path="assignments/create" element={<CreateAssignmentPage />} />

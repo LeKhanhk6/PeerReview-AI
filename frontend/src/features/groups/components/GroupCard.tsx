@@ -3,8 +3,9 @@ import type { Group, GroupMember } from '../types/group';
 import { Button } from '@/components/ui/Button';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { useRemoveMember, useAssignLeader } from '../hooks/useGroups';
-import { Crown, UserPlus, UserX } from 'lucide-react';
+import { Crown, UserPlus, UserX, ExternalLink } from 'lucide-react';
 import { toast } from 'sonner';
+import { Link } from 'react-router-dom';
 
 interface GroupCardProps {
   group: Group;
@@ -61,16 +62,29 @@ export const GroupCard: React.FC<GroupCardProps> = ({
             {group.members?.length || 0} Member{(group.members?.length || 0) !== 1 ? 's' : ''}
           </p>
         </div>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => onAddMemberClick(group)}
-          className="gap-1.5 text-xs h-8"
-          aria-label={`Add member to ${group.name}`}
-        >
-          <UserPlus className="w-3.5 h-3.5" />
-          Add Member
-        </Button>
+        <div className="flex items-center gap-2">
+          <Link to={`/teacher/classes/${classId}/groups/${group.id}/workspace`}>
+            <Button
+              variant="default"
+              size="sm"
+              className="gap-1.5 text-xs h-8 bg-blue-600 hover:bg-blue-700"
+              title={`View workspace for ${group.name}`}
+            >
+              <ExternalLink className="w-3.5 h-3.5" />
+              Workspace
+            </Button>
+          </Link>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => onAddMemberClick(group)}
+            className="gap-1.5 text-xs h-8"
+            aria-label={`Add member to ${group.name}`}
+          >
+            <UserPlus className="w-3.5 h-3.5" />
+            Add Member
+          </Button>
+        </div>
       </div>
 
       {/* Leader Banner */}

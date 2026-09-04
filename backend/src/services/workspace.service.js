@@ -309,7 +309,8 @@ export const isAssigneeValid = async (groupId, assigneeId) => {
     const result = await executeQuery(`
         SELECT 1 FROM group_members gm
         JOIN users u ON gm.user_id = u.id
-        WHERE gm.group_id = $1 AND gm.user_id = $2 AND u.role = 'STUDENT'
+        JOIN roles r ON u.role_id = r.id
+        WHERE gm.group_id = $1 AND gm.user_id = $2 AND r.name = 'STUDENT'
     `, [validGroupId, assigneeId]);
     
     return result.rows.length > 0;
@@ -322,10 +323,12 @@ export const isAssigneeValid = async (groupId, assigneeId) => {
 export const getDiscussions = async (groupId) => {
     const validGroupId = validateId(groupId, 'group ID');
     const result = await executeQuery(`
-        SELECT id, group_id, user_id, message, created_at
-        FROM group_discussions
-        WHERE group_id = $1
-        ORDER BY created_at ASC
+        SELECT gd.id, gd.group_id, gd.user_id, gd.message, gd.created_at, u.full_name as user_name, r.name as user_role
+        FROM group_discussions gd
+        LEFT JOIN users u ON gd.user_id = u.id
+        LEFT JOIN roles r ON u.role_id = r.id
+        WHERE gd.group_id = $1
+        ORDER BY gd.created_at ASC
     `, [validGroupId]);
     return result.rows;
 };
@@ -361,9 +364,10 @@ export const createDiscussion = async (groupId, userId, message) => {
 export const getFiles = async (groupId) => {
     const validGroupId = validateId(groupId, 'group ID');
     const result = await executeQuery(`
-        SELECT gf.id, gf.group_id, gf.uploaded_by, gf.file_name, gf.file_url, gf.created_at, u.full_name as uploader_name
+        SELECT gf.id, gf.group_id, gf.uploaded_by, gf.file_name, gf.file_url, gf.created_at, u.full_name as uploader_name, r.name as uploader_role
         FROM group_files gf
         LEFT JOIN users u ON gf.uploaded_by = u.id
+        LEFT JOIN roles r ON u.role_id = r.id
         WHERE gf.group_id = $1
         ORDER BY gf.created_at DESC
     `, [validGroupId]);

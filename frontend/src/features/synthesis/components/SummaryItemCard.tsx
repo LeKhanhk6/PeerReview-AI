@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/Button';
+import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { synthesisMessages } from '@/constants/messages/synthesis';
 import type { SummaryItem, TopicCategory } from '../types/synthesis.types';
 import { Search, Edit2, Pin, Trash2 } from 'lucide-react';
@@ -53,6 +54,7 @@ export const SummaryItemCard: React.FC<SummaryItemCardProps> = ({
 }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
   const [editContent, setEditContent] = useState(item.content);
   const [editNote, setEditNote] = useState(item.note || '');
 
@@ -86,14 +88,17 @@ export const SummaryItemCard: React.FC<SummaryItemCardProps> = ({
     setIsEditing(false);
   };
 
-  const handleDelete = async () => {
-    if (window.confirm('Bạn có chắc chắn muốn xóa ý này không? Thao tác này không thể hoàn tác.')) {
-      try {
-        setIsDeleting(true);
-        await onDeleteItem(item.id);
-      } finally {
-        setIsDeleting(false);
-      }
+  const handleDeleteClick = () => {
+    setIsDeleteConfirmOpen(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    setIsDeleteConfirmOpen(false);
+    try {
+      setIsDeleting(true);
+      await onDeleteItem(item.id);
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -169,7 +174,7 @@ export const SummaryItemCard: React.FC<SummaryItemCardProps> = ({
                 variant="outline"
                 size="sm"
                 disabled={isApproved || isUpdating || isDeleting}
-                onClick={handleDelete}
+                onClick={handleDeleteClick}
                 className="text-xs text-red-600 hover:text-red-700 hover:bg-red-50 border-red-200"
               >
                 <Trash2 className="w-3.5 h-3.5 mr-1" /> Xóa
@@ -248,6 +253,16 @@ export const SummaryItemCard: React.FC<SummaryItemCardProps> = ({
           )}
         </div>
       )}
+
+      {/* Red Destructive Confirm Dialog for Deletion */}
+      <ConfirmDialog
+        open={isDeleteConfirmOpen}
+        onClose={() => setIsDeleteConfirmOpen(false)}
+        onConfirm={handleConfirmDelete}
+        title="Xóa cụm nhận xét"
+        description="Bạn có chắc chắn muốn xóa ý này không? Thao tác này không thể hoàn tác."
+        isDestructive={true}
+      />
     </div>
   );
 };

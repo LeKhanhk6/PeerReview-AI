@@ -151,7 +151,8 @@ export const GroupFileManager: React.FC<GroupFileManagerProps> = ({ groupId }) =
                     <td className="p-3">
                       <span className="flex items-center gap-1.5">
                         <User className="w-3.5 h-3.5 text-gray-500" /> 
-                        {file.uploader_name ? `${file.uploader_name} (Thành viên)` : 'Thành viên'}
+                        {file.uploader_name || 'Người dùng'} 
+                        ({file.uploader_role === 'TEACHER' ? 'Giáo viên' : file.uploader_role === 'ADMIN' ? 'Quản trị viên' : 'Thành viên'})
                       </span>
                     </td>
                     <td className="p-3 text-xs text-gray-500 font-mono">{dateStr}</td>

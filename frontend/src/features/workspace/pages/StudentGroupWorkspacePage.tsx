@@ -66,6 +66,17 @@ export const StudentGroupWorkspacePage: React.FC = () => {
   const userRole = isLeader ? 'LEADER' : 'MEMBER';
   const members = group?.members || [];
 
+  const isTeacher = user?.role === 'TEACHER' || user?.role === 'ADMIN';
+
+  const handleBack = () => {
+    if (isTeacher) {
+      // Typically the teacher comes from the Class Detail page
+      navigate(-1);
+    } else {
+      navigate('/student/dashboard');
+    }
+  };
+
   return (
     <div className="flex flex-col flex-1 min-h-0 w-full space-y-4 md:space-y-5">
       {/* Page Header */}
@@ -76,14 +87,20 @@ export const StudentGroupWorkspacePage: React.FC = () => {
               type="button"
               variant="outline"
               size="sm"
-              onClick={() => navigate('/student/dashboard')}
+              onClick={handleBack}
               className="text-xs bg-white text-slate-700 border-slate-200 hover:bg-slate-50 rounded-lg px-2.5 py-1"
             >
-              ← Quay lại Trang chủ
+              ← Quay lại
             </Button>
-            <span className="text-xs font-bold text-blue-700 bg-blue-50 px-2.5 py-0.5 rounded-full border border-blue-200 flex items-center gap-1.5">
-              {isLeader ? <><Crown className="w-3.5 h-3.5" /> Trưởng nhóm</> : <><User className="w-3.5 h-3.5" /> Thành viên</>}
-            </span>
+            {isTeacher ? (
+              <span className="text-xs font-bold text-emerald-700 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200 flex items-center gap-1.5">
+                <User className="w-3.5 h-3.5" /> Giáo viên
+              </span>
+            ) : (
+              <span className="text-xs font-bold text-blue-700 bg-blue-50 px-2.5 py-0.5 rounded-full border border-blue-200 flex items-center gap-1.5">
+                {isLeader ? <><Crown className="w-3.5 h-3.5" /> Trưởng nhóm</> : <><User className="w-3.5 h-3.5" /> Thành viên</>}
+              </span>
+            )}
           </div>
 
           <h1 className="text-xl md:text-2xl font-bold text-slate-900 tracking-tight mt-2 flex items-center gap-2">

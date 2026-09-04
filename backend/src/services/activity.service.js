@@ -161,9 +161,10 @@ export const getGroupActivities = async (groupId, limit = 50, offset = 0) => {
         const fetchLimit = safeLimit + 1;
 
         const result = await pool.query(`
-            SELECT a.id, a.group_id, a.user_id, u.full_name as user_name, a.action_type, a.content_summary, a.created_at
+            SELECT a.id, a.group_id, a.user_id, u.full_name as user_name, r.name as user_role, a.action_type, a.content_summary, a.created_at
             FROM activity_logs a
             LEFT JOIN users u ON a.user_id = u.id
+            LEFT JOIN roles r ON u.role_id = r.id
             WHERE a.group_id = $1
             ORDER BY a.created_at DESC
             LIMIT $2 OFFSET $3

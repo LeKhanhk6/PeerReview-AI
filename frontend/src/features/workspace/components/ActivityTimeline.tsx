@@ -89,7 +89,12 @@ export const ActivityTimeline: React.FC<ActivityTimelineProps> = ({ groupId }) =
                   {/* Timeline Item Content */}
                   <div className="bg-gray-50 border border-gray-200 p-3.5 rounded-xl space-y-1">
                     <div className="flex items-center justify-between text-xs">
-                      <span className="font-bold text-gray-900">{act.user_name || 'Thành viên'}</span>
+                      <span className="font-bold text-gray-900">
+                        {act.user_name || 'Người dùng'}
+                        <span className={`font-normal ml-1.5 ${act.user_role === 'TEACHER' || act.user_role === 'ADMIN' ? 'text-emerald-600' : 'text-gray-500'}`}>
+                          ({act.user_role === 'TEACHER' ? 'Giáo viên' : act.user_role === 'ADMIN' ? 'Quản trị viên' : 'Thành viên'})
+                        </span>
+                      </span>
                       <span className="text-gray-400 font-mono">{dateStr}</span>
                     </div>
 

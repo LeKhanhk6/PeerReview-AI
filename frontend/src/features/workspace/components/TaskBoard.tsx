@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/Button';
 import { Dialog } from '@/components/ui/Dialog';
+import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { SkeletonCard } from '@/components/ui/Skeleton';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { workspaceMessages } from '@/constants/messages/workspace';
@@ -39,6 +40,8 @@ export const TaskBoard: React.FC<TaskBoardProps> = ({
   const [taskTitle, setTaskTitle] = useState('');
   const [assigneeId, setAssigneeId] = useState<string>('');
   const [formError, setFormError] = useState<string>('');
+
+  const [deleteTaskId, setDeleteTaskId] = useState<string | number | null>(null);
 
   const isLeader = userRole === 'LEADER';
 
@@ -83,13 +86,19 @@ export const TaskBoard: React.FC<TaskBoardProps> = ({
     }
   };
 
-  const handleDeleteTask = async (taskId: string | number) => {
-    if (!window.confirm(workspaceMessages.kanban.confirmDelete)) return;
+  const handleDeleteClick = (taskId: string | number) => {
+    setDeleteTaskId(taskId);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!deleteTaskId) return;
     try {
-      await deleteTask.mutateAsync(taskId);
+      await deleteTask.mutateAsync(deleteTaskId);
       toast.success(workspaceMessages.kanban.deleteSuccess);
     } catch (err: any) {
       toast.error(err.message || workspaceMessages.error.deleteTaskFailed);
+    } finally {
+      setDeleteTaskId(null);
     }
   };
 
@@ -171,8 +180,9 @@ export const TaskBoard: React.FC<TaskBoardProps> = ({
                           {canDelete && (
                             <button
                               type="button"
-                              onClick={() => handleDeleteTask(task.id)}
-                              className="text-gray-400 hover:text-red-600 p-1 text-xs transition-colors"
+                              onClick={() => handleDeleteClick(task.id)}
+                              className="text-red-500 hover:text-red-700 hover:bg-red-50 p-1 rounded"
+                              disabled={deleteTask.isPending}
                               aria-label={`Xóa task ${task.title}`}
                             >
                               <Trash2 className="w-4 h-4" />
@@ -293,6 +303,16 @@ export const TaskBoard: React.FC<TaskBoardProps> = ({
           </div>
         </form>
       </Dialog>
+
+      {/* Delete Task Confirm Dialog */}
+      <ConfirmDialog
+        open={deleteTaskId !== null}
+        onClose={() => setDeleteTaskId(null)}
+        onConfirm={handleConfirmDelete}
+        title="Xóa công việc"
+        description={workspaceMessages.kanban.confirmDelete}
+        isDestructive={true}
+      />
     </div>
   );
 };

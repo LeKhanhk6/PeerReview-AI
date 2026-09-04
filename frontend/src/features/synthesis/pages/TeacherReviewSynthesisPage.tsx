@@ -3,6 +3,7 @@ import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { Button } from '@/components/ui/Button';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { SkeletonCard } from '@/components/ui/Skeleton';
+import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { synthesisMessages } from '@/constants/messages/synthesis';
 import {
   useAssignmentSynthesis,
@@ -47,6 +48,8 @@ export const TeacherReviewSynthesisPage: React.FC = () => {
 
   // Selected item for Source Review Drawer
   const [activeDrawerItem, setActiveDrawerItem] = useState<SummaryItem | null>(null);
+
+  const [isRegenerateConfirmOpen, setIsRegenerateConfirmOpen] = useState(false);
 
   // Queries & Mutations
   const {
@@ -93,10 +96,16 @@ export const TeacherReviewSynthesisPage: React.FC = () => {
     
     // Nếu đã có dữ liệu, hiển thị confirm dialog trước khi tạo lại
     if (!isErrorSummary && items.length > 0) {
-      if (!window.confirm(synthesisMessages.header.confirmRegenerateDesc)) {
-        return;
-      }
+      setIsRegenerateConfirmOpen(true);
+      return;
     }
+    
+    // Nếu chưa có, gọi luôn
+    generateMutation.mutate();
+  };
+
+  const handleConfirmRegenerate = () => {
+    setIsRegenerateConfirmOpen(false);
     generateMutation.mutate();
   };
 
@@ -248,6 +257,16 @@ export const TeacherReviewSynthesisPage: React.FC = () => {
         item={activeDrawerItem}
         isOpen={Boolean(activeDrawerItem)}
         onClose={() => setActiveDrawerItem(null)}
+      />
+
+      {/* Confirm Dialog for Regenerate */}
+      <ConfirmDialog
+        open={isRegenerateConfirmOpen}
+        onClose={() => setIsRegenerateConfirmOpen(false)}
+        onConfirm={handleConfirmRegenerate}
+        title={synthesisMessages.header.refreshSynthesis}
+        description={synthesisMessages.header.confirmRegenerateDesc}
+        isDestructive={false}
       />
     </div>
   );

@@ -95,13 +95,18 @@ export const DiscussionFeed: React.FC<DiscussionFeedProps> = ({ groupId }) => {
 
             return (
               <div key={msg.id} className="flex items-start gap-3">
-                <div className="w-8 h-8 rounded-full bg-blue-600 text-white font-bold text-xs flex items-center justify-center flex-shrink-0 shadow-sm">
-                  {(msg.user_name || 'U').charAt(0).toUpperCase()}
+                <div className={`w-8 h-8 rounded-full ${msg.user_role === 'TEACHER' || msg.user_role === 'ADMIN' ? 'bg-emerald-600' : 'bg-blue-600'} text-white font-bold text-xs flex items-center justify-center flex-shrink-0 shadow-sm`}>
+                  {(msg.user_name || 'Người dùng').charAt(0).toUpperCase()}
                 </div>
 
-                <div className="flex-1 bg-white border border-gray-200 p-3 rounded-2xl shadow-sm space-y-1">
+                <div className={`flex-1 bg-white border ${msg.user_role === 'TEACHER' || msg.user_role === 'ADMIN' ? 'border-emerald-200 bg-emerald-50/10' : 'border-gray-200'} p-3 rounded-2xl shadow-sm space-y-1`}>
                   <div className="flex items-center justify-between text-xs">
-                    <span className="font-bold text-gray-900">{msg.user_name || 'Thành viên'}</span>
+                    <span className="font-bold text-gray-900">
+                      {msg.user_name || 'Người dùng'}
+                      <span className={`font-normal ml-1.5 ${msg.user_role === 'TEACHER' || msg.user_role === 'ADMIN' ? 'text-emerald-600' : 'text-gray-500'}`}>
+                        ({msg.user_role === 'TEACHER' ? 'Giáo viên' : msg.user_role === 'ADMIN' ? 'Quản trị viên' : 'Thành viên'})
+                      </span>
+                    </span>
                     <span className="text-gray-400 font-mono">{dateStr}</span>
                   </div>
 

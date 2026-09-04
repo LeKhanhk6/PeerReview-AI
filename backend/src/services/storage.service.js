@@ -43,6 +43,7 @@ export const uploadSubmissionFile = async (fileBuffer, originalName, mimeType) =
         return publicUrlData.publicUrl + '?download=' + encodeURIComponent(originalName);
     } catch (error) {
         logger.error('Storage upload exception:', error);
+        if (error instanceof AppError) throw error;
         throw new AppError('Không thể xử lý tiến trình nộp file', 500);
     }
 };
@@ -82,6 +83,7 @@ export const uploadAssignmentAttachment = async (fileBuffer, originalName, mimeT
         return publicUrlData.publicUrl + '?download=' + encodeURIComponent(originalName);
     } catch (error) {
         logger.error('Assignment storage upload exception:', error);
+        if (error instanceof AppError) throw error;
         throw new AppError('Không thể xử lý upload file đính kèm', 500);
     }
 };

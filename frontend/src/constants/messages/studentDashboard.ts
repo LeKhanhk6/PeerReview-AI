@@ -16,7 +16,7 @@ export const studentDashboardMessages = {
   reviewStatusNotReviewed: 'Chưa mở chấm chéo',
   reviewStatusUnderReview: 'Cần thực hiện chấm chéo',
   reviewStatusReviewed: 'Đã hoàn thành chấm chéo',
-  actionSubmit: 'Nộp bài ngay',
+  actionSubmit: 'Xem chi tiết / Nộp bài',
   actionEditSubmission: 'Xem bài nộp / Cập nhật',
   actionReview: 'Chấm chéo ngay',
   actionWorkspace: 'Vào Workspace nhóm',

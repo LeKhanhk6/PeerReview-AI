@@ -99,12 +99,14 @@ export const getStudentDashboardData = async (userId, limit, offset, sortColumn,
                 ) sv ON true
                 LEFT JOIN (
                     SELECT 
-                        submission_id, 
-                        COALESCE(bool_and(status = 'COMPLETED'), false) as is_review_completed,
-                        MAX(id::text) as review_assignment_id
-                    FROM review_assignments
-                    GROUP BY submission_id
-                ) ra ON ra.submission_id = s.id
+                        ra.reviewer_group_id,
+                        subs.assignment_id,
+                        COALESCE(bool_and(ra.status = 'COMPLETED'), false) as is_review_completed,
+                        MAX(ra.id::text) as review_assignment_id
+                    FROM review_assignments ra
+                    JOIN submissions subs ON subs.id = ra.submission_id
+                    GROUP BY ra.reviewer_group_id, subs.assignment_id
+                ) ra ON ra.reviewer_group_id = g.id AND ra.assignment_id = a.id
                 WHERE cm.user_id = $1
                 ORDER BY a.id, (g.id IS NOT NULL) DESC
             )

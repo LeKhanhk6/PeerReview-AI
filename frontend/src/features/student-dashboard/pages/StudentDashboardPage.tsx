@@ -315,9 +315,11 @@ export const StudentDashboardPage: React.FC = () => {
                     {/* Header with Title and Days Left Badge */}
                     <div className="flex items-start justify-between gap-3">
                       <div>
-                        <h3 className="text-sm md:text-base font-bold text-slate-900 line-clamp-1">
-                          {assignment.title}
-                        </h3>
+                        <Link to={`/student/assignments/${assignment.assignment_id}/submit`}>
+                          <h3 className="text-sm md:text-base font-bold text-slate-900 line-clamp-1 hover:text-brand-primary transition-colors hover:underline">
+                            {assignment.title}
+                          </h3>
+                        </Link>
                         <p className="text-xs font-medium text-slate-500 mt-0.5 flex items-center gap-1.5">
                           <span>Nhóm:</span>
                           {hasGroup ? (

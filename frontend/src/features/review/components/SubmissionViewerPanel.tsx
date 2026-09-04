@@ -75,19 +75,21 @@ export const SubmissionViewerPanel: React.FC<SubmissionViewerPanelProps> = ({
             </div>
 
             <div className="flex flex-wrap items-center gap-2 pt-2 border-t border-gray-200">
-              <a
-                href={submission.fileUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                onClick={handleSimulatedDownload}
-                className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-xs font-semibold text-indigo-700 bg-white border border-indigo-200 hover:bg-indigo-50 transition-colors shadow-2xs"
-              >
-                <span>↗</span>
-                <span>{reviewMessages.writing.openInNewTab}</span>
-              </a>
+              {submission.fileUrl?.match(/\.(pdf|jpg|jpeg|png|gif|webp)(\?|$)/i) && (
+                <a
+                  href={submission.fileUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  onClick={handleSimulatedDownload}
+                  className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-xs font-semibold text-indigo-700 bg-white border border-indigo-200 hover:bg-indigo-50 transition-colors shadow-2xs"
+                >
+                  <span>↗</span>
+                  <span>{reviewMessages.writing.openInNewTab}</span>
+                </a>
+              )}
               <a
                 href={`${submission.fileUrl}?download=Submission_${submission.publicId || 'Anonymous'}.${submission.fileUrl.split('.').pop()?.split('?')[0] || 'pdf'}`}
-                download
+                download={`Submission_${submission.publicId || 'Anonymous'}.${submission.fileUrl.split('.').pop()?.split('?')[0] || 'pdf'}`}
                 onClick={handleSimulatedDownload}
                 className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-700 transition-colors shadow-2xs"
               >

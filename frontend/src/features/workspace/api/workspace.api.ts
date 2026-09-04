@@ -99,7 +99,7 @@ export const workspaceApi = {
 
   createGroupFile: async (
     groupId: string,
-    data: { fileName: string; fileUrl: string }
+    data: { file_name: string; file_url: string }
   ): Promise<GroupFileItem> => {
     const res: any = await api.post(`/workspace/groups/${groupId}/files`, data);
     return res.data || res;

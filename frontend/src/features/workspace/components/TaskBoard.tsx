@@ -264,9 +264,9 @@ export const TaskBoard: React.FC<TaskBoardProps> = ({
               className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
               <option value="">{workspaceMessages.kanban.selectAssignee}</option>
-              {members.map((m) => (
+              {members.map((m: any) => (
                 <option key={m.id} value={m.id}>
-                  {m.name}
+                  {m.full_name || m.name}
                 </option>
               ))}
             </select>

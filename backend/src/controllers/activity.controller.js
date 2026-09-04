@@ -12,10 +12,10 @@ export const getActivities = async (req, res, next) => {
 
         const activities = await activityService.getGroupActivities(groupId, limit, offset);
         
-        return res.paginate(activities, {
+        return res.paginate(activities.data, {
             page,
             limit,
-            hasNext: activities.length === limit // heuristic, not exact
+            hasNext: activities.hasNext
         });
     } catch (error) {
         next(error);

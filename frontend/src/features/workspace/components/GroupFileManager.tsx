@@ -42,8 +42,8 @@ export const GroupFileManager: React.FC<GroupFileManagerProps> = ({ groupId }) =
 
       try {
         await createFile.mutateAsync({
-          fileName: selectedFile.name,
-          fileUrl: URL.createObjectURL(selectedFile),
+          file_name: selectedFile.name,
+          file_url: URL.createObjectURL(selectedFile),
         });
         toast.success(workspaceMessages.files.uploadSuccess);
       } catch (err: any) {

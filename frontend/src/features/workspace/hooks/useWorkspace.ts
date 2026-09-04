@@ -43,24 +43,26 @@ export const useUpdateTask = (groupId: string) => {
       data: { title?: string; status?: TaskStatus; assignee_id?: string | null };
     }) => workspaceApi.updateTask(taskId, data),
 
-    // Optimistic Update for smooth Kanban card movement
     onMutate: async ({ taskId, data }) => {
       await queryClient.cancelQueries({ queryKey: workspaceKeys.tasks(groupId) });
-      const previousTasks = queryClient.getQueryData<TaskItem[]>(workspaceKeys.tasks(groupId));
+      const previousResult = queryClient.getQueryData<{ hasGroup: boolean; data: TaskItem[] }>(workspaceKeys.tasks(groupId));
 
-      if (previousTasks) {
-        queryClient.setQueryData<TaskItem[]>(
+      if (previousResult && Array.isArray(previousResult.data)) {
+        queryClient.setQueryData(
           workspaceKeys.tasks(groupId),
-          previousTasks.map((t) => (t.id === taskId ? { ...t, ...data } : t))
+          {
+            ...previousResult,
+            data: previousResult.data.map((t) => (t.id === taskId ? { ...t, ...data } : t))
+          }
         );
       }
 
-      return { previousTasks };
+      return { previousResult };
     },
 
     onError: (_err, _variables, context) => {
-      if (context?.previousTasks) {
-        queryClient.setQueryData(workspaceKeys.tasks(groupId), context.previousTasks);
+      if (context?.previousResult) {
+        queryClient.setQueryData(workspaceKeys.tasks(groupId), context.previousResult);
       }
     },
 
@@ -126,7 +128,7 @@ export const useGroupFiles = (groupId: string) => {
 export const useCreateGroupFile = (groupId: string) => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (data: { fileName: string; fileUrl: string }) => workspaceApi.createGroupFile(groupId, data),
+    mutationFn: (data: { file_name: string; file_url: string }) => workspaceApi.createGroupFile(groupId, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: workspaceKeys.files(groupId) });
       queryClient.invalidateQueries({ queryKey: workspaceKeys.activities(groupId) });

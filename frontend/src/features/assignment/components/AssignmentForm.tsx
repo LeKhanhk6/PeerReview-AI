@@ -4,6 +4,8 @@ import { assignmentMessages } from '@/constants/messages/assignment';
 import { DeadlinePicker } from './DeadlinePicker';
 import { AttachmentManager } from './AttachmentManager';
 import { RubricBuilder } from './RubricBuilder';
+import { AlertTriangle } from 'lucide-react';
+
 import { useClassesList } from '../hooks/useAssignments';
 import type {
   Assignment,
@@ -135,8 +137,8 @@ export const AssignmentForm: React.FC<AssignmentFormProps> = ({
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       {serverError && (
-        <div className="p-3 bg-red-50 border border-red-200 rounded text-sm text-red-700 font-medium" role="alert">
-          ⚠ {serverError}
+        <div className="p-3 bg-red-50 border border-red-200 rounded text-sm text-red-700 font-medium flex items-center gap-1.5" role="alert">
+          <AlertTriangle className="w-4 h-4 shrink-0" /> {serverError}
         </div>
       )}
 
@@ -250,7 +252,7 @@ export const AssignmentForm: React.FC<AssignmentFormProps> = ({
           <div className="p-4 bg-amber-50 border border-amber-200 rounded-lg flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div>
               <h4 className="text-sm font-semibold text-amber-900 flex items-center gap-1.5">
-                ⚠️ {assignmentMessages.rubric.missingRubricWarningTitle}
+                <AlertTriangle className="w-4 h-4 shrink-0" /> {assignmentMessages.rubric.missingRubricWarningTitle}
               </h4>
               <p className="text-xs text-amber-800 mt-1">
                 {assignmentMessages.rubric.missingRubricWarningDescription}

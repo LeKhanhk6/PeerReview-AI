@@ -28,7 +28,7 @@ const validateId = (id, fieldName = 'ID') => {
 };
 
 // Constant to define reviews per group
-const REVIEWS_PER_GROUP = 2;
+const REVIEWS_PER_GROUP = 5;
 
 /**
  * Converts any string or numeric seed into a 32-bit integer seed for PRNG

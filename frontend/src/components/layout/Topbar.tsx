@@ -1,5 +1,5 @@
 import React from 'react';
-import { Menu, LogOut } from 'lucide-react';
+import { Menu, LogOut, Zap } from 'lucide-react';
 import { useAuthStore } from '../../features/auth/store/authStore';
 import { Button } from '../ui/Button';
 
@@ -28,7 +28,8 @@ export const Topbar: React.FC<TopbarProps> = ({ onOpenSidebar, badge }) => {
             className="h-12 w-auto object-contain md:hidden -ml-2" 
           />
           {badge && (
-            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+              <Zap size={14} className="text-red-600" />
               {badge}
             </span>
           )}

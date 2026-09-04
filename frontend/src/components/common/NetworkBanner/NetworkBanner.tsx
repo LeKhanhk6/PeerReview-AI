@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { useNetworkStatus } from '../../../hooks/useNetworkStatus';
 import { commonMessages } from '../../../constants/messages/common';
+import { AlertTriangle, CheckCircle2 } from 'lucide-react';
 import './NetworkBanner.css';
 
 export const NetworkBanner: React.FC = () => {
@@ -25,7 +26,9 @@ export const NetworkBanner: React.FC = () => {
   if (!isOnline) {
     return (
       <div className="network-banner network-banner--offline" role="alert">
-        <span className="network-banner__icon">⚠️</span>
+        <span className="network-banner__icon">
+          <AlertTriangle size={16} />
+        </span>
         <span className="network-banner__text">{commonMessages.network.offline}</span>
       </div>
     );
@@ -34,7 +37,9 @@ export const NetworkBanner: React.FC = () => {
   if (showOnlineBanner) {
     return (
       <div className="network-banner network-banner--online" role="alert">
-        <span className="network-banner__icon">✅</span>
+        <span className="network-banner__icon">
+          <CheckCircle2 size={16} />
+        </span>
         <span className="network-banner__text">{commonMessages.network.online}</span>
       </div>
     );

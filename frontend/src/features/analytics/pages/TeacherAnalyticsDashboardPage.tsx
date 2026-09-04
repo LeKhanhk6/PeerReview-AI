@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { SkeletonCard } from '@/components/ui/Skeleton';
 import { EmptyState } from '@/components/ui/EmptyState';
+import { BarChart2, Lightbulb } from 'lucide-react';
 import { analyticsMessages } from '@/constants/messages/analytics';
 import { useClassesList } from '@/features/assignment/hooks/useAssignments';
 import { useDashboardOverview, useClassContributions, useClassCollaborationRisks } from '../hooks/useAnalytics';
@@ -42,8 +43,8 @@ export const TeacherAnalyticsDashboardPage: React.FC = () => {
       {/* Page Header & Filter */}
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 bg-white p-6 border border-slate-100 rounded-2xl shadow-sm shrink-0">
         <div className="space-y-1.5">
-          <h1 className="text-xl md:text-2xl font-bold text-slate-900 tracking-tight">
-            📊 {analyticsMessages.title}
+          <h1 className="text-xl md:text-2xl font-black text-slate-900 tracking-tight flex items-center gap-2">
+            <BarChart2 className="w-6 h-6 text-indigo-600" /> {analyticsMessages.title}
           </h1>
           <p className="text-xs md:text-sm text-slate-500">{analyticsMessages.subtitle}</p>
         </div>
@@ -174,13 +175,13 @@ export const TeacherAnalyticsDashboardPage: React.FC = () => {
           <div className="space-y-4">
             <div className="flex items-center justify-between">
               <h2 className="text-lg font-bold text-gray-900">
-                👥 Danh Sách Đóng Góp Theo Nhóm
+                Danh Sách Đóng Góp Theo Nhóm
               </h2>
             </div>
 
             {!selectedClassId ? (
-              <div className="bg-blue-50 border border-blue-200 rounded-xl p-6 text-center text-sm text-blue-800 font-medium">
-                💡 Vui lòng chọn một Lớp học cụ thể ở trên để xem chi tiết các nhóm học phần.
+              <div className="bg-indigo-50 border border-indigo-100 rounded-xl p-6 text-center text-indigo-700 text-sm font-medium flex items-center justify-center gap-2">
+                <Lightbulb className="w-5 h-5" /> Vui lòng chọn một Lớp học cụ thể ở trên để xem chi tiết các nhóm học phần.
               </div>
             ) : isLoadingGroups ? (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" aria-busy="true">

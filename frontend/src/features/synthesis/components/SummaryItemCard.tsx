@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Button } from '@/components/ui/Button';
 import { synthesisMessages } from '@/constants/messages/synthesis';
 import type { SummaryItem, TopicCategory } from '../types/synthesis.types';
+import { Search, Edit2, Pin } from 'lucide-react';
 
 interface SummaryItemCardProps {
   item: SummaryItem;
@@ -120,7 +121,7 @@ export const SummaryItemCard: React.FC<SummaryItemCardProps> = ({
             onClick={() => onOpenSourceReviews(item)}
             className="text-xs text-blue-600 hover:text-blue-800 hover:bg-blue-50"
           >
-            🔍 {synthesisMessages.itemCard.viewSourceReviews}
+            <Search className="w-3.5 h-3.5 mr-1" /> {synthesisMessages.itemCard.viewSourceReviews}
           </Button>
 
           {/* Edit Button */}
@@ -134,7 +135,7 @@ export const SummaryItemCard: React.FC<SummaryItemCardProps> = ({
                 onClick={() => setIsEditing(true)}
                 className="text-xs"
               >
-                ✏️ {synthesisMessages.itemCard.editButton}
+                <Edit2 className="w-3.5 h-3.5 mr-1" /> {synthesisMessages.itemCard.editButton}
               </Button>
 
               {/* Approved Disabled Tooltip */}
@@ -204,8 +205,8 @@ export const SummaryItemCard: React.FC<SummaryItemCardProps> = ({
 
           {/* Internal Teacher Note (If present) */}
           {item.note && (
-            <div className="bg-amber-50 border-l-2 border-amber-400 p-2.5 rounded-r text-xs text-amber-900 font-medium">
-              📌 <strong>Ghi chú Giáo viên:</strong> {item.note}
+            <div className="bg-amber-50 border-l-2 border-amber-400 p-2.5 rounded-r text-xs text-amber-900 font-medium flex items-center gap-1.5">
+              <Pin className="w-3.5 h-3.5" /> <strong>Ghi chú Giáo viên:</strong> {item.note}
             </div>
           )}
 

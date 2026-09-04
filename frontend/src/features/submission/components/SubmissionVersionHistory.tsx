@@ -4,6 +4,7 @@ import { EmptyState } from '@/components/ui/EmptyState';
 import { submissionMessages } from '@/constants/messages/submission';
 import { useSubmissionHistory } from '../hooks/useSubmission';
 import { toast } from 'sonner';
+import { History, FileText, Download } from 'lucide-react';
 
 interface SubmissionVersionHistoryProps {
   assignmentId: string;
@@ -39,8 +40,8 @@ export const SubmissionVersionHistory: React.FC<SubmissionVersionHistoryProps> =
     <div className="bg-white border border-gray-200 rounded-xl p-5 shadow-sm space-y-4">
       <div className="flex items-center justify-between border-b border-gray-200 pb-3">
         <div>
-          <h2 className="text-base font-bold text-gray-900">
-            📜 {submissionMessages.history.title}
+          <h2 className="text-base font-bold text-gray-900 flex items-center gap-2">
+            <History className="w-5 h-5 text-gray-700" /> {submissionMessages.history.title}
           </h2>
           <p className="text-xs text-gray-500 mt-0.5">
             Danh sách tất cả các lần tải bài nộp được lưu vết tự động
@@ -120,7 +121,7 @@ export const SubmissionVersionHistory: React.FC<SubmissionVersionHistoryProps> =
                       </div>
                     </td>
                     <td className="p-3 text-gray-900 truncate max-w-xs" title={displayFileName}>
-                      📄 {displayFileName}
+                      <span className="flex items-center gap-1.5"><FileText className="w-4 h-4 text-gray-500" /> {displayFileName}</span>
                     </td>
                     <td className="p-3 text-xs text-gray-500 font-mono">{dateStr}</td>
                     <td className="p-3 text-right">
@@ -137,7 +138,7 @@ export const SubmissionVersionHistory: React.FC<SubmissionVersionHistoryProps> =
                         }}
                         className="inline-flex items-center gap-1 text-xs font-bold text-blue-600 hover:text-blue-800 bg-white px-2.5 py-1 rounded border border-gray-200 shadow-sm transition-colors"
                       >
-                        📥 {submissionMessages.history.downloadColumn}
+                        <Download className="w-4 h-4 mr-1" /> {submissionMessages.history.downloadColumn}
                       </a>
                     </td>
                   </tr>

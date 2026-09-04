@@ -1,6 +1,7 @@
 import React from 'react';
 import { Button } from '@/components/ui/Button';
 import { assignmentMessages } from '@/constants/messages/assignment';
+import { AlertTriangle, ArrowUp, ArrowDown, Trash2 } from 'lucide-react';
 import type { RubricCriteria } from '../types/assignment.types';
 
 interface RubricBuilderProps {
@@ -102,8 +103,8 @@ export const RubricBuilder: React.FC<RubricBuilderProps> = ({
       </div>
 
       {serverError && (
-        <div className="p-3 bg-red-50 border border-red-200 rounded text-sm text-red-700 font-medium" role="alert">
-          ⚠ {serverError}
+        <div className="p-3 bg-red-50 border border-red-200 rounded text-sm text-red-700 font-medium flex items-center gap-1.5" role="alert">
+          <AlertTriangle size={16} /> {serverError}
         </div>
       )}
 
@@ -151,11 +152,11 @@ export const RubricBuilder: React.FC<RubricBuilderProps> = ({
                     type="button"
                     onClick={() => handleMoveUp(index)}
                     disabled={index === 0 || disabled}
-                    className="p-1 text-gray-500 hover:text-gray-900 disabled:opacity-30 rounded hover:bg-gray-200 text-xs"
+                    className="p-1 text-gray-500 hover:text-gray-900 disabled:opacity-30 rounded hover:bg-gray-200"
                     title={assignmentMessages.rubric.moveUp}
                     aria-label={`${assignmentMessages.rubric.moveUp} ${item.name || index + 1}`}
                   >
-                    ⬆️
+                    <ArrowUp size={16} />
                   </button>
 
                   {/* Reorder Down Button */}
@@ -163,11 +164,11 @@ export const RubricBuilder: React.FC<RubricBuilderProps> = ({
                     type="button"
                     onClick={() => handleMoveDown(index)}
                     disabled={index === criteria.length - 1 || disabled}
-                    className="p-1 text-gray-500 hover:text-gray-900 disabled:opacity-30 rounded hover:bg-gray-200 text-xs"
+                    className="p-1 text-gray-500 hover:text-gray-900 disabled:opacity-30 rounded hover:bg-gray-200"
                     title={assignmentMessages.rubric.moveDown}
                     aria-label={`${assignmentMessages.rubric.moveDown} ${item.name || index + 1}`}
                   >
-                    ⬇️
+                    <ArrowDown size={16} />
                   </button>
 
                   {/* Remove Button */}
@@ -175,11 +176,11 @@ export const RubricBuilder: React.FC<RubricBuilderProps> = ({
                     type="button"
                     onClick={() => handleRemove(index)}
                     disabled={disabled}
-                    className="p-1 text-red-600 hover:text-red-800 disabled:opacity-30 rounded hover:bg-red-50 text-xs ml-1"
+                    className="p-1 text-red-600 hover:text-red-800 disabled:opacity-30 rounded hover:bg-red-50 text-xs ml-1 flex items-center gap-1"
                     title={assignmentMessages.rubric.removeCriteria}
                     aria-label={`${assignmentMessages.rubric.removeCriteria} ${item.name || index + 1}`}
                   >
-                    🗑 Xóa
+                    <Trash2 size={14} /> Xóa
                   </button>
                 </div>
               </div>

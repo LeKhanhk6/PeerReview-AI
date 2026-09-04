@@ -1,5 +1,6 @@
 import express from 'express';
 import { z } from 'zod';
+import multer from 'multer';
 import * as taskController from '../controllers/task.controller.js';
 import * as discussionController from '../controllers/discussion.controller.js';
 import * as fileController from '../controllers/file.controller.js';
@@ -8,11 +9,60 @@ import { verifyToken } from '../middleware/auth.middleware.js';
 import { validate } from '../middleware/validation.middleware.js';
 import { paginationMiddleware } from '../middleware/pagination.middleware.js';
 import { TASK_STATUS } from '../constants/index.js';
+import { AppError } from '../utils/AppError.js';
 
 const router = express.Router();
 
-// Áp dụng middleware xác thực JWT cho toàn bộ workspace routes
 router.use(verifyToken);
+
+// ==========================================
+// MULTER SETUP
+// ==========================================
+const allowedMimeTypes = [
+    'application/pdf',
+    'application/vnd.openxmlformats-officedocument.wordprocessingml.document', // docx
+    'application/msword', // doc
+    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', // xlsx
+    'application/vnd.ms-excel', // xls
+    'application/vnd.openxmlformats-officedocument.presentationml.presentation', // pptx
+    'application/vnd.ms-powerpoint', // ppt
+    'text/plain', // txt
+    'application/zip', // zip
+    'image/png', // png
+    'image/jpeg' // jpg
+];
+
+const allowedExtensions = ['pdf', 'docx', 'doc', 'xlsx', 'xls', 'pptx', 'ppt', 'txt', 'zip', 'png', 'jpg'];
+
+const upload = multer({ 
+    storage: multer.memoryStorage(), 
+    limits: { fileSize: 10 * 1024 * 1024 }, // 10MB limit
+    fileFilter: (req, file, cb) => {
+        const ext = file.originalname.split('.').pop()?.toLowerCase();
+        if (allowedMimeTypes.includes(file.mimetype) && allowedExtensions.includes(ext)) {
+            cb(null, true);
+        } else {
+            cb(new Error('INVALID_FILE_TYPE'));
+        }
+    }
+});
+
+const handleUpload = (req, res, next) => {
+    upload.single('file')(req, res, (err) => {
+        if (err instanceof multer.MulterError) {
+            if (err.code === 'LIMIT_FILE_SIZE') {
+                return next(new AppError('File vượt quá giới hạn 10MB', 413, 'FILE_TOO_LARGE'));
+            }
+            return next(new AppError(err.message, 400));
+        } else if (err) {
+            if (err.message === 'INVALID_FILE_TYPE') {
+                return next(new AppError('Định dạng file không được hỗ trợ', 400, 'INVALID_FILE_TYPE'));
+            }
+            return next(err);
+        }
+        next();
+    });
+};
 
 // ==========================================
 // SCHEMAS
@@ -49,10 +99,13 @@ const createDiscussionSchema = {
 };
 
 const createFileSchema = {
-    params: idParamSchema,
-    body: z.object({
-        fileName: z.string().min(1),
-        fileUrl: z.string().url()
+    params: idParamSchema
+};
+
+const downloadFileSchema = {
+    params: z.object({
+        groupId: z.string().trim().min(1),
+        fileId: z.string().trim().min(1)
     })
 };
 
@@ -74,7 +127,8 @@ router.post('/groups/:id/discussions', validate(createDiscussionSchema), discuss
 // GROUP FILES ROUTES
 // ==========================================
 router.get('/groups/:id/files', validate({ params: idParamSchema }), fileController.getFiles);
-router.post('/groups/:id/files', validate(createFileSchema), fileController.createFile);
+router.post('/groups/:id/files', handleUpload, validate(createFileSchema), fileController.createFile);
+router.get('/groups/:groupId/files/:fileId/download', validate(downloadFileSchema), fileController.downloadFile);
 
 // ==========================================
 // ACTIVITY LOGS ROUTES

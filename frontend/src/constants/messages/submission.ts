@@ -8,10 +8,10 @@ export const submissionMessages = {
     hours: 'giờ',
     minutes: 'phút',
     seconds: 'giây',
-    statusOpen: '🟢 Đang mở nộp bài',
-    statusUrgent: '⏳ Sắp hết hạn (Dưới 24h)',
-    statusExpired: '🔴 Đã quá hạn nộp',
-    lateWarning: '⚠️ Bạn đang nộp bài muộn so với thời hạn quy định.',
+    statusOpen: 'Đang mở nộp bài',
+    statusUrgent: 'Sắp hết hạn (Dưới 24h)',
+    statusExpired: 'Đã quá hạn nộp',
+    lateWarning: 'Bạn đang nộp bài muộn so với thời hạn quy định.',
   },
 
   form: {
@@ -19,7 +19,7 @@ export const submissionMessages = {
     selectFileLabel: 'Chọn tệp bài nộp (.pdf, .docx, .zip, .rar) *',
     uploadProgress: 'Đang tải file lên...',
     submitBtn: 'Gửi bài nộp',
-    retryBtn: '🔄 Thử lại',
+    retryBtn: 'Thử lại',
     cancelBtn: 'Hủy',
     uploadSuccess: 'Đã nộp bài tập thành công!',
     isUploadingWarning: 'Đang tiến hành tải file nộp bài. Bạn có chắc muốn rời khỏi trang?',
@@ -31,8 +31,8 @@ export const submissionMessages = {
     fileNameColumn: 'Tên tệp bài nộp',
     submittedAtColumn: 'Thời gian nộp',
     downloadColumn: 'Tải về',
-    currentBadge: '✓ Phiên bản hiện tại',
-    lateBadge: '⚠️ Nộp muộn',
+    currentBadge: 'Phiên bản hiện tại',
+    lateBadge: 'Nộp muộn',
     emptyTitle: 'Chưa có phiên bản bài nộp nào',
     emptyDesc: 'Bạn chưa nộp bài tập nào cho bài tập này. Hãy tải bài nộp đầu tiên!',
   },
@@ -48,8 +48,8 @@ export const submissionMessages = {
   },
 
   offline: {
-    bannerMessage: '⚠️ Kết nối Internet bị ngắt. Nút nộp bài tạm thời bị khóa để tránh mất dữ liệu.',
-    restoredMessage: '🌐 Kết nối Internet đã được phục hồi! Bạn có thể tiếp tục nộp bài.',
+    bannerMessage: 'Kết nối Internet bị ngắt. Nút nộp bài tạm thời bị khóa để tránh mất dữ liệu.',
+    restoredMessage: 'Kết nối Internet đã được phục hồi! Bạn có thể tiếp tục nộp bài.',
   },
 
   error: {

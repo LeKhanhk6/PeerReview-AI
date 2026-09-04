@@ -4,6 +4,8 @@ import { assignmentMessages } from '@/constants/messages/assignment';
 import type { AssignmentAttachment } from '../types/assignment.types';
 import { assignmentApi } from '../api/assignment.api';
 import { toast } from 'sonner';
+import { Paperclip, X } from 'lucide-react';
+
 
 interface AttachmentManagerProps {
   attachments: AssignmentAttachment[];
@@ -203,12 +205,12 @@ export const AttachmentManager: React.FC<AttachmentManagerProps> = ({
                     href={item.file_url}
                     target="_blank"
                     rel="noreferrer"
-                    className="font-medium text-blue-600 hover:underline truncate block"
+                    className="font-medium text-blue-600 hover:underline truncate flex items-center gap-1.5"
                   >
-                    📎 {item.file_name}
+                    <Paperclip className="w-4 h-4 shrink-0" /> {item.file_name}
                   </a>
                 ) : (
-                  <span className="font-medium text-gray-600 truncate block">📎 {item.file_name}</span>
+                  <span className="font-medium text-gray-600 truncate flex items-center gap-1.5"><Paperclip className="w-4 h-4 shrink-0" /> {item.file_name}</span>
                 )}
                 
                 {item.file_url && <span className="text-xs text-gray-400 truncate block">{item.file_url}</span>}
@@ -246,7 +248,7 @@ export const AttachmentManager: React.FC<AttachmentManagerProps> = ({
                   aria-label={`${assignmentMessages.attachment.removeBtn} ${item.file_name}`}
                   disabled={disabled || item.status === 'uploading'}
                 >
-                  ✕
+                  <X className="w-4 h-4" />
                 </button>
               </div>
             </li>

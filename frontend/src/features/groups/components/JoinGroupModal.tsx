@@ -6,6 +6,8 @@ import { SkeletonCard } from '@/components/ui/Skeleton';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { groupsApi } from '../api/groups.api';
 import { toast } from 'sonner';
+import { Rocket, AlertCircle, CheckCircle } from 'lucide-react';
+
 
 interface JoinGroupModalProps {
   open: boolean;
@@ -35,7 +37,7 @@ export const JoinGroupModal: React.FC<JoinGroupModalProps> = ({
     mutationFn: (groupId: string) => groupsApi.joinGroup(groupId),
     onMutate: (groupId) => setJoiningGroupId(groupId),
     onSuccess: () => {
-      toast.success('🎉 Bạn đã tham gia nhóm thành công!');
+      toast.success('Bạn đã tham gia nhóm thành công!');
       queryClient.invalidateQueries({ queryKey: ['student-dashboard-assignments'] });
       queryClient.invalidateQueries({ queryKey: ['class-groups'] });
       queryClient.invalidateQueries({ queryKey: ['classes'] });
@@ -48,9 +50,9 @@ export const JoinGroupModal: React.FC<JoinGroupModalProps> = ({
     onError: (err: any) => {
       const errMsg = err?.response?.data?.message || err?.message || '';
       if (errMsg.includes('GROUP_FULL')) {
-        toast.error('⚠️ Nhóm này đã đủ số lượng thành viên tối đa (6 sinh viên/nhóm).');
+        toast.error('Nhóm này đã đủ số lượng thành viên tối đa (6 sinh viên/nhóm).');
       } else if (errMsg.includes('already belongs')) {
-        toast.error('⚠️ Bạn đã thuộc về một nhóm khác trong lớp học này.');
+        toast.error('Bạn đã thuộc về một nhóm khác trong lớp học này.');
       } else {
         toast.error(errMsg || 'Không thể tham gia nhóm. Vui lòng thử lại.');
       }
@@ -62,7 +64,7 @@ export const JoinGroupModal: React.FC<JoinGroupModalProps> = ({
     <Dialog
       open={open}
       onClose={onClose}
-      title={`🚀 Tham gia nhóm - ${className}`}
+      title={<span className="flex items-center gap-2"><Rocket className="w-5 h-5 text-gray-700" /> Tham gia nhóm - {className}</span>}
       className="max-w-xl"
     >
       <div className="space-y-4">
@@ -110,7 +112,7 @@ export const JoinGroupModal: React.FC<JoinGroupModalProps> = ({
                             : 'bg-emerald-50 text-emerald-700 border border-emerald-200'
                         }`}
                       >
-                        {isFull ? '🔴 Đã đủ nhóm (6/6)' : `🟢 Còn chỗ (${memberCount}/6 thành viên)`}
+                        {isFull ? <span className="flex items-center gap-1"><AlertCircle className="w-3.5 h-3.5" /> Đã đủ nhóm (6/6)</span> : <span className="flex items-center gap-1"><CheckCircle className="w-3.5 h-3.5" /> Còn chỗ ({memberCount}/6 thành viên)</span>}
                       </span>
                     </div>
 

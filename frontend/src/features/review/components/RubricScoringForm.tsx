@@ -6,6 +6,7 @@ import { createSubmitReviewSchema } from '../schemas/review.schema';
 import { useAIMentor } from '../hooks/useAIMentor';
 import { AIMentorWidget } from './AIMentorWidget';
 import type { RubricDetail, SubmittedReviewDetail, SubmitReviewPayload } from '../types/review.types';
+import { ClipboardList, Loader2, Save, AlertTriangle } from 'lucide-react';
 
 interface RubricScoringFormProps {
   rubric: RubricDetail;
@@ -172,7 +173,7 @@ export const RubricScoringForm: React.FC<RubricScoringFormProps> = ({
       <div className="border-b border-gray-100 pb-4 flex items-center justify-between gap-4">
         <div>
           <h2 className="text-lg font-extrabold text-gray-900 flex items-center gap-2">
-            <span>📋</span>
+            <ClipboardList className="w-5 h-5 text-gray-700" />
             <span>{reviewMessages.writing.scoringPanelTitle}</span>
           </h2>
           <p className="text-xs text-gray-500 mt-0.5">
@@ -184,12 +185,12 @@ export const RubricScoringForm: React.FC<RubricScoringFormProps> = ({
         {!isReadOnly && (
           <div className="text-right text-xs">
             {isSavingDraft ? (
-              <span className="text-amber-600 font-medium animate-pulse">
-                ⏳ {reviewMessages.writing.draftSaving}
+              <span className="text-amber-600 font-medium animate-pulse flex items-center gap-1.5 justify-end">
+                <Loader2 className="w-3.5 h-3.5 animate-spin" /> {reviewMessages.writing.draftSaving}
               </span>
             ) : lastSavedAt ? (
-              <span className="text-gray-500 font-medium">
-                💾 {reviewMessages.writing.draftSavedAt} {lastSavedAt}
+              <span className="text-gray-500 font-medium flex items-center gap-1.5 justify-end">
+                <Save className="w-3.5 h-3.5" /> {reviewMessages.writing.draftSavedAt} {lastSavedAt}
               </span>
             ) : null}
           </div>
@@ -272,8 +273,8 @@ export const RubricScoringForm: React.FC<RubricScoringFormProps> = ({
               </div>
 
               {errorMsg && (
-                <p className="text-xs font-semibold text-red-600 mt-1" role="alert">
-                  ⚠️ {errorMsg}
+                <p className="text-xs font-semibold text-red-600 mt-1 flex items-center gap-1.5" role="alert">
+                  <AlertTriangle className="w-3.5 h-3.5" /> {errorMsg}
                 </p>
               )}
             </div>
@@ -299,8 +300,8 @@ export const RubricScoringForm: React.FC<RubricScoringFormProps> = ({
           className="w-full p-3 border border-gray-300 rounded-xl text-sm text-gray-900 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 disabled:bg-gray-100 disabled:text-gray-500"
         />
         {validationErrors.overallComment && (
-          <p className="text-xs font-semibold text-red-600 mt-1" role="alert">
-            ⚠️ {validationErrors.overallComment}
+          <p className="text-xs font-semibold text-red-600 mt-1 flex items-center gap-1.5" role="alert">
+            <AlertTriangle className="w-3.5 h-3.5" /> {validationErrors.overallComment}
           </p>
         )}
 

@@ -3,20 +3,20 @@ export const workspaceMessages = {
   subtitle: 'Quản lý danh sách công việc Kanban, thảo luận nội bộ nhóm và theo dõi lịch sử hoạt động.',
 
   tabs: {
-    kanban: '📋 Bảng Công Việc',
-    discussions: '💬 Thảo Luận Nhóm',
-    timeline: '📜 Nhật Ký Hoạt Động',
-    files: '📁 Tài Liệu Nhóm',
+    kanban: 'Bảng Công Việc',
+    discussions: 'Thảo Luận Nhóm',
+    timeline: 'Nhật Ký Hoạt Động',
+    files: 'Tài Liệu Nhóm',
   },
 
-  autoRefreshInfo: '🔄 Dữ liệu được tự động làm mới',
+  autoRefreshInfo: 'Dữ liệu được tự động làm mới',
 
   kanban: {
     title: 'Bảng Công Việc Kanban',
     createTaskBtn: '+ Thêm công việc',
-    columnTodo: '📋 Cần làm (TODO)',
-    columnInProgress: '🚧 Đang làm (IN PROGRESS)',
-    columnDone: '✅ Hoàn thành (DONE)',
+    columnTodo: 'Cần làm (TODO)',
+    columnInProgress: 'Đang làm (IN PROGRESS)',
+    columnDone: 'Hoàn thành (DONE)',
     unassigned: 'Chưa phân công',
     assignedTo: 'Người làm:',
     moveRight: 'Chuyển tiếp',

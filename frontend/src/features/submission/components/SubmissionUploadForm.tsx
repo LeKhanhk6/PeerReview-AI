@@ -4,6 +4,7 @@ import { submissionMessages } from '@/constants/messages/submission';
 import { toast } from 'sonner';
 import { useSubmitAssignment } from '../hooks/useSubmission';
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
+import { Upload, AlertTriangle, FileText, X } from 'lucide-react';
 
 interface SubmissionUploadFormProps {
   assignmentId: string;
@@ -75,7 +76,7 @@ export const SubmissionUploadForm: React.FC<SubmissionUploadFormProps> = ({
       setHasError(true);
       const errMsg = err?.message || err?.response?.data?.message || err?.code || '';
       if (errMsg.includes('MUST_JOIN_GROUP') || err?.status === 409) {
-        setFormError('⚠️ Bạn chưa thuộc về nhóm nào trong lớp học này. Vui lòng tham gia nhóm trước khi nộp bài.');
+        setFormError('Bạn chưa thuộc về nhóm nào trong lớp học này. Vui lòng tham gia nhóm trước khi nộp bài.');
         toast.error('Bạn cần tham gia một nhóm trong lớp học trước khi nộp bài.');
       } else {
         toast.error(errMsg || submissionMessages.error.submitFailed);
@@ -90,7 +91,7 @@ export const SubmissionUploadForm: React.FC<SubmissionUploadFormProps> = ({
     <div className="bg-white border border-gray-200 rounded-xl p-5 shadow-sm space-y-4">
       <div className="border-b border-gray-200 pb-3">
         <h2 className="text-base font-bold text-gray-900 flex items-center gap-2">
-          <span>📤</span>
+          <Upload className="w-5 h-5 text-gray-700" />
           <span>{submissionMessages.form.title}</span>
         </h2>
         <p className="text-xs text-gray-500 mt-0.5">
@@ -101,7 +102,7 @@ export const SubmissionUploadForm: React.FC<SubmissionUploadFormProps> = ({
       {/* Offline Banner Warning */}
       {!isOnline && (
         <div role="alert" className="p-3 bg-amber-50 border border-amber-200 rounded-lg text-xs font-semibold text-amber-900 flex items-center gap-2">
-          <span aria-hidden="true">⚠️</span>
+          <AlertTriangle className="w-4 h-4" aria-hidden="true" />
           <span>{submissionMessages.offline.bannerMessage}</span>
         </div>
       )}
@@ -109,8 +110,8 @@ export const SubmissionUploadForm: React.FC<SubmissionUploadFormProps> = ({
       {/* Form Inputs */}
       <form onSubmit={handleFormSubmit} className="space-y-4">
         {formError && (
-          <div role="alert" className="p-3 text-xs bg-red-50 text-red-700 border border-red-200 rounded-md">
-            ⚠️ {formError}
+          <div role="alert" className="p-3 text-xs bg-red-50 text-red-700 border border-red-200 rounded-md flex items-center gap-1.5">
+            <AlertTriangle className="w-4 h-4" /> {formError}
           </div>
         )}
 
@@ -130,16 +131,16 @@ export const SubmissionUploadForm: React.FC<SubmissionUploadFormProps> = ({
 
         {selectedFile && (
           <div className="p-3 bg-gray-50 border border-gray-200 rounded-lg text-xs flex items-center justify-between">
-            <span className="font-semibold text-gray-800 truncate">
-              📄 {selectedFile.name} ({(selectedFile.size / 1024).toFixed(1)} KB)
+            <span className="font-semibold text-gray-800 truncate flex items-center gap-1.5">
+              <FileText className="w-4 h-4 text-gray-500" /> {selectedFile.name} ({(selectedFile.size / 1024).toFixed(1)} KB)
             </span>
             <button
               type="button"
               onClick={() => setSelectedFile(null)}
-              className="text-gray-400 hover:text-red-600 font-bold ml-2"
+              className="text-gray-400 hover:text-red-600 ml-2"
               aria-label="Bỏ chọn tệp"
             >
-              ✕
+              <X className="w-4 h-4" />
             </button>
           </div>
         )}

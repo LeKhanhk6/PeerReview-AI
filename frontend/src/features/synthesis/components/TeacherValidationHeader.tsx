@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/Button';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { synthesisMessages } from '@/constants/messages/synthesis';
 import type { SynthesisStatus } from '../types/synthesis.types';
+import { CheckCircle2, Edit2, FileText, CheckSquare, Clock, User } from 'lucide-react';
 
 interface TeacherValidationHeaderProps {
   status: SynthesisStatus;
@@ -28,21 +29,21 @@ export const TeacherValidationHeader: React.FC<TeacherValidationHeaderProps> = (
     switch (status) {
       case 'APPROVED':
         return (
-          <span className="px-3 py-1 text-xs font-black bg-emerald-100 text-emerald-800 rounded-full border border-emerald-300">
-            ✓ {synthesisMessages.status.approved}
+          <span className="inline-flex items-center gap-1.5 px-3 py-1 text-xs font-black bg-emerald-100 text-emerald-800 rounded-full border border-emerald-300">
+            <CheckCircle2 className="w-3.5 h-3.5" /> {synthesisMessages.status.approved}
           </span>
         );
       case 'REVIEWING':
         return (
-          <span className="px-3 py-1 text-xs font-black bg-blue-100 text-blue-800 rounded-full border border-blue-300">
-            ✏️ {synthesisMessages.status.reviewing}
+          <span className="inline-flex items-center gap-1.5 px-3 py-1 text-xs font-black bg-blue-100 text-blue-800 rounded-full border border-blue-300">
+            <Edit2 className="w-3.5 h-3.5" /> {synthesisMessages.status.reviewing}
           </span>
         );
       case 'DRAFT':
       default:
         return (
-          <span className="px-3 py-1 text-xs font-black bg-gray-100 text-gray-700 rounded-full border border-gray-300">
-            📝 {synthesisMessages.status.draft}
+          <span className="inline-flex items-center gap-1.5 px-3 py-1 text-xs font-black bg-gray-100 text-gray-700 rounded-full border border-gray-300">
+            <FileText className="w-3.5 h-3.5" /> {synthesisMessages.status.draft}
           </span>
         );
     }
@@ -80,9 +81,11 @@ export const TeacherValidationHeader: React.FC<TeacherValidationHeaderProps> = (
               onClick={() => setIsConfirmOpen(true)}
               className={isApproved ? '' : 'bg-emerald-600 hover:bg-emerald-700 text-white font-bold'}
             >
-              {isApproved
-                ? `✓ ${synthesisMessages.validation.approveDisabledApproved}`
-                : `✅ ${synthesisMessages.validation.approveButton}`}
+              {isApproved ? (
+                <span className="flex items-center gap-1.5"><CheckCircle2 className="w-4 h-4" /> {synthesisMessages.validation.approveDisabledApproved}</span>
+              ) : (
+                <span className="flex items-center gap-1.5"><CheckSquare className="w-4 h-4" /> {synthesisMessages.validation.approveButton}</span>
+              )}
             </Button>
 
             {/* Approved Disabled Tooltip */}
@@ -97,12 +100,12 @@ export const TeacherValidationHeader: React.FC<TeacherValidationHeaderProps> = (
         {/* Audit Trail Footer Header */}
         {updatedAt && (
           <div className="text-[11px] text-gray-500 border-t border-gray-100 pt-2 flex flex-wrap justify-between items-center gap-2">
-            <span>
-              🕒 {synthesisMessages.itemCard.updatedAt} <strong>{formattedUpdatedAt}</strong>
+            <span className="flex items-center gap-1.5">
+              <Clock className="w-3.5 h-3.5" /> {synthesisMessages.itemCard.updatedAt} <strong>{formattedUpdatedAt}</strong>
             </span>
             {updatedBy && (
-              <span>
-                👤 {synthesisMessages.itemCard.updatedBy} <strong>{updatedBy}</strong>
+              <span className="flex items-center gap-1.5">
+                <User className="w-3.5 h-3.5" /> {synthesisMessages.itemCard.updatedBy} <strong>{updatedBy}</strong>
               </span>
             )}
           </div>

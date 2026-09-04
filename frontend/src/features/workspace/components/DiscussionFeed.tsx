@@ -6,6 +6,7 @@ import { workspaceMessages } from '@/constants/messages/workspace';
 import { toast } from 'sonner';
 import { useGroupDiscussions, useCreateDiscussion } from '../hooks/useWorkspace';
 import { createDiscussionSchema } from '../schemas/workspace.schema';
+import { MessageSquare, AlertTriangle } from 'lucide-react';
 
 interface DiscussionFeedProps {
   groupId: string;
@@ -64,8 +65,8 @@ export const DiscussionFeed: React.FC<DiscussionFeedProps> = ({ groupId }) => {
       {/* Header Bar */}
       <div className="p-4 border-b border-gray-200 flex items-center justify-between">
         <div>
-          <h2 className="text-base font-bold text-gray-900">
-            💬 {workspaceMessages.discussions.title}
+          <h2 className="text-base font-bold text-gray-900 flex items-center gap-2">
+            <MessageSquare className="w-5 h-5 text-gray-700" /> {workspaceMessages.discussions.title}
           </h2>
           <p className="text-xs text-gray-500 mt-0.5">{workspaceMessages.autoRefreshInfo}</p>
         </div>
@@ -117,8 +118,8 @@ export const DiscussionFeed: React.FC<DiscussionFeedProps> = ({ groupId }) => {
       {/* Send Message Input Bar */}
       <form onSubmit={handleSendMessage} className="p-3 border-t border-gray-200 bg-white space-y-2">
         {formError && (
-          <p role="alert" className="text-xs text-red-600 font-medium">
-            ⚠️ {formError}
+          <p role="alert" className="text-xs text-red-600 font-medium flex items-center gap-1.5">
+            <AlertTriangle className="w-4 h-4" /> {formError}
           </p>
         )}
 

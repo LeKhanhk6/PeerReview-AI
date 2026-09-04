@@ -29,11 +29,11 @@ export const analyticsMessages = {
   },
 
   categories: {
-    HIGH: { label: 'Đóng góp cao', emoji: '🌟' },
-    NORMAL: { label: 'Bình thường', emoji: '👍' },
-    LOW: { label: 'Đóng góp thấp', emoji: '⚠️' },
-    FREE_RIDER: { label: 'Cảnh báo Free-rider', emoji: '⚠️' },
-    INACTIVE: { label: 'Không hoạt động', emoji: '💤' },
+    HIGH: { label: 'Đóng góp cao', emoji: '' },
+    NORMAL: { label: 'Bình thường', emoji: '' },
+    LOW: { label: 'Đóng góp thấp', emoji: '' },
+    FREE_RIDER: { label: 'Cảnh báo Free-rider', emoji: '' },
+    INACTIVE: { label: 'Không hoạt động', emoji: '' },
   },
 
   groupCard: {
@@ -81,19 +81,19 @@ export const analyticsMessages = {
     noDataDescription: 'Lớp học hoặc Nhóm hiện chưa phát sinh hoạt động làm việc nhóm nào.',
     noGroupsTitle: 'Chưa có nhóm học phần',
     noGroupsDescription: 'Hãy tạo nhóm học phần cho lớp học để bắt đầu theo dõi đóng góp.',
-    noRisksTitle: 'Tất cả các nhóm đang hoạt động tốt! 🛡️',
+    noRisksTitle: 'Tất cả các nhóm đang hoạt động tốt!',
     noRisksDescription: 'Hệ thống không phát hiện rủi ro hợp tác hoặc nghi vấn free-rider nào trong lớp này.',
   },
 
   tabs: {
-    contribution: '📊 Phân Tích Đóng Góp',
-    earlyWarning: '⚠️ Cảnh Báo Sớm',
+    contribution: 'Phân Tích Đóng Góp',
+    earlyWarning: 'Cảnh Báo Sớm',
   },
 
   severities: {
-    HIGH: { label: 'Nghiêm trọng', emoji: '🔴' },
-    MEDIUM: { label: 'Cần lưu ý', emoji: '🟡' },
-    LOW: { label: 'Mức độ thấp', emoji: '🔵' },
+    HIGH: { label: 'Nghiêm trọng', emoji: '' },
+    MEDIUM: { label: 'Cần lưu ý', emoji: '' },
+    LOW: { label: 'Mức độ thấp', emoji: '' },
   },
 
   earlyWarning: {

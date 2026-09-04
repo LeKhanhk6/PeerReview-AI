@@ -2,6 +2,7 @@ import React from 'react';
 import { Button } from '@/components/ui/Button';
 import { synthesisMessages } from '@/constants/messages/synthesis';
 import type { AssignmentSynthesisResponse } from '../types/synthesis.types';
+import { Square, Hourglass, AlertTriangle, BarChart2, RefreshCw, Lightbulb } from 'lucide-react';
 
 interface SynthesisStatusCardProps {
   synthesis?: AssignmentSynthesisResponse;
@@ -29,7 +30,7 @@ export const SynthesisStatusCard: React.FC<SynthesisStatusCardProps> = ({
             onClick={onRefresh}
             className="text-xs text-gray-500 hover:text-gray-800"
           >
-            ⏹ Hủy chờ (Chạy nền)
+            <Square className="w-4 h-4 mr-1 inline" /> Hủy chờ (Chạy nền)
           </Button>
         </div>
         <div className="h-4 bg-gray-200 rounded w-2/3 animate-pulse" />
@@ -37,7 +38,7 @@ export const SynthesisStatusCard: React.FC<SynthesisStatusCardProps> = ({
           <div className="h-full bg-blue-600 animate-pulse w-3/4" />
         </div>
         <p className="text-xs text-blue-600 font-medium flex items-center justify-between">
-          <span>⏳ {synthesisMessages.status.processing}</span>
+          <span className="flex items-center gap-1.5"><Hourglass className="w-4 h-4" /> {synthesisMessages.status.processing}</span>
           <span className="text-gray-400 font-normal">Bạn có thể rời trang, hệ thống tự động hoàn tất.</span>
         </p>
       </div>
@@ -60,11 +61,11 @@ export const SynthesisStatusCard: React.FC<SynthesisStatusCardProps> = ({
     return (
       <div className="bg-amber-50 border border-amber-200 rounded-xl p-5 text-amber-900 text-sm space-y-2">
         <div className="flex items-center gap-2">
-          <span className="text-lg">⚠️</span>
+          <AlertTriangle className="w-5 h-5" />
           <h3 className="font-bold">{synthesisMessages.status.notEnoughReviews}</h3>
         </div>
         <p className="text-xs text-amber-700">
-          Hiện tại bài tập chỉ có {synthesis.totalReviews} bài phản biện. Cần tối thiểu 1 bài phản biện để AI tổng hợp thông số chính xác.
+          Hiện tại bài tập chỉ có {synthesis.totalReviews} bài phản biện. Cần tối thiểu 5 bài phản biện để AI tổng hợp thông số chính xác.
         </p>
       </div>
     );
@@ -81,7 +82,7 @@ export const SynthesisStatusCard: React.FC<SynthesisStatusCardProps> = ({
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-gray-100 pb-4">
         <div>
           <h2 className="text-lg font-bold text-gray-900 flex items-center gap-2">
-            <span>📊</span> Tổng Quan AI Review Synthesis
+            <BarChart2 className="w-5 h-5 text-gray-700" /> Tổng Quan AI Review Synthesis
           </h2>
           <p className="text-xs text-gray-500 mt-0.5">
             Phân tích từ <strong className="text-gray-900">{synthesis.reviewsUsed}</strong> / {synthesis.totalReviews} bài phản biện trong toàn bài tập
@@ -89,14 +90,15 @@ export const SynthesisStatusCard: React.FC<SynthesisStatusCardProps> = ({
         </div>
 
         <Button variant="secondary" size="sm" onClick={onRefresh} disabled={isLoading || isFetching}>
-          🔄 {isFetching ? "Đang tạo lại..." : synthesisMessages.header.refreshSynthesis}
+          <RefreshCw className={`w-4 h-4 mr-2 ${isFetching ? 'animate-spin' : ''}`} />
+          {isFetching ? "Đang tạo lại..." : synthesisMessages.header.refreshSynthesis}
         </Button>
       </div>
 
       {/* Summary Brief */}
       {synthesis.summary && (
-        <div className="bg-blue-50/50 border border-blue-100 rounded-lg p-3.5 text-sm text-blue-950 leading-relaxed font-medium">
-          💡 {synthesis.summary}
+        <div className="bg-blue-50/50 border border-blue-100 rounded-lg p-3.5 text-sm text-blue-950 leading-relaxed font-medium flex gap-2">
+          <Lightbulb className="w-5 h-5 text-blue-600 shrink-0" /> {synthesis.summary}
         </div>
       )}
 

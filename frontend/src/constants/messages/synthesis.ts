@@ -18,7 +18,7 @@ export const synthesisMessages = {
     approvedTooltip: 'Bản tổng hợp này đã được phê duyệt và khóa chỉnh sửa',
     pending: 'Đang chờ xử lý',
     processing: 'AI đang phân tích và tổng hợp nhận xét...',
-    notEnoughReviews: 'Chưa có đủ số lượng bài phản biện (tối thiểu 1 bài) để thực hiện tổng hợp tự động.',
+    notEnoughReviews: 'Chưa có đủ số lượng bài phản biện (tối thiểu 5 bài) để thực hiện tổng hợp tự động.',
     confidenceLabel: 'Độ tin cậy AI:',
     confidenceLowWarning: 'Điểm tin cậy AI dưới 60%. Khuyến nghị Giáo viên xem xét kỹ các bài phản biện gốc trước khi duyệt.',
   },

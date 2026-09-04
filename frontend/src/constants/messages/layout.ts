@@ -11,7 +11,7 @@ export const layoutMessages = {
     settings: 'Settings',
   },
   admin: {
-    badge: '⚡ ADMIN MODE',
+    badge: 'ADMIN MODE',
     actionGuard: {
       lockedTitle: 'Chức năng tạm khóa',
       lockedDesc: 'Audit log không khả dụng',

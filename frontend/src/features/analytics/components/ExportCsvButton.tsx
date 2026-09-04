@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/Button';
 import { analyticsMessages } from '@/constants/messages/analytics';
 import { getMemberCategory } from '../constants/thresholds';
 import type { GroupMemberContribution } from '../types/analytics.types';
+import { Download } from 'lucide-react';
 
 interface ExportCsvButtonProps {
   data: GroupMemberContribution[];
@@ -79,7 +80,7 @@ export const ExportCsvButton: React.FC<ExportCsvButtonProps> = ({
       disabled={disabled || !data || data.length === 0}
       aria-label={analyticsMessages.csv.exportBtn}
     >
-      📥 {analyticsMessages.csv.exportBtn}
+      <span className="flex items-center gap-1.5"><Download className="w-4 h-4" /> {analyticsMessages.csv.exportBtn}</span>
     </Button>
   );
 };

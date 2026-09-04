@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { reviewMessages } from '@/constants/messages/review';
 import { DeadlineCountdown } from '@/features/submission/components/DeadlineCountdown';
 import type { ReviewAssignmentItem } from '../types/review.types';
+import { CheckCircle2, Ban, Hourglass, Lock } from 'lucide-react';
 
 interface ReviewCardProps {
   item: ReviewAssignmentItem;
@@ -43,7 +44,7 @@ export const ReviewCard: React.FC<ReviewCardProps> = ({
     if (isCompleted) {
       return (
         <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800 border border-emerald-300">
-          <span aria-hidden="true">✓</span>
+          <CheckCircle2 className="w-3.5 h-3.5" aria-hidden="true" />
           <span>{reviewMessages.card.statusCompletedBadge}</span>
         </span>
       );
@@ -52,7 +53,7 @@ export const ReviewCard: React.FC<ReviewCardProps> = ({
     if (isPastDeadline) {
       return (
         <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-red-100 text-red-800 border border-red-300">
-          <span aria-hidden="true">⛔</span>
+          <Ban className="w-3.5 h-3.5" aria-hidden="true" />
           <span>{reviewMessages.card.statusExpiredBadge}</span>
         </span>
       );
@@ -60,7 +61,7 @@ export const ReviewCard: React.FC<ReviewCardProps> = ({
 
     return (
       <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-amber-100 text-amber-800 border border-amber-300">
-        <span aria-hidden="true">⏳</span>
+        <Hourglass className="w-3.5 h-3.5" aria-hidden="true" />
         <span>{reviewMessages.card.statusPendingBadge}</span>
       </span>
     );
@@ -76,7 +77,7 @@ export const ReviewCard: React.FC<ReviewCardProps> = ({
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-gray-100 pb-4">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-xl bg-brand-soft-bg border border-brand-primary/20 flex items-center justify-center text-brand-primary font-mono font-bold text-sm">
-            🔒
+            <Lock className="w-5 h-5 text-brand-primary" />
           </div>
           <div>
             <h3 className="text-base font-bold text-gray-900 flex items-center gap-2">

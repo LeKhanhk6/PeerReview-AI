@@ -9,6 +9,7 @@ import { SubmissionUploadForm } from '../components/SubmissionUploadForm';
 import { SubmissionVersionHistory } from '../components/SubmissionVersionHistory';
 import { SubmissionFeedbackPanel } from '../components/SubmissionFeedbackPanel';
 import { useAssignmentDetail } from '@/features/assignment/hooks/useAssignments';
+import { Upload, ClipboardList } from 'lucide-react';
 
 export const StudentSubmissionPage: React.FC = () => {
   const { assignmentId } = useParams<{ assignmentId: string }>();
@@ -69,8 +70,8 @@ export const StudentSubmissionPage: React.FC = () => {
             )}
           </div>
 
-          <h1 className="text-xl md:text-2xl font-bold text-slate-900 tracking-tight">
-            📥 {submissionMessages.title}
+          <h1 className="text-xl md:text-2xl font-bold text-slate-900 tracking-tight flex items-center gap-2">
+            <Upload className="w-6 h-6 text-slate-700" /> {submissionMessages.title}
           </h1>
           <p className="text-xs md:text-sm font-bold text-brand-primary mt-1">{assignment.title}</p>
         </div>
@@ -88,7 +89,7 @@ export const StudentSubmissionPage: React.FC = () => {
       {(assignment.description || assignment.requirements || assignment.rubric) && (
         <div className="bg-white border border-gray-200 rounded-xl p-5 shadow-sm space-y-3">
           <h2 className="text-sm font-bold text-gray-900 uppercase tracking-wider flex items-center gap-2 border-b border-gray-100 pb-2">
-            <span>📋</span>
+            <ClipboardList className="w-4 h-4 text-gray-700" />
             <span>Mô tả & Yêu cầu bài tập</span>
           </h2>
 

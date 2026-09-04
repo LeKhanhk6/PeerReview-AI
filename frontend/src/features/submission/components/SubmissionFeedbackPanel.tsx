@@ -3,6 +3,7 @@ import { SkeletonCard } from '@/components/ui/Skeleton';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { submissionMessages } from '@/constants/messages/submission';
 import { useSubmissionFeedback } from '../hooks/useSubmission';
+import { MessageSquare, User, Users, UserCircle2 } from 'lucide-react';
 
 interface SubmissionFeedbackPanelProps {
   assignmentId: string;
@@ -59,8 +60,8 @@ export const SubmissionFeedbackPanel: React.FC<SubmissionFeedbackPanelProps> = (
     <div className="bg-white border border-gray-200 rounded-xl p-5 shadow-sm space-y-5">
       <div className="flex items-center justify-between border-b border-gray-200 pb-3">
         <div>
-          <h2 className="text-base font-bold text-gray-900">
-            💬 {submissionMessages.feedback.title}
+          <h2 className="text-base font-bold text-gray-900 flex items-center gap-2">
+            <MessageSquare className="w-5 h-5 text-gray-700" /> {submissionMessages.feedback.title}
           </h2>
           <p className="text-xs text-gray-500 mt-0.5">
             Tổng hợp kết quả đánh giá từ Giáo viên và Bài chấm chéo
@@ -84,7 +85,7 @@ export const SubmissionFeedbackPanel: React.FC<SubmissionFeedbackPanelProps> = (
         <div className="bg-purple-50/60 border border-purple-200 p-4 rounded-xl space-y-1">
           <div className="flex items-center justify-between">
             <h3 className="text-xs font-bold text-purple-900 uppercase tracking-wider flex items-center gap-1.5">
-              <span>👨‍🏫</span>
+              <User className="w-4 h-4" />
               <span>{submissionMessages.feedback.teacherFeedbackTitle}</span>
             </h3>
 
@@ -105,7 +106,7 @@ export const SubmissionFeedbackPanel: React.FC<SubmissionFeedbackPanelProps> = (
       {feedback.reviews.length > 0 && (
         <div className="space-y-3">
           <h3 className="text-xs font-bold text-gray-700 uppercase tracking-wider flex items-center gap-1.5">
-            <span>👥</span>
+            <Users className="w-4 h-4" />
             <span>{submissionMessages.feedback.peerReviewsTitle}</span>
           </h3>
 
@@ -116,8 +117,8 @@ export const SubmissionFeedbackPanel: React.FC<SubmissionFeedbackPanelProps> = (
               return (
                 <div key={rev.id || index} className="bg-gray-50 border border-gray-200 p-4 rounded-xl space-y-2">
                   <div className="flex items-center justify-between text-xs">
-                    <span className="font-bold text-gray-800">
-                      🎭 {rev.reviewer_name || `Sinh viên ẩn danh #${index + 1}`}
+                    <span className="font-bold text-gray-800 flex items-center gap-1.5">
+                      <UserCircle2 className="w-4 h-4 text-gray-500" /> {rev.reviewer_name || `Sinh viên ẩn danh #${index + 1}`}
                     </span>
                     <span className="font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200 font-mono">
                       {rev.score} / 10

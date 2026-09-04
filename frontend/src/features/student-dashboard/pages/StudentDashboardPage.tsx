@@ -13,6 +13,7 @@ import { Button } from '@/components/ui/Button';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { JoinGroupModal } from '@/features/groups/components/JoinGroupModal';
+import { AlertCircle, Rocket, AlertTriangle, Lock } from 'lucide-react';
 
 // Sub-component for individual Group Workspace Task Progress
 const AssignmentGroupWorkspaceWidget: React.FC<{ groupId?: string; currentUserId: string }> = ({
@@ -181,7 +182,7 @@ export const StudentDashboardPage: React.FC = () => {
       <div className="bg-white p-4 md:p-5 rounded-xl shadow-xs border border-slate-200 flex flex-col md:flex-row md:items-center justify-between gap-3">
         <div>
           <h1 className="text-xl md:text-2xl font-bold text-slate-900 tracking-tight">
-            {studentDashboardMessages.welcomeHeader} {user?.full_name || 'Sinh viên'} 👋
+            {studentDashboardMessages.welcomeHeader} {user?.full_name || 'Sinh viên'}
           </h1>
           <p className="text-xs md:text-sm text-slate-500 mt-0.5">
             {studentDashboardMessages.subtitle}
@@ -193,7 +194,7 @@ export const StudentDashboardPage: React.FC = () => {
       {grouplessCount > 0 && (
         <div className="bg-amber-50 border border-amber-200/80 rounded-xl p-4 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div className="flex items-start gap-3">
-            <span className="text-xl">🟡</span>
+            <AlertCircle className="w-6 h-6 text-amber-500 shrink-0" />
             <div>
               <h3 className="text-xs md:text-sm font-bold text-amber-900">
                 Bạn có {grouplessCount} môn học chưa thuộc nhóm nào
@@ -330,8 +331,8 @@ export const StudentDashboardPage: React.FC = () => {
                               {assignment.group_name}
                             </span>
                           ) : (
-                            <span className="text-amber-800 font-bold bg-amber-100 px-2 py-0.5 rounded border border-amber-300 text-[11px]">
-                              🟡 Chưa có nhóm
+                            <span className="text-amber-800 font-bold bg-amber-100 px-2 py-0.5 rounded border border-amber-300 text-[11px] flex items-center gap-1">
+                              <AlertCircle className="w-3 h-3" /> Chưa có nhóm
                             </span>
                           )}
                         </p>
@@ -346,8 +347,8 @@ export const StudentDashboardPage: React.FC = () => {
                     {/* Groupless Card Callout */}
                     {!hasGroup && (
                       <div className="p-2.5 bg-amber-100/60 border border-amber-200 rounded-lg flex items-center justify-between gap-2">
-                        <span className="text-xs text-amber-900 font-medium">
-                          ⚠️ Bạn chưa thuộc nhóm nào. Cần tham gia nhóm để nộp bài.
+                        <span className="text-xs text-amber-900 font-medium flex items-center gap-1.5">
+                          <AlertTriangle className="w-4 h-4" /> Bạn chưa thuộc nhóm nào. Cần tham gia nhóm để nộp bài.
                         </span>
                         <Button
                           type="button"
@@ -355,7 +356,7 @@ export const StudentDashboardPage: React.FC = () => {
                           onClick={() => setJoinClassTarget({ classId: assignment.class_id || '', className: assignment.title })}
                           className="bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold shrink-0 px-2.5 py-1"
                         >
-                          🚀 Tham gia nhóm
+                          <Rocket className="w-3.5 h-3.5 mr-1 inline" /> Tham gia nhóm
                         </Button>
                       </div>
                     )}
@@ -427,7 +428,7 @@ export const StudentDashboardPage: React.FC = () => {
                         onClick={() => setJoinClassTarget({ classId: assignment.class_id || '', className: assignment.title })}
                         className="text-xs px-3 py-1.5 text-amber-800 border-amber-300 hover:bg-amber-50"
                       >
-                        🚀 Tham gia nhóm
+                        <Rocket className="w-3.5 h-3.5 mr-1 inline" /> Tham gia nhóm
                       </Button>
                     )}
 
@@ -457,7 +458,7 @@ export const StudentDashboardPage: React.FC = () => {
                           title="Cần tham gia nhóm trước khi nộp bài"
                           className="text-xs px-3 py-1.5 opacity-50 cursor-not-allowed"
                         >
-                          🔒 Nộp Bài (Cần Nhóm)
+                          <Lock className="w-3.5 h-3.5 mr-1 inline" /> Nộp Bài (Cần Nhóm)
                         </Button>
                       )}
                     </div>

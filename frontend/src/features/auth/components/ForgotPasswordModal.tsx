@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/Button';
 import { forgotPasswordApi } from '../api/auth.api';
 import { toast } from 'sonner';
 import { authMessages } from '@/constants/messages/auth';
+import { Key, X } from 'lucide-react';
 
 interface ForgotPasswordModalProps {
   open: boolean;
@@ -41,14 +42,16 @@ export const ForgotPasswordModal: React.FC<ForgotPasswordModalProps> = ({ open, 
       <div className="bg-white rounded-2xl border border-slate-100 shadow-2xl max-w-md w-full p-6 sm:p-8 space-y-6">
         <div className="flex items-center justify-between border-b border-slate-100 pb-3">
           <div className="flex items-center gap-2.5">
-            <span className="p-2 rounded-xl bg-brand-soft-bg text-brand-primary text-lg">🔑</span>
+            <span className="p-2 rounded-xl bg-brand-soft-bg text-brand-primary text-lg flex items-center justify-center">
+              <Key size={20} />
+            </span>
             <h2 className="text-lg font-bold text-slate-900">Quên mật khẩu</h2>
           </div>
           <button
             onClick={onClose}
-            className="text-slate-400 hover:text-slate-600 text-xl font-bold p-1 rounded-lg hover:bg-slate-100"
+            className="text-slate-400 hover:text-slate-600 p-1 rounded-lg hover:bg-slate-100 flex items-center justify-center"
           >
-            ✕
+            <X size={20} />
           </button>
         </div>
 

@@ -4,7 +4,7 @@ import { SkeletonCard } from '@/components/ui/Skeleton';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { adminMessages } from '@/constants/messages/admin';
 import { useSystemConfig, useUpdateSystemConfigMutation, useAuditLogs } from '../hooks/useAdmin';
-import { AlertTriangle, Settings, Check, Save, History, User, Clock } from 'lucide-react';
+import { AlertTriangle, Settings, Check, Save, History, User, Clock, ArrowRight } from 'lucide-react';
 
 export const AdminSettingsPage: React.FC = () => {
   const { data: configData, isLoading: isLoadingConfig } = useSystemConfig();
@@ -252,12 +252,12 @@ export const AdminSettingsPage: React.FC = () => {
                 {/* Render Diff Changes */}
                 {log.metadata && (log.metadata as any).changes && (
                   <div className="bg-gray-900 text-green-400 p-2.5 rounded font-mono text-[11px] space-y-1">
-                    <p className="text-gray-400 text-[10px]">Chi tiết thay đổi (Old ➔ New):</p>
+                    <p className="text-gray-400 text-[10px] flex items-center gap-1">Chi tiết thay đổi (Old <ArrowRight size={10} /> New):</p>
                     {((log.metadata as any).changes as any[]).map((ch: any, idx: number) => (
                       <div key={idx} className="flex items-center gap-2">
                         <span className="text-amber-300 font-bold">{ch.key}:</span>
                         <span className="text-red-400 line-through">{ch.old_value ?? 'N/A'}</span>
-                        <span className="text-white">➔</span>
+                        <ArrowRight size={12} className="text-white mx-1" />
                         <span className="text-emerald-300 font-bold">{ch.new_value}</span>
                       </div>
                     ))}
@@ -321,7 +321,7 @@ export const AdminSettingsPage: React.FC = () => {
             <div key={idx} className="flex items-center gap-2 py-0.5">
               <span className="text-amber-300 font-bold">{ch.key}:</span>
               <span className="text-red-400 line-through">{ch.oldVal}</span>
-              <span className="text-white">➔</span>
+              <ArrowRight size={12} className="text-white mx-1" />
               <span className="text-emerald-300 font-bold">{ch.newVal}</span>
             </div>
           ))}

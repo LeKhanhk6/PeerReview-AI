@@ -4,6 +4,7 @@ import { Skeleton } from '@/components/ui/Skeleton';
 import { synthesisMessages } from '@/constants/messages/synthesis';
 import { useSourceReviews } from '../hooks/useSynthesis';
 import type { SummaryItem } from '../types/synthesis.types';
+import { X, Lock } from 'lucide-react';
 
 interface SourceReviewDrawerProps {
   submissionId: string;
@@ -78,9 +79,9 @@ export const SourceReviewDrawer: React.FC<SourceReviewDrawerProps> = ({
             type="button"
             onClick={onClose}
             aria-label={synthesisMessages.drawer.closeDrawer}
-            className="text-gray-400 hover:text-gray-700 p-1.5 rounded-lg hover:bg-gray-200 transition-colors text-lg"
+            className="text-gray-400 hover:text-gray-700 p-1.5 rounded-lg hover:bg-gray-200 transition-colors"
           >
-            ✕
+            <X className="w-5 h-5" />
           </button>
         </div>
 
@@ -110,8 +111,8 @@ export const SourceReviewDrawer: React.FC<SourceReviewDrawerProps> = ({
               >
                 <div className="flex items-center justify-between text-xs border-b border-gray-100 pb-2">
                   {/* DOUBLE-BLIND SAFE: Anonymous Label Only */}
-                  <span className="font-bold text-gray-800">
-                    🔒 {synthesisMessages.drawer.anonymousReviewerLabel} #{(page - 1) * 10 + index + 1}
+                  <span className="font-bold text-gray-800 flex items-center gap-1.5">
+                    <Lock className="w-3.5 h-3.5 text-gray-500" /> {synthesisMessages.drawer.anonymousReviewerLabel} #{(page - 1) * 10 + index + 1}
                   </span>
                   <span className="font-extrabold text-blue-600">
                     {synthesisMessages.drawer.scoreLabel} {review.total_score}/100

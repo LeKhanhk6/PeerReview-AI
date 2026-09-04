@@ -8,6 +8,7 @@ import { toast } from 'sonner';
 import { useGroupTasks, useCreateTask, useUpdateTask, useDeleteTask } from '../hooks/useWorkspace';
 import { createTaskSchema } from '../schemas/workspace.schema';
 import type { TaskItem, TaskStatus, GroupRole } from '../types/workspace.types';
+import { ClipboardList, Construction, CheckCircle2, Trash2, User, ArrowLeft, ArrowRight, AlertTriangle } from 'lucide-react';
 
 interface TaskBoardProps {
   groupId: string;
@@ -16,10 +17,10 @@ interface TaskBoardProps {
   members?: Array<{ id: string; name: string }>;
 }
 
-const KANBAN_COLUMNS: Array<{ status: TaskStatus; title: string; emoji: string }> = [
-  { status: 'TODO', title: workspaceMessages.kanban.columnTodo, emoji: '📋' },
-  { status: 'IN_PROGRESS', title: workspaceMessages.kanban.columnInProgress, emoji: '🚧' },
-  { status: 'DONE', title: workspaceMessages.kanban.columnDone, emoji: '✅' },
+const KANBAN_COLUMNS: Array<{ status: TaskStatus; title: string; icon: React.ReactNode }> = [
+  { status: 'TODO', title: workspaceMessages.kanban.columnTodo, icon: <ClipboardList className="w-4 h-4" /> },
+  { status: 'IN_PROGRESS', title: workspaceMessages.kanban.columnInProgress, icon: <Construction className="w-4 h-4" /> },
+  { status: 'DONE', title: workspaceMessages.kanban.columnDone, icon: <CheckCircle2 className="w-4 h-4" /> },
 ];
 
 export const TaskBoard: React.FC<TaskBoardProps> = ({
@@ -142,7 +143,7 @@ export const TaskBoard: React.FC<TaskBoardProps> = ({
               {/* Column Header */}
               <div className="flex items-center justify-between border-b border-gray-200 pb-3">
                 <h3 className="text-sm font-bold text-gray-800 flex items-center gap-1.5">
-                  <span aria-hidden="true">{col.emoji}</span>
+                  {col.icon}
                   <span>{col.title}</span>
                 </h3>
                 <span className="text-xs font-bold text-gray-600 bg-gray-200 px-2 py-0.5 rounded-full font-mono">
@@ -174,15 +175,15 @@ export const TaskBoard: React.FC<TaskBoardProps> = ({
                               className="text-gray-400 hover:text-red-600 p-1 text-xs transition-colors"
                               aria-label={`Xóa task ${task.title}`}
                             >
-                              🗑
+                              <Trash2 className="w-4 h-4" />
                             </button>
                           )}
                         </div>
 
                         {/* Assignee Badge */}
                         <div className="flex items-center justify-between text-xs text-gray-500 pt-1 border-t border-gray-100">
-                          <span className="truncate max-w-[150px]">
-                            👤 {task.assignee_name || workspaceMessages.kanban.unassigned}
+                          <span className="truncate max-w-[150px] flex items-center gap-1.5">
+                            <User className="w-3.5 h-3.5" /> {task.assignee_name || workspaceMessages.kanban.unassigned}
                           </span>
 
                           {/* Shift Status Arrows */}
@@ -196,7 +197,7 @@ export const TaskBoard: React.FC<TaskBoardProps> = ({
                                 className="px-1.5 py-0.5 bg-gray-100 hover:bg-gray-200 rounded text-gray-700 font-bold transition-colors"
                                 aria-label={`Chuyển task ${task.title} sang lùi lại`}
                               >
-                                ⬅️
+                                <ArrowLeft className="w-4 h-4" />
                               </button>
                             )}
 
@@ -209,7 +210,7 @@ export const TaskBoard: React.FC<TaskBoardProps> = ({
                                 className="px-1.5 py-0.5 bg-blue-100 hover:bg-blue-200 text-blue-800 rounded font-bold transition-colors"
                                 aria-label={`Chuyển task ${task.title} sang tiếp theo`}
                               >
-                                ➡️
+                                <ArrowRight className="w-4 h-4" />
                               </button>
                             )}
                           </div>
@@ -233,8 +234,8 @@ export const TaskBoard: React.FC<TaskBoardProps> = ({
       >
         <form onSubmit={handleCreateTaskSubmit} className="space-y-4">
           {formError && (
-            <div role="alert" className="p-3 text-xs bg-red-50 text-red-700 border border-red-200 rounded-md">
-              ⚠️ {formError}
+            <div role="alert" className="p-3 text-xs bg-red-50 text-red-700 border border-red-200 rounded-md flex items-center gap-1.5">
+              <AlertTriangle className="w-4 h-4" /> {formError}
             </div>
           )}
 

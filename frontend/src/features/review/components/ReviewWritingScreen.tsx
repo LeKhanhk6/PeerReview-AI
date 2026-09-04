@@ -9,6 +9,7 @@ import { SubmissionViewerPanel } from './SubmissionViewerPanel';
 import { RubricScoringForm } from './RubricScoringForm';
 import { Skeleton } from '@/components/ui/Skeleton';
 import type { SubmitReviewPayload } from '../types/review.types';
+import { Edit3, CheckCircle, Ban, AlertTriangle } from 'lucide-react';
 
 export const ReviewWritingScreen: React.FC = () => {
   const { assignmentId = '', reviewAssignmentId = '' } = useParams<{
@@ -72,7 +73,7 @@ export const ReviewWritingScreen: React.FC = () => {
       <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 border-b border-slate-200 pb-4">
         <div className="space-y-1.5">
           <h1 className="text-xl md:text-2xl font-black text-slate-900 tracking-tight flex items-center gap-2">
-            <span>✍️</span>
+            <Edit3 className="w-6 h-6 text-slate-700" />
             <span>{reviewMessages.writing.pageTitle}</span>
           </h1>
           <p className="text-xs md:text-sm font-bold text-brand-primary mt-0.5">
@@ -83,13 +84,13 @@ export const ReviewWritingScreen: React.FC = () => {
         {/* Read Only Banners */}
         {isCompleted && (
           <div className="bg-emerald-50 border border-emerald-200 rounded-xl px-4 py-2 text-xs font-bold text-emerald-800 flex items-center gap-2 shadow-2xs">
-            <span>✓</span>
+            <CheckCircle className="w-4 h-4" />
             <span>{reviewMessages.writing.readOnlyBannerCompleted}</span>
           </div>
         )}
         {isPastDeadline && !isCompleted && (
           <div className="bg-red-50 border border-red-200 rounded-xl px-4 py-2 text-xs font-bold text-red-800 flex items-center gap-2 shadow-2xs">
-            <span>⛔</span>
+            <Ban className="w-4 h-4" />
             <span>{reviewMessages.writing.readOnlyBannerExpired}</span>
           </div>
         )}
@@ -109,8 +110,8 @@ export const ReviewWritingScreen: React.FC = () => {
           className="bg-red-50 border border-red-200 rounded-xl p-8 text-center space-y-4 max-w-xl mx-auto"
           role="alert"
         >
-          <div className="w-12 h-12 rounded-full bg-red-100 text-red-600 mx-auto flex items-center justify-center text-xl font-bold">
-            ⚠️
+          <div className="w-12 h-12 rounded-full bg-red-100 text-red-600 mx-auto flex items-center justify-center">
+            <AlertTriangle className="w-6 h-6" />
           </div>
           <div>
             <h3 className="text-base font-bold text-red-900">{reviewMessages.writing.errorDetailTitle}</h3>

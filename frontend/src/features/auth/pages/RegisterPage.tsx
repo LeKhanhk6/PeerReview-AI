@@ -3,7 +3,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useNavigate, Link } from 'react-router-dom';
-import { User, Mail, GraduationCap, Lock, KeyRound, Eye, EyeOff } from 'lucide-react';
+import { User, Mail, GraduationCap, Lock, KeyRound, Eye, EyeOff, Palette } from 'lucide-react';
 import { useAuthStore } from '../store/authStore';
 import { registerApi } from '../api/auth.api';
 import { toast } from 'sonner';
@@ -88,8 +88,8 @@ export const RegisterPage: React.FC = () => {
                   {authMessages.registerSubheader}
                 </p>
               </div>
-              <div className="w-7 h-7 rounded-lg bg-brand-soft-bg flex items-center justify-center text-base shadow-xs border border-brand-soft-border shrink-0 ml-2" title="PeerReview AI Mascot">
-                🎨
+              <div className="w-7 h-7 rounded-lg bg-brand-soft-bg flex items-center justify-center text-brand-primary shadow-xs border border-brand-soft-border shrink-0 ml-2" title="PeerReview AI Mascot">
+                <Palette size={16} />
               </div>
             </div>
 

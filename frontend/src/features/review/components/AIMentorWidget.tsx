@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Sparkles } from 'lucide-react';
+import { Sparkles, Lightbulb, MessageSquare } from 'lucide-react';
 import { toast } from 'sonner';
 import { reviewMessages } from '@/constants/messages/review';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
@@ -92,8 +92,8 @@ export const AIMentorWidget: React.FC<AIMentorWidgetProps> = ({
 
       {/* Minimum Characters Notice */}
       {currentCommentLength < 15 && !isLoading && !analysis && (
-        <p className="text-xs text-indigo-700 font-medium">
-          💡 {reviewMessages.aiMentor.minCharsNotice}
+        <p className="text-xs text-indigo-700 font-medium flex items-center gap-1.5">
+          <Lightbulb className="w-4 h-4" /> {reviewMessages.aiMentor.minCharsNotice}
         </p>
       )}
 
@@ -115,7 +115,7 @@ export const AIMentorWidget: React.FC<AIMentorWidgetProps> = ({
       {/* Fallback Non-Blocking Error Notice */}
       {isError && !isCircuitBreakerActive && (
         <div className="bg-gray-100 border border-gray-200 rounded-lg p-3 text-xs text-gray-700 flex items-start gap-2">
-          <span aria-hidden="true">💡</span>
+          <Lightbulb className="w-4 h-4 shrink-0" aria-hidden="true" />
           <span>{reviewMessages.aiMentor.fallbackUnavailable}</span>
         </div>
       )}
@@ -132,7 +132,7 @@ export const AIMentorWidget: React.FC<AIMentorWidgetProps> = ({
             {/* Guidance Message */}
             {analysis.guidance_message && (
               <div className="bg-white border border-indigo-100 rounded-lg p-3 text-xs text-gray-800 space-y-1">
-                <span className="font-bold text-indigo-900 block">💬 Lời khuyên hướng dẫn:</span>
+                <span className="font-bold text-indigo-900 flex items-center gap-1.5"><MessageSquare className="w-4 h-4" /> Lời khuyên hướng dẫn:</span>
                 <p className="leading-relaxed">{analysis.guidance_message}</p>
               </div>
             )}

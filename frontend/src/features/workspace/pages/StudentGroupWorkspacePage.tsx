@@ -11,6 +11,7 @@ import { GroupFileManager } from '../components/GroupFileManager';
 import { groupsApi } from '@/features/groups/api/groups.api';
 import { useGroupTasks } from '../hooks/useWorkspace';
 import { useAuthStore } from '@/features/auth/store/authStore';
+import { Crown, User, Rocket } from 'lucide-react';
 
 import { useApiQuery } from '@/hooks/useApiQuery';
 import { getStudentDashboardAssignmentsApi } from '@/features/student-dashboard/api/studentDashboardApi';
@@ -80,13 +81,13 @@ export const StudentGroupWorkspacePage: React.FC = () => {
             >
               ← Quay lại Trang chủ
             </Button>
-            <span className="text-xs font-bold text-blue-700 bg-blue-50 px-2.5 py-0.5 rounded-full border border-blue-200">
-              {isLeader ? '👑 Trưởng nhóm' : '👤 Thành viên'}
+            <span className="text-xs font-bold text-blue-700 bg-blue-50 px-2.5 py-0.5 rounded-full border border-blue-200 flex items-center gap-1.5">
+              {isLeader ? <><Crown className="w-3.5 h-3.5" /> Trưởng nhóm</> : <><User className="w-3.5 h-3.5" /> Thành viên</>}
             </span>
           </div>
 
-          <h1 className="text-xl md:text-2xl font-bold text-slate-900 tracking-tight mt-2">
-            🚀 {workspaceMessages.title} - {groupName}
+          <h1 className="text-xl md:text-2xl font-bold text-slate-900 tracking-tight mt-2 flex items-center gap-2">
+            <Rocket className="w-6 h-6 text-slate-700" /> {workspaceMessages.title} - {groupName}
           </h1>
           <p className="text-xs md:text-sm text-slate-500 mt-0.5">{workspaceMessages.subtitle}</p>
         </div>

@@ -2,6 +2,7 @@ import React from 'react';
 import { toast } from 'sonner';
 import { reviewMessages } from '@/constants/messages/review';
 import type { MaskedSubmission, AssignmentDetailInfo } from '../types/review.types';
+import { Lock, ShieldCheck, FileText, Pin, Paperclip } from 'lucide-react';
 
 interface SubmissionViewerPanelProps {
   submission: MaskedSubmission;
@@ -38,7 +39,7 @@ export const SubmissionViewerPanel: React.FC<SubmissionViewerPanelProps> = ({
       {/* Anonymous Header */}
       <div className="border-b border-gray-100 pb-4 space-y-1">
         <div className="flex items-center gap-2">
-          <span className="text-xl" aria-hidden="true">🔒</span>
+          <Lock className="w-5 h-5 text-gray-700" aria-hidden="true" />
           <h2 className="text-lg font-extrabold text-gray-900">
             {submission.title || reviewMessages.card.anonymousTitle}
           </h2>
@@ -50,14 +51,14 @@ export const SubmissionViewerPanel: React.FC<SubmissionViewerPanelProps> = ({
 
       {/* Double Blind Anonymous Security Banner */}
       <div className="bg-indigo-50 border border-indigo-100 rounded-lg p-3 text-xs text-indigo-900 flex items-start gap-2.5">
-        <span className="text-sm" aria-hidden="true">🛡️</span>
+        <ShieldCheck className="w-4 h-4 shrink-0" aria-hidden="true" />
         <span>{reviewMessages.inbox.anonymousNotice}</span>
       </div>
 
       {/* Submission Files & Preview Action */}
       <div className="space-y-3">
-        <h3 className="text-xs font-bold text-gray-500 uppercase tracking-wider">
-          📄 {reviewMessages.writing.submissionPanelTitle}
+        <h3 className="text-xs font-bold text-gray-500 uppercase tracking-wider flex items-center gap-1.5">
+          <FileText className="w-4 h-4" /> {reviewMessages.writing.submissionPanelTitle}
         </h3>
 
         {submission.fileUrl ? (
@@ -107,8 +108,8 @@ export const SubmissionViewerPanel: React.FC<SubmissionViewerPanelProps> = ({
 
       {/* Assignment Description & Reference Attachments */}
       <div className="space-y-3 border-t border-gray-100 pt-5">
-        <h3 className="text-xs font-bold text-gray-500 uppercase tracking-wider">
-          📌 {assignment.title || 'Mô tả bài tập'}
+        <h3 className="text-xs font-bold text-gray-500 uppercase tracking-wider flex items-center gap-1.5">
+          <Pin className="w-4 h-4" /> {assignment.title || 'Mô tả bài tập'}
         </h3>
         {assignment.description && (
           <p className="text-xs text-gray-700 leading-relaxed bg-gray-50 p-3.5 rounded-lg border border-gray-200 whitespace-pre-line">
@@ -131,8 +132,8 @@ export const SubmissionViewerPanel: React.FC<SubmissionViewerPanelProps> = ({
                   rel="noopener noreferrer"
                   className="flex items-center justify-between p-2.5 bg-white border border-gray-200 rounded-lg text-xs hover:border-indigo-300 hover:bg-indigo-50/50 transition-all group"
                 >
-                  <span className="font-medium text-gray-800 group-hover:text-indigo-700 truncate">
-                    📎 {att.fileName}
+                  <span className="font-medium text-gray-800 group-hover:text-indigo-700 truncate flex items-center gap-1.5">
+                    <Paperclip className="w-3.5 h-3.5" /> {att.fileName}
                   </span>
                   <span className="text-indigo-600 font-semibold text-[11px]">Tải về →</span>
                 </a>

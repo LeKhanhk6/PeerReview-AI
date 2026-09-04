@@ -1,5 +1,5 @@
 import React from 'react';
-import { Siren } from 'lucide-react';
+import { Siren, CheckCircle2, Search, Users } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { analyticsMessages } from '@/constants/messages/analytics';
 import type { GroupContributionSummary } from '../types/analytics.types';
@@ -30,16 +30,16 @@ export const GroupContributionCard: React.FC<GroupContributionCardProps> = ({
           ) : (
             <span
               role="status"
-              className="px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-100 text-emerald-800 border border-emerald-300 whitespace-nowrap"
+              className="flex items-center gap-1.5 px-3 py-1 bg-emerald-50 text-emerald-700 rounded-full text-xs font-semibold border border-emerald-200 shadow-sm whitespace-nowrap"
             >
-              <span aria-hidden="true">✓</span> {analyticsMessages.groupCard.normalStatus}
+              <CheckCircle2 className="w-3.5 h-3.5" aria-hidden="true" /> {analyticsMessages.groupCard.normalStatus}
             </span>
           )}
         </div>
 
         {group.memberCount !== undefined && (
-          <p className="text-xs text-gray-500">
-            👥 {analyticsMessages.groupCard.memberCount.replace('{count}', String(group.memberCount))}
+          <p className="flex items-center gap-1.5 text-xs text-gray-500">
+            <Users className="w-3.5 h-3.5" /> {analyticsMessages.groupCard.memberCount.replace('{count}', String(group.memberCount))}
           </p>
         )}
       </div>
@@ -52,7 +52,7 @@ export const GroupContributionCard: React.FC<GroupContributionCardProps> = ({
           onClick={() => onSelectGroup(group.groupId)}
           aria-label={`${analyticsMessages.groupCard.viewDetailBtn} ${displayTitle}`}
         >
-          🔍 {analyticsMessages.groupCard.viewDetailBtn}
+          <span className="flex items-center gap-1.5"><Search className="w-4 h-4" /> {analyticsMessages.groupCard.viewDetailBtn}</span>
         </Button>
       </div>
     </div>

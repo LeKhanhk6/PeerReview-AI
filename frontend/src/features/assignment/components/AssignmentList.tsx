@@ -6,8 +6,10 @@ import { EmptyState } from '@/components/ui/EmptyState';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { assignmentMessages } from '@/constants/messages/assignment';
 import { useAssignmentsList, useClassesList, useDeleteAssignment } from '../hooks/useAssignments';
-import { toast } from 'sonner';
 import type { Assignment } from '../types/assignment.types';
+import { CheckCircle2, AlertTriangle } from 'lucide-react';
+import { toast } from 'sonner';
+
 
 export const AssignmentList: React.FC = () => {
   const navigate = useNavigate();
@@ -126,12 +128,12 @@ export const AssignmentList: React.FC = () => {
 
                     {/* Rubric Status Badge */}
                     {hasRubric ? (
-                      <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-green-100 text-green-800 border border-green-200">
-                        ✓ {assignmentMessages.rubric.weightValid}
+                      <span className="flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-green-100 text-green-800 border border-green-200">
+                        <CheckCircle2 className="w-3.5 h-3.5" /> {assignmentMessages.rubric.weightValid}
                       </span>
                     ) : (
-                      <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-100 text-amber-800 border border-amber-300">
-                        ⚠️ {assignmentMessages.rubric.missingRubricWarningTitle}
+                      <span className="flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-100 text-amber-800 border border-amber-300">
+                        <AlertTriangle className="w-3.5 h-3.5" /> {assignmentMessages.rubric.missingRubricWarningTitle}
                       </span>
                     )}
 

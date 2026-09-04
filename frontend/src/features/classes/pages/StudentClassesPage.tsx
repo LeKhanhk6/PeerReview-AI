@@ -7,6 +7,8 @@ import { useNavigate } from 'react-router-dom';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { Pagination } from '@/components/ui/Pagination';
+import { Book, Key, CheckCircle2, AlertCircle, Rocket, ArrowRightCircle } from 'lucide-react';
+
 
 export const StudentClassesPage: React.FC = () => {
   const { data: classesData, isLoading, page, setPage } = useClasses();
@@ -34,11 +36,13 @@ export const StudentClassesPage: React.FC = () => {
       {/* Page Header */}
       <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 bg-white p-6 border border-slate-100 rounded-2xl shadow-sm shrink-0">
         <div className="space-y-1.5">
-          <h1 className="text-xl md:text-2xl font-bold text-slate-900 tracking-tight">📚 Danh sách Lớp học đã tham gia</h1>
+          <h1 className="text-xl md:text-2xl font-bold text-slate-900 tracking-tight flex items-center gap-2">
+            <Book className="w-6 h-6 text-brand-primary" /> Danh sách Lớp học đã tham gia
+          </h1>
           <p className="text-xs md:text-sm text-slate-500">Quản lý danh sách các lớp học và nhóm học tập của bạn</p>
         </div>
-        <Button onClick={() => setIsJoinOpen(true)} className="font-bold text-xs shrink-0">
-          🔑 Tham gia Lớp mới (Mã Invite)
+        <Button onClick={() => setIsJoinOpen(true)} className="font-bold text-xs shrink-0 flex items-center gap-1.5">
+          <Key className="w-4 h-4" /> Tham gia Lớp mới (Mã Invite)
         </Button>
       </div>
 
@@ -65,12 +69,12 @@ export const StudentClassesPage: React.FC = () => {
                 <div className="mt-3 flex items-center gap-2">
                   <span className="text-xs text-gray-500 font-medium">Trạng thái nhóm:</span>
                   {hasGroup ? (
-                    <span className="text-xs font-bold text-emerald-800 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200">
-                      🟢 {cls.group_name || 'Đã vào nhóm'}
+                    <span className="text-xs font-bold text-emerald-800 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200 flex items-center gap-1">
+                      <CheckCircle2 className="w-3.5 h-3.5" /> {cls.group_name || 'Đã vào nhóm'}
                     </span>
                   ) : (
-                    <span className="text-xs font-bold text-amber-800 bg-amber-100 px-2.5 py-0.5 rounded-full border border-amber-300">
-                      🟡 Chưa có nhóm
+                    <span className="text-xs font-bold text-amber-800 bg-amber-100 px-2.5 py-0.5 rounded-full border border-amber-300 flex items-center gap-1">
+                      <AlertCircle className="w-3.5 h-3.5" /> Chưa có nhóm
                     </span>
                   )}
                 </div>
@@ -84,7 +88,7 @@ export const StudentClassesPage: React.FC = () => {
                     onClick={() => navigate(`/student/groups/${cls.group_id}/workspace`)}
                     className="text-xs text-emerald-800 border-emerald-300 hover:bg-emerald-50 font-semibold"
                   >
-                    🚀 Không gian Nhóm
+                    <Rocket className="w-3.5 h-3.5 mr-1 inline" /> Không gian Nhóm
                   </Button>
                 ) : (
                   <Button
@@ -93,7 +97,7 @@ export const StudentClassesPage: React.FC = () => {
                     onClick={() => setSelectedGroupClass({ id: cls.id, name: cls.name })}
                     className="text-xs text-amber-800 border-amber-300 hover:bg-amber-50 font-semibold"
                   >
-                    🚀 Tham gia Nhóm
+                    <Rocket className="w-3.5 h-3.5 mr-1 inline" /> Tham gia Nhóm
                   </Button>
                 )}
 
@@ -102,7 +106,7 @@ export const StudentClassesPage: React.FC = () => {
                   onClick={() => navigate('/student/dashboard')}
                   className="bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold"
                 >
-                  📥 Xem Bài Tập →
+                  <span className="flex items-center gap-1.5">Xem Bài Tập <ArrowRightCircle className="w-4 h-4" /></span>
                 </Button>
               </div>
             </div>

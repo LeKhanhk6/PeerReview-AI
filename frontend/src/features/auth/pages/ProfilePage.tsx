@@ -4,6 +4,8 @@ import { useAuthStore } from '../store/authStore';
 import { updateProfileApi, changePasswordApi } from '../api/auth.api';
 import { Button } from '@/components/ui/Button';
 import { toast } from 'sonner';
+import { User, Lock, AlertTriangle, Lightbulb } from 'lucide-react';
+
 
 export const ProfilePage: React.FC = () => {
   const navigate = useNavigate();
@@ -155,7 +157,7 @@ export const ProfilePage: React.FC = () => {
         {/* Khối 1: Thông tin cá nhân */}
         <div className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm space-y-5">
           <h2 className="text-base font-bold text-slate-900 flex items-center gap-2 border-b border-slate-100 pb-3">
-            <span>👤</span> Thông tin cá nhân
+            <User className="w-5 h-5 text-brand-primary" /> Thông tin cá nhân
           </h2>
 
           {profileError && (
@@ -240,12 +242,12 @@ export const ProfilePage: React.FC = () => {
         {/* Khối 2: Đổi mật khẩu */}
         <div className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm space-y-5">
           <h2 className="text-base font-bold text-slate-900 flex items-center gap-2 border-b border-slate-100 pb-3">
-            <span>🔒</span> Đổi mật khẩu & Bảo mật
+            <Lock className="w-5 h-5 text-brand-primary" /> Đổi mật khẩu & Bảo mật
           </h2>
 
           {passwordError && (
-            <div className="p-3 rounded-xl bg-rose-50 border border-rose-200 text-xs text-rose-700 font-medium">
-              ⚠️ {passwordError}
+            <div className="p-3 rounded-xl bg-rose-50 border border-rose-200 text-xs text-rose-700 font-medium flex items-center gap-1.5">
+              <AlertTriangle className="w-4 h-4 shrink-0" /> {passwordError}
             </div>
           )}
 
@@ -295,8 +297,8 @@ export const ProfilePage: React.FC = () => {
               />
             </div>
 
-            <p className="text-[11px] text-slate-500 leading-relaxed bg-amber-50/60 border border-amber-200 p-2.5 rounded-xl">
-              💡 <strong>Lưu ý:</strong> Sau khi đổi mật khẩu thành công, bạn sẽ được tự động đăng xuất để đăng nhập lại với mật khẩu mới.
+            <p className="text-[11px] text-slate-500 leading-relaxed bg-amber-50/60 border border-amber-200 p-2.5 rounded-xl flex items-start gap-1.5">
+              <Lightbulb className="w-4 h-4 text-amber-500 shrink-0" /> <span><strong>Lưu ý:</strong> Sau khi đổi mật khẩu thành công, bạn sẽ được tự động đăng xuất để đăng nhập lại với mật khẩu mới.</span>
             </p>
 
             <Button

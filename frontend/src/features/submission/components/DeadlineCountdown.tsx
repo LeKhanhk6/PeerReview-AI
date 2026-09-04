@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { submissionMessages } from '@/constants/messages/submission';
+import { Clock, AlertCircle, Hourglass, CheckCircle2, AlertTriangle } from 'lucide-react';
 
 interface DeadlineCountdownProps {
   deadline: string;
@@ -75,7 +76,7 @@ export const DeadlineCountdown: React.FC<DeadlineCountdownProps> = ({
     if (urgencyStatus === 'EXPIRED') {
       return (
         <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold bg-red-100 text-red-800 border border-red-300">
-          <span aria-hidden="true">🔴</span>
+          <AlertCircle className="w-3.5 h-3.5" aria-hidden="true" />
           <span>{submissionMessages.countdown.statusExpired}</span>
         </span>
       );
@@ -83,14 +84,14 @@ export const DeadlineCountdown: React.FC<DeadlineCountdownProps> = ({
     if (urgencyStatus === 'URGENT') {
       return (
         <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold bg-amber-100 text-amber-800 border border-amber-300 animate-pulse">
-          <span aria-hidden="true">⏳</span>
+          <Hourglass className="w-3.5 h-3.5" aria-hidden="true" />
           <span>{submissionMessages.countdown.statusUrgent}</span>
         </span>
       );
     }
     return (
       <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800 border border-emerald-300">
-        <span aria-hidden="true">🟢</span>
+        <CheckCircle2 className="w-3.5 h-3.5" aria-hidden="true" />
         <span>{submissionMessages.countdown.statusOpen}</span>
       </span>
     );
@@ -100,8 +101,8 @@ export const DeadlineCountdown: React.FC<DeadlineCountdownProps> = ({
     <div className="bg-white border border-gray-200 rounded-xl p-5 shadow-sm space-y-4">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-gray-200 pb-3">
         <div>
-          <span className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
-            ⏰ {submissionMessages.countdown.title}
+          <span className="flex items-center gap-1 text-xs font-semibold text-gray-500 uppercase tracking-wider">
+            <Clock className="w-4 h-4" /> {submissionMessages.countdown.title}
           </span>
           <p className="text-sm font-bold text-gray-900 mt-0.5">{formattedDeadlineStr}</p>
         </div>
@@ -153,7 +154,7 @@ export const DeadlineCountdown: React.FC<DeadlineCountdownProps> = ({
 
       {urgencyStatus === 'EXPIRED' && (
         <div role="alert" className="p-3 bg-red-50 border border-red-200 rounded-lg text-xs font-semibold text-red-800 flex items-center gap-2">
-          <span aria-hidden="true">⚠️</span>
+          <AlertTriangle className="w-4 h-4" aria-hidden="true" />
           <span>{submissionMessages.countdown.lateWarning}</span>
         </div>
       )}

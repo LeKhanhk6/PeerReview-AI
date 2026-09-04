@@ -99,9 +99,16 @@ export const workspaceApi = {
 
   createGroupFile: async (
     groupId: string,
-    data: { file_name: string; file_url: string }
+    formData: FormData,
+    config?: { onUploadProgress?: (progressEvent: any) => void }
   ): Promise<GroupFileItem> => {
-    const res: any = await api.post(`/workspace/groups/${groupId}/files`, data);
+    // We delete Content-Type so Axios/browser automatically sets the boundary for FormData
+    const res: any = await api.post(`/workspace/groups/${groupId}/files`, formData, {
+      ...config,
+      headers: {
+        'Content-Type': undefined,
+      },
+    });
     return res.data || res;
   },
 };

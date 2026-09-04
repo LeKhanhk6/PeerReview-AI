@@ -361,10 +361,11 @@ export const createDiscussion = async (groupId, userId, message) => {
 export const getFiles = async (groupId) => {
     const validGroupId = validateId(groupId, 'group ID');
     const result = await executeQuery(`
-        SELECT id, group_id, uploaded_by, file_name, file_url, created_at
-        FROM group_files
-        WHERE group_id = $1
-        ORDER BY created_at DESC
+        SELECT gf.id, gf.group_id, gf.uploaded_by, gf.file_name, gf.file_url, gf.created_at, u.full_name as uploader_name
+        FROM group_files gf
+        LEFT JOIN users u ON gf.uploaded_by = u.id
+        WHERE gf.group_id = $1
+        ORDER BY gf.created_at DESC
     `, [validGroupId]);
     return result.rows;
 };
@@ -390,4 +391,15 @@ export const createFile = async (groupId, userId, fileName, fileUrl) => {
     });
     
     return file;
+};
+
+export const getFileById = async (groupId, fileId) => {
+    const validGroupId = validateId(groupId, 'group ID');
+    const validFileId = validateId(fileId, 'file ID');
+    const result = await executeQuery(`
+        SELECT id, group_id, uploaded_by, file_name, file_url, created_at
+        FROM group_files
+        WHERE group_id = $1 AND id = $2
+    `, [validGroupId, validFileId]);
+    return result.rows[0] || null;
 };

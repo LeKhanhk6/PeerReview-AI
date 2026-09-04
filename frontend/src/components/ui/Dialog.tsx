@@ -9,8 +9,8 @@ interface DialogProps {
   children: React.ReactNode;
   closeOnEscape?: boolean;
   closeOnBackdrop?: boolean;
-  title?: string;
-  description?: string;
+  title?: React.ReactNode;
+  description?: React.ReactNode;
   'aria-label'?: string;
   'aria-labelledby'?: string;
   className?: string;
@@ -142,7 +142,7 @@ export const Dialog: React.FC<DialogProps> = ({
         ref={dialogRef}
         role="dialog"
         aria-modal="true"
-        aria-label={ariaLabel || title}
+        aria-label={ariaLabel || (typeof title === 'string' ? title : undefined)}
         aria-labelledby={ariaLabelledBy}
         tabIndex={-1}
         className={cn(

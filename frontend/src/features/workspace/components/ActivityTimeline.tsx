@@ -3,18 +3,19 @@ import { SkeletonCard } from '@/components/ui/Skeleton';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { workspaceMessages } from '@/constants/messages/workspace';
 import { useGroupActivities } from '../hooks/useWorkspace';
+import { Plus, RefreshCw, Trash2, MessageSquare, Folder, Zap, History } from 'lucide-react';
 
 interface ActivityTimelineProps {
   groupId: string;
 }
 
-const ACTION_ICONS: Record<string, { emoji: string; badgeColor: string }> = {
-  TASK_CREATE: { emoji: '➕', badgeColor: 'bg-blue-100 text-blue-800' },
-  TASK_UPDATE: { emoji: '🔄', badgeColor: 'bg-amber-100 text-amber-800' },
-  TASK_DELETE: { emoji: '🗑', badgeColor: 'bg-red-100 text-red-800' },
-  COMMENT_ADD: { emoji: '💬', badgeColor: 'bg-purple-100 text-purple-800' },
-  SUBMISSION_UPLOAD: { emoji: '📁', badgeColor: 'bg-emerald-100 text-emerald-800' },
-  DEFAULT: { emoji: '⚡', badgeColor: 'bg-gray-100 text-gray-800' },
+const ACTION_ICONS: Record<string, { icon: React.ReactNode; badgeColor: string }> = {
+  TASK_CREATE: { icon: <Plus className="w-4 h-4" />, badgeColor: 'bg-blue-100 text-blue-800' },
+  TASK_UPDATE: { icon: <RefreshCw className="w-4 h-4" />, badgeColor: 'bg-amber-100 text-amber-800' },
+  TASK_DELETE: { icon: <Trash2 className="w-4 h-4" />, badgeColor: 'bg-red-100 text-red-800' },
+  COMMENT_ADD: { icon: <MessageSquare className="w-4 h-4" />, badgeColor: 'bg-purple-100 text-purple-800' },
+  SUBMISSION_UPLOAD: { icon: <Folder className="w-4 h-4" />, badgeColor: 'bg-emerald-100 text-emerald-800' },
+  DEFAULT: { icon: <Zap className="w-4 h-4" />, badgeColor: 'bg-gray-100 text-gray-800' },
 };
 
 export const ActivityTimeline: React.FC<ActivityTimelineProps> = ({ groupId }) => {
@@ -46,8 +47,8 @@ export const ActivityTimeline: React.FC<ActivityTimelineProps> = ({ groupId }) =
     <div className="bg-white border border-gray-200 rounded-xl p-5 shadow-sm space-y-4 flex flex-col flex-1 min-h-0">
       <div className="flex items-center justify-between border-b border-gray-200 pb-3 shrink-0">
         <div>
-          <h2 className="text-base font-bold text-gray-900">
-            📜 {workspaceMessages.timeline.title}
+          <h2 className="text-base font-bold text-gray-900 flex items-center gap-2">
+            <History className="w-5 h-5 text-gray-700" /> {workspaceMessages.timeline.title}
           </h2>
           <p className="text-xs text-gray-500 mt-0.5">{workspaceMessages.autoRefreshInfo}</p>
         </div>
@@ -82,7 +83,7 @@ export const ActivityTimeline: React.FC<ActivityTimelineProps> = ({ groupId }) =
                   <div
                     className={`absolute -left-[15px] top-0.5 w-7 h-7 rounded-full border-2 border-white shadow-sm flex items-center justify-center text-xs ${iconConfig.badgeColor}`}
                   >
-                    <span aria-hidden="true">{iconConfig.emoji}</span>
+                    {iconConfig.icon}
                   </div>
 
                   {/* Timeline Item Content */}

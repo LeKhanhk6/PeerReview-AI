@@ -87,3 +87,87 @@ export const uploadAssignmentAttachment = async (fileBuffer, originalName, mimeT
         throw new AppError('Không thể xử lý upload file đính kèm', 500);
     }
 };
+
+const slugify = (text) => {
+    return text.toString().toLowerCase()
+        .replace(/\s+/g, '-')           // Replace spaces with -
+        .replace(/[^\w\-]+/g, '')       // Remove all non-word chars
+        .replace(/\-\-+/g, '-')         // Replace multiple - with single -
+        .replace(/^-+/, '')             // Trim - from start of text
+        .replace(/-+$/, '');            // Trim - from end of text
+};
+
+/**
+ * Upload a file buffer to Supabase Storage for workspace groups
+ * @param {Buffer} fileBuffer - The file buffer from multer
+ * @param {string} originalName - Original filename
+ * @param {string} mimeType - File mime type
+ * @param {string} groupId - The group ID for organizing files
+ * @returns {Promise<string>} - The internal path of the uploaded file
+ */
+export const uploadWorkspaceFile = async (fileBuffer, originalName, mimeType, groupId) => {
+    if (!supabase) {
+        throw new AppError('Storage configuration is missing in .env', 500);
+    }
+
+    const fileExt = originalName.split('.').pop() || '';
+    const baseName = originalName.slice(0, -(fileExt.length + 1));
+    const safeName = slugify(baseName) || 'file';
+    
+    // Path: groups/{groupId}/{timestamp}_{safeFilename}.{ext}
+    const uniqueFileName = `groups/${groupId}/${Date.now()}_${safeName}.${fileExt}`;
+
+    try {
+        const { data, error } = await supabase.storage
+            .from('workspace')
+            .upload(uniqueFileName, fileBuffer, {
+                contentType: mimeType,
+                upsert: false
+            });
+
+        if (error) {
+            logger.error('Supabase workspace storage upload error:', error);
+            throw new AppError('Lỗi khi lưu file lên Cloud Storage', 500);
+        }
+
+        return uniqueFileName; // We store the internal path, not public URL
+    } catch (error) {
+        logger.error('Workspace storage upload exception:', error);
+        if (error instanceof AppError) throw error;
+        throw new AppError('Không thể xử lý upload file', 500);
+    }
+};
+
+/**
+ * Get a signed URL for a workspace file
+ * @param {string} filePath - The internal path of the file
+ * @param {string} originalName - Optional original filename for download
+ * @returns {Promise<string>} - The signed URL
+ */
+export const getWorkspaceFileSignedUrl = async (filePath, originalName = '') => {
+    if (!supabase) {
+        throw new AppError('Storage configuration is missing in .env', 500);
+    }
+
+    try {
+        const options = { expiresIn: 3600 }; // 1 hour
+        if (originalName) {
+            options.download = originalName;
+        }
+
+        const { data, error } = await supabase.storage
+            .from('workspace')
+            .createSignedUrl(filePath, 3600, options);
+
+        if (error) {
+            logger.error('Supabase get signed URL error:', error);
+            throw new AppError('Lỗi khi tạo link tải file', 500);
+        }
+
+        return data.signedUrl;
+    } catch (error) {
+        logger.error('Get signed URL exception:', error);
+        if (error instanceof AppError) throw error;
+        throw new AppError('Không thể lấy link tải file', 500);
+    }
+};

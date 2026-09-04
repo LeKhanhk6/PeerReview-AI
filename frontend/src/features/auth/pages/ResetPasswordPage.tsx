@@ -3,7 +3,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { Lock, Eye, EyeOff } from 'lucide-react';
+import { Lock, Eye, EyeOff, AlertTriangle } from 'lucide-react';
 import { resetPasswordApi } from '../api/auth.api';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/Button';
@@ -81,7 +81,7 @@ export const ResetPasswordPage: React.FC = () => {
 
             {!token && (
               <div role="alert" className="p-2.5 bg-badge-danger-bg border border-badge-danger-border rounded-xl text-xs font-semibold text-badge-danger-text flex items-start gap-2 shadow-xs">
-                <span className="text-base shrink-0">⚠️</span>
+                <AlertTriangle className="w-5 h-5 shrink-0" />
                 <span>Token không hợp lệ. Vui lòng kiểm tra lại liên kết trong email của bạn.</span>
               </div>
             )}

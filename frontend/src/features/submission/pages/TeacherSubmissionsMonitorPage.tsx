@@ -7,6 +7,7 @@ import { EmptyState } from '@/components/ui/EmptyState';
 import { calculateDaysLeftStatus } from '@/utils/date.utils';
 import { toast } from 'sonner';
 import { useGenerateReviews } from '@/features/review/hooks/useGenerateReviews';
+import { Download, Hourglass, Dices, Bot, CheckCircle2, AlertTriangle, FileDown } from 'lucide-react';
 
 export const TeacherSubmissionsMonitorPage: React.FC = () => {
   const { assignmentId = '' } = useParams<{ assignmentId: string }>();
@@ -128,7 +129,7 @@ export const TeacherSubmissionsMonitorPage: React.FC = () => {
             disabled={!groups.length}
             className="gap-2"
           >
-            📥 Xuất CSV danh sách
+            <Download className="w-4 h-4 mr-1" /> Xuất CSV danh sách
           </Button>
 
           <Button
@@ -142,12 +143,16 @@ export const TeacherSubmissionsMonitorPage: React.FC = () => {
             disabled={!groups.length || generateReviews.isPending}
             className="gap-2 bg-indigo-600 hover:bg-indigo-700"
           >
-            {generateReviews.isPending ? '⏳ Đang phân công...' : '🎲 Phân công chấm chéo'}
+            {generateReviews.isPending ? (
+              <span className="flex items-center gap-2"><Hourglass className="w-4 h-4" /> Đang phân công...</span>
+            ) : (
+              <span className="flex items-center gap-2"><Dices className="w-4 h-4" /> Phân công chấm chéo</span>
+            )}
           </Button>
 
           <Link to={`/teacher/assignments/${assignment.id}/synthesis`}>
-            <Button variant="outline" size="sm" className="border-indigo-200 text-indigo-700 hover:bg-indigo-50">
-              🤖 AI Synthesis →
+            <Button variant="outline" size="sm" className="border-indigo-200 text-indigo-700 hover:bg-indigo-50 gap-2">
+              <Bot className="w-4 h-4" /> AI Synthesis →
             </Button>
           </Link>
         </div>
@@ -251,16 +256,16 @@ export const TeacherSubmissionsMonitorPage: React.FC = () => {
 
                       <td className="py-3.5 px-4">
                         {group.status === 'SUBMITTED' ? (
-                          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
-                            ✓ Đã nộp đúng hạn
+                          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                            <CheckCircle2 className="w-3.5 h-3.5" /> Đã nộp đúng hạn
                           </span>
                         ) : isSubmittedLate ? (
-                          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-rose-50 text-rose-700 border border-rose-200">
-                            ⚠️ Nộp trễ hạn
+                          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-rose-50 text-rose-700 border border-rose-200">
+                            <AlertTriangle className="w-3.5 h-3.5" /> Nộp trễ hạn
                           </span>
                         ) : (
-                          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-slate-100 text-slate-600 border border-slate-200">
-                            ⏳ Chưa nộp
+                          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-slate-100 text-slate-600 border border-slate-200">
+                            <Hourglass className="w-3.5 h-3.5" /> Chưa nộp
                           </span>
                         )}
                       </td>
@@ -301,8 +306,8 @@ export const TeacherSubmissionsMonitorPage: React.FC = () => {
                               }
                             }}
                           >
-                            <Button variant="outline" size="sm" className="text-xs">
-                              📥 Xem file bài nộp
+                            <Button variant="outline" size="sm" className="text-xs flex items-center gap-1.5">
+                              <FileDown className="w-3.5 h-3.5" /> Xem file bài nộp
                             </Button>
                           </a>
                         ) : (

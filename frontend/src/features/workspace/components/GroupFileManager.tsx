@@ -1,59 +1,54 @@
 import React, { useState } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import { SkeletonCard } from '@/components/ui/Skeleton';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { workspaceMessages } from '@/constants/messages/workspace';
 import { toast } from 'sonner';
-import { useGroupFiles, useCreateGroupFile } from '../hooks/useWorkspace';
+import { useGroupFiles, workspaceKeys } from '../hooks/useWorkspace';
+import { workspaceApi } from '../api/workspace.api';
+import { Folder, FileText, User, Download } from 'lucide-react';
 
 interface GroupFileManagerProps {
   groupId: string;
 }
 
 export const GroupFileManager: React.FC<GroupFileManagerProps> = ({ groupId }) => {
+  const queryClient = useQueryClient();
   const { data: rawFiles, isLoading, isError, refetch } = useGroupFiles(groupId);
   const files: any[] = Array.isArray(rawFiles) ? rawFiles : (rawFiles as any)?.data || [];
-  const createFile = useCreateGroupFile(groupId);
 
   const [isUploading, setIsUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
 
-  // Simulated upload (Pattern 02.3 AttachmentManager)
-  // TODO: Connect with multipart FormData backend storage endpoint in future phase
-  const handleSimulatedFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = e.target.files?.[0];
     if (!selectedFile) return;
 
     setIsUploading(true);
-    setUploadProgress(20);
+    setUploadProgress(0);
 
-    const interval = setInterval(() => {
-      setUploadProgress((prev) => {
-        if (prev >= 90) {
-          clearInterval(interval);
-          return 90;
-        }
-        return prev + 35;
+    const formData = new FormData();
+    formData.append('file', selectedFile);
+
+    try {
+      await workspaceApi.createGroupFile(groupId, formData, {
+        onUploadProgress: (progressEvent) => {
+          if (progressEvent.total) {
+            const percentCompleted = Math.round((progressEvent.loaded * 100) / progressEvent.total);
+            setUploadProgress(percentCompleted);
+          }
+        },
       });
-    }, 200);
-
-    setTimeout(async () => {
-      clearInterval(interval);
-      setUploadProgress(100);
-
-      try {
-        await createFile.mutateAsync({
-          file_name: selectedFile.name,
-          file_url: URL.createObjectURL(selectedFile),
-        });
-        toast.success(workspaceMessages.files.uploadSuccess);
-      } catch (err: any) {
-        toast.error(err.message || 'Không thể tải file lên.');
-      } finally {
-        setIsUploading(false);
-        setUploadProgress(0);
-        e.target.value = '';
-      }
-    }, 1000);
+      toast.success(workspaceMessages.files.uploadSuccess);
+      queryClient.invalidateQueries({ queryKey: workspaceKeys.files(groupId) });
+      queryClient.invalidateQueries({ queryKey: workspaceKeys.activities(groupId) });
+    } catch (err: any) {
+      toast.error(err?.response?.data?.error?.message || err?.message || 'Không thể tải file lên.');
+    } finally {
+      setIsUploading(false);
+      setUploadProgress(0);
+      e.target.value = '';
+    }
   };
 
   if (isLoading) {
@@ -82,8 +77,8 @@ export const GroupFileManager: React.FC<GroupFileManagerProps> = ({ groupId }) =
       {/* Header & Upload Action */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-gray-200 pb-4 shrink-0">
         <div>
-          <h2 className="text-base font-bold text-gray-900">
-            📁 {workspaceMessages.files.title}
+          <h2 className="text-base font-bold text-gray-900 flex items-center gap-2">
+            <Folder className="w-5 h-5 text-gray-700" /> {workspaceMessages.files.title}
           </h2>
           <p className="text-xs text-gray-500 mt-0.5">Tải lên và chia sẻ tài liệu nhóm học phần</p>
         </div>
@@ -93,7 +88,7 @@ export const GroupFileManager: React.FC<GroupFileManagerProps> = ({ groupId }) =
             <span>{workspaceMessages.files.uploadBtn}</span>
             <input
               type="file"
-              onChange={handleSimulatedFileUpload}
+              onChange={handleFileUpload}
               disabled={isUploading}
               className="hidden"
             />
@@ -101,7 +96,7 @@ export const GroupFileManager: React.FC<GroupFileManagerProps> = ({ groupId }) =
         </div>
       </div>
 
-      {/* Simulated Upload Progress Bar */}
+      {/* Upload Progress Bar */}
       {isUploading && (
         <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg space-y-2">
           <div className="flex justify-between text-xs font-semibold text-blue-900">
@@ -145,26 +140,29 @@ export const GroupFileManager: React.FC<GroupFileManagerProps> = ({ groupId }) =
             <tbody className="divide-y divide-gray-100 text-sm">
               {files.map((file) => {
                 const dateStr = new Date(file.created_at).toLocaleDateString('vi-VN');
+                const downloadUrl = `${import.meta.env.VITE_API_URL || 'http://localhost:5000/api'}/workspace/groups/${groupId}/files/${file.id}/download`;
 
                 return (
                   <tr key={file.id} className="hover:bg-gray-50/80 transition-colors">
                     <td className="p-3 font-semibold text-gray-900 flex items-center gap-2">
-                      <span aria-hidden="true">📄</span>
+                      <FileText className="w-4 h-4 text-gray-500" aria-hidden="true" />
                       <span className="truncate max-w-xs">{file.file_name}</span>
                     </td>
-                    <td className="p-3 text-xs text-gray-600">
-                      👤 {file.uploader_name || 'Thành viên'}
+                    <td className="p-3">
+                      <span className="flex items-center gap-1.5">
+                        <User className="w-3.5 h-3.5 text-gray-500" /> 
+                        {file.uploader_name ? `${file.uploader_name} (Thành viên)` : 'Thành viên'}
+                      </span>
                     </td>
                     <td className="p-3 text-xs text-gray-500 font-mono">{dateStr}</td>
                     <td className="p-3 text-right">
                       <a
-                        href={file.file_url}
-                        download={file.file_name}
+                        href={downloadUrl}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="inline-flex items-center gap-1 text-xs font-bold text-blue-600 hover:text-blue-800 bg-blue-50 px-2.5 py-1 rounded border border-blue-200 transition-colors"
                       >
-                        📥 {workspaceMessages.files.downloadBtn}
+                        <Download className="w-3.5 h-3.5 mr-1" /> {workspaceMessages.files.downloadBtn}
                       </a>
                     </td>
                   </tr>

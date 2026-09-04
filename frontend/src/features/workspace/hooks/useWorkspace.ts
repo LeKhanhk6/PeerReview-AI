@@ -124,14 +124,3 @@ export const useGroupFiles = (groupId: string) => {
     enabled: Boolean(groupId),
   });
 };
-
-export const useCreateGroupFile = (groupId: string) => {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (data: { file_name: string; file_url: string }) => workspaceApi.createGroupFile(groupId, data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: workspaceKeys.files(groupId) });
-      queryClient.invalidateQueries({ queryKey: workspaceKeys.activities(groupId) });
-    },
-  });
-};

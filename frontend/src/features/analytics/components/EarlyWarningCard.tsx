@@ -2,6 +2,8 @@ import React from 'react';
 import { Button } from '@/components/ui/Button';
 import { analyticsMessages } from '@/constants/messages/analytics';
 import type { CollaborationRiskItem, RiskStatus } from '../types/analytics.types';
+import { Users, Tag, User, CheckCircle2, XCircle, Search } from 'lucide-react';
+
 
 interface EarlyWarningCardProps {
   risk: CollaborationRiskItem;
@@ -50,19 +52,19 @@ export const EarlyWarningCard: React.FC<EarlyWarningCardProps> = ({
               <span>{severityConfig.label}</span>
             </span>
 
-            <span className="text-xs font-bold text-gray-700 bg-white px-2 py-0.5 rounded border border-gray-200">
-              👥 {groupDisplay}
+            <span className="text-xs font-bold text-gray-700 bg-white px-2 py-0.5 rounded border border-gray-200 flex items-center gap-1">
+              <Users className="w-3.5 h-3.5" /> {groupDisplay}
             </span>
 
             {risk.riskType && (
-              <span className="text-xs font-semibold text-purple-800 bg-purple-50 px-2 py-0.5 rounded border border-purple-200">
-                🏷️ {risk.riskType}
+              <span className="text-xs font-semibold text-purple-800 bg-purple-50 px-2 py-0.5 rounded border border-purple-200 flex items-center gap-1">
+                <Tag className="w-3.5 h-3.5" /> {risk.riskType}
               </span>
             )}
 
             {risk.userName && (
-              <span className="text-xs font-semibold text-gray-700 bg-white px-2 py-0.5 rounded border border-gray-200">
-                👤 {risk.userName}
+              <span className="text-xs font-semibold text-gray-700 bg-white px-2 py-0.5 rounded border border-gray-200 flex items-center gap-1">
+                <User className="w-3.5 h-3.5" /> {risk.userName}
               </span>
             )}
           </div>
@@ -70,13 +72,13 @@ export const EarlyWarningCard: React.FC<EarlyWarningCardProps> = ({
 
         {/* Status Tag */}
         {currentStatus === 'ACKNOWLEDGED' && (
-          <span role="status" className="text-xs font-semibold text-emerald-700 bg-emerald-100 px-2.5 py-0.5 rounded-full border border-emerald-300">
-            ✓ {analyticsMessages.earlyWarning.acknowledgedStatus}
+          <span role="status" className="text-xs font-semibold text-emerald-700 bg-emerald-100 px-2.5 py-0.5 rounded-full border border-emerald-300 flex items-center gap-1">
+            <CheckCircle2 className="w-3.5 h-3.5" /> {analyticsMessages.earlyWarning.acknowledgedStatus}
           </span>
         )}
         {currentStatus === 'DISMISSED' && (
-          <span role="status" className="text-xs font-semibold text-gray-600 bg-gray-200 px-2.5 py-0.5 rounded-full border border-gray-300">
-            ✕ {analyticsMessages.earlyWarning.dismissedStatus}
+          <span role="status" className="text-xs font-semibold text-gray-600 bg-gray-200 px-2.5 py-0.5 rounded-full border border-gray-300 flex items-center gap-1">
+            <XCircle className="w-3.5 h-3.5" /> {analyticsMessages.earlyWarning.dismissedStatus}
           </span>
         )}
       </div>
@@ -97,7 +99,7 @@ export const EarlyWarningCard: React.FC<EarlyWarningCardProps> = ({
               className="bg-white hover:bg-gray-50 text-xs"
               aria-label={`${analyticsMessages.earlyWarning.actionViewGroup} ${groupDisplay}`}
             >
-              🔍 {analyticsMessages.earlyWarning.actionViewGroup}
+              <span className="flex items-center gap-1.5"><Search className="w-4 h-4" /> {analyticsMessages.earlyWarning.actionViewGroup}</span>
             </Button>
           )}
         </div>
@@ -112,7 +114,7 @@ export const EarlyWarningCard: React.FC<EarlyWarningCardProps> = ({
               className="bg-white hover:bg-emerald-50 hover:text-emerald-800 text-xs"
               aria-label={`Tiếp nhận cảnh báo ${groupDisplay}`}
             >
-              ✓ {analyticsMessages.earlyWarning.actionAcknowledge}
+              <span className="flex items-center gap-1.5"><CheckCircle2 className="w-4 h-4" /> {analyticsMessages.earlyWarning.actionAcknowledge}</span>
             </Button>
           )}
 
@@ -125,7 +127,7 @@ export const EarlyWarningCard: React.FC<EarlyWarningCardProps> = ({
               className="text-gray-500 hover:text-red-700 text-xs"
               aria-label={`Bỏ qua cảnh báo ${groupDisplay}`}
             >
-              ✕ {analyticsMessages.earlyWarning.actionDismiss}
+              <span className="flex items-center gap-1.5"><XCircle className="w-4 h-4" /> {analyticsMessages.earlyWarning.actionDismiss}</span>
             </Button>
           )}
         </div>

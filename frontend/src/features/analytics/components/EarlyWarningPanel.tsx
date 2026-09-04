@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import { SkeletonCard } from '@/components/ui/Skeleton';
+import { Lightbulb, AlertTriangle } from 'lucide-react';
+
 import { EmptyState } from '@/components/ui/EmptyState';
 import { analyticsMessages } from '@/constants/messages/analytics';
 import { toast } from 'sonner';
@@ -44,8 +46,8 @@ export const EarlyWarningPanel: React.FC<EarlyWarningPanelProps> = ({ classId, o
 
   if (!classId) {
     return (
-      <div className="bg-amber-50 border border-amber-200 rounded-xl p-6 text-center text-sm text-amber-800 font-medium">
-        💡 Vui lòng chọn một Lớp học cụ thể để xem danh sách cảnh báo sớm rủi ro.
+      <div className="bg-amber-50 border border-amber-200 rounded-xl p-6 text-center text-amber-800 text-sm font-medium flex items-center justify-center gap-2">
+        <Lightbulb className="w-5 h-5" /> Vui lòng chọn một Lớp học cụ thể để xem danh sách cảnh báo sớm rủi ro.
       </div>
     );
   }
@@ -76,9 +78,9 @@ export const EarlyWarningPanel: React.FC<EarlyWarningPanelProps> = ({ classId, o
       {/* Header & Filters Bar */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-4 border border-gray-200 rounded-xl shadow-sm">
         <div>
-          <h2 className="text-base font-bold text-gray-900">
-            ⚠️ {analyticsMessages.earlyWarning.title}
-          </h2>
+          <h2 className="text-lg font-bold text-gray-900 flex items-center gap-2">
+          <AlertTriangle className="w-5 h-5 text-amber-500" /> {analyticsMessages.earlyWarning.title}
+        </h2>
           <p className="text-xs text-gray-500 mt-0.5">
             {analyticsMessages.earlyWarning.subtitle}
           </p>
@@ -97,9 +99,9 @@ export const EarlyWarningPanel: React.FC<EarlyWarningPanelProps> = ({ classId, o
               className="px-3 py-1.5 border border-gray-300 rounded-md text-xs bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
               <option value="">{analyticsMessages.earlyWarning.allSeverities}</option>
-              <option value="HIGH">🔴 {analyticsMessages.severities.HIGH.label}</option>
-              <option value="MEDIUM">🟡 {analyticsMessages.severities.MEDIUM.label}</option>
-              <option value="LOW">🔵 {analyticsMessages.severities.LOW.label}</option>
+              <option value="HIGH">{analyticsMessages.severities.HIGH.label}</option>
+              <option value="MEDIUM">{analyticsMessages.severities.MEDIUM.label}</option>
+              <option value="LOW">{analyticsMessages.severities.LOW.label}</option>
             </select>
           </div>
 
@@ -114,9 +116,9 @@ export const EarlyWarningPanel: React.FC<EarlyWarningPanelProps> = ({ classId, o
               onChange={(e) => setStatusFilter(e.target.value)}
               className="px-3 py-1.5 border border-gray-300 rounded-md text-xs bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
-              <option value="ACTIVE">👁️ {analyticsMessages.earlyWarning.activeStatus}</option>
-              <option value="ACKNOWLEDGED">✓ {analyticsMessages.earlyWarning.acknowledgedStatus}</option>
-              <option value="DISMISSED">✕ {analyticsMessages.earlyWarning.dismissedStatus}</option>
+              <option value="ACTIVE">{analyticsMessages.earlyWarning.activeStatus}</option>
+              <option value="ACKNOWLEDGED">{analyticsMessages.earlyWarning.acknowledgedStatus}</option>
+              <option value="DISMISSED">{analyticsMessages.earlyWarning.dismissedStatus}</option>
               <option value="">-- Tất cả trạng thái --</option>
             </select>
           </div>

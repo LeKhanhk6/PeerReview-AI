@@ -91,7 +91,7 @@ const callProvider = async (prompt, requestId, customTimeout = null, maxRetries 
 
         try {
             const baseUrl = process.env.AI_API_URL || 'https://generativelanguage.googleapis.com/v1beta';
-            const url = `${baseUrl}/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
+            const url = `${baseUrl}/models/gemini-3.5-flash:generateContent?key=${apiKey}`;
             const bodyPayload = {
                 contents: [{ parts: [{ text: prompt }] }],
                 generationConfig: { responseMimeType: "application/json" }
@@ -346,8 +346,8 @@ Chỉ trả về JSON với cấu trúc: {"summary": "..."}
 Reviews:
 ${JSON.stringify(chunk)}
             `;
-            // Synthesis chunk, 10s timeout
-            const rawResponse = await callProvider(prompt, requestId, 10000);
+            // Synthesis chunk, 30s timeout
+            const rawResponse = await callProvider(prompt, requestId, 30000);
             if (rawResponse) {
                 try {
                     let cleanText = rawResponse.replace(/```json/gi, '').replace(/```/g, '').trim();
@@ -388,7 +388,7 @@ Cấu trúc JSON yêu cầu:
 Các tóm tắt:
 ${JSON.stringify(chunkSummaries)}
 `;
-        const rawFinal = await callProvider(finalPrompt, requestId, 15000);
+        const rawFinal = await callProvider(finalPrompt, requestId, 45000);
         if (!rawFinal) {
             throw new Error("Final synthesis failed: Provider returned null or timed out after retries.");
         }

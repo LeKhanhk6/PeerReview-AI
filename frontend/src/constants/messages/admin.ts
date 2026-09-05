@@ -32,6 +32,7 @@ export const adminMessages = {
     changeRoleBtn: 'Đổi vai trò',
     toggleStatusBtn: 'Khóa / Mở tài khoản',
     selfProtectionTooltip: 'Không thể tự hạ quyền hoặc tự khóa tài khoản chính mình',
+    adminProtectionTooltip: 'Không thể hạ cấp hoặc khóa tài khoản Quản trị viên (ADMIN)',
     emptyUsersTitle: 'Không tìm thấy người dùng phù hợp',
     emptyUsersDesc: 'Thử điều chỉnh từ khóa tìm kiếm hoặc bộ lọc vai trò/trạng thái.',
   },

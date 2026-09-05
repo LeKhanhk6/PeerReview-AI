@@ -156,19 +156,12 @@ export const updateUserRole = async (currentUser, targetUserId, newRole) => {
 
     const targetUser = userRes.rows[0];
 
-    // 3. Last-Admin protection check inside transaction
-    if (targetUser.role === 'ADMIN' && formattedRole !== 'ADMIN') {
-      const adminCountRes = await client.query(
-        "SELECT COUNT(*) FROM users u JOIN roles r ON u.role_id = r.id WHERE r.name = 'ADMIN'"
+    // 3. Admin protection check inside transaction
+    if (targetUser.role === 'ADMIN') {
+      throw new AppError(
+        'Forbidden: Cannot change or demote the role of an ADMIN account',
+        403
       );
-      const activeAdminCount = parseInt(adminCountRes.rows[0].count, 10);
-
-      if (activeAdminCount <= 1) {
-        throw new AppError(
-          'Conflict: Cannot demote the last remaining active ADMIN in the system',
-          409
-        );
-      }
     }
 
     // 4. Fetch new role ID
@@ -253,19 +246,12 @@ export const updateUserStatus = async (currentUser, targetUserId, newStatus) => 
 
     const targetUser = userRes.rows[0];
 
-    // 3. Last-Admin protection check inside transaction
-    if (targetUser.role === 'ADMIN' && formattedStatus !== 'ACTIVE') {
-      const adminCountRes = await client.query(
-        "SELECT COUNT(*) FROM users u JOIN roles r ON u.role_id = r.id WHERE r.name = 'ADMIN'"
+    // 3. Admin protection check inside transaction
+    if (targetUser.role === 'ADMIN') {
+      throw new AppError(
+        'Forbidden: Cannot lock or disable an ADMIN account',
+        403
       );
-      const activeAdminCount = parseInt(adminCountRes.rows[0].count, 10);
-
-      if (activeAdminCount <= 1) {
-        throw new AppError(
-          'Conflict: Cannot lock or disable the last remaining active ADMIN in the system',
-          409
-        );
-      }
     }
 
     // 4. Perform actual SQL UPDATE in Postgres DB

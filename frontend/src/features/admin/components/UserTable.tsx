@@ -174,6 +174,13 @@ export const UserTable: React.FC<UserTableProps> = ({
                   currentLoggedInUser?.id &&
                   String(user.id) === String(currentLoggedInUser?.id)
                 );
+                const isTargetAdmin = user.role === 'ADMIN';
+                const isActionDisabled = isSelf || isTargetAdmin;
+                const tooltipText = isSelf
+                  ? adminMessages.usersTable.selfProtectionTooltip
+                  : isTargetAdmin
+                  ? adminMessages.usersTable.adminProtectionTooltip
+                  : '';
 
                 return (
                   <tr key={user.id} className="hover:bg-slate-50 transition-colors">
@@ -199,15 +206,15 @@ export const UserTable: React.FC<UserTableProps> = ({
                             type="button"
                             variant="outline"
                             size="sm"
-                            disabled={isSelf}
+                            disabled={isActionDisabled}
                             onClick={() => onOpenRoleModal(user)}
                             className="text-xs gap-1.5 shrink-0"
                           >
                             <Edit2 className="w-3.5 h-3.5" /> {adminMessages.usersTable.changeRoleBtn}
                           </Button>
-                          {isSelf && (
+                          {isActionDisabled && (
                             <span className="absolute right-0 -bottom-8 hidden group-hover:block z-10 whitespace-nowrap bg-gray-900 text-white text-[11px] px-2 py-1 rounded shadow-lg">
-                              {adminMessages.usersTable.selfProtectionTooltip}
+                              {tooltipText}
                             </span>
                           )}
                         </div>
@@ -218,16 +225,16 @@ export const UserTable: React.FC<UserTableProps> = ({
                             type="button"
                             variant={user.status === 'ACTIVE' ? 'destructive' : 'default'}
                             size="sm"
-                            disabled={isSelf}
+                            disabled={isActionDisabled}
                             onClick={() => setStatusTargetUser(user)}
                             className="text-xs gap-1.5 shrink-0"
                           >
                             {user.status === 'ACTIVE' ? <Lock className="w-3.5 h-3.5" /> : <Unlock className="w-3.5 h-3.5" />} 
                             {user.status === 'ACTIVE' ? 'Khóa' : 'Mở khóa'}
                           </Button>
-                          {isSelf && (
+                          {isActionDisabled && (
                             <span className="absolute right-0 -bottom-8 hidden group-hover:block z-10 whitespace-nowrap bg-gray-900 text-white text-[11px] px-2 py-1 rounded shadow-lg">
-                              {adminMessages.usersTable.selfProtectionTooltip}
+                              {tooltipText}
                             </span>
                           )}
                         </div>

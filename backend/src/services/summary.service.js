@@ -410,7 +410,8 @@ export const generateSubmissionSummary = async (currentUser, submissionId) => {
             textChunks,
             textChunks.length,
             textChunks.length,
-            requestId
+            requestId,
+            true // forceRefresh = true to generate fresh AI summary
         );
 
         if (synthesis.summary?.startsWith("Lỗi")) {

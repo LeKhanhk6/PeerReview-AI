@@ -36,6 +36,29 @@ export const useAssignmentSynthesis = (
 };
 
 /**
+ * Hook tạo lại AI Synthesis cấp Bài tập (Bắt buộc gọi lại Gemini)
+ */
+export const useRegenerateAssignmentSynthesisMutation = (
+  assignmentId: string,
+  timeframe?: { from?: string; to?: string }
+) => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: () => synthesisApi.getAssignmentSynthesis(assignmentId, { ...timeframe, refresh: true }),
+    onSuccess: (data) => {
+      queryClient.setQueryData(
+        SYNTHESIS_QUERY_KEYS.assignmentSynthesis(assignmentId, timeframe),
+        data
+      );
+      toast.success(synthesisMessages.success.generated);
+    },
+    onError: (error: any) => {
+      toast.error(error?.message || synthesisMessages.errors.generateError);
+    },
+  });
+};
+
+/**
  * Hook lấy Bản tổng hợp cấp Bài nộp (Submission-level)
  * Áp dụng Polling 5s linh hoạt khi trạng thái là DRAFT hoặc REVIEWING
  */

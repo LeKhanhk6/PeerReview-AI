@@ -12,6 +12,7 @@ import {
   useApproveSummaryMutation,
   useGenerateSubmissionSummaryMutation,
   useDeleteSummaryItemMutation,
+  useRegenerateAssignmentSynthesisMutation,
 } from '../hooks/useSynthesis';
 import { useTeacherSubmissionsMonitor } from '@/features/submission/hooks/useSubmission';
 import { SynthesisStatusCard } from '../components/SynthesisStatusCard';
@@ -56,8 +57,9 @@ export const TeacherReviewSynthesisPage: React.FC = () => {
     data: synthesisData,
     isLoading: isLoadingSynthesis,
     isError: isErrorSynthesis,
-    refetch: refetchSynthesis,
   } = useAssignmentSynthesis(assignmentId);
+
+  const regenerateAssignmentMutation = useRegenerateAssignmentSynthesisMutation(assignmentId);
 
   const {
     data: summaryResponse,
@@ -137,8 +139,9 @@ export const TeacherReviewSynthesisPage: React.FC = () => {
         <SynthesisStatusCard
           synthesis={synthesisData}
           isLoading={isLoadingSynthesis}
+          isFetching={regenerateAssignmentMutation.isPending}
           isError={isErrorSynthesis}
-          onRefresh={() => refetchSynthesis()}
+          onRefresh={() => regenerateAssignmentMutation.mutate()}
         />
 
         <AssignmentSynthesisOverview synthesis={synthesisData} />

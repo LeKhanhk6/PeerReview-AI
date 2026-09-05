@@ -37,7 +37,8 @@ export const generateAssignmentReviewSynthesis = async (req, res, next) => {
         const { assignmentId } = req.params;
 
         const userId = req.user?.id;
-        const { from, to } = req.query;
+        const { from, to, refresh } = req.query;
+        const forceRefresh = refresh === 'true';
 
         // Validate Teacher Ownership
         const ownership = await assignmentService.getAssignmentOwnershipInfo(assignmentId);
@@ -52,7 +53,7 @@ export const generateAssignmentReviewSynthesis = async (req, res, next) => {
         const timeframe = (from || to) ? { from, to } : undefined;
         const timeframeKey = `${from || 'all'}_${to || 'all'}`;
 
-        logger.info({ event: 'review.synthesis.start', requestId, assignmentId, timeframeKey });
+        logger.info({ event: 'review.synthesis.start', requestId, assignmentId, timeframeKey, forceRefresh });
 
         const { reviewsText, totalReviews, reviewsUsed } = await reviewService.getAssignmentReviewsForSynthesis(assignmentId, timeframe);
         
@@ -78,7 +79,7 @@ export const generateAssignmentReviewSynthesis = async (req, res, next) => {
 
         try {
             const synthesis = await Promise.race([
-                aiService.synthesizeReviews(assignmentId, timeframeKey, reviewsText, totalReviews, reviewsUsed, requestId),
+                aiService.synthesizeReviews(assignmentId, timeframeKey, reviewsText, totalReviews, reviewsUsed, requestId, forceRefresh),
                 timeoutPromise
             ]);
 

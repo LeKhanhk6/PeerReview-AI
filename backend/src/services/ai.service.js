@@ -295,15 +295,17 @@ Khi nhận được một câu nhận xét bất kỳ từ sinh viên, hãy phâ
 };
 
 
-export const synthesizeReviews = async (assignmentId, timeframeKey, reviews, totalReviews, reviewsUsed, requestId) => {
+export const synthesizeReviews = async (assignmentId, timeframeKey, reviews, totalReviews, reviewsUsed, requestId, forceRefresh = false) => {
     try {
         const hashStr = crypto.createHash('md5').update(reviews.join('||')).digest('hex');
         const cacheKey = `ai_syn_${assignmentId}_${timeframeKey}_${hashStr}`;
         
-        const cached = await cacheInstance.get(cacheKey);
-        if (cached) {
-            logger.info({ event: 'ai_cache_hit', requestId, cacheKey });
-            return cached;
+        if (!forceRefresh) {
+            const cached = await cacheInstance.get(cacheKey);
+            if (cached) {
+                logger.info({ event: 'ai_cache_hit', requestId, cacheKey });
+                return cached;
+            }
         }
 
         if (process.env.AI_MOCK === 'true') {

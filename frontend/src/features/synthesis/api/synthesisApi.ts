@@ -10,7 +10,7 @@ export const synthesisApi = {
   // 1. Lấy AI Synthesis toàn bộ bài tập (Assignment-level)
   getAssignmentSynthesis: async (
     assignmentId: string,
-    params?: { from?: string; to?: string }
+    params?: { from?: string; to?: string; refresh?: boolean }
   ): Promise<AssignmentSynthesisResponse> => {
     const res: any = await api.get(`/assignments/${assignmentId}/reviews/synthesis`, {
       params,

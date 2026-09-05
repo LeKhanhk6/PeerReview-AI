@@ -51,7 +51,7 @@ export const TeacherAnalyticsDashboardPage: React.FC = () => {
   };
 
   return (
-    <div className="space-y-6 max-w-7xl mx-auto pb-12 pr-1 pt-4">
+    <div className="h-full w-full min-w-0 overflow-y-auto space-y-6 max-w-7xl mx-auto pb-12 pr-1 pt-4">
       {/* Page Header & Filter */}
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 bg-white p-6 border border-slate-100 rounded-2xl shadow-sm shrink-0">
         <div className="space-y-1.5">

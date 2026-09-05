@@ -50,10 +50,10 @@ export const useRegenerateAssignmentSynthesisMutation = (
         SYNTHESIS_QUERY_KEYS.assignmentSynthesis(assignmentId, timeframe),
         data
       );
-      toast.success(synthesisMessages.success.generated);
+      toast.success('Đã tạo lại bản tổng hợp AI thành công!');
     },
     onError: (error: any) => {
-      toast.error(error?.message || synthesisMessages.errors.generateError);
+      toast.error(error?.message || 'Không thể tạo lại bản tổng hợp AI. Vui lòng thử lại.');
     },
   });
 };

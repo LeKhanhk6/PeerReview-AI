@@ -135,7 +135,10 @@ export const getDashboardOverview = async (currentUser, classId) => {
         SELECT 
             COUNT(ra.id) as expected_reviews,
             COUNT(CASE WHEN ra.status = 'COMPLETED' THEN 1 END) as completed_reviews,
-            AVG(CASE WHEN ra.status = 'COMPLETED' THEN r.total_score END) as average_score
+            AVG(CASE 
+                WHEN ra.status = 'COMPLETED' AND r.total_score IS NOT NULL THEN 
+                    CASE WHEN r.total_score > 10 THEN r.total_score / 10.0 ELSE r.total_score END
+            END) as average_score
         FROM review_assignments ra
         JOIN submissions s ON ra.submission_id = s.id
         JOIN assignments a ON s.assignment_id = a.id

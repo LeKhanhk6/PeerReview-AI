@@ -198,7 +198,7 @@ export const TeacherDashboardPage: React.FC = () => {
         <div className="bg-white p-4 md:p-5 rounded-2xl border border-slate-100 shadow-sm flex flex-col justify-between">
           <div className="text-xs md:text-sm font-medium text-slate-500">{analyticsMessages.overview.averageScore}</div>
           <div className={`text-xl md:text-2xl font-bold mt-1 ${hasAverageScore ? 'text-amber-600' : 'text-slate-700'}`}>
-            {formatScore(overview?.averageScore, 100)}
+            {formatScore(overview?.averageScore, 10)}
           </div>
         </div>
       </div>

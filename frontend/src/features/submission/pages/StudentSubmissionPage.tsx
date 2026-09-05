@@ -23,7 +23,7 @@ export const StudentSubmissionPage: React.FC = () => {
 
   if (isLoading) {
     return (
-      <div className="space-y-6 max-w-5xl mx-auto pb-12 pr-1 pt-4">
+      <div className="h-full w-full min-w-0 overflow-y-auto space-y-6 max-w-5xl mx-auto pb-12 pr-1 pt-4">
         <Skeleton className="h-24 w-full rounded-2xl" />
         <Skeleton className="h-32 w-full rounded-2xl" />
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">

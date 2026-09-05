@@ -124,7 +124,7 @@ export const ProfilePage: React.FC = () => {
     : 'U';
 
   return (
-    <div className="p-6 max-w-5xl mx-auto space-y-8 bg-slate-50/50 min-h-screen">
+    <div className="h-full w-full min-w-0 overflow-y-auto p-6 max-w-5xl mx-auto space-y-8 bg-slate-50/50 pb-12">
       {/* Header Banner */}
       <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex flex-col sm:flex-row items-center gap-5">
         <div className="w-16 h-16 rounded-full bg-slate-800 text-white flex items-center justify-center font-bold text-xl overflow-hidden border-2 border-slate-200 shadow-sm shrink-0">

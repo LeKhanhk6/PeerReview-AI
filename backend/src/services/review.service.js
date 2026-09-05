@@ -116,7 +116,7 @@ export const getReviewAssignmentDetail = async (reviewAssignmentId, userId) => {
             a.title as assignment_title,
             a.description as assignment_description,
             a.deadline as assignment_deadline,
-            gm.role as user_role
+            CASE WHEN gm.is_leader = true THEN 'LEADER' ELSE 'MEMBER' END as user_role
         FROM review_assignments ra
         JOIN submissions s ON s.id = ra.submission_id
         JOIN assignments a ON a.id = s.assignment_id

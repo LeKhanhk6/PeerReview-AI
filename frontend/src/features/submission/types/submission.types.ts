@@ -29,10 +29,17 @@ export interface SubmissionFeedback {
   submission_id: string;
   assignment_title?: string;
   average_score?: number;
+  score?: number | null;
   teacher_score?: number | null;
   teacher_feedback?: string | null;
   general_feedback?: string | null;
-  reviews: PeerReviewItem[];
+  reviews?: PeerReviewItem[];
+  reviewCount?: number;
+  summary?: {
+    strengths?: string[];
+    weaknesses?: string[];
+    suggestions?: string[];
+  };
 }
 
 export interface AssignmentDetailInfo {

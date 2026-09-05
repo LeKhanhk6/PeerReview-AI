@@ -97,18 +97,10 @@ export const AIMentorWidget: React.FC<AIMentorWidgetProps> = ({
         </p>
       )}
 
-      {/* Circuit Breaker Notice & Manual Trigger Button */}
+      {/* Circuit Breaker Notice */}
       {isCircuitBreakerActive && (
         <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 space-y-2 text-xs text-amber-900">
           <p className="font-semibold">{reviewMessages.aiMentor.circuitBreakerNotice}</p>
-          <button
-            type="button"
-            onClick={onManualTrigger}
-            disabled={isLoading || currentCommentLength < 15}
-            className="px-3 py-1.5 bg-amber-600 text-white rounded-md font-semibold hover:bg-amber-700 disabled:opacity-50 transition-colors"
-          >
-            {reviewMessages.aiMentor.manualAnalyzeButton}
-          </button>
         </div>
       )}
 
@@ -158,6 +150,19 @@ export const AIMentorWidget: React.FC<AIMentorWidgetProps> = ({
             )}
           </div>
         )}
+      </div>
+
+      {/* Persistent Manual Action Bar */}
+      <div className="pt-2 flex justify-end">
+        <button
+          type="button"
+          onClick={onManualTrigger}
+          disabled={isLoading || currentCommentLength < 15}
+          className="px-3 py-1.5 bg-indigo-600 text-white rounded-md font-semibold text-xs hover:bg-indigo-700 disabled:opacity-50 transition-colors flex items-center gap-1.5 shadow-sm"
+        >
+          <Sparkles className="w-3.5 h-3.5" />
+          {analysis ? 'Phân tích lại' : 'Nhờ AI nhận xét'}
+        </button>
       </div>
 
       {/* Reused ConfirmDialog for Option (a) Safety Confirmation */}

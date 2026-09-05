@@ -46,7 +46,11 @@ export const SubmissionFeedbackPanel: React.FC<SubmissionFeedbackPanelProps> = (
     );
   }
 
-  if (!feedback || (feedback.reviews.length === 0 && !feedback.teacher_feedback)) {
+  const hasReviews = (feedback?.reviews?.length ?? 0) > 0;
+  const hasSummary = Boolean(feedback?.summary);
+  const hasTeacherFeedback = Boolean(feedback?.teacher_feedback);
+
+  if (!feedback || (!hasReviews && !hasTeacherFeedback && !hasSummary)) {
     return (
       <EmptyState
         type="no_data"
@@ -55,6 +59,8 @@ export const SubmissionFeedbackPanel: React.FC<SubmissionFeedbackPanelProps> = (
       />
     );
   }
+
+  const averageScore = feedback.average_score ?? feedback.score;
 
   return (
     <div className="bg-white border border-gray-200 rounded-xl p-5 shadow-sm space-y-5">
@@ -68,20 +74,20 @@ export const SubmissionFeedbackPanel: React.FC<SubmissionFeedbackPanelProps> = (
           </p>
         </div>
 
-        {feedback.average_score !== undefined && (
+        {averageScore !== undefined && averageScore !== null && (
           <div className="text-right">
             <span className="text-xs text-gray-500 font-semibold uppercase block">
               {submissionMessages.feedback.scoreTitle}
             </span>
             <span className="text-2xl font-black text-purple-600 font-mono">
-              {feedback.average_score} <span className="text-xs font-normal text-gray-500">/ 10</span>
+              {averageScore} <span className="text-xs font-normal text-gray-500">/ 10</span>
             </span>
           </div>
         )}
       </div>
 
       {/* Teacher Feedback Section */}
-      {feedback.teacher_feedback && (
+      {hasTeacherFeedback && (
         <div className="bg-purple-50/60 border border-purple-200 p-4 rounded-xl space-y-1">
           <div className="flex items-center justify-between">
             <h3 className="text-xs font-bold text-purple-900 uppercase tracking-wider flex items-center gap-1.5">
@@ -102,8 +108,45 @@ export const SubmissionFeedbackPanel: React.FC<SubmissionFeedbackPanelProps> = (
         </div>
       )}
 
+      {/* AI Summary Section */}
+      {hasSummary && (
+        <div className="space-y-3">
+          <h3 className="text-xs font-bold text-blue-700 uppercase tracking-wider flex items-center gap-1.5 pt-2">
+            <MessageSquare className="w-4 h-4" />
+            <span>Tổng hợp đánh giá (AI Synthesis)</span>
+          </h3>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm mt-3">
+            {(feedback.summary?.strengths?.length ?? 0) > 0 && (
+              <div className="bg-emerald-50/50 border border-emerald-100 p-3 rounded-lg">
+                <h4 className="font-bold text-emerald-800 mb-2">Điểm mạnh</h4>
+                <ul className="list-disc pl-4 space-y-1 text-emerald-900 text-xs">
+                  {feedback.summary?.strengths?.map((item: string, i: number) => <li key={i}>{item}</li>)}
+                </ul>
+              </div>
+            )}
+            {(feedback.summary?.weaknesses?.length ?? 0) > 0 && (
+              <div className="bg-red-50/50 border border-red-100 p-3 rounded-lg">
+                <h4 className="font-bold text-red-800 mb-2">Điểm yếu cần cải thiện</h4>
+                <ul className="list-disc pl-4 space-y-1 text-red-900 text-xs">
+                  {feedback.summary?.weaknesses?.map((item: string, i: number) => <li key={i}>{item}</li>)}
+                </ul>
+              </div>
+            )}
+          </div>
+          {(feedback.summary?.suggestions?.length ?? 0) > 0 && (
+            <div className="bg-blue-50/50 border border-blue-100 p-3 rounded-lg mt-3 text-sm">
+              <h4 className="font-bold text-blue-800 mb-2">Góp ý phát triển</h4>
+              <ul className="list-disc pl-4 space-y-1 text-blue-900 text-xs">
+                {feedback.summary?.suggestions?.map((item: string, i: number) => <li key={i}>{item}</li>)}
+              </ul>
+            </div>
+          )}
+        </div>
+      )}
+
       {/* Peer Reviews List */}
-      {feedback.reviews.length > 0 && (
+      {hasReviews && (
         <div className="space-y-3">
           <h3 className="text-xs font-bold text-gray-700 uppercase tracking-wider flex items-center gap-1.5">
             <Users className="w-4 h-4" />
@@ -111,7 +154,7 @@ export const SubmissionFeedbackPanel: React.FC<SubmissionFeedbackPanelProps> = (
           </h3>
 
           <div className="space-y-3">
-            {feedback.reviews.map((rev, index) => {
+            {feedback.reviews?.map((rev: any, index: number) => {
               const dateStr = rev.submitted_at ? new Date(rev.submitted_at).toLocaleDateString('vi-VN') : 'vừa xong';
 
               return (

@@ -115,10 +115,12 @@ export const getReviewAssignmentDetail = async (reviewAssignmentId, userId) => {
             sv.file_url as file_url,
             a.title as assignment_title,
             a.description as assignment_description,
-            a.deadline as assignment_deadline
+            a.deadline as assignment_deadline,
+            gm.role as user_role
         FROM review_assignments ra
         JOIN submissions s ON s.id = ra.submission_id
         JOIN assignments a ON a.id = s.assignment_id
+        JOIN group_members gm ON gm.group_id = ra.reviewer_group_id AND gm.user_id = $2
         LEFT JOIN LATERAL (
             SELECT sv_inner.created_at, sv_inner.file_url
             FROM submission_versions sv_inner
@@ -127,9 +129,6 @@ export const getReviewAssignmentDetail = async (reviewAssignmentId, userId) => {
             LIMIT 1
         ) sv ON true
         WHERE ra.id = $1
-        AND ra.reviewer_group_id IN (
-            SELECT group_id FROM group_members WHERE user_id = $2
-        )
     `;
 
     const result = await pool.query(query, [validReviewAssignmentId, userId]);
@@ -215,7 +214,8 @@ export const getReviewAssignmentDetail = async (reviewAssignmentId, userId) => {
             status: row.review_status,
             assignedAt: row.assigned_at,
             isPastDeadline,
-            isEditable
+            isEditable,
+            userRole: row.user_role
         },
         submission: maskedSubmission,
         assignment: {

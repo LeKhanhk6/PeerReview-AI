@@ -215,8 +215,11 @@ export const getGroupContribution = async (currentUser, groupId) => {
                 json_object_agg(action_type, action_count) as activity_breakdown
             FROM (
                 SELECT user_id, action_type, COUNT(*) as action_count
-                FROM activity_logs
-                WHERE group_id = $1
+                FROM (
+                    SELECT user_id, action_type FROM activity_logs WHERE group_id = $1
+                    UNION ALL
+                    SELECT user_id, 'DISCUSSION_POST' as action_type FROM group_discussions WHERE group_id = $1
+                ) combined
                 GROUP BY user_id, action_type
             ) sub
             GROUP BY user_id
@@ -333,7 +336,11 @@ export const getClassContributions = async (currentUser, classId) => {
                 al.group_id,
                 al.user_id,
                 COUNT(*) as total_activities
-            FROM activity_logs al
+            FROM (
+                SELECT group_id, user_id FROM activity_logs
+                UNION ALL
+                SELECT group_id, user_id FROM group_discussions
+            ) al
             JOIN groups g ON al.group_id = g.id
             WHERE g.class_id = $1
             GROUP BY al.group_id, al.user_id
@@ -912,7 +919,11 @@ export const getCollaborationRisks = async (currentUser, classId) => {
         `, [classId]),
         pool.query(`
             SELECT al.group_id, al.user_id, COUNT(*) as action_count 
-            FROM activity_logs al 
+            FROM (
+                SELECT group_id, user_id FROM activity_logs
+                UNION ALL
+                SELECT group_id, user_id FROM group_discussions
+            ) al 
             JOIN groups g ON al.group_id = g.id 
             WHERE g.class_id = $1 
             GROUP BY al.group_id, al.user_id

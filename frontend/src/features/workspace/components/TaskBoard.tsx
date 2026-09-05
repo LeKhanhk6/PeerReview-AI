@@ -15,7 +15,7 @@ interface TaskBoardProps {
   groupId: string;
   userRole?: GroupRole;
   currentUserId?: string;
-  members?: Array<{ id: string; name: string }>;
+  members?: Array<{ id: string; name?: string; full_name?: string }>;
 }
 
 const KANBAN_COLUMNS: Array<{ status: TaskStatus; title: string; icon: React.ReactNode }> = [
@@ -193,7 +193,7 @@ export const TaskBoard: React.FC<TaskBoardProps> = ({
                         {/* Assignee Badge */}
                         <div className="flex items-center justify-between text-xs text-gray-500 pt-1 border-t border-gray-100">
                           <span className="truncate max-w-[150px] flex items-center gap-1.5">
-                            <User className="w-3.5 h-3.5" /> {task.assignee_name || workspaceMessages.kanban.unassigned}
+                            <User className="w-3.5 h-3.5" /> {task.assignee_name || (task.assignee_id ? members.find((m: any) => m.id === task.assignee_id)?.full_name || members.find((m: any) => m.id === task.assignee_id)?.name : null) || workspaceMessages.kanban.unassigned}
                           </span>
 
                           {/* Shift Status Arrows */}

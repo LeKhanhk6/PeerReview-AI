@@ -20,11 +20,26 @@ export const EarlyWarningPanel: React.FC<EarlyWarningPanelProps> = ({ classId, o
   const [severityFilter, setSeverityFilter] = useState<string>('');
   const [statusFilter, setStatusFilter] = useState<string>('ACTIVE');
 
-  // Local state for interactive status overrides
-  const [riskStatuses, setRiskStatuses] = useState<Record<string, RiskStatus>>({});
+  // Local state for interactive status overrides, persisted to localStorage
+  const [riskStatuses, setRiskStatuses] = useState<Record<string, RiskStatus>>(() => {
+    try {
+      const stored = localStorage.getItem('peerreview_risk_statuses');
+      return stored ? JSON.parse(stored) : {};
+    } catch (e) {
+      return {};
+    }
+  });
 
   const handleUpdateStatus = (riskId: string, status: RiskStatus) => {
-    setRiskStatuses((prev) => ({ ...prev, [riskId]: status }));
+    setRiskStatuses((prev) => {
+      const updated = { ...prev, [riskId]: status };
+      try {
+        localStorage.setItem('peerreview_risk_statuses', JSON.stringify(updated));
+      } catch (e) {
+        // ignore
+      }
+      return updated;
+    });
     toast.success(analyticsMessages.earlyWarning.statusUpdatedToast);
   };
 

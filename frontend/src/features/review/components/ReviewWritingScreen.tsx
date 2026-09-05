@@ -31,7 +31,7 @@ export const ReviewWritingScreen: React.FC = () => {
 
   const isCompleted = reviewAssignment?.status === 'COMPLETED';
   const isPastDeadline = Boolean(reviewAssignment?.isPastDeadline);
-  const isReadOnly = isCompleted || isPastDeadline;
+  const isReadOnly = isCompleted || isPastDeadline || reviewAssignment?.userRole !== 'LEADER';
 
   const criteriaList = rubric?.criteria || [];
 
@@ -92,6 +92,18 @@ export const ReviewWritingScreen: React.FC = () => {
           <div className="bg-red-50 border border-red-200 rounded-xl px-4 py-2 text-xs font-bold text-red-800 flex items-center gap-2 shadow-2xs">
             <Ban className="w-4 h-4" />
             <span>{reviewMessages.writing.readOnlyBannerExpired}</span>
+          </div>
+        )}
+        {!isCompleted && !isPastDeadline && reviewAssignment?.userRole === 'MEMBER' && (
+          <div className="bg-blue-50 border border-blue-200 rounded-xl px-4 py-2 text-xs font-bold text-blue-800 flex items-center gap-2 shadow-2xs">
+            <AlertTriangle className="w-4 h-4" />
+            <span>ℹ️ Bạn đang xem ở chế độ Thành viên. Chỉ Nhóm trưởng mới có quyền điền điểm và Nộp bài. Hãy thảo luận với nhóm của bạn!</span>
+          </div>
+        )}
+        {!isCompleted && !isPastDeadline && reviewAssignment?.userRole === 'LEADER' && (
+          <div className="bg-amber-50 border border-amber-200 rounded-xl px-4 py-2 text-xs font-bold text-amber-800 flex items-center gap-2 shadow-2xs">
+            <AlertTriangle className="w-4 h-4" />
+            <span>⚠️ Bạn là Nhóm trưởng. Hãy thảo luận để thống nhất điểm với các thành viên khác trước khi nộp. Nhóm chỉ được nộp 1 lần duy nhất!</span>
           </div>
         )}
       </div>

@@ -296,6 +296,7 @@ export const RubricScoringForm: React.FC<RubricScoringFormProps> = ({
           disabled={isReadOnly}
           value={overallComment}
           onChange={(e) => handleOverallCommentChange(e.target.value)}
+          onBlur={() => triggerManualAnalysis()}
           placeholder={reviewMessages.writing.overallCommentPlaceholder}
           className="w-full p-3 border border-gray-300 rounded-xl text-sm text-gray-900 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 disabled:bg-gray-100 disabled:text-gray-500"
         />

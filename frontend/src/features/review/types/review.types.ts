@@ -72,6 +72,7 @@ export interface ReviewAssignmentDetail {
     assignedAt: string;
     isPastDeadline: boolean;
     isEditable: boolean;
+    userRole?: 'LEADER' | 'MEMBER';
   };
   submission: MaskedSubmission;
   assignment: AssignmentDetailInfo;

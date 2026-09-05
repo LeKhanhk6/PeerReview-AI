@@ -26,7 +26,19 @@ export const TeacherAnalyticsDashboardPage: React.FC = () => {
     useClassContributions(selectedClassId);
   const { data: risks = [] } = useClassCollaborationRisks(selectedClassId);
 
-  const activeRisksCount = risks.filter((r) => r.status !== 'DISMISSED').length;
+  let activeRisksCount = 0;
+  try {
+    const stored = localStorage.getItem('peerreview_risk_statuses');
+    const riskStatuses = stored ? JSON.parse(stored) : {};
+    
+    activeRisksCount = risks.filter((r, index) => {
+      const computedId = r.id || `risk-${r.groupId || 'g'}-${r.userId || 'u'}-${r.riskType || 'type'}-${index}`;
+      const status = riskStatuses[computedId] || r.status || 'ACTIVE';
+      return status === 'ACTIVE';
+    }).length;
+  } catch (e) {
+    activeRisksCount = risks.filter((r) => r.status === 'ACTIVE' || !r.status).length;
+  }
 
   const handleClassFilterChange = (classId: string) => {
     const params = new URLSearchParams(searchParams);

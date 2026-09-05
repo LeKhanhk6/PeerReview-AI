@@ -79,27 +79,13 @@ export function useAIMentor({ comment, isReadOnly = false }: UseAIMentorOptions)
     [isReadOnly]
   );
 
-  // Debounced auto-trigger (1.5s) when comment changes
+  // Clear analysis if comment gets too short
   useEffect(() => {
-    if (isReadOnly || isCircuitBreakerActive) return;
-
-    if (timerRef.current) clearTimeout(timerRef.current);
-
     if (!comment || comment.trim().length < 15) {
       setAnalysis(null);
-      setIsLoading(false);
       setIsError(false);
-      return;
     }
-
-    timerRef.current = setTimeout(() => {
-      performAnalysis(comment.trim());
-    }, 1500);
-
-    return () => {
-      if (timerRef.current) clearTimeout(timerRef.current);
-    };
-  }, [comment, isReadOnly, isCircuitBreakerActive, performAnalysis]);
+  }, [comment]);
 
   // Unmount cleanup: cancel timer and abort active request
   useEffect(() => {

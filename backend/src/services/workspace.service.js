@@ -104,10 +104,11 @@ export const getTaskGroupInfo = async (taskId) => {
 export const getTasks = async (groupId) => {
     const validGroupId = validateId(groupId, 'group ID');
     const result = await executeQuery(`
-        SELECT id, group_id, assignee_id, title, status, created_at, completed_at
-        FROM tasks
-        WHERE group_id = $1 AND deleted_at IS NULL
-        ORDER BY created_at DESC
+        SELECT t.id, t.group_id, t.assignee_id, t.title, t.status, t.created_at, t.completed_at, u.full_name as assignee_name
+        FROM tasks t
+        LEFT JOIN users u ON t.assignee_id = u.id
+        WHERE t.group_id = $1 AND t.deleted_at IS NULL
+        ORDER BY t.created_at DESC
     `, [validGroupId]);
     return result.rows;
 };
@@ -346,13 +347,8 @@ export const createDiscussion = async (groupId, userId, message) => {
     `, [validGroupId, userId, message.trim()]);
     
     const discussion = result.rows[0];
-    await logActivity({
-        groupId, 
-        userId, 
-        actionType: ACTIVITY_TYPES.DISCUSSION_POST, 
-        targetId: `${ACTIVITY_TYPES.DISCUSSION_POST}_${discussion.id}`,
-        contentSummary: 'Posted a new discussion message'
-    });
+    
+    // DISCUSSION_POST logging removed for optimization (counts directly from group_discussions)
     
     return discussion;
 };

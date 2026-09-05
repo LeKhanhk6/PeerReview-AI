@@ -118,10 +118,20 @@ export const getGroupActivityStats = async (groupId, options = {}) => {
             throw new AppError("Timeframe is required", 400);
         }
         
-        let query = `
-            SELECT user_id, action_type, COUNT(*) as total, COUNT(DISTINCT target_id) as unique_actions
+        let baseQuery = `
+            SELECT user_id, action_type, target_id, created_at
             FROM activity_logs
             WHERE group_id = $1
+            UNION ALL
+            SELECT user_id, 'DISCUSSION_POST' as action_type, 'DISCUSSION_POST_' || id as target_id, created_at
+            FROM group_discussions
+            WHERE group_id = $1
+        `;
+
+        let query = `
+            SELECT user_id, action_type, COUNT(*) as total, COUNT(DISTINCT target_id) as unique_actions
+            FROM (${baseQuery}) as combined_logs
+            WHERE 1=1
         `;
         const params = [validGroupId];
         let paramIdx = 2;

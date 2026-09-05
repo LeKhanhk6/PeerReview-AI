@@ -126,11 +126,14 @@ export const getAllGroups = async (user, classId) => {
             values.push(validClassId);
         }
     } else if (user.role === 'STUDENT') {
-        query = `${baseSelect} WHERE g.id IN (SELECT group_id FROM group_members WHERE user_id = $1)`;
-        values.push(user.userId);
         if (validClassId) {
-            query += ' AND g.class_id = $2';
+            // When fetching groups for a specific class (e.g. to join), return all groups in that class
+            query = `${baseSelect} WHERE g.class_id = $1`;
             values.push(validClassId);
+        } else {
+            // Default: return only groups the student is a member of
+            query = `${baseSelect} WHERE g.id IN (SELECT group_id FROM group_members WHERE user_id = $1)`;
+            values.push(user.userId);
         }
     } else {
         throw new AppError('Unsupported role', 403);

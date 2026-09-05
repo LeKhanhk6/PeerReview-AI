@@ -91,7 +91,8 @@ const callProvider = async (prompt, requestId, customTimeout = null, maxRetries 
 
         try {
             const baseUrl = process.env.AI_API_URL || 'https://generativelanguage.googleapis.com/v1beta';
-            const url = `${baseUrl}/models/gemini-2.5-flash-lite:generateContent?key=${apiKey}`;
+            const model = process.env.GEMINI_MODEL || 'gemini-3.5-flash-lite';
+            const url = `${baseUrl}/models/${model}:generateContent?key=${apiKey}`;
             const bodyPayload = {
                 contents: [{ parts: [{ text: prompt }] }],
                 generationConfig: { responseMimeType: "application/json" }
@@ -108,6 +109,8 @@ const callProvider = async (prompt, requestId, customTimeout = null, maxRetries 
             });
 
             if (!response.ok) {
+                const errText = await response.text().catch(() => '');
+                logger.error({ requestId, status: response.status, body: errText, model, stage: 'callProvider_http_error' });
                 const err = new Error(`Provider responded with status: ${response.status}`);
                 err.status = response.status;
                 throw err;

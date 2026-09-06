@@ -229,10 +229,10 @@ graph LR
 
 ## 10.6. KẾ HOẠCH THỬ NGHIỆM TẢI VÀ PILOT READINESS (500–1.000 USERS)
 
-### 1. Kịch bản Kiểm thử Tải (k6 Load Testing)
-- File kịch bản kiểm thử: [k6-spike-test.js](file:///d:/Sang_Tao_AI/PeerReview-AI/backend/src/tests/load/k6-spike-test.js).
-- **Quy mô mô phỏng:** Giả lập **300 – 500 Virtual Users (VUs)** nộp bài tập và chấm chéo đồng thời trong khung thời gian cao điểm 5 phút trước Deadline.
-- **Tiêu chuẩn đạt (Thresholds):**
+### 1. Kịch bản & Chỉ số Đánh giá Tải Đề xuất (Proposed Load Test Plan & SLA Criteria)
+- **File kịch bản kiểm thử tích hợp sẵn:** [k6-spike-test.js](file:///d:/Sang_Tao_AI/PeerReview-AI/backend/src/tests/load/k6-spike-test.js).
+- **Quy mô kịch bản thiết lập:** Giả lập **300 – 500 Virtual Users (VUs)** nộp bài tập và chấm chéo đồng thời trong khung thời gian cao điểm 5 phút trước Deadline.
+- **Chỉ số Mục tiêu Chất lượng (SLA Thresholds):**
   - Thời gian phản hồi API đọc `p(95) < 500ms`.
   - Thời gian phản hồi API ghi `p(95) < 1000ms`.
   - Tỷ lệ lỗi request (`http_req_failed`) `< 1%`.

@@ -183,8 +183,8 @@ const pool = new pg.Pool({
 
 ## 📊 6. KẾ HOẠCH KIỂM THỬ TẢI VÀ LỘ TRÌNH TRIỂN KHAI PILOT (500 – 1.000 USERS)
 
-### 6.1. Kịch bản Kiểm thử Tải Spike Load với k6 (`k6-spike-test.js`)
-Sử dụng công cụ kiểm thử tải chuyên dụng **k6** để mô phỏng đợt truy cập bùng nổ (Spike Load) của **300 – 500 Virtual Users (VUs)** nộp bài và chấm chéo trong 5 phút trước Deadline:
+### 6.1. Kịch bản & Chỉ số Đánh giá Tải Đề xuất với k6 (`k6-spike-test.js`)
+Dự án thiết lập sẵn file kịch bản bằng công cụ kiểm thử tải chuyên dụng **k6** để sẵn sàng đánh giá khả năng chịu tải đợt truy cập bùng nổ (Spike Load) của **300 – 500 Virtual Users (VUs)** nộp bài và chấm chéo trong 5 phút trước Deadline:
 
 ```javascript
 // backend/src/tests/load/k6-spike-test.js

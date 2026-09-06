@@ -176,6 +176,10 @@ const callProvider = async (prompt, requestId, customTimeout = null, maxRetries 
                 logger.warn({ requestId, event: 'model_404_fallback', model, stage: 'callProvider' });
                 continue;
             }
+            if (error.status === 429) {
+                logger.warn({ requestId, event: 'model_429_quota_fallback', model, message: "Quota exhausted for model, trying next candidate model", stage: 'callProvider' });
+                continue;
+            }
             logger.error({ requestId, event: 'ai_service_error', model, error: error.message, stage: 'callProvider' });
             return null;
         }

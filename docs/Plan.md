@@ -333,8 +333,8 @@ Contribution Engine
 
 - [x]  Previous submissions.
 - [x]  Submission time.
-- [ ]  Status.
-- [ ]  Feedback status.
+- [x]  Status.
+- [x]  Feedback status.
 
 ---
 
@@ -416,7 +416,7 @@ Submit
 
 ## TASK 09.1 — AI Integration
 
-- [ ] React
+- [x] React
 - [x] Node.js / Express
 - [x] AI Service
 - [x] AI API
@@ -430,7 +430,7 @@ AI kiểm tra:
 - [x] Rubric Alignment.
 - [x] Specificity.
 - [x] Toxicity/Negative language.
-- [ ] *Lưu ý kỹ thuật:* Frontend bắt buộc phải áp dụng kỹ thuật Debounce (chờ người dùng ngừng gõ khoảng 1-1.5 giây mới gọi API) để tránh gọi API liên tục làm sập server Backend.
+- [x] *Lưu ý kỹ thuật:* Frontend bắt buộc phải áp dụng kỹ thuật Debounce (chờ người dùng ngừng gõ khoảng 1-1.5 giây mới gọi API) để tránh gọi API liên tục làm sập server Backend.
 ## TASK 09.3 — AI Response [x]
 ```
 Status
@@ -1204,15 +1204,15 @@ fix: prevent self review assignment
 
 Một Feature chỉ hoàn thành khi:
 
-- [ ]  Frontend hoàn thành.
-- [ ]  Backend API hoàn thành.
-- [ ]  Database integration hoàn thành.
-- [ ]  Validation hoàn thành.
-- [ ]  Error handling hoàn thành.
-- [ ]  Authorization hoàn thành.
-- [ ]  Tested.
-- [ ]  Git commit.
-- [ ]  Pull Request/Merge.
+- [x]  Frontend hoàn thành.
+- [x]  Backend API hoàn thành.
+- [x]  Database integration hoàn thành.
+- [x]  Validation hoàn thành.
+- [x]  Error handling hoàn thành.
+- [x]  Authorization hoàn thành.
+- [x]  Tested.
+- [x]  Git commit.
+- [x]  Pull Request/Merge.
 - [ ]  Documentation cập nhật.
 
 ---

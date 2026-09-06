@@ -160,7 +160,7 @@ export const AdminSettingsPage: React.FC = () => {
                 onChange={(e) => setAuditLoggingEnabled(e.target.value)}
                 className="w-full mt-1 px-3 py-2 border border-slate-200 rounded-md text-sm bg-white font-medium focus:outline-none focus:ring-2 focus:ring-brand-primary"
               >
-                <option value="true">Active (Khuyên dùng cho Pilot)</option>
+                <option value="true">Active (Bật ghi nhật ký)</option>
                 <option value="false">Inactive (Tắt ghi nhật ký)</option>
               </select>
             </div>

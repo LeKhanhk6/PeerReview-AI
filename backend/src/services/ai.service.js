@@ -91,7 +91,7 @@ const callProvider = async (prompt, requestId, customTimeout = null, maxRetries 
 
         try {
             const baseUrl = process.env.AI_API_URL || 'https://generativelanguage.googleapis.com/v1beta';
-            const model = process.env.GEMINI_MODEL || 'gemini-3.6-flash';
+            const model = process.env.GEMINI_MODEL || 'gemini-1.5-flash';
             const url = `${baseUrl}/models/${model}:generateContent?key=${apiKey}`;
             const bodyPayload = {
                 contents: [{ parts: [{ text: prompt }] }],
@@ -244,18 +244,23 @@ export const analyzeComment = async (text, requestId, userId = null) => {
         // 1. Check Toxicity / Analysis Cache (7 days TTL)
         const cached = await cacheInstance.get(cacheKey);
         if (cached) {
-            logger.info({ event: 'ai_tox_cache_hit', requestId, cacheKey });
-            // Log cache_hit in ai_requests for accurate cost savings reporting
-            logAiRequestMetric({
-                userId,
-                requestType: 'AI_MENTOR',
-                promptHash,
-                promptTokens: 0,
-                candidatesTokens: 0,
-                totalTokens: 0,
-                status: 'cache_hit',
-            });
-            return cached;
+            // Bypass cached fallback error responses so temporary failures are retried
+            if (cached.category === FALLBACK_RESPONSE.category || cached.guidance_message === FALLBACK_RESPONSE.guidance_message || cached.category === 'UNKNOWN') {
+                logger.info({ event: 'ai_tox_cache_bypass_fallback', requestId, cacheKey });
+            } else {
+                logger.info({ event: 'ai_tox_cache_hit', requestId, cacheKey });
+                // Log cache_hit in ai_requests for accurate cost savings reporting
+                logAiRequestMetric({
+                    userId,
+                    requestType: 'AI_MENTOR',
+                    promptHash,
+                    promptTokens: 0,
+                    candidatesTokens: 0,
+                    totalTokens: 0,
+                    status: 'cache_hit',
+                });
+                return cached;
+            }
         }
 
         const prompt = buildPrompt(safeText);
@@ -273,8 +278,13 @@ Khi nhận được một câu nhận xét bất kỳ từ sinh viên, hãy phâ
         const rawResponse = await callProvider(prompt, requestId, null, 3, systemInstruction);
         const parsed = parseResponse(rawResponse, requestId);
 
-        // 2. Cache successful analysis for 7 days (7 * 86400 seconds)
-        await cacheInstance.set(cacheKey, parsed, 7 * 86400);
+        // 2. Cache successful analysis for 7 days only if provider returned a valid non-fallback response
+        const isFallback = !rawResponse || parsed.category === FALLBACK_RESPONSE.category || parsed.category === 'UNKNOWN';
+        if (!isFallback) {
+            await cacheInstance.set(cacheKey, parsed, 7 * 86400);
+        } else {
+            logger.warn({ event: 'ai_tox_cache_skip_fallback', requestId, cacheKey });
+        }
 
         // 3. Log usage metric to ai_requests table
         logAiRequestMetric({
@@ -284,7 +294,7 @@ Khi nhận được một câu nhận xét bất kỳ từ sinh viên, hãy phâ
             promptTokens: 120, // Estimated token counts if not provided by raw response
             candidatesTokens: 80,
             totalTokens: 200,
-            status: 'success',
+            status: isFallback ? 'failed' : 'success',
         });
 
         return parsed;

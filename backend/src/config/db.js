@@ -5,11 +5,15 @@ dotenv.config();
 
 const { Pool } = pkg;
 
+// Xóa query param sslmode nếu có để tránh pg-connection-string ghi đè rejectUnauthorized: false
+const rawUrl = process.env.DATABASE_URL || '';
+const cleanConnectionString = rawUrl.replace(/(\?|&)sslmode=[^&]*/, '');
+
 // Khởi tạo Pool kết nối đến Supabase PostgreSQL
 const pool = new Pool({
-    connectionString: process.env.DATABASE_URL,
+    connectionString: cleanConnectionString,
     ssl: {
-        rejectUnauthorized: false // Supabase yêu cầu SSL để kết nối từ xa
+        rejectUnauthorized: false // Supabase SSL connection fix
     }
 });
 

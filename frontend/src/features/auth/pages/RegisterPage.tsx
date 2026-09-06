@@ -93,11 +93,6 @@ export const RegisterPage: React.FC = () => {
               </div>
             </div>
 
-            {/* Teacher Registration Note */}
-            <div className="p-2 bg-brand-soft-bg/80 border border-brand-soft-border rounded-lg text-[10px] sm:text-[11px] font-medium text-brand-heavy-text leading-tight">
-              {authMessages.teacherNote}
-            </div>
-
             {/* Register Form */}
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-2.5">
               {/* Full Name */}

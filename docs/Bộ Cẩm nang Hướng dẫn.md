@@ -187,7 +187,7 @@ Tất cả các tài khoản thử nghiệm bên dưới đã được chuẩn b
 ### 4.2. 📧 Khôi phục Mật khẩu qua Email (Forgot / Reset Password via Gmail SMTP)
 * **Thao tác:**
   1. Đăng xuất khỏi hệ thống, truy cập trang [/login](https://peer-review-ai-tau.vercel.app/login).
-  2. Bấm **"Quên mật khẩu?"** -> Nhập email cá nhân thực của bạn (VD: `doituyentin9a1@gmail.com`).
+  2. Bấm **"Quên mật khẩu?"** -> Nhập email cá nhân thực của bạn (VD: `student_test@gmail.com`).
   3. Bấm **Gửi yêu cầu**.
   4. Mở Gmail cá nhân, kiểm tra hòm thư (bao gồm cả thư mục **Spam / Thư rác**).
   5. Bấm vào nút **"Đặt Lại Mật Khẩu"** trong email (Đường dẫn có dạng `https://peer-review-ai-tau.vercel.app/reset-password?token=...`).
@@ -233,7 +233,7 @@ Nếu bạn muốn tự xây dựng một bản Deploy độc lập từ mã ngu
    * `JWT_SECRET`: Chuỗi khóa 32-byte ngẫu nhiên an toàn.
    * `GEMINI_API_KEY`: API Key kết nối Trợ lý AI Google Gemini.
    * `SMTP_HOST`: `smtp.gmail.com` | `SMTP_PORT`: `587`
-   * `SMTP_USER`: Email gửi mail hệ thống (VD: `peerreviewsangtaoai@gmail.com`)
+   * `SMTP_USER`: Email gửi mail hệ thống (VD: `your_system_email@gmail.com`)
    * `SMTP_PASS`: Mật khẩu ứng dụng Gmail (App Password) 16 ký tự.
    * `CORS_ORIGIN`: `https://peer-review-ai-tau.vercel.app,http://localhost:5173`
    * `FRONTEND_URL`: `https://peer-review-ai-tau.vercel.app`

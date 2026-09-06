@@ -1,7 +1,7 @@
 import { config } from 'dotenv';
 config();
 
-const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
+const GEMINI_API_KEY = process.env.GEMINI_API_KEY || process.env.AI_API_KEY;
 
 import crypto from 'crypto';
 import pool from '../config/db.js';
@@ -75,9 +75,9 @@ const callProvider = async (prompt, requestId, customTimeout = null, maxRetries 
         });
     }
 
-    const apiKey = process.env.GEMINI_API_KEY;
+    const apiKey = process.env.GEMINI_API_KEY || process.env.AI_API_KEY;
     if (!apiKey) {
-        logger.error({ requestId, message: "Missing GEMINI_API_KEY", stage: "callProvider" });
+        logger.error({ requestId, message: "Missing GEMINI_API_KEY / AI_API_KEY", stage: "callProvider" });
         return null;
     }
 

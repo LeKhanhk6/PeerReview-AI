@@ -20,6 +20,7 @@ import summaryRoutes from './routes/summary.routes.js';
 import analyticsRoutes from './routes/analytics.routes.js';
 import telemetryRoutes from './routes/telemetry.routes.js';
 import adminRoutes from './routes/admin.routes.js';
+import healthRoutes from './routes/health.routes.js';
 import { startDeadlineCronJob } from './services/cron-deadline.service.js';
 
 dotenv.config();
@@ -27,10 +28,13 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 5000;
 
+// Bật trust proxy cho môi trường Render/Cloudflare/Vercel reverse proxy
+app.set('trust proxy', 1);
+
 // Cấu hình Middleware
 app.use(requestLogger);
 app.use(responseMiddleware);
-// Cấu hình CORS động từ process.env.CORS_ORIGIN
+// Cấu hình CORS động hỗ trợ Localhost, Render, và Vercel Preview Deployments
 const allowedOrigins = process.env.CORS_ORIGIN 
     ? process.env.CORS_ORIGIN.split(',').map(o => o.trim())
     : ['http://localhost:5173', 'http://127.0.0.1:5173', 'http://localhost:3000'];
@@ -39,7 +43,12 @@ app.use(cors({
     origin: function (origin, callback) {
         if (!origin) return callback(null, true);
         
-        if (allowedOrigins.includes(origin) || /^http:\/\/(localhost|127\.0\.0\.1):\d+$/.test(origin)) {
+        if (
+            allowedOrigins.includes(origin) || 
+            /^http:\/\/(localhost|127\.0\.0\.1):\d+$/.test(origin) ||
+            /\.vercel\.app$/.test(origin) ||
+            /\.onrender\.com$/.test(origin)
+        ) {
             return callback(null, true);
         }
         return callback(new Error('Not allowed by CORS'));
@@ -53,14 +62,13 @@ connectDB();
 startDeadlineCronJob();
 
 
-// Root & Health Check API (Công khai cho Render Monitoring)
+// Root API (Công khai cho Render Monitoring)
 app.get('/', (req, res) => {
     res.json({ data: { name: 'PeerReview-AI REST API', status: 'online', health: '/api/health' } });
 });
 
-app.get('/api/health', (req, res) => {
-    res.json({ data: { status: 'ok', message: 'PeerReview-AI Backend is running!' } });
-});
+// Routes
+app.use('/api', healthRoutes);
 
 // Routes
 app.use('/api/auth', authRoutes);

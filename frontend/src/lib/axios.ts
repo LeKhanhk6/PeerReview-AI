@@ -7,7 +7,7 @@ export interface ApiError {
   status: number;
 }
 
-const getBaseUrl = () => {
+export const getBaseUrl = () => {
   if (import.meta.env.VITE_ENABLE_MSW === 'true') return '/api';
   const rawUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
   const trimmed = rawUrl.replace(/\/$/, '');

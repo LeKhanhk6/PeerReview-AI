@@ -1,4 +1,5 @@
 import { v4 as uuidv4 } from 'uuid';
+import { getBaseUrl } from './axios';
 
 export interface TelemetryEvent {
   event: 'loader_timeout' | 'chunk_load_error' | 'ai_error' | 'ui_error' | 'api_failure' | 'ai_retry';
@@ -62,7 +63,7 @@ export async function sendTelemetry(payload: Omit<TelemetryEvent, 'sessionId' | 
   };
 
   try {
-    const response = await fetch('/api/telemetry', {
+    const response = await fetch(`${getBaseUrl()}/telemetry`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(fullPayload),
@@ -97,7 +98,7 @@ export async function sendClientError(payload: Omit<ClientErrorPayload, 'session
   };
 
   try {
-    const response = await fetch('/api/client-errors', {
+    const response = await fetch(`${getBaseUrl()}/client-errors`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(fullPayload),

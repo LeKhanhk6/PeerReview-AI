@@ -8,6 +8,23 @@ const supabaseKey = process.env.SUPABASE_SERVICE_KEY || process.env.SUPABASE_ANO
 
 export const supabase = supabaseUrl && supabaseKey ? createClient(supabaseUrl, supabaseKey) : null;
 
+const ensureBucket = async (bucketName) => {
+    if (!supabase) return;
+    try {
+        const { data: buckets } = await supabase.storage.listBuckets();
+        const bucket = buckets?.find(b => b.name === bucketName);
+        if (!bucket) {
+            logger.info(`Storage bucket '${bucketName}' not found. Attempting to create bucket...`);
+            const { error } = await supabase.storage.createBucket(bucketName, { public: true });
+            if (error) {
+                logger.warn(`Auto-create bucket '${bucketName}' returned:`, error.message);
+            }
+        }
+    } catch (err) {
+        logger.warn(`Bucket check for '${bucketName}' exception:`, err.message);
+    }
+};
+
 /**
  * Upload a file buffer to Supabase Storage
  * @param {Buffer} fileBuffer - The file buffer from multer
@@ -19,6 +36,8 @@ export const uploadSubmissionFile = async (fileBuffer, originalName, mimeType) =
     if (!supabase) {
         throw new AppError('Storage configuration is missing in .env (SUPABASE_URL and SUPABASE_SERVICE_KEY)', 500);
     }
+
+    await ensureBucket('submissions');
 
     const fileExt = originalName.split('.').pop();
     const uniqueFileName = `submission_${crypto.randomUUID()}.${fileExt}`;
@@ -33,7 +52,8 @@ export const uploadSubmissionFile = async (fileBuffer, originalName, mimeType) =
 
         if (error) {
             logger.error('Supabase storage upload error:', error);
-            throw new AppError('Lỗi khi lưu file lên Cloud Storage', 500);
+            const detailMsg = error.message || 'Lỗi khi lưu file lên Cloud Storage';
+            throw new AppError(detailMsg.includes('not found') ? 'Bucket "submissions" chưa được tạo trên Supabase Storage' : `Lỗi Cloud Storage: ${detailMsg}`, 500);
         }
 
         const { data: publicUrlData } = supabase.storage
@@ -60,6 +80,8 @@ export const uploadAssignmentAttachment = async (fileBuffer, originalName, mimeT
         throw new AppError('Storage configuration is missing in .env', 500);
     }
 
+    await ensureBucket('assignments');
+
     const fileExt = originalName.split('.').pop();
     const uniqueFileName = `attachment_${crypto.randomUUID()}.${fileExt}`;
 
@@ -73,7 +95,8 @@ export const uploadAssignmentAttachment = async (fileBuffer, originalName, mimeT
 
         if (error) {
             logger.error('Supabase assignment storage upload error:', error);
-            throw new AppError('Lỗi khi lưu file đính kèm lên Cloud Storage', 500);
+            const detailMsg = error.message || 'Lỗi khi lưu file đính kèm';
+            throw new AppError(detailMsg.includes('not found') ? 'Bucket "assignments" chưa được tạo trên Supabase Storage' : `Lỗi Cloud Storage: ${detailMsg}`, 500);
         }
 
         const { data: publicUrlData } = supabase.storage
@@ -110,6 +133,8 @@ export const uploadWorkspaceFile = async (fileBuffer, originalName, mimeType, gr
         throw new AppError('Storage configuration is missing in .env', 500);
     }
 
+    await ensureBucket('workspace');
+
     const fileExt = originalName.split('.').pop() || '';
     const baseName = originalName.slice(0, -(fileExt.length + 1));
     const safeName = slugify(baseName) || 'file';
@@ -127,7 +152,8 @@ export const uploadWorkspaceFile = async (fileBuffer, originalName, mimeType, gr
 
         if (error) {
             logger.error('Supabase workspace storage upload error:', error);
-            throw new AppError('Lỗi khi lưu file lên Cloud Storage', 500);
+            const detailMsg = error.message || 'Lỗi khi lưu file nhóm';
+            throw new AppError(detailMsg.includes('not found') ? 'Bucket "workspace" chưa được tạo trên Supabase Storage' : `Lỗi Cloud Storage: ${detailMsg}`, 500);
         }
 
         return uniqueFileName; // We store the internal path, not public URL

@@ -296,7 +296,7 @@ export const TeacherDashboardPage: React.FC = () => {
               </h2>
             </div>
             <Link
-              to="/teacher/analytics"
+              to={selectedClassId ? `/teacher/analytics?classId=${selectedClassId}&tab=earlyWarning` : '/teacher/analytics?tab=earlyWarning'}
               className="text-xs md:text-sm font-medium text-brand-primary hover:text-brand-hover inline-flex items-center gap-0.5 transition-colors whitespace-nowrap shrink-0"
             >
               <span>{analyticsMessages.earlyWarning.viewAllBtn}</span>
@@ -331,9 +331,9 @@ export const TeacherDashboardPage: React.FC = () => {
                       key={risk.id}
                       onClick={() => {
                         if (selectedClassId) {
-                          navigate(`/teacher/classes/${selectedClassId}`);
+                          navigate(`/teacher/analytics?classId=${selectedClassId}&tab=earlyWarning`);
                         } else {
-                          navigate('/teacher/analytics');
+                          navigate('/teacher/analytics?tab=earlyWarning');
                         }
                       }}
                       className={`p-3.5 rounded-xl cursor-pointer transition-all hover:shadow-sm ${isHigh

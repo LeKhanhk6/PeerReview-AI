@@ -15,7 +15,24 @@ type AnalyticsTab = 'contribution' | 'earlyWarning';
 export const TeacherAnalyticsDashboardPage: React.FC = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const selectedClassId = searchParams.get('classId') || '';
-  const [activeTab, setActiveTab] = useState<AnalyticsTab>('contribution');
+  const tabParam = searchParams.get('tab');
+  const [activeTab, setActiveTab] = useState<AnalyticsTab>(
+    tabParam === 'earlyWarning' ? 'earlyWarning' : 'contribution'
+  );
+
+  // Sync tab state when URL tab param changes
+  React.useEffect(() => {
+    if (tabParam === 'earlyWarning' || tabParam === 'contribution') {
+      setActiveTab(tabParam as AnalyticsTab);
+    }
+  }, [tabParam]);
+
+  const handleTabChange = (tab: AnalyticsTab) => {
+    setActiveTab(tab);
+    const params = new URLSearchParams(searchParams);
+    params.set('tab', tab);
+    setSearchParams(params);
+  };
 
   const [selectedGroupId, setSelectedGroupId] = useState<string | null>(null);
 
@@ -86,7 +103,7 @@ export const TeacherAnalyticsDashboardPage: React.FC = () => {
       <div className="flex border-b border-gray-200 space-x-4">
         <button
           type="button"
-          onClick={() => setActiveTab('contribution')}
+          onClick={() => handleTabChange('contribution')}
           className={`pb-3 text-sm font-bold border-b-2 transition-colors flex items-center gap-2 ${
             activeTab === 'contribution'
               ? 'border-brand-primary text-brand-primary'
@@ -98,7 +115,7 @@ export const TeacherAnalyticsDashboardPage: React.FC = () => {
 
         <button
           type="button"
-          onClick={() => setActiveTab('earlyWarning')}
+          onClick={() => handleTabChange('earlyWarning')}
           className={`pb-3 text-sm font-bold border-b-2 transition-colors flex items-center gap-2 ${
             activeTab === 'earlyWarning'
               ? 'border-brand-primary text-brand-primary'

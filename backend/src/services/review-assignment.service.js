@@ -88,16 +88,18 @@ export const generateReviewAssignments = async (assignmentId, userId, reviewsPer
         );
     }
 
-    // 1.5 Invariant Check: Prevent regenerating assignments (Dynamic Membership Guard)
-    const existingCheck = await pool.query(`
-        SELECT COUNT(*) as count 
-        FROM review_assignments ra
+    // 1.5 Invariant Check: Prevent regenerating if completed reviews exist.
+    // If no completed reviews exist, allow re-generating to include newly submitted groups.
+    const completedCheck = await pool.query(`
+        SELECT COUNT(r.id) as count 
+        FROM reviews r
+        JOIN review_assignments ra ON r.review_assignment_id = ra.id
         JOIN submissions s ON s.id = ra.submission_id
         WHERE s.assignment_id = $1
     `, [validAssignmentId]);
 
-    if (parseInt(existingCheck.rows[0].count, 10) > 0) {
-        throw new AppError('Assignments already generated', 400);
+    if (parseInt(completedCheck.rows[0].count, 10) > 0) {
+        throw new AppError('Assignments already generated and locked by completed reviews', 400);
     }
 
     // 2. Get groups and their latest submission for this assignment (Submission Pool)

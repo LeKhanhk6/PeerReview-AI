@@ -85,7 +85,7 @@ const callProvider = async (prompt, requestId, customTimeout = null, maxRetries 
     const timeoutMs = customTimeout || parseInt(process.env.AI_TIMEOUT) || 5000;
     const MAX_RESPONSE_SIZE = 1048576; // 1MB Limit
     
-    const DEFAULT_MODELS = ['gemini-2.5-flash', 'gemini-2.5-flash-lite', 'gemini-2.0-flash', 'gemini-1.5-flash'];
+    const DEFAULT_MODELS = ['gemini-3.6-flash', 'gemini-3.5-flash-lite', 'gemini-3.5-flash', 'gemini-3.7-flash'];
     const configuredModel = process.env.GEMINI_MODEL;
     const modelCandidates = configuredModel 
         ? [configuredModel, ...DEFAULT_MODELS.filter(m => m !== configuredModel)]
@@ -124,9 +124,16 @@ const callProvider = async (prompt, requestId, customTimeout = null, maxRetries 
                 }
 
                 const data = await response.json();
-                const text = data?.candidates?.[0]?.content?.parts?.[0]?.text;
+                const candidate = data?.candidates?.[0];
+                const finishReason = candidate?.finishReason;
+                if (finishReason && finishReason !== 'STOP') {
+                    logger.warn({ requestId, model, finishReason, stage: 'callProvider_finishReason_warn' });
+                }
+
+                const text = candidate?.content?.parts?.[0]?.text;
                 if (!text || typeof text !== 'string') {
-                    throw new Error('Invalid response structure');
+                    logger.error({ requestId, model, finishReason, stage: 'callProvider_invalid_structure' });
+                    throw new Error(`Invalid response structure (finishReason: ${finishReason || 'UNKNOWN'})`);
                 }
 
                 const byteSize = Buffer.byteLength(text, 'utf8');
@@ -182,9 +189,15 @@ const callProvider = async (prompt, requestId, customTimeout = null, maxRetries 
  */
 const extractJSON = (text) => {
     if (!text) return "";
+    // 1. Try finding JSON object containing expected keys
+    const matchKey = text.match(/\{[\s\S]*?"category"[\s\S]*?\}/i) || text.match(/\{[\s\S]*?"summary"[\s\S]*?\}/i);
+    if (matchKey) {
+        return matchKey[0];
+    }
+    // 2. Fallback to outermost braces
     const first = text.indexOf("{");
     const last = text.lastIndexOf("}");
-    if (first !== -1 && last !== -1) {
+    if (first !== -1 && last !== -1 && last > first) {
         return text.slice(first, last + 1);
     }
     return text;

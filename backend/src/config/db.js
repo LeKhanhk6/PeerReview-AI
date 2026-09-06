@@ -3,6 +3,9 @@ import dotenv from 'dotenv';
 
 dotenv.config();
 
+// Đảm bảo Node.js TLS chấp nhận self-signed certificate của Supabase Pooler trên Cloud Render
+process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
+
 const { Pool } = pkg;
 
 // Xóa query param sslmode nếu có để tránh pg-connection-string ghi đè rejectUnauthorized: false
@@ -13,7 +16,7 @@ const cleanConnectionString = rawUrl.replace(/(\?|&)sslmode=[^&]*/, '');
 const pool = new Pool({
     connectionString: cleanConnectionString,
     ssl: {
-        rejectUnauthorized: false // Supabase SSL connection fix
+        rejectUnauthorized: false
     }
 });
 

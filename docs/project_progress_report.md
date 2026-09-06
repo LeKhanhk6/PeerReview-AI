@@ -79,7 +79,7 @@ Dự án được chia thành 14 Phase (Giai đoạn). Dưới đây là bảng 
 | **PHASE 9** | Contribution Analytics | **Đã hoàn thành (Backend)** | Hoàn thiện Engine tính toán Contribution, Classification, Teacher Analytics. |
 | **PHASE 10**| Review Synthesis | **Đã hoàn thành (Backend)** | AI Synthesis và Teacher Validation APIs đã hoàn tất. |
 | **PHASE 11**| Teacher Analytics + Early Warning | **Đã hoàn thành (Backend)** | Dashboard Analytics, Collaboration Risk, Early Warnings API đã sẵn sàng. |
-| **PHASE 12**| Integration + Testing | **Đang triển khai** | Hoàn thành toàn bộ Service Unit Tests cho Backend (API Tests). Đang chờ Frontend Test & E2E. |
+| **PHASE 12**| Integration + Testing | **Đang triển khai** | Hoàn thành Backend Unit Tests, Health Check Diagnostics (B7.3), File Upload Capping 10MB (B7.4) và Deployment Hardening Vercel/Render (B7.5). Đang chờ Load Test k6 & E2E. |
 | **PHASE 13**| Deploy + Documentation | **Đang triển khai** | Tài liệu thiết kế Screen Flow, UI Architecture và các Use Cases chi tiết đang được cập nhật liên tục. |
 
 ---

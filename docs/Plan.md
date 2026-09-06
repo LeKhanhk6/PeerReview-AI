@@ -1378,15 +1378,18 @@ Một Feature chỉ hoàn thành khi:
 - Backup hàng ngày + Point-in-time Recovery (PITR với WAL), retention 14 ngày.
 - Giám sát / phân vùng `activity_logs` khi vượt 5 triệu bản ghi.
 
-### TASK B7.3 — Health Check
-- Endpoint `GET /health` (kiểm tra DB, AI Service connectivity) phục vụ Admin Dashboard & Monitoring.
+### TASK B7.3 — Health Check & Diagnostics ✅
+- [x] Endpoint `GET /api/health` (kiểm tra DB latency `SELECT 1`, process uptime, memory usage, AI Service readiness) phục vụ Monitoring & Load Balancer.
 
-### TASK B7.4 — Object Storage
-- Lưu trữ file bài nộp (S3/Firebase/GCS, 5–50GB), giới hạn dung lượng / file nộp.
+### TASK B7.4 — Object Storage & File Upload Size Capping ✅
+- [x] Middleware `fileUpload.middleware.js` tập trung: giới hạn dung lượng tệp nộp bài ở mức 10MB (tránh tràn RAM 512MB trên Render), danh sách trắng extensions (`.pdf`, `.docx`, `.doc`, `.zip`...) và MIME types.
 
-### TASK B7.5 — Environment & Staging
-- Tách Production / Staging + env variables riêng.
-- Verify error reporting: `POST /api/client-errors` nhận + log được lỗi từ FE.
+### TASK B7.5 — Post-Deployment Hardening ✅
+- [x] Bật Express `app.set('trust proxy', 1)` xử lý đúng IP phía sau Render reverse proxy.
+- [x] Mở rộng CORS regex hỗ trợ Vercel Preview Deployments (`*.vercel.app`).
+- [x] Cập nhật absolute URL `getBaseUrl()` cho `telemetry.ts` (tránh Vercel rewrite `index.html`).
+- [x] Tăng Axios Client timeout từ 30s lên 60s đáp ứng thời gian Render Cold-start.
+- [x] Cấu hình giới hạn kết nối PostgreSQL Pool (`max: 20`, `idleTimeoutMillis: 30000`).
 
 ### TASK B7.6 — E2E Support
 - Chạy Playwright 4 critical flows trên môi trường Staging (khớp FE Task 08.1).

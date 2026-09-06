@@ -30,21 +30,16 @@ const PORT = process.env.PORT || 5000;
 // Cấu hình Middleware
 app.use(requestLogger);
 app.use(responseMiddleware);
+// Cấu hình CORS động từ process.env.CORS_ORIGIN
+const allowedOrigins = process.env.CORS_ORIGIN 
+    ? process.env.CORS_ORIGIN.split(',').map(o => o.trim())
+    : ['http://localhost:5173', 'http://127.0.0.1:5173', 'http://localhost:3000'];
+
 app.use(cors({
     origin: function (origin, callback) {
         if (!origin) return callback(null, true);
         
-        // Trong môi trường Production, CHỈ cho phép tên miền thật
-        if (process.env.NODE_ENV === 'production') {
-            const allowedOrigins = ['https://your-production-domain.com'];
-            if (allowedOrigins.includes(origin)) {
-                return callback(null, true);
-            }
-            return callback(new Error('Not allowed by CORS'));
-        }
-        
-        // Trong môi trường Development, cho phép localhost chạy cổng bất kỳ
-        if (/^http:\/\/(localhost|127\.0\.0\.1):\d+$/.test(origin)) {
+        if (allowedOrigins.includes(origin) || /^http:\/\/(localhost|127\.0\.0\.1):\d+$/.test(origin)) {
             return callback(null, true);
         }
         return callback(new Error('Not allowed by CORS'));

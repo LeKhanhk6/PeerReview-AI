@@ -53,6 +53,11 @@ connectDB();
 startDeadlineCronJob();
 
 
+// Health Check API (Công khai cho Render Monitoring)
+app.get('/api/health', (req, res) => {
+    res.json({ data: { status: 'ok', message: 'PeerReview-AI Backend is running!' } });
+});
+
 // Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/classes', classesRoutes);
@@ -69,12 +74,6 @@ app.use('/api', summaryRoutes);
 app.use('/api/analytics', analyticsRoutes);
 app.use('/api', telemetryRoutes);
 app.use('/api/admin', adminRoutes);
-
-
-// API Test cơ bản
-app.get('/api/health', (req, res) => {
-    res.json({ data: { status: 'ok', message: 'PeerReview-AI Backend is running!' } });
-});
 
 // Centralized Error Handler (Must be last)
 app.use(errorHandler);

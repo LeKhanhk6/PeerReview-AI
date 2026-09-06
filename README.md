@@ -44,6 +44,11 @@
 - Cơ chế tự bảo vệ: Chặn Admin tự khóa chính mình và bảo vệ Admin duy nhất của hệ thống.
 - Cấu hình tham số vận hành hệ thống động (`system_config`) và lưu nhật ký thao tác nhạy cảm (`activity_logs`).
 
+### 8. ⚡ Tự vệ Hạ tầng & Giám sát Sức khỏe (System Resilience & Diagnostics)
+- Diagnostic API `GET /api/health` đo lường độ trễ kết nối Supabase DB (`SELECT 1`), Process Uptime và sử dụng RAM Heap.
+- Middleware `fileUpload.middleware.js` kiểm soát dung lượng file nộp bài tối đa **10MB** (bảo vệ RAM 512MB trên Render) và kiểm tra danh sách trắng MIME/Extension.
+- Bật Express `trust proxy` và CORS Regex hỗ trợ các Vercel Preview Deployments (`*.vercel.app`).
+
 ---
 
 ## 🛠 CÔNG NGHỆ SỬ DỤNG (TECH STACK)
@@ -119,6 +124,7 @@ Mở trình duyệt tại [http://localhost:5173](http://localhost:5173) để t
 
 ## 📚 TÀI LIỆU DỰ ÁN CHI TIẾT (DOCUMENTATION)
 
+- 🏗 [Kiến trúc Hệ thống & Phương án Triển khai (10_Kien_Truc_He_Thong_Va_Phuong_An_Trien_Khai.md)](docs/10_Kien_Truc_He_Thong_Va_Phuong_An_Trien_Khai.md)
 - 📖 [Hướng dẫn Cài đặt Local (SETUP_GUIDE.md)](docs/SETUP_GUIDE.md)
 - ☁️ [Hướng dẫn Vận hành & Deploy Cloud (DEPLOYMENT_GUIDE.md)](docs/DEPLOYMENT_GUIDE.md)
 - 🎨 [Quy chuẩn Thiết kế & Hệ thống UI Tokens (DESIGN_TOKENS.md)](docs/DESIGN_TOKENS.md)

@@ -12,9 +12,12 @@ const { Pool } = pkg;
 const rawUrl = process.env.DATABASE_URL || '';
 const cleanConnectionString = rawUrl.replace(/(\?|&)sslmode=[^&]*/, '');
 
-// Khởi tạo Pool kết nối đến Supabase PostgreSQL
+// Khởi tạo Pool kết nối đến Supabase PostgreSQL với giới hạn kết nối an toàn
 const pool = new Pool({
     connectionString: cleanConnectionString,
+    max: parseInt(process.env.DB_POOL_MAX || '20', 10),
+    idleTimeoutMillis: 30000,
+    connectionTimeoutMillis: 10000,
     ssl: {
         rejectUnauthorized: false
     }

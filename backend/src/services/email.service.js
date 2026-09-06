@@ -33,7 +33,7 @@ const transporter = createTransporter();
  * Gửi email đặt lại mật khẩu với rawToken (Hạn 15 phút)
  */
 export const sendPasswordResetEmail = async (toEmail, rawToken) => {
-  const appUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+  const appUrl = process.env.FRONTEND_URL || process.env.CORS_ORIGIN || 'http://localhost:5173';
   const resetLink = `${appUrl}/reset-password?token=${rawToken}`;
 
   const html = `
@@ -90,7 +90,7 @@ export const sendDeadlineReminderEmail = async (toEmail, assignmentTitle, hoursL
         ${isSubmission ? 'Vui lòng kiểm tra và thực hiện nộp bài đúng hạn.' : 'Vui lòng truy cập hệ thống để hoàn thành nhiệm vụ đánh giá đồng đẳng.'}
       </p>
       <div style="margin: 24px 0; text-align: center;">
-        <a href="${process.env.FRONTEND_URL || 'http://localhost:5173'}" style="background-color: #d97706; color: #ffffff; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold; display: inline-block;">
+        <a href="${process.env.FRONTEND_URL || process.env.CORS_ORIGIN || 'http://localhost:5173'}" style="background-color: #d97706; color: #ffffff; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold; display: inline-block;">
           Truy Cập Hệ Thống
         </a>
       </div>

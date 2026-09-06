@@ -169,9 +169,9 @@ export const updateSummaryItem = async (currentUser, itemId, updates) => {
                 note = COALESCE($2, note),
                 is_teacher_edited = true,
                 updated_at = NOW()
-            WHERE id = $3 AND updated_at <= $4::timestamp
+            WHERE id = $3 AND ($4::timestamp IS NULL OR updated_at <= $4::timestamp + INTERVAL '1 second')
             RETURNING updated_at
-        `, [content, note, validItemId, updatedAt]);
+        `, [content, note, validItemId, updatedAt || null]);
 
         if (updateItemRes.rowCount === 0) {
             throw new AppError('Failed to update item, it might have been modified by someone else or deleted (Conflict)', 409);

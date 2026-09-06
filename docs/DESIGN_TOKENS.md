@@ -104,3 +104,43 @@ App Shell: h-screen flex overflow-hidden (Gốc 100vh)
 1. **Không cuộn toàn trang trên Desktop (`lg:` breakpoint trở lên)**: Trang chủ/Dashboard không có scrollbar dọc toàn trang trên màn hình máy tính (1920x1080, 1536x864, 1366x768). Chỉ các danh sách dài bên trong Card mới tự cuộn (`overflow-y-auto`).
 2. **Quy tắc `min-h-0` cho Flex Children**: Mọi khối `flex-1` có chứa container cuộn `overflow-y-auto` bắt buộc phải đi kèm class `min-h-0` để flexbox không bị vỡ tràn chiều cao.
 3. **Responsive Mobile (< lg)**: Giữ `overflow-y-auto` ở màn hình di động/tablet nhỏ để cuộn trang tự nhiên, tránh bị tràn chữ.
+
+---
+
+## 👑 7. CHUẨN HOÁ ROLE COLOR MAPPING (PHÂN PHẠM VI VAI TRÒ HỆ THỐNG)
+
+Áp dụng bảng màu đặc trưng cho từng Vai trò (User Role) giúp người dùng dễ dàng nhận biết phân quyền trên toàn bộ giao diện:
+
+| Vai trò (User Role) | Color Palette | Tailwind Text Token | Tailwind Background Token | Tailwind Border Token |
+| :--- | :--- | :--- | :--- | :--- |
+| 🛡 **ADMIN** | **Rose Palette** | `text-rose-600` | `bg-rose-50` | `border-rose-200` |
+| 👨‍🏫 **TEACHER** | **Emerald Palette** | `text-emerald-600` | `bg-emerald-50` | `border-emerald-200` |
+| 🎓 **STUDENT** | **Brand/Slate Palette** | `text-brand-primary` | `bg-brand-soft-bg` | `border-brand-soft-border` |
+
+---
+
+## 📐 8. QUY TẮC THIẾT KẾ TRẢI NGHIỆM UX (UX DESIGN PATTERNS)
+
+1. **Quy tắc "1 Danh sách = 1 Cơ chế duyệt":**
+   - Không dùng lẫn lộn giữa Scroll container (`overflow-y-auto`) và Phân trang (Pagination) trên cùng 1 danh sách.
+   - Sử dụng **Pagination (Phân trang)** cho các danh sách lớn cần tra cứu quản trị (User List, Audit Logs).
+   - Sử dụng **Scroll Container (Thanh cuộn nội bộ)** cho các danh sách thời gian thực trong Dashboard/Workspace (Discussions, Activity Feed).
+2. **Quy tắc "Settings = Form 1 màn hình, Log tách Tab riêng":**
+   - Màn hình System Settings (`/admin/settings`) chỉ tập trung hiển thị form cấu hình tham số hệ thống.
+   - Nhật ký thao tác nhạy cảm (Audit Logs) được tách thành route/tab riêng biệt (`/admin/audit-logs`) phục vụ tra cứu chuyên sâu.
+
+---
+
+## 🚀 9. BẢNG ĐỊNH HƯỚNG KIẾN TRÚC & NÂNG CẤP MỞ RỘNG [ROADMAP]
+
+Các cải tiến hạ tầng được ghi nhận chuẩn bị cho giai đoạn mở rộng (Post-MVP / Scale):
+
+1. **[ROADMAP] Async Background Job cho Synthesis Engine:**
+   - Khi số lượng đánh giá chéo vượt 500+ reviews, chuyển luồng tổng hợp AI Synthesis sang mô hình Background Worker/Job Queue bất đồng bộ kết hợp Polling API status (`GET /api/summary/submissions/:id/summary/status`).
+2. **[ROADMAP] Redis / Postgres Advisory Locks:**
+   - Khi hệ thống Backend mở rộng sang mô hình Multi-Instance backend cluster, thay thế In-memory Locks bằng Redis Lock hoặc PostgreSQL Advisory Lock (`pg_advisory_xact_lock`) để chống race condition khi nhiều giảng viên cùng duyệt bản tổng hợp.
+3. **[ROADMAP] Audit Logs cho Tệp tin Workspace:**
+   - Ghi vết tự động vào `activity_logs` đối với mọi thao tác tải xuống tệp tin (`GET /api/workspace/files/:id/download`) giúp quản lý và theo dõi nhật ký truy cập tệp tin đồ án bảo mật.
+4. **[ROADMAP] Khuyến cáo Vận hành Render Free Tier:**
+   - Ghi nhận cơ chế Cold-start (30–50s) của Render Free Tier trong bộ tài liệu `docs/DEPLOYMENT_GUIDE.md` và quy trình ping trước 5 phút khi demo.
+

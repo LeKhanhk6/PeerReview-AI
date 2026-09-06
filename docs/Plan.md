@@ -47,7 +47,7 @@ Deploy + Documentation
 ## TASK 01.1 — GitHub Repository
 
 - [x]  Create Repository.
-- [ ]  README.
+- [x]  README.
 - [x]  `.gitignore`.
 - [x]  Branch strategy.
 - [x]  Commit convention.
@@ -710,14 +710,14 @@ AI_API_KEY
 ```
 ## TASK 14.5 — Documentation
 
-- [ ]  README.
-- [ ]  Setup Guide.
-- [ ]  API Documentation.
-- [ ]  ERD.
-- [ ]  System Architecture.
-- [ ]  Deployment Guide.
-- [ ]  User Guide.
-- [ ]  Testing Documentation.
+- [x]  README.
+- [x]  Setup Guide.
+- [x]  API Documentation.
+- [x]  ERD.
+- [x]  System Architecture.
+- [x]  Deployment Guide.
+- [x]  User Guide.
+- [x]  Testing Documentation.
 # 15. Frontend Structure
 ```
 src/

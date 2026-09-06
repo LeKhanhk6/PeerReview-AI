@@ -53,7 +53,11 @@ connectDB();
 startDeadlineCronJob();
 
 
-// Health Check API (Công khai cho Render Monitoring)
+// Root & Health Check API (Công khai cho Render Monitoring)
+app.get('/', (req, res) => {
+    res.json({ data: { name: 'PeerReview-AI REST API', status: 'online', health: '/api/health' } });
+});
+
 app.get('/api/health', (req, res) => {
     res.json({ data: { status: 'ok', message: 'PeerReview-AI Backend is running!' } });
 });

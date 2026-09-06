@@ -53,7 +53,7 @@
 | **Frontend** | React 18, Vite, TypeScript, TanStack Query (React Query v5), TailwindCSS, Zustand, Lucide Icons, Sonner |
 | **Backend** | Node.js, Express.js (ESM), PostgreSQL (pg pool), Zod Schema Validation, JWT, Bcrypt |
 | **Database** | PostgreSQL (Supabase Cloud Pooler), UUID Primary Keys, Composite & GIN Indexes |
-| **AI Integration** | Gemini 1.5/2.0 API Provider, Dynamic Rate Limiter, In-memory SHA-256 Toxicity Cache |
+| **AI Integration** | Gemini API Provider (Dynamic Rate Limiter, In-memory SHA-256 Toxicity Cache) |
 | **Testing** | Jest, Service Unit Testing, Fake Timers & Mock Pool |
 | **Cloud Deployment** | Vercel (Frontend Client), Render (Backend Node API), Supabase (Managed Postgres DB) |
 

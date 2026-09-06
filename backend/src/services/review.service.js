@@ -168,7 +168,7 @@ export const getReviewAssignmentDetail = async (reviewAssignmentId, userId) => {
             SELECT 
                 r.id, 
                 r.overall_comment, 
-                r.total_score, 
+                (CASE WHEN r.total_score > 10 THEN r.total_score / 10.0 ELSE r.total_score END) as total_score, 
                 r.submitted_at,
                 (
                     SELECT json_agg(json_build_object(

@@ -60,7 +60,13 @@ export const SubmissionFeedbackPanel: React.FC<SubmissionFeedbackPanelProps> = (
     );
   }
 
-  const averageScore = feedback.average_score ?? feedback.score;
+  const rawScore = feedback.average_score ?? feedback.score;
+  const averageScore = rawScore !== undefined && rawScore !== null
+    ? (rawScore > 10 ? Number((rawScore / 10).toFixed(1)) : Number(rawScore.toFixed(1)))
+    : undefined;
+  const teacherScore = feedback.teacher_score !== undefined && feedback.teacher_score !== null
+    ? (feedback.teacher_score > 10 ? Number((feedback.teacher_score / 10).toFixed(1)) : Number(feedback.teacher_score.toFixed(1)))
+    : undefined;
 
   return (
     <div className="bg-white border border-gray-200 rounded-xl p-5 shadow-sm space-y-5">
@@ -95,9 +101,9 @@ export const SubmissionFeedbackPanel: React.FC<SubmissionFeedbackPanelProps> = (
               <span>{submissionMessages.feedback.teacherFeedbackTitle}</span>
             </h3>
 
-            {feedback.teacher_score !== undefined && (
+            {teacherScore !== undefined && (
               <span className="text-sm font-black text-purple-700 bg-white px-2 py-0.5 rounded border border-purple-200 font-mono">
-                {feedback.teacher_score} / 10
+                {teacherScore} / 10
               </span>
             )}
           </div>
@@ -156,6 +162,9 @@ export const SubmissionFeedbackPanel: React.FC<SubmissionFeedbackPanelProps> = (
           <div className="space-y-3">
             {feedback.reviews?.map((rev: any, index: number) => {
               const dateStr = rev.submitted_at ? new Date(rev.submitted_at).toLocaleDateString('vi-VN') : 'vừa xong';
+              const revScore = rev.score !== undefined && rev.score !== null
+                ? (rev.score > 10 ? Number((rev.score / 10).toFixed(1)) : Number(Number(rev.score).toFixed(1)))
+                : null;
 
               return (
                 <div key={rev.id || index} className="bg-gray-50 border border-gray-200 p-4 rounded-xl space-y-2">
@@ -163,9 +172,11 @@ export const SubmissionFeedbackPanel: React.FC<SubmissionFeedbackPanelProps> = (
                     <span className="font-bold text-gray-800 flex items-center gap-1.5">
                       <UserCircle2 className="w-4 h-4 text-gray-500" /> {rev.reviewer_name || `Sinh viên ẩn danh #${index + 1}`}
                     </span>
-                    <span className="font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200 font-mono">
-                      {rev.score} / 10
-                    </span>
+                    {revScore !== null && (
+                      <span className="font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200 font-mono">
+                        {revScore} / 10
+                      </span>
+                    )}
                   </div>
 
                   <p className="text-sm text-gray-800 leading-relaxed">

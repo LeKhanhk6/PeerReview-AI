@@ -456,7 +456,7 @@ export const getSubmissionFeedback = async (assignmentId, userId) => {
     const statsQuery = `
         SELECT 
             COUNT(r.id) as review_count, 
-            AVG(r.total_score) as avg_score
+            AVG(CASE WHEN r.total_score > 10 THEN r.total_score / 10.0 ELSE r.total_score END) as avg_score
         FROM review_assignments ra
         JOIN reviews r ON r.review_assignment_id = ra.id
         WHERE ra.submission_id = $1 AND ra.status = 'COMPLETED'
@@ -464,10 +464,31 @@ export const getSubmissionFeedback = async (assignmentId, userId) => {
     const statsResult = await pool.query(statsQuery, [submission.submission_id]);
     const stats = statsResult.rows[0];
 
+    // 5. Get individual peer reviews with normalized score
+    const reviewsQuery = `
+        SELECT 
+            r.id,
+            (CASE WHEN r.total_score > 10 THEN r.total_score / 10.0 ELSE r.total_score END) as score,
+            r.overall_comment as comments,
+            r.submitted_at
+        FROM review_assignments ra
+        JOIN reviews r ON r.review_assignment_id = ra.id
+        WHERE ra.submission_id = $1 AND ra.status = 'COMPLETED'
+        ORDER BY r.submitted_at DESC
+    `;
+    const reviewsResult = await pool.query(reviewsQuery, [submission.submission_id]);
+
+    const normalizedAvgScore = stats.avg_score ? parseFloat(Number(stats.avg_score).toFixed(1)) : null;
+
     return {
         summary: summaryData,
-        score: stats.avg_score ? parseFloat(Number(stats.avg_score).toFixed(2)) : null,
-        reviewCount: parseInt(stats.review_count, 10) || 0
+        score: normalizedAvgScore,
+        average_score: normalizedAvgScore,
+        reviewCount: parseInt(stats.review_count, 10) || 0,
+        reviews: reviewsResult.rows.map(r => ({
+            ...r,
+            score: r.score ? parseFloat(Number(r.score).toFixed(1)) : null
+        }))
     };
 };
 

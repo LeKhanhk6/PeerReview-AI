@@ -59,7 +59,21 @@ export const TeacherDashboardPage: React.FC = () => {
     { enabled: Boolean(selectedClassId) }
   );
 
-  const risks = Array.isArray(rawRisks) ? rawRisks : [];
+  const risksList = Array.isArray(rawRisks) ? rawRisks : [];
+
+  // Filter out risks that have been ACKNOWLEDGED or DISMISSED by teacher
+  let activeRisks = risksList;
+  try {
+    const stored = localStorage.getItem('peerreview_risk_statuses');
+    const riskStatuses = stored ? JSON.parse(stored) : {};
+    activeRisks = risksList.filter((r: any, index: number) => {
+      const computedId = r.id || `risk-${r.groupId || 'g'}-${r.userId || 'u'}-${r.riskType || 'type'}-${index}`;
+      const status = riskStatuses[computedId] || r.status || 'ACTIVE';
+      return status === 'ACTIVE';
+    });
+  } catch (e) {
+    activeRisks = risksList.filter((r: any) => r.status === 'ACTIVE' || !r.status);
+  }
 
   // 4. Fetch Teacher Assignments for selected class or all classes
   const { data: assignmentsData } = useApiQuery(
@@ -76,7 +90,7 @@ export const TeacherDashboardPage: React.FC = () => {
     : assignmentsData?.rows || [];
 
   // Sort risks: HIGH severity first -> MEDIUM -> score DESC
-  const sortedRisks = [...risks].sort((a, b) => {
+  const sortedRisks = [...activeRisks].sort((a, b) => {
     if (a.severity !== b.severity) {
       return a.severity === 'HIGH' ? -1 : 1;
     }

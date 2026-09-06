@@ -91,7 +91,7 @@ graph TD
 
 ### 4. Tầng Dịch vụ AI (AI Engine Layer)
 - **Tích hợp:** Giao tiếp với Google Gemini API thông qua các API Contracts khép kín phía Backend, tuyệt đối **không lộ AI API Key ra Frontend Client**.
-- **Model Auto-Fallback System:** Tự động chuyển đổi giữa các phiên bản model Gemini (`gemini-2.5-flash` ➔ `gemini-1.5-flash` ➔ `gemini-3.6-flash`) khi gặp lỗi nghẽn hạn ngạch `HTTP 429`.
+- **Model Auto-Fallback System:** Tự động luân phiên chuyển đổi giữa các phiên bản model Gemini (`gemini-3.6-flash` ➔ `gemini-3.5-flash` ➔ `gemini-3.7-flash`) khi gặp lỗi nghẽn hạn ngạch `HTTP 429` hoặc hết quota.
 - **Toxicity & Constructiveness Analysis Cache:** Lưu kết quả phân tích nhận xét vào Cache theo SHA-256 hash của văn bản (`ai_comment_tox_${hash}`), thời gian sống (TTL) 7 ngày, giúp phản hồi tức thì trong `< 5ms` và tiết kiệm chi phí API.
 - **Nguyên tắc Human-in-the-loop:** AI chỉ thực hiện phân tích, gợi ý, cảnh báo và tổng hợp; **AI KHÔNG tự động quyết định điểm số cuối cùng**, quyền quyết định luôn thuộc về Giảng viên.
 

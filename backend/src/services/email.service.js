@@ -49,7 +49,7 @@ export const sendPasswordResetEmail = async (toEmail, rawToken) => {
         </a>
       </div>
       <p style="font-size: 12px; color: #6b7280;">
-        📌 <strong>Lưu ý:</strong> Liên kết này chỉ có hiệu lực trong vòng <strong>15 phút</strong> kể từ khi nhận được email và chỉ có giá trị cho 1 lần sử dụng.
+        📌 <strong>Lưu ý:</strong> Liên kết này chỉ có hiệu lực trong vòng <strong>60 phút</strong> kể từ khi nhận được email và chỉ có giá trị cho 1 lần sử dụng.
       </p>
       <p style="font-size: 12px; color: #6b7280;">
         Nếu bạn không gửi yêu cầu này, vui lòng bỏ qua email này hoặc liên hệ với Quản trị viên để bảo vệ tài khoản.

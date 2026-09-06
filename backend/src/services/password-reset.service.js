@@ -65,10 +65,10 @@ export const requestPasswordReset = async (email) => {
     const rawToken = crypto.randomBytes(32).toString('hex');
     const tokenHash = hashToken(rawToken);
 
-    // 3. Insert SHA-256 token hash into DB with 15-min expiration
+    // 3. Insert SHA-256 token hash into DB with 60-min expiration
     await pool.query(
       `INSERT INTO password_reset_tokens (user_id, token_hash, expires_at)
-       VALUES ($1, $2, NOW() + INTERVAL '15 MINUTES')`,
+       VALUES ($1, $2, NOW() + INTERVAL '60 MINUTES')`,
       [user.id, tokenHash]
     );
 
@@ -84,7 +84,7 @@ export const requestPasswordReset = async (email) => {
 };
 
 /**
- * Reset Password (Verifies 15-min SHA-256 token, hashes new password, invalidates token)
+ * Reset Password (Verifies 60-min SHA-256 token, hashes new password, invalidates token)
  */
 export const resetPassword = async (rawToken, newPassword) => {
   await initPasswordResetTables();
@@ -112,7 +112,7 @@ export const resetPassword = async (rawToken, newPassword) => {
     );
 
     if (tokenRes.rowCount === 0) {
-      throw new AppError('Token không hợp lệ hoặc đã hết hạn (chỉ có hiệu lực 15 phút)', 400);
+      throw new AppError('Token không hợp lệ hoặc đã hết hạn (chỉ có hiệu lực 60 phút)', 400);
     }
 
     const tokenRow = tokenRes.rows[0];
@@ -124,7 +124,7 @@ export const resetPassword = async (rawToken, newPassword) => {
 
     // 3. Check expiration
     if (new Date(tokenRow.expires_at).getTime() < Date.now()) {
-      throw new AppError('Token đã hết hạn (chỉ có hiệu lực trong vòng 15 phút)', 400);
+      throw new AppError('Token đã hết hạn (chỉ có hiệu lực trong vòng 60 phút)', 400);
     }
 
     // 4. Hash new password with bcrypt

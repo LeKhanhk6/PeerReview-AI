@@ -48,6 +48,10 @@ AI_TIMEOUT=30000
 # CORS Configuration (Hỗ trợ danh sách origin cách nhau bằng dấu phẩy)
 CORS_ORIGIN="http://localhost:5173,http://127.0.0.1:5173"
 
+# Supabase Storage Configuration (Upload/Download file)
+SUPABASE_URL="https://<project_ref>.supabase.co"
+SUPABASE_ANON_KEY="your_supabase_anon_key_here"
+
 # System Config & Audit
 AUDIT_ENABLED=true
 ```

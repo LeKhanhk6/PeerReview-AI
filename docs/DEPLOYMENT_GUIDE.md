@@ -31,6 +31,10 @@ DATABASE_URL="postgresql://postgres.<project_ref>:<password>@aws-0-ap-southeast-
 JWT_SECRET="<Chuỗi ngẫu nhiên 32-byte sinh bằng openssl rand -hex 32, KHÁC local>"
 AI_API_KEY="<Gemini_API_Key_Production>"
 CORS_ORIGIN="https://peer-review-ai-tau.vercel.app,http://localhost:5173"
+
+# Supabase Storage Configuration (Cho tính năng Upload/Download file)
+SUPABASE_URL="https://<project_ref>.supabase.co"
+SUPABASE_ANON_KEY="<Supabase_Anon_Public_Key_Hoac_Service_Key>"
 ```
 
 ---

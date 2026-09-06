@@ -85,79 +85,96 @@ const callProvider = async (prompt, requestId, customTimeout = null, maxRetries 
     const timeoutMs = customTimeout || parseInt(process.env.AI_TIMEOUT) || 5000;
     const MAX_RESPONSE_SIZE = 1048576; // 1MB Limit
     
-    const fetchCall = async () => {
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+    const DEFAULT_MODELS = ['gemini-2.5-flash', 'gemini-2.5-flash-lite', 'gemini-2.0-flash', 'gemini-1.5-flash'];
+    const configuredModel = process.env.GEMINI_MODEL;
+    const modelCandidates = configuredModel 
+        ? [configuredModel, ...DEFAULT_MODELS.filter(m => m !== configuredModel)]
+        : DEFAULT_MODELS;
+
+    const baseUrl = process.env.AI_API_URL || 'https://generativelanguage.googleapis.com/v1beta';
+
+    for (const model of modelCandidates) {
+        const fetchCall = async () => {
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+
+            try {
+                const url = `${baseUrl}/models/${model}:generateContent?key=${apiKey}`;
+                const bodyPayload = {
+                    contents: [{ parts: [{ text: prompt }] }],
+                    generationConfig: { responseMimeType: "application/json" }
+                };
+                if (systemInstruction) {
+                    bodyPayload.systemInstruction = { parts: [{ text: systemInstruction }] };
+                }
+
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(bodyPayload),
+                    signal: controller.signal
+                });
+
+                if (!response.ok) {
+                    const errText = await response.text().catch(() => '');
+                    logger.error({ requestId, status: response.status, body: errText, model, stage: 'callProvider_http_error' });
+                    const err = new Error(`Provider responded with status: ${response.status}`);
+                    err.status = response.status;
+                    throw err;
+                }
+
+                const data = await response.json();
+                const text = data?.candidates?.[0]?.content?.parts?.[0]?.text;
+                if (!text || typeof text !== 'string') {
+                    throw new Error('Invalid response structure');
+                }
+
+                const byteSize = Buffer.byteLength(text, 'utf8');
+                if (byteSize > MAX_RESPONSE_SIZE) {
+                    const err = new Error(`Response exceeded max size limit (${byteSize} bytes)`);
+                    err.code = 'OOM_GUARD';
+                    throw err;
+                }
+                
+                logger.info({ requestId, event: 'callProvider_success', model, stage: 'callProvider' });
+                return text;
+            } catch (error) {
+                if (error.name === 'AbortError') {
+                    error.message = `Timeout after ${timeoutMs}ms`;
+                    error.status = 504;
+                }
+                throw error;
+            } finally {
+                clearTimeout(timeoutId);
+            }
+        };
 
         try {
-            const baseUrl = process.env.AI_API_URL || 'https://generativelanguage.googleapis.com/v1beta';
-            const model = process.env.GEMINI_MODEL || 'gemini-1.5-flash';
-            const url = `${baseUrl}/models/${model}:generateContent?key=${apiKey}`;
-            const bodyPayload = {
-                contents: [{ parts: [{ text: prompt }] }],
-                generationConfig: { responseMimeType: "application/json" }
-            };
-            if (systemInstruction) {
-                bodyPayload.systemInstruction = { parts: [{ text: systemInstruction }] };
-            }
-
-            const response = await fetch(url, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(bodyPayload),
-                signal: controller.signal
+            const result = await retryWithBackoff(fetchCall, {
+                retries: maxRetries,
+                baseDelay: 300,
+                logger,
+                requestId,
+                context: `callProvider_${model}`,
+                shouldRetry: (err) => {
+                    if (err.code === 'OOM_GUARD') return false;
+                    if (err.status === 404) return false;
+                    if (err.status >= 400 && err.status < 500 && err.status !== 429) return false;
+                    return true;
+                }
             });
-
-            if (!response.ok) {
-                const errText = await response.text().catch(() => '');
-                logger.error({ requestId, status: response.status, body: errText, model, stage: 'callProvider_http_error' });
-                const err = new Error(`Provider responded with status: ${response.status}`);
-                err.status = response.status;
-                throw err;
-            }
-
-            const data = await response.json();
-            const text = data?.candidates?.[0]?.content?.parts?.[0]?.text;
-            if (!text || typeof text !== 'string') {
-                throw new Error('Invalid response structure');
-            }
-
-            const byteSize = Buffer.byteLength(text, 'utf8');
-            if (byteSize > MAX_RESPONSE_SIZE) {
-                const err = new Error(`Response exceeded max size limit (${byteSize} bytes)`);
-                err.code = 'OOM_GUARD';
-                throw err;
-            }
-            
-            return text;
+            if (result) return result;
         } catch (error) {
-            if (error.name === 'AbortError') {
-                error.message = `Timeout after ${timeoutMs}ms`;
-                error.status = 504;
+            if (error.status === 404) {
+                logger.warn({ requestId, event: 'model_404_fallback', model, stage: 'callProvider' });
+                continue;
             }
-            throw error;
-        } finally {
-            clearTimeout(timeoutId);
+            logger.error({ requestId, event: 'ai_service_error', model, error: error.message, stage: 'callProvider' });
+            return null;
         }
-    };
-
-    try {
-        return await retryWithBackoff(fetchCall, {
-            retries: maxRetries,
-            baseDelay: 300,
-            logger,
-            requestId,
-            context: 'callProvider',
-            shouldRetry: (err) => {
-                if (err.code === 'OOM_GUARD') return false;
-                if (err.status >= 400 && err.status < 500 && err.status !== 429) return false;
-                return true;
-            }
-        });
-    } catch (error) {
-        logger.error({ requestId, event: 'ai_service_error', error: error.message, stage: 'callProvider' });
-        return null;
     }
+
+    return null;
 };
 
 /**

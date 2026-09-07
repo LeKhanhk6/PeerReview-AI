@@ -41,11 +41,11 @@ const sendViaResend = async ({ to, subject, html, from }) => {
 };
 
 /**
- * Create Nodemailer SMTP Transporter with connection pooling & fast timeouts
+ * Create Nodemailer Direct SMTP Transporter (Direct TLS per request to prevent cloud host socket pooling hangs)
  */
 const createSmtpTransporter = () => {
   const host = process.env.SMTP_HOST;
-  const port = parseInt(process.env.SMTP_PORT || '587', 10);
+  const port = parseInt(process.env.SMTP_PORT || '465', 10);
   const user = process.env.SMTP_USER;
   const pass = process.env.SMTP_PASS;
 
@@ -54,9 +54,7 @@ const createSmtpTransporter = () => {
       host,
       port,
       secure: port === 465,
-      pool: true,
-      maxConnections: 5,
-      maxMessages: 100,
+      pool: false,
       connectionTimeout: 10000, // 10 seconds
       greetingTimeout: 5000,    // 5 seconds
       socketTimeout: 10000,     // 10 seconds
@@ -70,10 +68,8 @@ const createSmtpTransporter = () => {
   return null;
 };
 
-let smtpTransporter = createSmtpTransporter();
-
 /**
- * Universal Email Sender (Dispatches to Resend HTTP API, SMTP Transporter, or Dev Logger)
+ * Universal Email Sender (Dispatches to Resend HTTP API, Direct SMTP Transporter, or Dev Logger)
  */
 export const sendMail = async ({ to, subject, html, from }) => {
   const sender = from || getDefaultFrom();
@@ -87,14 +83,12 @@ export const sendMail = async ({ to, subject, html, from }) => {
     } catch (err) {
       logger.error(`[EMAIL SERVICE] Resend API failed for ${to}:`, err);
       // Fallback to SMTP if configured
-      if (!smtpTransporter) throw err;
+      if (!process.env.SMTP_HOST) throw err;
     }
   }
 
-  // 2. Optimized Nodemailer SMTP Transporter
-  if (!smtpTransporter) {
-    smtpTransporter = createSmtpTransporter();
-  }
+  // 2. Direct Nodemailer SMTP Transporter
+  const smtpTransporter = createSmtpTransporter();
 
   if (smtpTransporter) {
     try {
@@ -104,7 +98,7 @@ export const sendMail = async ({ to, subject, html, from }) => {
         subject,
         html,
       });
-      logger.info(`[EMAIL SERVICE] Email sent via SMTP to ${to} | ID: ${info.messageId}`);
+      logger.info(`[EMAIL SERVICE] Email sent via Direct SMTP to ${to} | ID: ${info.messageId}`);
       return info;
     } catch (err) {
       logger.error(`[EMAIL SERVICE] SMTP sendMail failed for ${to}:`, err);

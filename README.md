@@ -24,7 +24,8 @@
 
 ### 3. 🤖 AI Peer-Review Mentor (Hỗ trợ Góp ý Real-time)
 - Phân tích trực tiếp phản hồi của sinh viên theo các tiêu chí: **Tính xây dựng (Constructiveness)**, **Độ liên quan (Relevance)**, **Văn phong (Tone)**, **Độ độc hại (Toxicity)**.
-- Đưa ra gợi ý cải thiện văn phong trước khi sinh viên nộp nhận xét.
+- Động cơ AI thế hệ mới **Google Gemini 3.x Flash Family** (`gemini-3.6-flash`, `gemini-3.5-flash-lite`, `gemini-3.5-flash`, `gemini-3.7-flash`) với khả năng trích xuất JSON an toàn khỏi khối suy luận (Thought block).
+- Cơ chế **Tự động Xoay vòng & Dự phòng Model (Multi-Model Auto-Rotation & Fallback)** khi gặp lỗi `429 Quota Exhaustion` hoặc `404 Not Found`, giúp nhân 4 lần dung lượng xử lý miễn phí (lên đến 80 request/phút).
 - Tích hợp **Debounce (1.5s)** và **SHA-256 Comment Caching (7 ngày)** giúp tối ưu chi phí AI API và chống spam server.
 
 ### 4. 📊 Engine Phân tích Đóng góp Nhóm (Contribution Analytics Engine)
@@ -33,7 +34,8 @@
 
 ### 5. 📝 AI Review Synthesis cho Giáo viên (Human-in-the-loop)
 - AI tự động tổng hợp hàng trăm nhận xét chấm chéo thành bản tóm tắt súc tích: **Điểm mạnh (Strengths)**, **Điểm yếu (Weaknesses)**, **Gợi ý cải thiện (Suggestions)**.
-- **Giáo viên toàn quyền điều khiển:** Xem danh sách review gốc, chỉnh sửa/bổ sung tóm tắt (`is_teacher_edited`), duyệt bản tổng hợp (`APPROVED`) trước khi công bố.
+- **Đồng bộ hóa thang điểm 10 (0 - 10 điểm):** Toàn bộ điểm số tổng quan bài nộp, bài đánh giá và tổng hợp đều được chuẩn hóa thống nhất trên thang điểm 10.
+- **Giáo viên toàn quyền điều khiển & Khóa an toàn:** Xem danh sách review gốc, chỉnh sửa/bổ sung tóm tắt (`is_teacher_edited`), duyệt bản tổng hợp (`APPROVED`). Bảo vệ bằng cơ chế **Khóa lạc quan (Optimistic Concurrency Control)** chính xác microsecond chống ghi đè dữ liệu.
 
 ### 6. ⚠️ Cảnh báo Rủi ro & Dashboard dành cho Giáo viên (Teacher Analytics & Early Warning)
 - Dashboard tổng quan thống kê tỷ lệ nộp bài, tiến độ chấm chéo, điểm số trung bình.
@@ -44,9 +46,13 @@
 - Cơ chế tự bảo vệ: Chặn Admin tự khóa chính mình và bảo vệ Admin duy nhất của hệ thống.
 - Cấu hình tham số vận hành hệ thống động (`system_config`) và lưu nhật ký thao tác nhạy cảm (`activity_logs`).
 
-### 8. ⚡ Tự vệ Hạ tầng & Giám sát Sức khỏe (System Resilience & Diagnostics)
+### 8. ☁️ Tích hợp Supabase Storage & Quản lý File Cloud
+- Hệ thống lưu trữ file đồ án/bài nộp (`submissions`), đề bài (`assignments`), và tài liệu làm việc nhóm (`workspace`).
+- Tự động khởi tạo Bucket (Auto-bucket provisioning) và tạo đường dẫn Signed URL/Public URL bảo mật.
+- Kiểm soát dung lượng file nộp bài tối đa **10MB** (bảo vệ RAM 512MB trên Render) và kiểm tra danh sách trắng MIME/Extension.
+
+### 9. ⚡ Tự vệ Hạ tầng & Giám sát Sức khỏe (System Resilience & Diagnostics)
 - Diagnostic API `GET /api/health` đo lường độ trễ kết nối Supabase DB (`SELECT 1`), Process Uptime và sử dụng RAM Heap.
-- Middleware `fileUpload.middleware.js` kiểm soát dung lượng file nộp bài tối đa **10MB** (bảo vệ RAM 512MB trên Render) và kiểm tra danh sách trắng MIME/Extension.
 - Bật Express `trust proxy` và CORS Regex hỗ trợ các Vercel Preview Deployments (`*.vercel.app`).
 
 ---
@@ -58,9 +64,10 @@
 | **Frontend** | React 18, Vite, TypeScript, TanStack Query (React Query v5), TailwindCSS, Zustand, Lucide Icons, Sonner |
 | **Backend** | Node.js, Express.js (ESM), PostgreSQL (pg pool), Zod Schema Validation, JWT, Bcrypt |
 | **Database** | PostgreSQL (Supabase Cloud Pooler), UUID Primary Keys, Composite & GIN Indexes |
-| **AI Integration** | Gemini API Provider (Dynamic Rate Limiter, In-memory SHA-256 Toxicity Cache) |
+| **Cloud Storage** | Supabase Storage (Submissions, Assignments & Workspace File Buckets) |
+| **AI Integration** | Google Gemini 3.x Flash Family (`gemini-3.6-flash`, `gemini-3.5-flash-lite`, `gemini-3.5-flash`, `gemini-3.7-flash`) với Multi-Model Rotation, Rate Limiter & SHA-256 Cache |
 | **Testing** | Jest, Service Unit Testing, Fake Timers & Mock Pool |
-| **Cloud Deployment** | Vercel (Frontend Client), Render (Backend Node API), Supabase (Managed Postgres DB) |
+| **Cloud Deployment** | Vercel (Frontend Client), Render (Backend Node API), Supabase (Managed Postgres & Storage) |
 
 ---
 
@@ -81,16 +88,15 @@
 │   ┌────────────────────────────────────────────────────────────────┐   │
 │   │ Middlewares: Dynamic CORS, JWT Auth, RBAC Role Check,          │   │
 │   │ Dynamic AI Rate Limiter, PII Sanitizer, Centralized Error      │   │
-│   └────────────────────────────────┬───────────────────────────────┘   │
-└─────────────────────┬──────────────┴───────────────┬───────────────────┘
-                      │                              │
-                      ▼                              ▼
-┌───────────────────────────┐         ┌──────────────────────────────────┐
-│   SUPABASE POSTGRESQL     │         │       AI SERVICE INTEGRATION     │
-│   (28+ Tables, Foreign    │         │  (Gemini API Provider / AI       │
-│   Keys, Composite Indexes,│         │   Peer-Review Mentor & Review    │
-│   JSONB, GIN Triggers)    │         │   Synthesis Engine)              │
-└───────────────────────────┘         └──────────────────────────────────┘
+│   └──────┬────────────────────────┬────────────────────────┬───────┘   │
+└──────────┼────────────────────────┼────────────────────────┼───────────┘
+           │                        │                        │
+           ▼                        ▼                        ▼
+┌──────────────────────┐ ┌────────────────────┐ ┌──────────────────────────┐
+│ SUPABASE POSTGRESQL  │ │  SUPABASE STORAGE  │ │  AI SERVICE INTEGRATION  │
+│ (28+ Tables, Foreign │ │ (Cloud File Buckets│ │ (Gemini 3.x Flash Family │
+│ Keys, Indexes, GIN)  │ │  Submissions/Assg) │ │  Multi-Model Auto-Rotate)│
+└──────────────────────┘ └────────────────────┘ └──────────────────────────┘
 ```
 
 ---

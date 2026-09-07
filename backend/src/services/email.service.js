@@ -119,10 +119,22 @@ export const sendMail = async ({ to, subject, html, from }) => {
 };
 
 /**
+ * Safely parse single Frontend origin URL from FRONTEND_URL or CORS_ORIGIN
+ */
+export const getFrontendUrl = () => {
+  if (process.env.FRONTEND_URL) return process.env.FRONTEND_URL.trim().replace(/\/+$/, '');
+  if (process.env.CORS_ORIGIN) {
+    const firstOrigin = process.env.CORS_ORIGIN.split(',')[0].trim().replace(/\/+$/, '');
+    if (firstOrigin) return firstOrigin;
+  }
+  return 'http://localhost:5173';
+};
+
+/**
  * Gửi email đặt lại mật khẩu với rawToken (Hạn 60 phút)
  */
 export const sendPasswordResetEmail = async (toEmail, rawToken) => {
-  const appUrl = process.env.FRONTEND_URL || process.env.CORS_ORIGIN || 'http://localhost:5173';
+  const appUrl = getFrontendUrl();
   const resetLink = `${appUrl}/reset-password?token=${rawToken}`;
 
   const html = `
@@ -166,6 +178,7 @@ export const sendDeadlineReminderEmail = async (toEmail, assignmentTitle, hoursL
     ? `⏰ Nhắc nhở: Hạn nộp bài tập "${assignmentTitle}" còn ${hoursLeft} giờ`
     : `⏰ Nhắc nhở: Hạn chấm chéo bài tập "${assignmentTitle}" còn ${hoursLeft} giờ`;
 
+  const appUrl = getFrontendUrl();
   const html = `
     <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e0e0e0; border-radius: 8px;">
       <h2 style="color: #d97706; margin-bottom: 16px;">⏰ Nhắc Nhở Hạn Chót — PeerReview-AI</h2>
@@ -177,7 +190,7 @@ export const sendDeadlineReminderEmail = async (toEmail, assignmentTitle, hoursL
         ${isSubmission ? 'Vui lòng kiểm tra và thực hiện nộp bài đúng hạn.' : 'Vui lòng truy cập hệ thống để hoàn thành nhiệm vụ đánh giá đồng đẳng.'}
       </p>
       <div style="margin: 24px 0; text-align: center;">
-        <a href="${process.env.FRONTEND_URL || process.env.CORS_ORIGIN || 'http://localhost:5173'}" style="background-color: #d97706; color: #ffffff; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold; display: inline-block;">
+        <a href="${appUrl}" style="background-color: #d97706; color: #ffffff; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold; display: inline-block;">
           Truy Cập Hệ Thống
         </a>
       </div>

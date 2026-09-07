@@ -93,8 +93,8 @@ export const resetPassword = async (rawToken, newPassword) => {
     throw new AppError('Token không hợp lệ hoặc đã hết hạn', 400);
   }
 
-  if (!newPassword || typeof newPassword !== 'string' || newPassword.length < 6) {
-    throw new AppError('Mật khẩu mới phải có ít nhất 6 ký tự', 400);
+  if (!newPassword || typeof newPassword !== 'string' || newPassword.trim().length < 8) {
+    throw new AppError('Mật khẩu mới phải có ít nhất 8 ký tự', 400);
   }
 
   const tokenHash = hashToken(rawToken.trim());

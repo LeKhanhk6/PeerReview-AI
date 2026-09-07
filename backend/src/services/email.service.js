@@ -41,11 +41,13 @@ const sendViaResend = async ({ to, subject, html, from }) => {
 };
 
 /**
- * Create Nodemailer Direct SMTP Transporter (Direct TLS per request to prevent cloud host socket pooling hangs)
+ * Create Nodemailer Direct SMTP Transporter
+ * Uses port 587 STARTTLS (lowest cloud-host latency) with 30s timeouts
  */
 const createSmtpTransporter = () => {
   const host = process.env.SMTP_HOST;
-  const port = parseInt(process.env.SMTP_PORT || '465', 10);
+  // Default port 587 STARTTLS — far more reliable from cloud hosts (Render) than 465 SSL
+  const port = parseInt(process.env.SMTP_PORT || '587', 10);
   const user = process.env.SMTP_USER;
   const pass = process.env.SMTP_PASS;
 
@@ -53,11 +55,11 @@ const createSmtpTransporter = () => {
     return nodemailer.createTransport({
       host,
       port,
-      secure: port === 465,
+      secure: port === 465,       // false for 587 STARTTLS, true for 465 SSL
       pool: false,
-      connectionTimeout: 10000, // 10 seconds
-      greetingTimeout: 5000,    // 5 seconds
-      socketTimeout: 10000,     // 10 seconds
+      connectionTimeout: 30000,   // 30 seconds — allow cloud-host TCP handshake latency
+      greetingTimeout: 15000,     // 15 seconds
+      socketTimeout: 30000,       // 30 seconds
       auth: { user, pass },
       tls: {
         rejectUnauthorized: process.env.NODE_ENV === 'production',

@@ -49,8 +49,8 @@ export const requestPasswordReset = async (email) => {
   }
 
   try {
-    // 1. Fetch user by email
-    const userRes = await pool.query('SELECT id, email, full_name FROM users WHERE email = $1', [
+    // 1. Fetch user by email (case-insensitive lookup)
+    const userRes = await pool.query('SELECT id, email, full_name FROM users WHERE LOWER(TRIM(email)) = LOWER(TRIM($1))', [
       formattedEmail,
     ]);
 

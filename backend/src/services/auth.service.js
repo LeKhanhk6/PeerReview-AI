@@ -26,6 +26,8 @@ export const registerUser = async (fullName, email, password, studentId) => {
         throw new AppError('Student ID (MSSV) is required', 400);
     }
 
+    const formattedEmail = String(email || '').trim().toLowerCase();
+
     // 1. Mã hoá mật khẩu
     const passwordHash = await bcrypt.hash(password, 10);
     
@@ -40,8 +42,8 @@ export const registerUser = async (fullName, email, password, studentId) => {
         `;
         
         const result = await pool.query(query, [
-            fullName,
-            email,
+            fullName ? fullName.trim() : '',
+            formattedEmail,
             passwordHash,
             studentRoleId,
             studentId.trim()
@@ -59,14 +61,16 @@ export const loginUser = async (email, password) => {
         throw new AppError('Email and password are required', 400);
     }
 
-    // Tìm user và role name
+    const formattedEmail = String(email || '').trim().toLowerCase();
+
+    // Tìm user và role name (case-insensitive email lookup)
     const query = `
         SELECT u.id, u.email, u.password_hash, u.full_name, u.student_id, COALESCE(u.status, 'ACTIVE') as status, r.name as role
         FROM users u
         LEFT JOIN roles r ON u.role_id = r.id
-        WHERE u.email = $1
+        WHERE LOWER(TRIM(u.email)) = LOWER(TRIM($1))
     `;
-    const result = await pool.query(query, [email]);
+    const result = await pool.query(query, [formattedEmail]);
     if (result.rows.length === 0) {
         throw new AppError('Invalid email or password', 401);
     }

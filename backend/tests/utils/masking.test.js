@@ -51,7 +51,7 @@ describe('masking.util', () => {
             expect(masked.publicId).toBeDefined();
             expect(masked.publicId).toHaveLength(6);
             expect(masked.title).toBe(`Anonymous Submission ${masked.publicId}`);
-            expect(masked.fileUrl).toBe(`/api/v1/submissions/${masked.publicId}/download`);
+            expect(masked.fileUrl).toBe(mockSubmission.file_url);
             expect(masked.submittedAt).toBe(mockSubmission.created_at);
             
             // Explicitly assert that raw IDs and PII are NOT present

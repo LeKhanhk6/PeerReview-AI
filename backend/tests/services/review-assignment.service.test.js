@@ -35,7 +35,7 @@ describe('Review Assignment Service (MVP)', () => {
                 .mockResolvedValueOnce({ rows: [{ 1: 1 }] }) // Auth check OK
                 .mockResolvedValueOnce({ rows: [{ count: '5' }] }); // Existing assignments check > 0
                 
-            await expect(generateReviewAssignments(1, 1)).rejects.toMatchObject({ status: 400, message: 'Assignments already generated' });
+            await expect(generateReviewAssignments(1, 1)).rejects.toMatchObject({ status: 400, message: 'Assignments already generated and locked by completed reviews' });
         });
 
         it('should guarantee No Self-Review invariant and correct distribution', async () => {

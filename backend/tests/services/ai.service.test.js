@@ -40,6 +40,7 @@ describe('AI Service (Staff-Level Resilience)', () => {
             fetchSpy.mockResolvedValueOnce({
                 ok: false,
                 status: 400,
+                text: async () => 'Bad prompt',
                 json: async () => ({ error: 'Bad prompt' })
             });
 
@@ -57,10 +58,10 @@ describe('AI Service (Staff-Level Resilience)', () => {
             const sleepSpy = jest.spyOn(global, 'setTimeout').mockImplementation((cb) => cb());
             
             fetchSpy
-                .mockResolvedValueOnce({ ok: false, status: 500 }) // Attempt 1
-                .mockResolvedValueOnce({ ok: false, status: 503 }) // Attempt 2
-                .mockResolvedValueOnce({ ok: false, status: 502 }) // Attempt 3
-                .mockResolvedValueOnce({ ok: false, status: 504 }); // Attempt 4
+                .mockResolvedValueOnce({ ok: false, status: 500, text: async () => '' }) // Attempt 1
+                .mockResolvedValueOnce({ ok: false, status: 503, text: async () => '' }) // Attempt 2
+                .mockResolvedValueOnce({ ok: false, status: 502, text: async () => '' }) // Attempt 3
+                .mockResolvedValueOnce({ ok: false, status: 504, text: async () => '' }); // Attempt 4
 
             await aiService.analyzeComment('test', 'req-2');
             

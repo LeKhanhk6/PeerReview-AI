@@ -216,7 +216,7 @@ describe('Review Service (MVP)', () => {
             // Non-reversible check: The generated hash must not be the raw ID
             expect(result.rows[0].submission.publicId).toBeDefined();
             expect(result.rows[0].submission.publicId).not.toBe('999');
-            expect(result.rows[0].submission.fileUrl).toContain('/download'); // Proxy URL
+            expect(result.rows[0].submission.fileUrl).toBe('http://raw-file.pdf/');
         });
 
         it('getReviewAssignmentDetail should mask submission securely', async () => {

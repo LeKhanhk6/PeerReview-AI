@@ -29,12 +29,24 @@ Tài liệu này tổng hợp quy trình phát hành (Deploy), vận hành và b
 PORT=5000
 DATABASE_URL="postgresql://postgres.<project_ref>:<password>@aws-0-ap-southeast-1.pooler.supabase.com:6543/postgres?sslmode=require"
 JWT_SECRET="<Chuỗi ngẫu nhiên 32-byte sinh bằng openssl rand -hex 32, KHÁC local>"
-AI_API_KEY="<Gemini_API_Key_Production>"
+GEMINI_API_KEY="<Gemini_API_Key_Production>"
 CORS_ORIGIN="https://peer-review-ai-tau.vercel.app,http://localhost:5173"
 
 # Supabase Storage Configuration (Cho tính năng Upload/Download file)
 SUPABASE_URL="https://<project_ref>.supabase.co"
 SUPABASE_ANON_KEY="<Supabase_Anon_Public_Key_Hoac_Service_Key>"
+
+# Email Service Configuration (Tính năng Quên Mật Khẩu & Deadline Reminder)
+# Cách A: Dùng Resend HTTP API (Tùy chọn)
+RESEND_API_KEY="re_123456789_your_resend_key"
+RESEND_FROM="PeerReview-AI <onboarding@resend.dev>"
+
+# Cách B: Dùng Gmail SMTP (Khuyên dùng khi chưa có Tên miền riêng)
+SMTP_HOST="smtp.gmail.com"
+SMTP_PORT=587
+SMTP_USER="your-email@gmail.com"
+SMTP_PASS="your-16-char-app-password"
+SMTP_FROM="PeerReview-AI <your-email@gmail.com>"
 ```
 
 ---

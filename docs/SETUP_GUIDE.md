@@ -54,6 +54,18 @@ SUPABASE_ANON_KEY="your_supabase_anon_key_here"
 
 # System Config & Audit
 AUDIT_ENABLED=true
+
+# Email Service Config (Cấu hình gửi mail Quên/Đặt lại mật khẩu & Deadline)
+# Cách A: Dùng Resend HTTP API (Tùy chọn)
+RESEND_API_KEY="re_123456789_your_resend_key"
+RESEND_FROM="PeerReview-AI <onboarding@resend.dev>"
+
+# Cách B: Dùng Gmail SMTP (Khuyên dùng khi chưa có Tên miền riêng)
+SMTP_HOST="smtp.gmail.com"
+SMTP_PORT=587
+SMTP_USER="your-email@gmail.com"
+SMTP_PASS="your-16-char-app-password"
+SMTP_FROM="PeerReview-AI <your-email@gmail.com>"
 ```
 
 ### Bước 2.3: Thao tác Database & Seed Data

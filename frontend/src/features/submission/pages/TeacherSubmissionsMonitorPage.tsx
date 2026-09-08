@@ -132,23 +132,34 @@ export const TeacherSubmissionsMonitorPage: React.FC = () => {
             <Download className="w-4 h-4 mr-1" /> Xuất CSV danh sách
           </Button>
 
-          <Button
-            type="button"
-            variant="default"
-            size="sm"
-            onClick={() => {
-              const safeReviewsPerGroup = Math.min(2, Math.max(1, groups.length - 1));
-              generateReviews.mutate({ assignmentId, reviewsPerGroup: safeReviewsPerGroup });
-            }}
-            disabled={!groups.length || generateReviews.isPending}
-            className="gap-2 bg-indigo-600 hover:bg-indigo-700"
-          >
-            {generateReviews.isPending ? (
-              <span className="flex items-center gap-2"><Hourglass className="w-4 h-4" /> Đang phân công...</span>
-            ) : (
-              <span className="flex items-center gap-2"><Dices className="w-4 h-4" /> Phân công chấm chéo</span>
-            )}
-          </Button>
+          {(() => {
+            const safeReviewsPerGroup = Math.min(2, Math.max(1, groups.length - 1));
+            return (
+              <div className="flex items-center gap-2">
+                {groups.length > 0 && (
+                  <span className="text-xs font-medium text-indigo-700 bg-indigo-50 border border-indigo-200 rounded-lg px-2.5 py-1.5 whitespace-nowrap">
+                    {safeReviewsPerGroup} bài/nhóm
+                  </span>
+                )}
+                <Button
+                  type="button"
+                  variant="default"
+                  size="sm"
+                  onClick={() => {
+                    generateReviews.mutate({ assignmentId, reviewsPerGroup: safeReviewsPerGroup });
+                  }}
+                  disabled={!groups.length || generateReviews.isPending}
+                  className="gap-2 bg-indigo-600 hover:bg-indigo-700"
+                >
+                  {generateReviews.isPending ? (
+                    <span className="flex items-center gap-2"><Hourglass className="w-4 h-4" /> Đang phân công...</span>
+                  ) : (
+                    <span className="flex items-center gap-2"><Dices className="w-4 h-4" /> Phân công chấm chéo</span>
+                  )}
+                </Button>
+              </div>
+            );
+          })()}
 
           <Link to={`/teacher/assignments/${assignment.id}/synthesis`}>
             <Button variant="outline" size="sm" className="border-indigo-200 text-indigo-700 hover:bg-indigo-50 gap-2">

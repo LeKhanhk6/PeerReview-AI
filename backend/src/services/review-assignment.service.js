@@ -27,8 +27,8 @@ const validateId = (id, fieldName = 'ID') => {
     throw new AppError(`Invalid ${fieldName}`, 400);
 };
 
-// Constant to define reviews per group
-const REVIEWS_PER_GROUP = 5;
+// Default: each group reviews 2 other groups (matches frontend safeReviewsPerGroup logic)
+const REVIEWS_PER_GROUP = 2;
 
 /**
  * Converts any string or numeric seed into a 32-bit integer seed for PRNG

@@ -13,19 +13,19 @@ const teacherNavItems = [
     icon: Users,
     label: layoutMessages.navigation.classes,
     href: '/teacher/classes',
-    group: 'Management',
+    group: layoutMessages.groups.management,
   },
   {
     icon: BookOpen,
     label: layoutMessages.navigation.assignments,
     href: '/teacher/assignments',
-    group: 'Management',
+    group: layoutMessages.groups.management,
   },
   {
     icon: BarChart3,
     label: layoutMessages.navigation.analytics,
     href: '/teacher/analytics',
-    group: 'System',
+    group: layoutMessages.groups.system,
   },
 ];
 

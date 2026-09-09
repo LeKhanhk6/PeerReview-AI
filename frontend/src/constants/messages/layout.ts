@@ -1,27 +1,32 @@
 export const layoutMessages = {
   navigation: {
-    dashboard: 'Dashboard',
-    classes: 'Classes',
-    reviews: 'Reviews',
-    profile: 'Profile',
-    assignments: 'Assignments',
+    dashboard: 'Tổng quan',
+    classes: 'Lớp học',
+    reviews: 'Đánh giá bài tập',
+    profile: 'Hồ sơ cá nhân',
+    assignments: 'Bài tập',
     analytics: 'Phân tích đóng góp',
-    submissions: 'Submissions',
-    users: 'Users',
-    settings: 'Settings',
+    submissions: 'Bài nộp',
+    users: 'Người dùng',
+    auditLogs: 'Nhật ký hệ thống',
+    settings: 'Cài đặt hệ thống',
+  },
+  groups: {
+    management: 'Quản lý',
+    system: 'Hệ thống',
   },
   admin: {
-    badge: 'ADMIN MODE',
+    badge: 'CHẾ ĐỘ QUẢN TRỊ',
     actionGuard: {
       lockedTitle: 'Chức năng tạm khóa',
-      lockedDesc: 'Audit log không khả dụng',
+      lockedDesc: 'Nhật ký hệ thống không khả dụng',
       confirmDesc: 'Bạn có chắc chắn muốn thực hiện hành động này?',
       typeToConfirm: 'Nhập DELETE để xác nhận',
     }
   },
   action: {
-    logout: 'Logout',
-    confirm: 'Confirm',
-    cancel: 'Cancel',
+    logout: 'Đăng xuất',
+    confirm: 'Xác nhận',
+    cancel: 'Hủy',
   }
 };

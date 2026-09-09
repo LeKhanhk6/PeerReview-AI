@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { Loader2 } from 'lucide-react';
+import { Loader2, ClipboardCheck, Clock } from 'lucide-react';
 import { StarRating } from '@/components/ui/StarRating';
 import { layoutMessages } from '@/constants/messages/layout';
 import { submitInternalEvaluation, getMyEvaluations } from '../api/internalEvaluation.api';
@@ -20,6 +20,9 @@ interface InternalEvaluationFormProps {
   currentUserId: string;
   dueDate: string; // ISO string
   reviewDeadline?: string; // ISO string
+  assignmentTitle?: string;
+  availableAssignments?: Array<{ assignment_id?: string; id?: string; title: string; deadline?: string }>;
+  onSelectAssignment?: (id: string) => void;
 }
 
 export const InternalEvaluationForm: React.FC<InternalEvaluationFormProps> = ({
@@ -28,7 +31,10 @@ export const InternalEvaluationForm: React.FC<InternalEvaluationFormProps> = ({
   groupMembers,
   currentUserId,
   dueDate,
-  reviewDeadline
+  reviewDeadline,
+  assignmentTitle,
+  availableAssignments = [],
+  onSelectAssignment
 }) => {
   const [evaluations, setEvaluations] = useState<Record<string, { c2: number; c3: number; c4: number }>>({});
   const [loading, setLoading] = useState(false);
@@ -187,13 +193,59 @@ export const InternalEvaluationForm: React.FC<InternalEvaluationFormProps> = ({
 
   return (
     <div className="space-y-6">
-      <div className="bg-muted p-4 rounded-md">
-        <h3 className="font-medium text-lg mb-2">Đánh giá Đóng góp Nội bộ</h3>
-        <p className="text-sm text-muted-foreground">
-          {windowState === 'NOT_OPEN' && messages.notOpen}
-          {windowState === 'OPEN' && `${messages.openUntil} ${effectiveReviewDeadline}`}
-          {windowState === 'CLOSED' && messages.closed}
-        </p>
+      {/* Assignment Header Card & Selector */}
+      <div className="bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 p-5 rounded-2xl text-white shadow-md space-y-3">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-700/60 pb-3">
+          <div className="flex items-center gap-2.5 min-w-0">
+            <div className="p-2 bg-indigo-500/20 rounded-xl border border-indigo-400/30 text-indigo-300 shrink-0">
+              <ClipboardCheck className="w-5 h-5" />
+            </div>
+            <div className="min-w-0">
+              <span className="text-xs uppercase tracking-wider font-bold text-indigo-300">Đánh giá Đóng góp Nội bộ</span>
+              <h3 className="font-extrabold text-base text-white truncate" title={assignmentTitle}>
+                {assignmentTitle ? `Bài tập: ${assignmentTitle}` : 'Bài tập nhóm'}
+              </h3>
+            </div>
+          </div>
+
+          {availableAssignments && availableAssignments.length > 1 && onSelectAssignment && (
+            <div className="flex items-center gap-2 bg-slate-800/90 px-3 py-1.5 rounded-xl border border-slate-700 shrink-0">
+              <label htmlFor="eval-assignment-select" className="text-xs font-semibold text-slate-300 whitespace-nowrap">
+                Đổi bài tập:
+              </label>
+              <select
+                id="eval-assignment-select"
+                value={assignmentId}
+                onChange={(e) => onSelectAssignment(e.target.value)}
+                className="bg-slate-900 text-xs font-semibold text-white px-2.5 py-1 rounded-lg border border-slate-600 focus:outline-none focus:ring-2 focus:ring-indigo-400"
+              >
+                {availableAssignments.map((asm) => {
+                  const id = asm.assignment_id || asm.id || '';
+                  return (
+                    <option key={id} value={id}>
+                      {asm.title}
+                    </option>
+                  );
+                })}
+              </select>
+            </div>
+          )}
+        </div>
+
+        <div className="flex items-center justify-between text-xs text-slate-300">
+          <span className="flex items-center gap-1.5">
+            <Clock className="w-4 h-4 text-indigo-400 shrink-0" />
+            {windowState === 'NOT_OPEN' && messages.notOpen}
+            {windowState === 'OPEN' && `${messages.openUntil} ${effectiveReviewDeadline}`}
+            {windowState === 'CLOSED' && messages.closed}
+          </span>
+
+          {windowState === 'OPEN' && (
+            <span className="px-2.5 py-0.5 rounded-full font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+              Đang mở chấm
+            </span>
+          )}
+        </div>
       </div>
 
       {windowState !== 'NOT_OPEN' && (

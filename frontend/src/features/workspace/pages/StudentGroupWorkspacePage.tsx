@@ -30,6 +30,8 @@ export const StudentGroupWorkspacePage: React.FC = () => {
   const { user } = useAuthStore();
   const [activeTab, setActiveTab] = useState<WorkspaceTab>('kanban');
 
+  const [selectedAssignmentId, setSelectedAssignmentId] = useState<string>('');
+
   // Fallback: lookup dashboard assignments to resolve assignmentId from groupId
   const { data: dashboardData } = useApiQuery(
     ['student-dashboard-assignments'],
@@ -58,6 +60,15 @@ export const StudentGroupWorkspacePage: React.FC = () => {
     queryFn: () => groupsApi.getGroupDetail(resolvedGroupId),
     enabled: isValidGroup,
   });
+
+  // Group assignments filter
+  const groupAssignments = assignmentsList.filter((a: any) => 
+    String(a.group_id) === String(resolvedGroupId) || 
+    (groupData && String(a.class_id) === String((groupData as any)?.data?.class_id || (groupData as any)?.class_id))
+  );
+
+  const activeAssignmentId = selectedAssignmentId || matchedAssignment?.assignment_id || resolvedAssignmentId || (groupAssignments.length > 0 ? groupAssignments[0].assignment_id : '');
+  const activeAssignment = assignmentsList.find((a: any) => String(a.assignment_id) === String(activeAssignmentId)) || matchedAssignment;
 
   const { data: tasksResult } = useGroupTasks(resolvedGroupId);
   const hasGroup = tasksResult?.hasGroup !== false && !isGroupError;
@@ -223,12 +234,15 @@ export const StudentGroupWorkspacePage: React.FC = () => {
         {!isTeacher && activeTab === 'evaluation' && (
           <div className="p-4 md:p-6 max-w-4xl mx-auto w-full h-full overflow-y-auto">
             <InternalEvaluationForm 
-              assignmentId={matchedAssignment?.assignment_id || resolvedAssignmentId || ''}
+              assignmentId={activeAssignmentId}
               groupId={resolvedGroupId}
               groupMembers={members}
               currentUserId={user?.id || ''}
-              dueDate={matchedAssignment?.deadline || new Date().toISOString()} // fallback if missing
-              reviewDeadline={matchedAssignment?.review_deadline} 
+              dueDate={activeAssignment?.deadline || new Date().toISOString()}
+              reviewDeadline={activeAssignment?.review_deadline} 
+              assignmentTitle={activeAssignment?.title}
+              availableAssignments={groupAssignments}
+              onSelectAssignment={(id) => setSelectedAssignmentId(id)}
             />
           </div>
         )}
@@ -236,10 +250,13 @@ export const StudentGroupWorkspacePage: React.FC = () => {
         {activeTab === 'analytics' && (
           <div className="w-full h-full overflow-y-auto">
             <StudentAnalyticsTab
-              assignmentId={matchedAssignment?.assignment_id || resolvedAssignmentId || ''}
+              assignmentId={activeAssignmentId}
               groupId={resolvedGroupId}
               currentUserId={user?.id || ''}
               groupMembers={members}
+              assignmentTitle={activeAssignment?.title}
+              availableAssignments={groupAssignments}
+              onSelectAssignment={(id) => setSelectedAssignmentId(id)}
             />
           </div>
         )}

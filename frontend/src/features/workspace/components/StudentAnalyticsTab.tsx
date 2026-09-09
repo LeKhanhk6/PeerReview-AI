@@ -98,11 +98,11 @@ export const StudentAnalyticsTab: React.FC<StudentAnalyticsTabProps> = ({
           <Skeleton className="h-10 w-full" />
           <Skeleton className="h-80 w-full" />
         </div>
-      ) : isError && (error as any)?.response?.status === 403 ? (
+      ) : isError && ((error as any)?.status === 403 || (error as any)?.response?.status === 403) ? (
         <EmptyState
           type="no_permission"
           title="Chờ giảng viên công bố kết quả đánh giá"
-          description={(error as any)?.response?.data?.message || "Hiện tại thời gian chấm chéo chưa kết thúc hoặc giảng viên chưa công bố điểm đóng góp. Vui lòng quay lại sau."}
+          description={(error as any)?.message || (error as any)?.response?.data?.message || "Hiện tại thời gian chấm chéo chưa kết thúc hoặc giảng viên chưa công bố điểm đóng góp. Vui lòng quay lại sau."}
         />
       ) : isError ? (
         <EmptyState

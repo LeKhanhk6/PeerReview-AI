@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { Loader2, ClipboardCheck, Clock } from 'lucide-react';
+import { Loader2, ClipboardCheck, Clock, Send, AlertCircle, CheckCircle2 } from 'lucide-react';
 import { StarRating } from '@/components/ui/StarRating';
 import { layoutMessages } from '@/constants/messages/layout';
 import { submitInternalEvaluation, getMyEvaluations } from '../api/internalEvaluation.api';
@@ -52,6 +52,7 @@ export const InternalEvaluationForm: React.FC<InternalEvaluationFormProps> = ({
     const fetchExisting = async () => {
       try {
         setFetching(true);
+        setHasSavedData(false);
         const data = await getMyEvaluations(assignmentId, groupId);
         const newEvals: Record<string, { c2: number; c3: number; c4: number }> = {};
         
@@ -73,7 +74,7 @@ export const InternalEvaluationForm: React.FC<InternalEvaluationFormProps> = ({
           }
         });
         setEvaluations(newEvals);
-        if (foundExisting) setHasSavedData(true);
+        setHasSavedData(foundExisting);
       } catch (error) {
         console.error('Failed to fetch evaluations:', error);
       } finally {
@@ -283,14 +284,35 @@ export const InternalEvaluationForm: React.FC<InternalEvaluationFormProps> = ({
           ))}
 
           {windowState === 'OPEN' && (
-            <div className="flex justify-end pt-4">
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-4 border-t border-slate-100">
+              {!isFormComplete ? (
+                <p className="text-xs text-amber-600 font-medium flex items-center gap-1.5">
+                  <AlertCircle className="w-4 h-4 shrink-0" />
+                  <span>Vui lòng chọn số sao (1-5 sao) cho tất cả các chỉ số của các thành viên.</span>
+                </p>
+              ) : (
+                <p className="text-xs text-emerald-600 font-semibold flex items-center gap-1.5">
+                  <CheckCircle2 className="w-4 h-4 shrink-0" />
+                  <span>Đã hoàn thành chọn sao. Sẵn sàng lưu đánh giá.</span>
+                </p>
+              )}
+
               <button
                 onClick={handleSubmit}
                 disabled={!isFormComplete || loading}
-                className="flex items-center gap-2 bg-primary text-primary-foreground hover:bg-primary/90 px-4 py-2 rounded-md font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full sm:w-auto flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 text-white font-bold text-sm px-6 py-2.5 rounded-xl shadow-md transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-indigo-600"
               >
-                {loading && <Loader2 className="w-4 h-4 animate-spin" />}
-                {loading ? messages.loading : (hasSavedData ? 'Cập nhật Đánh Giá' : messages.submitBtn)}
+                {loading ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    <span>Đang lưu...</span>
+                  </>
+                ) : (
+                  <>
+                    <Send className="w-4 h-4" />
+                    <span>{hasSavedData ? 'Cập nhật Đánh Giá' : 'Gửi Đánh Giá Nội Bộ'}</span>
+                  </>
+                )}
               </button>
             </div>
           )}

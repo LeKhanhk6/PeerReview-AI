@@ -207,7 +207,7 @@ export const StudentGroupWorkspacePage: React.FC = () => {
         {activeTab === 'files' && <GroupFileManager groupId={resolvedGroupId} />}
 
         {!isTeacher && activeTab === 'evaluation' && (
-          <div className="p-4 md:p-6 max-w-4xl mx-auto w-full">
+          <div className="p-4 md:p-6 max-w-4xl mx-auto w-full h-full overflow-y-auto">
             <InternalEvaluationForm 
               assignmentId={matchedAssignment?.assignment_id || assignmentId || ''}
               groupId={resolvedGroupId}
@@ -220,11 +220,13 @@ export const StudentGroupWorkspacePage: React.FC = () => {
         )}
 
         {activeTab === 'analytics' && (
-          <StudentAnalyticsTab
-            assignmentId={matchedAssignment?.assignment_id || assignmentId || ''}
-            groupId={resolvedGroupId}
-            currentUserId={user?.id || ''}
-          />
+          <div className="w-full h-full overflow-y-auto">
+            <StudentAnalyticsTab
+              assignmentId={matchedAssignment?.assignment_id || assignmentId || ''}
+              groupId={resolvedGroupId}
+              currentUserId={user?.id || ''}
+            />
+          </div>
         )}
       </div>
     </div>

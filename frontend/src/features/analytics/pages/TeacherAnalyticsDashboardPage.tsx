@@ -256,6 +256,7 @@ export const TeacherAnalyticsDashboardPage: React.FC = () => {
       {/* Level 2 Detail Modal (Accessible from both Tabs) */}
       <GroupContributionDetailModal
         groupId={selectedGroupId}
+        classId={selectedClassId}
         isOpen={Boolean(selectedGroupId)}
         onClose={() => setSelectedGroupId(null)}
       />

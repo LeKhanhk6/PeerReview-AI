@@ -7,10 +7,7 @@ import { validate } from '../middleware/validation.middleware.js';
 import { paginationMiddleware } from '../middleware/pagination.middleware.js';
 
 const router = express.Router();
-
-// Tất cả các route này chỉ dành cho TEACHER và ADMIN
-router.use(verifyToken);
-router.use(authorizeRoles('TEACHER', 'ADMIN'));
+const authMiddlewares = [verifyToken, authorizeRoles('TEACHER', 'ADMIN')];
 
 // Schemas
 const uuidSchema = z.string().uuid();
@@ -29,6 +26,7 @@ const updateItemSchema = {
 // Lấy danh sách source reviews cho một submission (có hỗ trợ pagination)
 router.get(
     '/submissions/:submissionId/reviews',
+    authMiddlewares,
     validate({ params: submissionIdParamSchema }),
     paginationMiddleware,
     summaryController.getSourceReviews
@@ -37,6 +35,7 @@ router.get(
 // Lấy chi tiết Review Summary của một submission
 router.get(
     '/submissions/:submissionId/summary',
+    authMiddlewares,
     validate({ params: submissionIdParamSchema }),
     summaryController.getReviewSummary
 );
@@ -44,6 +43,7 @@ router.get(
 // Chỉnh sửa một summary item
 router.patch(
     '/summary-items/:itemId',
+    authMiddlewares,
     validate(updateItemSchema),
     summaryController.updateSummaryItem
 );
@@ -51,6 +51,7 @@ router.patch(
 // Xóa một summary item
 router.delete(
     '/summary-items/:itemId',
+    authMiddlewares,
     validate({ params: itemIdParamSchema }),
     summaryController.deleteSummaryItem
 );
@@ -58,6 +59,7 @@ router.delete(
 // Kiểm tra trạng thái synthesis job (Task B3 - Polling endpoint)
 router.get(
     '/submissions/:submissionId/summary/status',
+    authMiddlewares,
     validate({ params: submissionIdParamSchema }),
     summaryController.getSummaryStatus
 );
@@ -65,6 +67,7 @@ router.get(
 // Duyệt summary
 router.patch(
     '/submissions/:submissionId/summary/approve',
+    authMiddlewares,
     validate({ params: submissionIdParamSchema }),
     summaryController.approveReviewSummary
 );
@@ -72,6 +75,7 @@ router.patch(
 // Tạo mới bản tổng hợp AI cho 1 bài nộp (On-demand)
 router.post(
     '/submissions/:submissionId/summary/generate',
+    authMiddlewares,
     validate({ params: submissionIdParamSchema }),
     summaryController.generateSubmissionSummary
 );

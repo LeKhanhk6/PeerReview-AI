@@ -14,13 +14,13 @@ export const submitEvaluation = async (req, res) => {
 
     try {
         // 1. Check window
-        const assignmentRes = await pool.query('SELECT due_date, review_deadline FROM assignments WHERE id = $1', [assignmentId]);
+        const assignmentRes = await pool.query('SELECT deadline FROM assignments WHERE id = $1', [assignmentId]);
         if (assignmentRes.rows.length === 0) return res.status(404).json({ message: 'Assignment not found' });
         
         const assignment = assignmentRes.rows[0];
         const now = new Date();
-        const submissionDeadline = new Date(assignment.due_date);
-        const reviewDeadline = assignment.review_deadline ? new Date(assignment.review_deadline) : new Date(submissionDeadline.getTime() + 24 * 60 * 60 * 1000);
+        const submissionDeadline = new Date(assignment.deadline);
+        const reviewDeadline = new Date(submissionDeadline.getTime() + 24 * 60 * 60 * 1000); // Mặc định +24h
 
         if (now < submissionDeadline) {
             return res.status(400).json({ message: 'Chưa đến thời gian chấm nội bộ (Chưa qua hạn nộp bài)' });

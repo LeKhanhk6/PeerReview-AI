@@ -76,7 +76,7 @@ Dự án được chia thành 14 Phase (Giai đoạn). Dưới đây là bảng 
 | **PHASE 6** | Double-Blind Peer Assignment | **Đã hoàn thành** | Backend Algorithm, Submission Pool và Anonymous Identity đã được thực thi. |
 | **PHASE 7** | Peer Review | **Đang triển khai** | Hoàn thành Backend API (Review Assignment, Validation). |
 | **PHASE 8** | AI Peer-Review Mentor | **Đang triển khai** | Hoàn thành tích hợp AI Service Backend. Frontend React chưa xong. |
-| **PHASE 9** | Contribution Analytics | **Đang triển khai mở rộng** | Mở rộng MVP ban đầu theo `Thuat_toan_danh_gia_dong_gop.md` (Thêm C2-C4). Đang chờ DB và API. |
+| **PHASE 9** | Contribution Analytics | **Đã hoàn thành** | Tính điểm tự động $S_i$ và Radar chart C1-C4 theo `Thuat_toan_danh_gia_dong_gop.md`. |
 | **PHASE 10**| Review Synthesis | **Đã hoàn thành (Backend)** | AI Synthesis và Teacher Validation APIs đã hoàn tất. |
 | **PHASE 11**| Teacher Analytics + Early Warning | **Đã hoàn thành (Backend)** | Dashboard Analytics, Collaboration Risk, Early Warnings API đã sẵn sàng. |
 | **PHASE 12**| Integration + Testing | **Đang triển khai** | Hoàn thành Backend Unit Tests, Health Check Diagnostics (B7.3), File Upload Capping 10MB (B7.4) và Deployment Hardening Vercel/Render (B7.5). Đang chờ Load Test k6 & E2E. |

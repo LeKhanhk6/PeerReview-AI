@@ -38,4 +38,15 @@ export const analyticsApi = {
     if (res && Array.isArray(res.data)) return res.data;
     return [];
   },
+
+  // --- TÍNH NĂNG CHẤM NỘI BỘ (TASK 5) ---
+  getAssignmentGroupAnalytics: async (assignmentId: string, groupId: string) => {
+    const res: any = await api.get(`/analytics/assignments/${assignmentId}/groups/${groupId}/analytics`);
+    return res.data || res;
+  },
+
+  publishGroupAnalytics: async (assignmentId: string, groupId: string) => {
+    const res: any = await api.post(`/analytics/assignments/${assignmentId}/groups/${groupId}/analytics/publish`);
+    return res.data || res;
+  }
 };

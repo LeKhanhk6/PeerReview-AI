@@ -257,19 +257,29 @@ export const publishAssignmentContributions = async (assignmentId, groupId) => {
     try {
         await client.query('BEGIN');
         
-        // Clear old snapshot if re-published
-        await client.query('DELETE FROM contribution_metrics WHERE assignment_id = $1 AND group_id = $2', [assignmentId, groupId]);
-
         const insertQ = `
             INSERT INTO contribution_metrics 
-            (group_id, assignment_id, user_id, contribution_score, classification, calculated_at)
-            VALUES ($1, $2, $3, $4, $5, NOW())
+            (group_id, assignment_id, user_id, contribution_score, classification, metadata, calculated_at)
+            VALUES ($1, $2, $3, $4, $5, $6, NOW())
+            ON CONFLICT (assignment_id, group_id, user_id) 
+            DO UPDATE SET 
+                contribution_score = EXCLUDED.contribution_score,
+                classification = EXCLUDED.classification,
+                metadata = EXCLUDED.metadata,
+                calculated_at = NOW()
         `;
 
         for (const r of results) {
-            // Note: saving the multiplier * 100 as contribution_score for backward compatibility
-            // or we could save Si * 100
-            await client.query(insertQ, [groupId, assignmentId, r.userId, r.multiplier * 100, r.classification]);
+            const metadata = JSON.stringify({
+                c1: r.c1,
+                c2: r.c2,
+                c3: r.c3,
+                c4: r.c4,
+                si: r.si,
+                votes: r.votes,
+                multiplier: r.multiplier
+            });
+            await client.query(insertQ, [groupId, assignmentId, r.userId, r.multiplier * 100, r.classification, metadata]);
         }
         
         await client.query('COMMIT');
@@ -280,4 +290,33 @@ export const publishAssignmentContributions = async (assignmentId, groupId) => {
     } finally {
         client.release();
     }
+};
+
+export const getAssignmentGroupAnalytics = async (assignmentId, groupId) => {
+    // 1. Check if snapshot exists
+    const snapRes = await pool.query('SELECT * FROM contribution_metrics WHERE assignment_id = $1 AND group_id = $2', [assignmentId, groupId]);
+    
+    if (snapRes.rowCount > 0) {
+        // Return snapshot
+        return snapRes.rows.map(r => {
+            const meta = r.metadata || {};
+            return {
+                userId: r.user_id,
+                c1: meta.c1 || 0,
+                c2: meta.c2 || 0,
+                c3: meta.c3 || 0,
+                c4: meta.c4 || 0,
+                si: meta.si || 0,
+                votes: meta.votes || 0,
+                multiplier: meta.multiplier || (r.contribution_score / 100),
+                classification: r.classification,
+                isPublished: true,
+                calculatedAt: r.calculated_at
+            };
+        });
+    }
+
+    // 2. If not published, calculate live
+    const liveResults = await calculateAssignmentContributions(assignmentId, groupId);
+    return liveResults.map(r => ({ ...r, isPublished: false }));
 };

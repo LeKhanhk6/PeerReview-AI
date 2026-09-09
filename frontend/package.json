@@ -10,7 +10,6 @@
     "preview": "vite preview",
     "test:e2e": "playwright test"
   },
-
   "dependencies": {
     "@hookform/resolvers": "^5.9.1",
     "@tailwindcss/vite": "^4.3.3",
@@ -25,6 +24,7 @@
     "react-dom": "^19.2.8",
     "react-hook-form": "^7.86.0",
     "react-router-dom": "^7.18.2",
+    "recharts": "^3.10.1",
     "sonner": "^2.0.8",
     "tailwind-merge": "^3.6.0",
     "tailwindcss": "^4.3.3",

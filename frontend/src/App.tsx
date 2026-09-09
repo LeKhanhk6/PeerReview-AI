@@ -26,6 +26,7 @@ import { TeacherReviewSynthesisPage } from './features/synthesis/pages/TeacherRe
 import { TeacherSubmissionsMonitorPage } from './features/submission/pages/TeacherSubmissionsMonitorPage';
 import { StudentGroupWorkspacePage } from './features/workspace/pages/StudentGroupWorkspacePage';
 import { StudentSubmissionPage } from './features/submission/pages/StudentSubmissionPage';
+import { ScreenshotTest } from './ScreenshotTest';
 
 import { ReviewInboxScreen } from './features/review/components/ReviewInboxScreen';
 import { ReviewWritingScreen } from './features/review/components/ReviewWritingScreen';
@@ -50,6 +51,7 @@ function App() {
       <Router>
         <Routes>
           {/* Public Routes */}
+          <Route path="/screenshot" element={<ScreenshotTest />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
           <Route path="/reset-password" element={<ResetPasswordPage />} />

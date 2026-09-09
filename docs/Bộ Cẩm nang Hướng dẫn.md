@@ -126,6 +126,15 @@ Tất cả các tài khoản thử nghiệm bên dưới đã được chuẩn b
    - Kiểm tra danh sách **Cảnh báo sớm (Early Warnings / At-Risk Students)** đối với các sinh viên có dấu hiệu bỏ cuộc hoặc không đóng góp.
 3. **Kết quả mong đợi:** Biểu đồ phân bổ đóng góp hiển thị trực quan, hỗ trợ Giảng viên can thiệp kịp thời trước deadline.
 
+#### 📍 Kịch bản T5: Công bố (Publish) Kết quả Đánh giá Nội bộ (Peer Review Analytics) (`/teacher/dashboard` -> Modal)
+1. **Truy cập:** Khi Nhóm học phần đã hoàn thành thời gian chấm nội bộ (qua deadline Review).
+2. **Thao tác Kiểm thử:**
+   - Trong màn hình Dashboard Lớp học, chọn một Nhóm học phần bất kỳ để mở **Analytics Modal**.
+   - Xem bảng chỉ số $S_i$ và biểu đồ **Radar Chart** 4 trục ($C_1, C_2, C_3, C_4$).
+   - Bấm nút **"Publish Analytics" (Công bố Kết quả)**.
+   - Nếu muốn sửa điểm và publish lại, sẽ có hộp thoại **Confirm Dialog** để bảo vệ dữ liệu, đồng ý ghi đè (Snapshot).
+3. **Kết quả mong đợi:** Dữ liệu điểm đóng góp được "đóng băng" (Immutable Snapshot) vào Database. Cờ cảnh báo đỏ "Chưa hoàn thành chấm nội bộ" sẽ hiển thị đối với những sinh viên bỏ chấm.
+
 ---
 
 ### 3.3. 🎓 KỊCH BẢN KIỂM THỬ VAI TRÒ SINH VIÊN (STUDENT)
@@ -168,8 +177,16 @@ Tất cả các tài khoản thử nghiệm bên dưới đã được chuẩn b
 #### 📍 Kịch bản S4: Xem Báo cáo Tổng hợp Nhận xét Bài làm (`/student/submissions/:id/summary`)
 1. **Truy cập:** Màn hình chi tiết bài nộp của nhóm mình sau khi hết hạn chấm chéo.
 2. **Kết quả mong đợi:**
-   - Hiển thị điểm số trung bình tích lũy từ các bạn chấm chéo.
    - Hiển thị bản **Tổng hợp Đánh giá từ AI** (đã được Giảng viên phê duyệt) trình bày đẹp mắt dưới dạng 3 nhóm: Điểm mạnh, Điểm yếu và Gợi ý cải thiện.
+
+#### 📍 Kịch bản S5: Xem Kết quả Đánh giá Nội bộ (Radar Chart) (`/student/workspace` -> Tab Kết Quả Đánh Giá)
+1. **Truy cập:** Mở **Không gian Làm việc Nhóm** -> Chuyển sang tab **Kết Quả Đánh Giá**.
+2. **Thao tác Kiểm thử (Trước khi GV công bố):** 
+   - Tab sẽ hiển thị màn hình Empty State: *"Chờ giảng viên công bố kết quả đánh giá"*.
+3. **Thao tác Kiểm thử (Sau khi GV công bố):** 
+   - Hệ thống hiển thị biểu đồ **Radar Chart** 4 trục năng lực, trong đó đường màu xanh đậm nổi bật (Highlight) là điểm số cá nhân của chính sinh viên đang đăng nhập, so sánh trực quan với toàn nhóm.
+   - Xem bảng xếp loại, hệ số $S_i$ (Multiplier) và chi tiết điểm từng trục.
+4. **Kết quả mong đợi:** Quy tắc ẩn danh 100% được bảo đảm, sinh viên chỉ thấy điểm trung bình tổng hợp nhận được, không thể biết ai đã chấm mình bao nhiêu điểm. Dữ liệu Radar luôn khớp chính xác với thời điểm Giảng viên ấn Publish (bất biến).
 
 ---
 

@@ -8,7 +8,8 @@ import { validate } from '../middleware/validation.middleware.js';
 const router = express.Router();
 
 router.use(verifyToken);
-router.use(authorizeRoles('TEACHER', 'ADMIN'));
+// Bỏ authorizeRoles global để route GET cho Student vào được
+const teacherOnly = authorizeRoles('TEACHER', 'ADMIN');
 
 // Schemas
 const idSchema = z.string().trim().min(1);
@@ -23,21 +24,35 @@ const groupIdParamSchema = { params: z.object({ groupId: idSchema }) };
 const classIdParamSchema = { params: z.object({ classId: idSchema }) };
 const assignmentIdParamSchema = { params: z.object({ assignmentId: idSchema }) };
 
-router.get('/dashboard/overview', validate(classIdQuerySchema), analyticsController.getDashboardOverview);
+router.get('/dashboard/overview', teacherOnly, validate(classIdQuerySchema), analyticsController.getDashboardOverview);
 
 // Group Contribution (detail)
-router.get('/groups/:groupId/contribution', validate(groupIdParamSchema), analyticsController.getGroupContribution);
+router.get('/groups/:groupId/contribution', teacherOnly, validate(groupIdParamSchema), analyticsController.getGroupContribution);
 
 // Class Contributions Overview (list of groups)
-router.get('/classes/:classId/contributions', validate(classIdParamSchema), analyticsController.getClassContributions);
+router.get('/classes/:classId/contributions', teacherOnly, validate(classIdParamSchema), analyticsController.getClassContributions);
 
 // Assignment Review Analytics (Core API)
-router.get('/assignments/:assignmentId/reviews', validate(assignmentIdParamSchema), analyticsController.getAssignmentReviewAnalytics);
+router.get('/assignments/:assignmentId/reviews', teacherOnly, validate(assignmentIdParamSchema), analyticsController.getAssignmentReviewAnalytics);
 
 // Class Review Analytics (Aggregation API)
-router.get('/classes/:classId/reviews', validate(classIdParamSchema), analyticsController.getClassReviewAnalytics);
+router.get('/classes/:classId/reviews', teacherOnly, validate(classIdParamSchema), analyticsController.getClassReviewAnalytics);
 
 // Collaboration Risks / Early Warning
-router.get('/classes/:classId/collaboration-risks', validate(classIdParamSchema), analyticsController.getClassCollaborationRisks);
+router.get('/classes/:classId/collaboration-risks', teacherOnly, validate(classIdParamSchema), analyticsController.getClassCollaborationRisks);
+
+// --- TÍNH NĂNG CHẤM NỘI BỘ (TASK 5) ---
+const groupAnalyticsSchema = {
+    params: z.object({
+        assignmentId: idSchema,
+        groupId: idSchema
+    })
+};
+
+// GET lấy snapshot (Student & Teacher) hoặc tính live (Teacher)
+router.get('/assignments/:assignmentId/groups/:groupId/analytics', validate(groupAnalyticsSchema), analyticsController.getAssignmentGroupAnalytics);
+
+// POST chốt snapshot (Chỉ Teacher)
+router.post('/assignments/:assignmentId/groups/:groupId/analytics/publish', teacherOnly, validate(groupAnalyticsSchema), analyticsController.publishGroupAnalytics);
 
 export default router;

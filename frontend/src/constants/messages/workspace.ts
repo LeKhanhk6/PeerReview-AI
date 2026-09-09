@@ -8,6 +8,7 @@ export const workspaceMessages = {
     timeline: 'Nhật Ký Hoạt Động',
     files: 'Tài Liệu Nhóm',
     evaluation: 'Chấm Nội Bộ',
+    analytics: 'Kết Quả Đánh Giá',
   },
 
   autoRefreshInfo: 'Dữ liệu được tự động làm mới',

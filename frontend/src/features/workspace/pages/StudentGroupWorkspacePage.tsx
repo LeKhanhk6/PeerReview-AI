@@ -16,8 +16,9 @@ import { Crown, User, Rocket } from 'lucide-react';
 import { useApiQuery } from '@/hooks/useApiQuery';
 import { getStudentDashboardAssignmentsApi } from '@/features/student-dashboard/api/studentDashboardApi';
 import { InternalEvaluationForm } from '../components/InternalEvaluationForm';
+import { StudentAnalyticsTab } from '../components/StudentAnalyticsTab';
 
-type WorkspaceTab = 'kanban' | 'discussions' | 'timeline' | 'files' | 'evaluation';
+type WorkspaceTab = 'kanban' | 'discussions' | 'timeline' | 'files' | 'evaluation' | 'analytics';
 
 export const StudentGroupWorkspacePage: React.FC = () => {
   const { assignmentId, groupId } = useParams<{ assignmentId?: string; groupId?: string }>();
@@ -172,6 +173,18 @@ export const StudentGroupWorkspacePage: React.FC = () => {
         >
           {workspaceMessages.tabs.evaluation}
         </button>
+
+        <button
+          type="button"
+          onClick={() => setActiveTab('analytics')}
+          className={`pb-2.5 text-xs md:text-sm font-bold border-b-2 transition-colors whitespace-nowrap px-1 ${
+            activeTab === 'analytics'
+              ? 'border-blue-600 text-blue-600'
+              : 'border-transparent text-slate-500 hover:text-slate-700'
+          }`}
+        >
+          {workspaceMessages.tabs.analytics}
+        </button>
       </div>
 
       {/* Tab Panels */}
@@ -202,6 +215,14 @@ export const StudentGroupWorkspacePage: React.FC = () => {
               reviewDeadline={matchedAssignment?.review_deadline} 
             />
           </div>
+        )}
+
+        {activeTab === 'analytics' && (
+          <StudentAnalyticsTab
+            assignmentId={matchedAssignment?.assignment_id || assignmentId || ''}
+            groupId={resolvedGroupId}
+            currentUserId={user?.id || ''}
+          />
         )}
       </div>
     </div>

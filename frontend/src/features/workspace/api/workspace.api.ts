@@ -43,9 +43,9 @@ export const workspaceApi = {
     return res.data || res;
   },
 
-  deleteTask: async (taskId: string | number): Promise<{ success: boolean }> => {
+  deleteTask: async (taskId: string | number): Promise<any> => {
     const res: any = await api.delete(`/workspace/tasks/${taskId}`);
-    return res.data || res;
+    return res?.data || res || { id: taskId };
   },
 
   // Discussions

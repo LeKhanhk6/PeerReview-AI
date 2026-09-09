@@ -5,13 +5,22 @@ import { Skeleton } from '@/components/ui/Skeleton';
 import { GroupRadarChart } from '@/features/analytics/components/GroupRadarChart';
 import { AssignmentContributionTable } from '@/features/analytics/components/AssignmentContributionTable';
 
+interface Member {
+  id: string;
+  full_name?: string;
+  first_name?: string;
+  last_name?: string;
+  email?: string;
+}
+
 interface StudentAnalyticsTabProps {
   assignmentId: string;
   groupId: string;
   currentUserId: string;
+  groupMembers?: Member[];
 }
 
-export const StudentAnalyticsTab: React.FC<StudentAnalyticsTabProps> = ({ assignmentId, groupId, currentUserId }) => {
+export const StudentAnalyticsTab: React.FC<StudentAnalyticsTabProps> = ({ assignmentId, groupId, currentUserId, groupMembers = [] }) => {
   const { data: members = [], isLoading, isError, error, refetch } = useAssignmentGroupAnalytics(assignmentId, groupId);
 
   if (isLoading) {
@@ -64,11 +73,23 @@ export const StudentAnalyticsTab: React.FC<StudentAnalyticsTabProps> = ({ assign
 
   // Chỉ lấy radar data của chính sinh viên đó để vẽ, hoặc vẽ cả nhóm để so sánh (đề bài: "SV xem radar sau publish")
   // Tôi sẽ truyền toàn bộ members vào để có cái nhìn tổng quan, nhưng highlight current user và ẩn danh những người khác
-  const maskedMembers = members.map((m: any, index: number) => ({
-    ...m,
-    name: m.userId === currentUserId ? m.name + ' (Bạn)' : `Thành viên ${index + 1}`,
-    color: m.userId === currentUserId ? '#4f46e5' : '#94a3b8'
-  }));
+  const getDisplayName = (user: Member | undefined) => {
+    if (!user) return undefined;
+    if (user.full_name) return user.full_name;
+    if (user.first_name || user.last_name) return `${user.first_name || ''} ${user.last_name || ''}`.trim();
+    if (user.email) return user.email.split('@')[0];
+    return undefined;
+  };
+
+  const maskedMembers = members.map((m: any, index: number) => {
+    const matchedMember = groupMembers.find(g => g.id === m.userId);
+    const displayName = getDisplayName(matchedMember) || m.name || `Thành viên ${index + 1}`;
+    return {
+      ...m,
+      name: m.userId === currentUserId ? displayName + ' (Bạn)' : displayName,
+      color: m.userId === currentUserId ? '#4f46e5' : '#94a3b8'
+    };
+  });
 
   return (
     <div className="p-4 md:p-6 max-w-5xl mx-auto w-full space-y-6">

@@ -32,13 +32,6 @@ export const TeacherDashboardPage: React.FC = () => {
     ? rawClasses
     : (rawClasses as any)?.classes || (rawClasses as any)?.rows || [];
 
-  // Default to first class if available and no class selected
-  useEffect(() => {
-    if (classes.length > 0 && !selectedClassId) {
-      setSelectedClassId(classes[0].id);
-    }
-  }, [classes, selectedClassId]);
-
   // 2. Fetch Overview Metrics
   const {
     data: overview,

@@ -77,7 +77,30 @@ export const useDeleteTask = (groupId: string) => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (taskId: string | number) => workspaceApi.deleteTask(taskId),
-    onSuccess: () => {
+
+    onMutate: async (taskId) => {
+      await queryClient.cancelQueries({ queryKey: workspaceKeys.tasks(groupId) });
+      const previousResult = queryClient.getQueryData<{ hasGroup: boolean; data: TaskItem[] }>(
+        workspaceKeys.tasks(groupId)
+      );
+
+      if (previousResult && Array.isArray(previousResult.data)) {
+        queryClient.setQueryData(workspaceKeys.tasks(groupId), {
+          ...previousResult,
+          data: previousResult.data.filter((t) => String(t.id) !== String(taskId)),
+        });
+      }
+
+      return { previousResult };
+    },
+
+    onError: (_err, _taskId, context) => {
+      if (context?.previousResult) {
+        queryClient.setQueryData(workspaceKeys.tasks(groupId), context.previousResult);
+      }
+    },
+
+    onSettled: () => {
       queryClient.invalidateQueries({ queryKey: workspaceKeys.tasks(groupId) });
       queryClient.invalidateQueries({ queryKey: workspaceKeys.activities(groupId) });
     },

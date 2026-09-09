@@ -89,12 +89,10 @@ export const deleteTask = async (req, res, next) => {
         const { taskId } = req.params;
         const userId = req.user?.id;
 
-        // Uses getTaskWithAccess instead of checkWorkspaceAccess manually
         await workspaceService.getTaskWithAccess(taskId, req.user);
+        const task = await workspaceService.deleteTask(taskId, userId);
         
-        await workspaceService.deleteTask(taskId, userId);
-        
-        return res.ok(null);
+        return res.ok(task || { id: taskId });
     } catch (error) {
         next(error);
     }

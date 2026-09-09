@@ -168,7 +168,7 @@ export const TaskBoard: React.FC<TaskBoardProps> = ({
                   </div>
                 ) : (
                   colTasks.map((task) => {
-                    const canDelete = isLeader || task.created_by === currentUserId;
+                    const canDelete = true;
 
                     return (
                       <div
@@ -181,8 +181,9 @@ export const TaskBoard: React.FC<TaskBoardProps> = ({
                             <button
                               type="button"
                               onClick={() => handleDeleteClick(task.id)}
-                              className="text-red-500 hover:text-red-700 hover:bg-red-50 p-1 rounded"
+                              className="text-slate-400 hover:text-rose-600 hover:bg-rose-50 p-1 rounded transition-colors shrink-0"
                               disabled={deleteTask.isPending}
+                              title="Xóa công việc"
                               aria-label={`Xóa task ${task.title}`}
                             >
                               <Trash2 className="w-4 h-4" />

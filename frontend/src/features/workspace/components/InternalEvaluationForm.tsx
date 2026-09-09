@@ -33,6 +33,7 @@ export const InternalEvaluationForm: React.FC<InternalEvaluationFormProps> = ({
   const [evaluations, setEvaluations] = useState<Record<string, { c2: number; c3: number; c4: number }>>({});
   const [loading, setLoading] = useState(false);
   const [fetching, setFetching] = useState(true);
+  const [hasSavedData, setHasSavedData] = useState(false);
   
   // For error-driven state correction
   const [serverForcedClosed, setServerForcedClosed] = useState(false);
@@ -54,6 +55,7 @@ export const InternalEvaluationForm: React.FC<InternalEvaluationFormProps> = ({
         });
 
         // Override with existing data
+        let foundExisting = false;
         data.forEach(item => {
           if (newEvals[item.evaluatee_id]) {
             newEvals[item.evaluatee_id] = {
@@ -61,9 +63,11 @@ export const InternalEvaluationForm: React.FC<InternalEvaluationFormProps> = ({
               c3: item.c3_score,
               c4: item.c4_score
             };
+            foundExisting = true;
           }
         });
         setEvaluations(newEvals);
+        if (foundExisting) setHasSavedData(true);
       } catch (error) {
         console.error('Failed to fetch evaluations:', error);
       } finally {
@@ -136,7 +140,7 @@ export const InternalEvaluationForm: React.FC<InternalEvaluationFormProps> = ({
     const rejected = results.filter(r => r.status === 'rejected') as PromiseRejectedResult[];
     let hasWindowError = false;
     rejected.forEach(r => {
-      const msg = r.reason?.response?.data?.message || '';
+      const msg = r.reason?.message || '';
       if (msg.includes('đã kết thúc')) {
         setServerForcedClosed(true);
         hasWindowError = true;
@@ -153,9 +157,11 @@ export const InternalEvaluationForm: React.FC<InternalEvaluationFormProps> = ({
     }
 
     if (successCount === total) {
+      setHasSavedData(true);
       toastSuccess(messages.saveSuccess);
     } else {
-      toastError({ message: messages.savePartialSuccess.replace('{successCount}', successCount.toString()).replace('{total}', total.toString()) });
+      const firstError = rejected[0]?.reason?.response?.data?.message || rejected[0]?.reason?.message || 'Lỗi không xác định';
+      toastError({ message: `Lưu thất bại: ${firstError}` });
     }
   };
 
@@ -232,7 +238,7 @@ export const InternalEvaluationForm: React.FC<InternalEvaluationFormProps> = ({
                 className="flex items-center gap-2 bg-primary text-primary-foreground hover:bg-primary/90 px-4 py-2 rounded-md font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {loading && <Loader2 className="w-4 h-4 animate-spin" />}
-                {loading ? messages.loading : messages.submitBtn}
+                {loading ? messages.loading : (hasSavedData ? 'Cập nhật Đánh Giá' : messages.submitBtn)}
               </button>
             </div>
           )}

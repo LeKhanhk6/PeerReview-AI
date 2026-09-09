@@ -1,10 +1,10 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Dialog } from '@/components/ui/Dialog';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { analyticsMessages } from '@/constants/messages/analytics';
+import { useAssignmentsList } from '@/features/assignment/hooks/useAssignments';
 import { useAssignmentGroupAnalytics, usePublishGroupAnalytics } from '../hooks/useAnalytics';
-import { useQuery } from '@tanstack/react-query';
 import { GroupRadarChart } from './GroupRadarChart';
 import { AssignmentContributionTable } from './AssignmentContributionTable';
 import { ExportCsvButton } from './ExportCsvButton';
@@ -22,29 +22,38 @@ export const GroupContributionDetailModal: React.FC<GroupContributionDetailModal
   isOpen,
   onClose,
 }) => {
-  const { data: assignments = [] } = useQuery({
-    queryKey: ['assignments', classId],
-    queryFn: async () => {
-      if (!classId) return [];
-      const res = await (await fetch(`http://localhost:5000/api/classes/${classId}/assignments`, {
-        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
-      })).json();
-      return res.data || res || [];
-    },
-    enabled: Boolean(classId) && isOpen
-  });
+  const { data: assignmentsRes, isLoading: isLoadingAssignments } = useAssignmentsList(
+    classId ? { classId } : undefined
+  );
+  const assignments = assignmentsRes?.data || [];
 
-  const assignmentId = assignments.length > 0 ? assignments[0].id : null;
+  const [selectedAssignmentId, setSelectedAssignmentId] = useState<string | null>(null);
 
-  const { data: members = [], isLoading, isError, refetch } = useAssignmentGroupAnalytics(assignmentId, groupId || '', isOpen && Boolean(assignmentId));
+  // Reset selected assignment when modal opens or group changes
+  React.useEffect(() => {
+    if (isOpen) {
+      setSelectedAssignmentId(null);
+    }
+  }, [isOpen, groupId]);
+
+  // Fallback to first assignment if not explicitly selected
+  const activeAssignmentId = selectedAssignmentId || (assignments.length > 0 ? assignments[0].id : null);
+
+  const { data: members = [], isLoading, isError, refetch } = useAssignmentGroupAnalytics(
+    activeAssignmentId || '',
+    groupId || '',
+    isOpen && Boolean(activeAssignmentId) && Boolean(groupId)
+  );
+
   const { mutate: publish, isPending: isPublishing } = usePublishGroupAnalytics();
 
   const title = "Kết quả Đánh giá Nội bộ (Peer Review)";
   const isPublished = members.length > 0 && members[0].isPublished;
 
   const handlePublish = () => {
+    if (!activeAssignmentId || !groupId) return;
     if (window.confirm("Publish lại sẽ thay thế kết quả đã công bố của tất cả sinh viên. Bạn có chắc chắn?")) {
-      publish({ assignmentId, groupId: groupId! }, {
+      publish({ assignmentId: activeAssignmentId, groupId }, {
         onSuccess: () => alert("Công bố thành công!"),
         onError: (err: any) => alert(`Lỗi: ${err.response?.data?.message || err.message}`)
       });
@@ -60,8 +69,29 @@ export const GroupContributionDetailModal: React.FC<GroupContributionDetailModal
       className="max-w-5xl"
     >
       <div className="space-y-6">
+        {/* Assignment Selector if class has multiple assignments */}
+        {assignments.length > 1 && (
+          <div className="flex items-center gap-3 bg-slate-50 p-3 rounded-xl border border-slate-200">
+            <label htmlFor="assignment-select-modal" className="text-xs font-bold text-slate-700 whitespace-nowrap">
+              Bài tập:
+            </label>
+            <select
+              id="assignment-select-modal"
+              value={activeAssignmentId || ''}
+              onChange={(e) => setSelectedAssignmentId(e.target.value)}
+              className="px-3 py-1.5 text-xs font-semibold bg-white border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-primary"
+            >
+              {assignments.map((asm: any) => (
+                <option key={asm.id} value={asm.id}>
+                  {asm.title}
+                </option>
+              ))}
+            </select>
+          </div>
+        )}
+
         {/* Modal Actions */}
-        {!isLoading && !isError && members.length > 0 && (
+        {!isLoading && !isLoadingAssignments && !isError && members.length > 0 && (
           <div className="flex justify-between items-center bg-gray-50 p-4 rounded-xl border border-gray-200">
              <div>
                <span className="text-sm font-medium text-gray-700 mr-2">Trạng thái:</span>
@@ -76,7 +106,7 @@ export const GroupContributionDetailModal: React.FC<GroupContributionDetailModal
                 <button 
                   onClick={handlePublish}
                   disabled={isPublishing}
-                  className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-bold rounded-lg shadow-sm disabled:opacity-50"
+                  className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-bold rounded-lg shadow-sm disabled:opacity-50 transition-colors"
                 >
                   {isPublishing ? 'Đang xử lý...' : (isPublished ? 'Publish Lại' : 'Publish Analytics')}
                 </button>
@@ -85,7 +115,7 @@ export const GroupContributionDetailModal: React.FC<GroupContributionDetailModal
         )}
 
         {/* Content Body */}
-        {isLoading ? (
+        {(isLoading || isLoadingAssignments) ? (
           <div className="space-y-3 py-4" aria-busy="true">
             <Skeleton className="h-10 w-full" />
             <Skeleton className="h-80 w-full" />

@@ -195,9 +195,15 @@ export const calculateC1 = async (groupId, userId, groupSize = 1) => {
 };
 
 export const calculateAssignmentContributions = async (assignmentId, groupId) => {
-    // 1. Get all members
-    const membersRes = await pool.query('SELECT user_id FROM group_members WHERE group_id = $1', [groupId]);
+    // 1. Get all members with user full_name
+    const membersRes = await pool.query(`
+        SELECT gm.user_id, u.full_name as name
+        FROM group_members gm
+        JOIN users u ON gm.user_id = u.id
+        WHERE gm.group_id = $1
+    `, [groupId]);
     const members = membersRes.rows.map(r => r.user_id);
+    const memberNameMap = new Map(membersRes.rows.map(r => [r.user_id, r.name]));
     const M = members.length;
     if (M === 0) return [];
 
@@ -254,6 +260,7 @@ export const calculateAssignmentContributions = async (assignmentId, groupId) =>
 
         results.push({
             userId,
+            name: memberNameMap.get(userId) || 'Sinh viên',
             c1,
             c2: evals.c2,
             c3: evals.c3,
@@ -339,11 +346,22 @@ export const getAssignmentGroupAnalytics = async (assignmentId, groupId) => {
     const snapRes = await pool.query('SELECT * FROM contribution_metrics WHERE assignment_id = $1 AND group_id = $2', [assignmentId, groupId]);
     
     if (snapRes.rowCount > 0) {
+        const userIds = snapRes.rows.map(r => r.user_id);
+        let userMap = new Map();
+        if (userIds.length > 0) {
+            const usersRes = await pool.query(
+                'SELECT id, full_name as name FROM users WHERE id = ANY($1)',
+                [userIds]
+            );
+            userMap = new Map(usersRes.rows.map(u => [u.id, u.name]));
+        }
+
         // Return snapshot
         return snapRes.rows.map(r => {
             const meta = r.metadata || {};
             return {
                 userId: r.user_id,
+                name: userMap.get(r.user_id) || 'Sinh viên',
                 c1: meta.c1 || 0,
                 c2: meta.c2 || 0,
                 c3: meta.c3 || 0,

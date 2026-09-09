@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { Button } from '@/components/ui/Button';
 import { EmptyState } from '@/components/ui/EmptyState';
@@ -21,21 +21,35 @@ import { StudentAnalyticsTab } from '../components/StudentAnalyticsTab';
 type WorkspaceTab = 'kanban' | 'discussions' | 'timeline' | 'files' | 'evaluation' | 'analytics';
 
 export const StudentGroupWorkspacePage: React.FC = () => {
-  const { assignmentId, groupId } = useParams<{ assignmentId?: string; groupId?: string }>();
+  const { groupId } = useParams<{ groupId?: string }>();
+  const [searchParams] = useSearchParams();
+  const paramAssignmentId = useParams<{ assignmentId?: string }>().assignmentId;
+  const queryAssignmentId = searchParams.get('assignmentId');
+  const assignmentId = paramAssignmentId || queryAssignmentId || '';
   const navigate = useNavigate();
   const { user } = useAuthStore();
   const [activeTab, setActiveTab] = useState<WorkspaceTab>('kanban');
 
-  // Fallback: If URL has assignmentId instead of groupId, lookup actual group_id from student dashboard assignments
+  // Fallback: lookup dashboard assignments to resolve assignmentId from groupId
   const { data: dashboardData } = useApiQuery(
     ['student-dashboard-assignments'],
     getStudentDashboardAssignmentsApi,
-    { enabled: !groupId && Boolean(assignmentId) }
+    { enabled: true } // Always fetch to be safe
   );
 
   const assignmentsList = Array.isArray(dashboardData) ? dashboardData : (dashboardData as any)?.rows || [];
-  const matchedAssignment = assignmentsList.find((a: any) => String(a.assignment_id) === String(assignmentId));
-  const resolvedGroupId = groupId || matchedAssignment?.group_id || (assignmentId && assignmentId.startsWith('group') ? assignmentId : '');
+  
+  // If we have groupId but no assignmentId, try to find it
+  let resolvedAssignmentId = assignmentId;
+  if (!resolvedAssignmentId && groupId && assignmentsList.length > 0) {
+    const matched = assignmentsList.find((a: any) => String(a.group_id) === String(groupId));
+    if (matched) {
+      resolvedAssignmentId = matched.assignment_id;
+    }
+  }
+
+  const matchedAssignment = assignmentsList.find((a: any) => String(a.assignment_id) === String(resolvedAssignmentId) || String(a.group_id) === String(groupId));
+  const resolvedGroupId = groupId || matchedAssignment?.group_id || (resolvedAssignmentId && resolvedAssignmentId.startsWith('group') ? resolvedAssignmentId : '');
 
   const isValidGroup = Boolean(resolvedGroupId && resolvedGroupId !== 'null' && resolvedGroupId !== 'undefined');
 
@@ -209,11 +223,11 @@ export const StudentGroupWorkspacePage: React.FC = () => {
         {!isTeacher && activeTab === 'evaluation' && (
           <div className="p-4 md:p-6 max-w-4xl mx-auto w-full h-full overflow-y-auto">
             <InternalEvaluationForm 
-              assignmentId={matchedAssignment?.assignment_id || assignmentId || ''}
+              assignmentId={matchedAssignment?.assignment_id || resolvedAssignmentId || ''}
               groupId={resolvedGroupId}
               groupMembers={members}
               currentUserId={user?.id || ''}
-              dueDate={matchedAssignment?.due_date || new Date().toISOString()} // fallback if missing
+              dueDate={matchedAssignment?.deadline || new Date().toISOString()} // fallback if missing
               reviewDeadline={matchedAssignment?.review_deadline} 
             />
           </div>
@@ -222,9 +236,10 @@ export const StudentGroupWorkspacePage: React.FC = () => {
         {activeTab === 'analytics' && (
           <div className="w-full h-full overflow-y-auto">
             <StudentAnalyticsTab
-              assignmentId={matchedAssignment?.assignment_id || assignmentId || ''}
+              assignmentId={matchedAssignment?.assignment_id || resolvedAssignmentId || ''}
               groupId={resolvedGroupId}
               currentUserId={user?.id || ''}
+              groupMembers={members}
             />
           </div>
         )}

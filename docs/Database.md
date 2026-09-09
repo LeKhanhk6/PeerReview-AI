@@ -151,6 +151,21 @@ CREATE TABLE contribution_metrics (
     classification VARCHAR(50), -- VD: High Contributor, Potential Free-rider
     calculated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
+
+CREATE TABLE internal_evaluations (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    group_id UUID REFERENCES groups(id) ON DELETE CASCADE,
+    assignment_id UUID REFERENCES assignments(id) ON DELETE CASCADE,
+    evaluator_id UUID REFERENCES users(id) ON DELETE CASCADE,
+    evaluatee_id UUID REFERENCES users(id) ON DELETE CASCADE,
+    c2_score INT CHECK (c2_score BETWEEN 1 AND 5), -- Artifact Quality
+    c3_score INT CHECK (c3_score BETWEEN 1 AND 5), -- Timeliness & Commitment
+    c4_score INT CHECK (c4_score BETWEEN 1 AND 5), -- Teamwork & Communication
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    UNIQUE(assignment_id, evaluator_id, evaluatee_id),
+    CHECK (evaluator_id <> evaluatee_id)
+);
 -- ==============================================================================
 -- BỔ SUNG VÀO NHÓM 4: HOẠT ĐỘNG NHÓM (Workspace)
 -- ==============================================================================

@@ -21,6 +21,7 @@ import analyticsRoutes from './routes/analytics.routes.js';
 import telemetryRoutes from './routes/telemetry.routes.js';
 import adminRoutes from './routes/admin.routes.js';
 import healthRoutes from './routes/health.routes.js';
+import internalEvaluationRoutes from './routes/internalEvaluation.routes.js';
 import { startDeadlineCronJob } from './services/cron-deadline.service.js';
 
 dotenv.config();
@@ -84,8 +85,9 @@ app.use('/api', reviewRoutes);
 app.use('/api/groups', contributionRoutes);
 app.use('/api', summaryRoutes);
 app.use('/api/analytics', analyticsRoutes);
-app.use('/api', telemetryRoutes);
+    app.use('/api', telemetryRoutes);
 app.use('/api/admin', adminRoutes);
+app.use('/api', internalEvaluationRoutes);
 
 // Centralized Error Handler (Must be last)
 app.use(errorHandler);

@@ -76,7 +76,7 @@ Dự án được chia thành 14 Phase (Giai đoạn). Dưới đây là bảng 
 | **PHASE 6** | Double-Blind Peer Assignment | **Đã hoàn thành** | Backend Algorithm, Submission Pool và Anonymous Identity đã được thực thi. |
 | **PHASE 7** | Peer Review | **Đang triển khai** | Hoàn thành Backend API (Review Assignment, Validation). |
 | **PHASE 8** | AI Peer-Review Mentor | **Đang triển khai** | Hoàn thành tích hợp AI Service Backend. Frontend React chưa xong. |
-| **PHASE 9** | Contribution Analytics | **Đã hoàn thành (Backend)** | Hoàn thiện Engine tính toán Contribution, Classification, Teacher Analytics. |
+| **PHASE 9** | Contribution Analytics | **Đang triển khai mở rộng** | Mở rộng MVP ban đầu theo `Thuat_toan_danh_gia_dong_gop.md` (Thêm C2-C4). Đang chờ DB và API. |
 | **PHASE 10**| Review Synthesis | **Đã hoàn thành (Backend)** | AI Synthesis và Teacher Validation APIs đã hoàn tất. |
 | **PHASE 11**| Teacher Analytics + Early Warning | **Đã hoàn thành (Backend)** | Dashboard Analytics, Collaboration Risk, Early Warnings API đã sẵn sàng. |
 | **PHASE 12**| Integration + Testing | **Đang triển khai** | Hoàn thành Backend Unit Tests, Health Check Diagnostics (B7.3), File Upload Capping 10MB (B7.4) và Deployment Hardening Vercel/Render (B7.5). Đang chờ Load Test k6 & E2E. |
@@ -99,8 +99,8 @@ Phần Backend đã được triển khai gần như hoàn thiện cho toàn b�
 
 ### Hệ thống AI & Analytics nâng cao (Phase 8-11)
 * **AI Mentor & Synthesis:** Xây dựng xong luồng giao tiếp với AI (Real-time Analysis: Constructiveness, Tone, Rubric Alignment...). Hỗ trợ Tổng hợp đánh giá bằng AI (AI Synthesis) cho giáo viên.
-* **Contribution Analytics:** Xây dựng xong Contribution Engine dựa trên Activity Logs (tính toán % đóng góp, phân loại High/Low/Free-rider). Cung cấp đầy đủ API Analytics cho Dashboard của giáo viên.
-* **Collaboration Risk & Early Warning:** Tự động phát hiện Inactivity, Negative Interaction, Unbalanced Contribution để cảnh báo sớm cho giáo viên.
+* **Contribution Analytics:** Engine cũ đã xong (Phase 9 MVP). Hiện đang **mở rộng** thêm luồng Chấm nội bộ (Internal Evaluation) theo `Thuat_toan_danh_gia_dong_gop.md` (chấm chéo C2-C4, snapshot, guard).
+* **Collaboration Risk & Early Warning:** Tự động phát hiện Inactivity, Negative Interaction, Unbalanced Contribution để cảnh báo sớm cho giáo viên. Sắp tới sẽ nối thêm cảnh báo "Không chấm nội bộ".
 
 ---
 

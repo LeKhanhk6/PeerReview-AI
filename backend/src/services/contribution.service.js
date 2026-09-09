@@ -141,3 +141,143 @@ export const calculateGroupContributions = async (groupId, timeframe) => {
 
     return result;
 };
+
+/**
+ * NEW: Expanded MVP - Group Internal Evaluation Algorithm (C1, C2, C3, C4)
+ */
+
+export const calculateC1 = async (groupId, userId) => {
+    // 0.7 * (tasks done / total assigned tasks) + 0.3 * (user activity / group activity)
+    const taskRes = await pool.query('SELECT status FROM tasks WHERE group_id = $1 AND assignee_id = $2', [groupId, userId]);
+    const totalTasks = taskRes.rows.length;
+    const doneTasks = taskRes.rows.filter(t => t.status === 'DONE').length;
+    const taskRatio = totalTasks === 0 ? 0 : (doneTasks / totalTasks);
+
+    const groupActRes = await pool.query('SELECT user_id, COUNT(*) as count FROM activity_logs WHERE group_id = $1 GROUP BY user_id', [groupId]);
+    let groupTotalAct = 0;
+    let userAct = 0;
+    for (const row of groupActRes.rows) {
+        const cnt = parseInt(row.count, 10);
+        groupTotalAct += cnt;
+        if (row.user_id === userId) {
+            userAct = cnt;
+        }
+    }
+    const actRatio = groupTotalAct === 0 ? 0 : (userAct / groupTotalAct);
+
+    // C1 is 0-100 scale
+    const c1 = (0.7 * taskRatio + 0.3 * actRatio) * 100;
+    return c1;
+};
+
+export const calculateAssignmentContributions = async (assignmentId, groupId) => {
+    // 1. Get all members
+    const membersRes = await pool.query('SELECT user_id FROM group_members WHERE group_id = $1', [groupId]);
+    const members = membersRes.rows.map(r => r.user_id);
+    const M = members.length;
+    if (M === 0) return [];
+
+    // 2. Get C2, C3, C4 (Averages from internal_evaluations)
+    // Only real votes are counted
+    const evalsRes = await pool.query(`
+        SELECT evaluatee_id, 
+               AVG(c2_score) as avg_c2, 
+               AVG(c3_score) as avg_c3, 
+               AVG(c4_score) as avg_c4,
+               COUNT(*) as votes
+        FROM internal_evaluations 
+        WHERE assignment_id = $1 AND group_id = $2
+        GROUP BY evaluatee_id
+    `, [assignmentId, groupId]);
+
+    const evalMap = new Map();
+    for (const row of evalsRes.rows) {
+        evalMap.set(row.evaluatee_id, {
+            c2: parseFloat(row.avg_c2),
+            c3: parseFloat(row.avg_c3),
+            c4: parseFloat(row.avg_c4),
+            votes: parseInt(row.votes, 10)
+        });
+    }
+
+    // 3. Calculate S_i for each member
+    const results = [];
+    let sumS = 0;
+
+    for (const userId of members) {
+        const c1 = await calculateC1(groupId, userId);
+        const evals = evalMap.get(userId) || { c2: 0, c3: 0, c4: 0, votes: 0 };
+        
+        // S_i formula: 0.35*(C1/100) + 0.30*(C2/5) + 0.20*(C3/5) + 0.15*(C4/5)
+        const si = 0.35 * (c1 / 100) + 0.30 * (evals.c2 / 5) + 0.20 * (evals.c3 / 5) + 0.15 * (evals.c4 / 5);
+        sumS += si;
+
+        results.push({
+            userId,
+            c1,
+            c2: evals.c2,
+            c3: evals.c3,
+            c4: evals.c4,
+            si,
+            votes: evals.votes
+        });
+    }
+
+    // 4. Calculate G_ind = G_group * (S_i / mean(S))
+    const meanS = sumS / M;
+    const G_group = 1.0; // Base group score multiplier placeholder, UI expects a multiplier to apply to the real score
+
+    for (const r of results) {
+        // Guard mean(S) = 0
+        if (meanS === 0) {
+            r.multiplier = 1.0; // Everyone gets G_group
+        } else {
+            r.multiplier = parseFloat((r.si / meanS).toFixed(2));
+        }
+
+        // Determine Classification
+        if (r.multiplier >= 1.2) r.classification = 'HIGH_CONTRIBUTOR';
+        else if (r.multiplier >= 0.8) r.classification = 'NORMAL_CONTRIBUTOR';
+        else if (r.multiplier >= 0.5) r.classification = 'LOW_CONTRIBUTOR';
+        else r.classification = 'FREE_RIDER';
+
+        if (r.votes === 0) {
+            r.classification = 'MISSING_EVALUATION'; // Flag for early warning
+        }
+    }
+
+    return results;
+};
+
+export const publishAssignmentContributions = async (assignmentId, groupId) => {
+    const results = await calculateAssignmentContributions(assignmentId, groupId);
+    
+    // Snapshot into contribution_metrics
+    const client = await pool.connect();
+    try {
+        await client.query('BEGIN');
+        
+        // Clear old snapshot if re-published
+        await client.query('DELETE FROM contribution_metrics WHERE assignment_id = $1 AND group_id = $2', [assignmentId, groupId]);
+
+        const insertQ = `
+            INSERT INTO contribution_metrics 
+            (group_id, assignment_id, user_id, contribution_score, classification, calculated_at)
+            VALUES ($1, $2, $3, $4, $5, NOW())
+        `;
+
+        for (const r of results) {
+            // Note: saving the multiplier * 100 as contribution_score for backward compatibility
+            // or we could save Si * 100
+            await client.query(insertQ, [groupId, assignmentId, r.userId, r.multiplier * 100, r.classification]);
+        }
+        
+        await client.query('COMMIT');
+        return results;
+    } catch (e) {
+        await client.query('ROLLBACK');
+        throw e;
+    } finally {
+        client.release();
+    }
+};

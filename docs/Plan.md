@@ -448,83 +448,44 @@ Improvement
 
 ---
 
-# 10. PHASE 9 — Contribution Analytics
+# 10. PHASE 9 — Contribution Analytics (Expanded MVP)
 
-## TASK 10.1 — Collect Contribution Data [x]
-`activity_logs` (event-driven unified table)
+## TASK 10.1 — Thuật toán đánh giá đóng góp nội bộ (Mở rộng)
+Phát triển bổ sung Mô hình định lượng đa chiều $V_i = [C_1, C_2, C_3, C_4]$ (Thay thế cho mô hình Rule-based cũ chỉ dựa trên activity_logs).
 
-Includes:
-- SUBMISSION_CREATED / RESUBMITTED / LATE
-- REVIEW_SUBMITTED
-- TASK_COMPLETED
-- DISCUSSION_CREATED
-- FILE_UPLOADED
-- CONTENT_EDITED (với metadata: { wordCount })
-...
+- **C1 (Workload Completion):**
+  Công thức: $C_1 = 0.7 \times (\text{Tasks Done của user} / \text{Tổng tasks được giao của user}) + 0.3 \times (\text{Activity Logs của user} / \text{Tổng Activity Logs của nhóm})$
+  (Trường hợp user không có task nào, tỷ lệ task = 0. Teacher xem được breakdown).
+- **C2 (Artifact Quality), C3 (Timeliness), C4 (Teamwork):**
+  Thang điểm 1-5 do các thành viên trong nhóm chấm chéo nhau (Internal Evaluation).
 
-Each event includes:
-- target_id (anti-spam)
-- metadata (context)
-- created_at (time dimension)
+## TASK 10.2 — Chấm điểm nội bộ (Internal Evaluation Window)
+- **Window chấm nội bộ:** `[submission_deadline, review_deadline]`. Đóng sau 24h nếu không có review_deadline.
+- **Enforcement (Bắt buộc):** Bắt buộc chấm. Không gán điểm mặc định nếu thiếu (tính trung bình từ phiếu thật).
+- Sinh viên không chấm sẽ bị flag "Chưa hoàn thành chấm nội bộ" -> Chuyển vào Early Warning.
+- **Ẩn danh:** Ẩn danh tuyệt đối người chấm ở tầng hiển thị. Không ai thấy ai chấm mình bao nhiêu.
+- **Update Policy:** Cho phép `UPDATE` trước khi window đóng (`ON CONFLICT DO UPDATE`), ẩn danh ở tầng API.
 
-## TASK 10.2 — Contribution Calculation [x]
-`activity_logs`
-   ↓
-`getGroupActivityStats(groupId, timeframe)`
-   ↓
-Aggregation:
-  - COUNT(*) → total actions
-  - COUNT(DISTINCT target_id) → unique actions
-   ↓
-Normalization:
-  - Normalize by timeframe (per day/week)
-  - Optional: normalize by group size
-  - Scale to 0–100
-   ↓
-Apply weights:
-  - submission: 5
-  - review: 4
-  - task: 3
-  - discussion: 1
-   ↓
-Contribution Score
+## TASK 10.3 — Contribution Calculation & Snapshot
+- Áp dụng công thức $S_i$ và Hệ số quy đổi cá nhân $G_{ind}$ (Đảm bảo Guard chia 0: `mean(S)=0` fallback `multiplier=1`).
+- **Snapshot:** Tính toán $C_1$, $\bar{C}_2$, $\bar{C}_3$, $\bar{C}_4$ và $S_i$ tự động, sau đó Snapshot (đóng băng dữ liệu) vào bảng `contribution_metrics` khi Teacher nhấn **Publish Analytics**.
 
-### Anti-spam logic
-- Use DISTINCT target_id
-- Apply cap per activity type (e.g. max 5 discussions/day)
-- Ignore rapid repeated spam actions
-
-## TASK 10.3 — Contribution Classification [x]
-Based on Contribution Score:
-
-- High Contributor (> 80)
-- Normal Contributor (50–80)
-- Low Contributor (20–50)
-- Potential Free-rider (< 20)
-
-*(Threshold-based classification)*
-
-## TASK 10.4 — Teacher Analytics [x]
+## TASK 10.4 — Teacher Analytics & Student View
 Teacher can view:
+- Contribution Score per member ($S_i$, $G_{ind}$)
+- Biểu đồ Ra-đa (Radar Chart) 4 trục (Đã normalize về thang 0-1).
+- Member comparison (ranking) và Potential Free-rider detection (Early Alerts).
+- Nút **Publish Analytics**.
 
-- Contribution Score per member
-- Contribution Percent (%)
-- Activity breakdown (by type, includes weight and effective score)
-- Unique vs total actions
-- Activity timeline
-- Member comparison (ranking)
-- Potential Free-rider detection (with automated Alerts)
+Student View:
+- Chỉ xem được Kết quả $S_i$ và Biểu đồ Ra-đa của chính mình **sau khi** Teacher Publish.
 
 ### MVP
-Rule-based / Weighted Algorithm ONLY
+Thuật toán đa chiều (C1-C4) + Rule-based / Weighted C1.
 
 ### Post-MVP
 Rule-based + AI (quality adjustment ONLY)
-
-Future:
-- SNA
-- GNN
-- Behavioral Modeling
+Future: SNA, GNN, Behavioral Modeling
 # 11. PHASE 10 — Review Synthesis
 
 ## TASK 11.1 — AI Synthesis (For Teacher) [x]

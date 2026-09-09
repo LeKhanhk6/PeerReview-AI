@@ -130,16 +130,16 @@ Tất cả các tài khoản thử nghiệm bên dưới đã được chuẩn b
 1. **Truy cập:** Khi Nhóm học phần đã hoàn thành thời gian chấm nội bộ (qua deadline Review).
 2. **Thao tác Kiểm thử:**
    - Trong màn hình Dashboard Lớp học, chọn một Nhóm học phần bất kỳ để mở **Analytics Modal**.
-   - Xem bảng chỉ số $S_i$ và biểu đồ **Radar Chart** 4 trục ($C_1, C_2, C_3, C_4$).
+   - Xem bảng chỉ số $S_i$, hệ số cá nhân $G_{ind}$ và biểu đồ **Radar Chart** 4 trục ($C_1, C_2, C_3, C_4$).
    - Bấm nút **"Publish Analytics" (Công bố Kết quả)**.
    - Nếu muốn sửa điểm và publish lại, sẽ có hộp thoại **Confirm Dialog** để bảo vệ dữ liệu, đồng ý ghi đè (Snapshot).
-3. **Kết quả mong đợi:** Dữ liệu điểm đóng góp được "đóng băng" (Immutable Snapshot) vào Database. Cờ cảnh báo đỏ "Chưa hoàn thành chấm nội bộ" sẽ hiển thị đối với những sinh viên bỏ chấm.
+3. **Kết quả mong đợi:** Dữ liệu điểm đóng góp được "đóng băng" (Immutable Snapshot) vào Database. Cờ cảnh báo đỏ "Chưa hoàn thành chấm nội bộ" sẽ hiển thị đối với những sinh viên bỏ chấm. Đồng thời, toàn bộ sinh viên trong nhóm lập tức bị khóa chỉnh sửa phiếu chấm nội bộ trên giao diện của họ.
 
 ---
 
 ### 3.3. 🎓 KỊCH BẢN KIỂM THỬ VAI TRÒ SINH VIÊN (STUDENT)
 
-**Mục tiêu:** Kiểm tra luồng thao tác nhóm, nộp bài làm, chấm chéo bài của nhóm bạn với Trợ lý AI Mentor và xem kết quả tổng hợp.
+**Mục tiêu:** Kiểm tra luồng thao tác nhóm, nộp bài làm, chấm chéo bài của nhóm bạn với Trợ lý AI Mentor, chấm nội bộ trong nhóm và xem kết quả tổng hợp.
 
 #### 📍 Kịch bản S1: Đăng nhập & Không gian làm việc Nhóm (Group Workspace) (`/student/workspace`)
 1. **Đăng nhập:** Dùng tài khoản `student01@example.com` / `password123`.
@@ -179,13 +179,31 @@ Tất cả các tài khoản thử nghiệm bên dưới đã được chuẩn b
 2. **Kết quả mong đợi:**
    - Hiển thị bản **Tổng hợp Đánh giá từ AI** (đã được Giảng viên phê duyệt) trình bày đẹp mắt dưới dạng 3 nhóm: Điểm mạnh, Điểm yếu và Gợi ý cải thiện.
 
-#### 📍 Kịch bản S5: Xem Kết quả Đánh giá Nội bộ (Radar Chart) (`/student/workspace` -> Tab Kết Quả Đánh Giá)
+#### 📍 Kịch bản S5: Chấm chéo Đóng góp Nội bộ trong Nhóm (Internal Peer Evaluation) (`/student/workspace` -> Tab Chấm Nội Bộ)
+1. **Truy cập:** Mở **Không gian Làm việc Nhóm** -> Chuyển sang tab **Chấm Nội Bộ**.
+2. **Thao tác Kiểm thử:**
+   - **Đổi Bài tập:** Nếu lớp có nhiều bài tập nhóm, sử dụng menu thả xuống **"Đổi bài tập"** góc trên bên phải để chuyển đổi qua lại giữa các bài tập.
+   - **Đánh giá 3 Tiêu chí (1–5 sao):** Thực hiện chọn sao cho từng thành viên khác trong nhóm theo 3 tiêu chí:
+     - *C2 (Chất lượng công việc)*
+     - *C3 (Hoàn thành đúng hạn)*
+     - *C4 (Phối hợp & Giao tiếp)*
+   - Bấm nút **"Gửi Đánh Giá Nội Bộ"** (hoặc **"Cập nhật Đánh Giá"** nếu đã lưu trước đó).
+3. **Kiểm thử Trạng thái Cảnh báo & Khóa (Edge Cases & Security Lock):**
+   - **Tự chấm chính mình:** Hệ thống tự động lọc bỏ bản thân khỏi danh sách chấm.
+   - **Chưa đến hạn (`NOT_OPEN`) / Hết hạn (`CLOSED`):** Thanh sao bị vô hiệu hóa, hiển thị thông báo trạng thái thời gian tương ứng.
+   - **Đã được Giảng viên Công bố (`PUBLISHED`):** 
+     - Badge góc trên chuyển sang **`🔒 Đã công bố & Khóa`**.
+     - Khung cảnh báo màu vàng xuất hiện: *"Giảng viên đã công bố kết quả đánh giá bài tập này. Tất cả phiếu chấm nội bộ đã được đóng băng và khóa chỉnh sửa."*
+     - Các nút chọn sao bị **vô hiệu hóa**, nút Gửi/Cập nhật bị **ẩn hoàn toàn**.
+     - Nếu cố tình gọi API trực tiếp, Backend chặn lập tức với mã lỗi `400 Bad Request`.
+
+#### 📍 Kịch bản S6: Xem Kết quả Đánh giá Nội bộ & Biểu đồ Radar (`/student/workspace` -> Tab Kết Quả Đánh Giá)
 1. **Truy cập:** Mở **Không gian Làm việc Nhóm** -> Chuyển sang tab **Kết Quả Đánh Giá**.
 2. **Thao tác Kiểm thử (Trước khi GV công bố):** 
    - Tab sẽ hiển thị màn hình Empty State: *"Chờ giảng viên công bố kết quả đánh giá"*.
 3. **Thao tác Kiểm thử (Sau khi GV công bố):** 
-   - Hệ thống hiển thị biểu đồ **Radar Chart** 4 trục năng lực, trong đó đường màu xanh đậm nổi bật (Highlight) là điểm số cá nhân của chính sinh viên đang đăng nhập, so sánh trực quan với toàn nhóm.
-   - Xem bảng xếp loại, hệ số $S_i$ (Multiplier) và chi tiết điểm từng trục.
+   - Hệ thống hiển thị biểu đồ **Radar Chart** 4 trục năng lực ($C_1, C_2, C_3, C_4$), trong đó đường màu xanh đậm nổi bật (Highlight) là điểm số cá nhân của chính sinh viên đang đăng nhập, so sánh trực quan với toàn nhóm.
+   - Xem bảng xếp loại (`HIGH_CONTRIBUTOR`, `NORMAL_CONTRIBUTOR`, `LOW_CONTRIBUTOR`, `FREE_RIDER`), hệ số nhân $G_{ind}$ (Multiplier) và chi tiết điểm từng trục.
 4. **Kết quả mong đợi:** Quy tắc ẩn danh 100% được bảo đảm, sinh viên chỉ thấy điểm trung bình tổng hợp nhận được, không thể biết ai đã chấm mình bao nhiêu điểm. Dữ liệu Radar luôn khớp chính xác với thời điểm Giảng viên ấn Publish (bất biến).
 
 ---

@@ -37,10 +37,11 @@ Hệ thống sử dụng cơ chế kiểm tra Role ngay tại Middleware của B
 
 ## 3. Module Không gian làm việc nhóm (Group Workspace)
 
-Đây là nơi sinh viên hợp tác trước khi nộp bài.
-- **Tính năng Task:** Sinh viên tạo, giao việc (Assign) và cập nhật trạng thái (TODO, IN PROGRESS, DONE).
+Đây là nơi sinh viên hợp tác trước và sau khi nộp bài.
+- **Tính năng Task (Kanban Board):** Sinh viên tạo, giao việc (Assign) và cập nhật trạng thái (TODO, IN PROGRESS, DONE). Mọi thành viên trong nhóm đều có quyền quản lý công việc chung để tối ưu hiệu quả nhóm.
 - **Tính năng Discussion:** Mini-chat để thảo luận nội bộ.
-- **Activity Tracker (Kẻ theo dõi thầm lặng):** Mọi thao tác (tạo task, chat, đổi trạng thái) đều được hệ thống backend lưu lại ngầm vào bảng `activity_logs`. Sinh viên không thể tự sửa hay xóa log này. Đây là dữ liệu cực kỳ quan trọng làm "thức ăn" cho AI sau này.
+- **Activity Tracker (Kẻ theo dõi thầm lặng):** Mọi thao tác (tạo task, chat, đổi trạng thái) đều được hệ thống backend lưu lại ngầm vào bảng `activity_logs`. Sinh viên không thể tự sửa hay xóa log này. Đây là dữ liệu cực kỳ quan trọng làm "thức ăn" cho thuật toán phân tích đóng góp.
+- **Tính năng Đánh giá Nội bộ (Internal Evaluation Tab):** Cho phép các thành viên trong nhóm chấm điểm đóng góp lẫn nhau (C2, C3, C4) theo từng bài tập cụ thể với bộ chọn bài tập (Assignment Selector) linh hoạt và tự động quản lý cửa sổ thời gian chấm.
 
 ---
 
@@ -71,20 +72,34 @@ Khi Giảng viên bấm "Chốt danh sách và Phân công", thuật toán backe
 
 ---
 
-## 6. Trí tuệ Nhân tạo Hỗ trợ (AI Services)
+## 6. Trí tuệ Nhân tạo Hỗ trợ & Thuật toán Phân tích Đóng góp (AI & Contribution Analytics)
 
-Hệ thống tích hợp AI qua 4 tính năng chính nhằm hỗ trợ (Mentor), không nhằm thay thế con người.
+Hệ thống tích hợp AI và thuật toán phân tích qua 4 tính năng chính nhằm hỗ trợ (Mentor), không nhằm thay thế con người.
 
 ### 6.1. AI Peer-Review Mentor (Dành cho Sinh viên)
 - **Cơ chế Real-time:** Khi sinh viên đang gõ nhận xét trong lúc chấm bài, AI phân tích liên tục.
 - **Phát hiện độc hại (Toxicity Detection):** Nếu có từ ngữ xúc phạm, chê bai cực đoan, AI sẽ nháy cảnh báo đỏ.
 - **Đề xuất tính xây dựng (Constructive Suggestion):** Nếu sinh viên gõ quá ngắn ("Bài này hay"), AI sẽ nhắc nhở "Hãy chỉ ra cụ thể hay ở điểm nào dựa trên Rubric" và cho câu mẫu để sinh viên bấm "Áp dụng".
 
-### 6.2. Phân tích đóng góp (Contribution Analytics)
-- Thuật toán AI lấy dữ liệu từ `activity_logs` (xem Phần 3).
-- Tính toán tần suất hoạt động, độ dài tin nhắn, số lượng task hoàn thành.
-- Xuất ra "Tỷ lệ đóng góp %" của từng thành viên.
-- **Phân loại (Classification):** AI tự dán nhãn sinh viên là *High Contributor* (Làm nhiều), *Normal*, hoặc *Free-rider* (Kẻ ăn bám).
+### 6.2. Phân tích đóng góp & Đánh giá Nội bộ (Contribution Analytics & Internal Peer Evaluation)
+- **Mô hình Đánh giá Kết hợp 4 Chiều (C1 - C4):**
+  - **Tự động (C1 - Auto Activity & Task Completion):** Tính toán từ 70% Tỷ lệ hoàn thành công việc được giao trên Kanban Board (`tasks`) và 30% Tần suất đóng góp thực tế trên hệ thống (`activity_logs`).
+  - **Chấm chéo Nội bộ (C2, C3, C4 - Peer Ratings):** Các thành viên trong nhóm chấm điểm lẫn nhau qua 3 tiêu chí (thang 1-5 sao):
+    - **C2 (Chất lượng công việc - Quality)**
+    - **C3 (Tính đúng hạn - Timeliness)**
+    - **C4 (Phối hợp & Giao tiếp - Teamwork)**
+- **Công thức Điểm Tổng hợp ($S_i$) & Hệ số Nhân cá nhân ($G_{ind}$):**
+  $$S_i = 0.35 \times \left(\frac{C1}{100}\right) + 0.30 \times \left(\frac{C2}{5}\right) + 0.20 \times \left(\frac{C3}{5}\right) + 0.15 \times \left(\frac{C4}{5}\right)$$
+  - **Hệ số Nhân cá nhân:** $G_{ind} = \frac{S_i}{\text{mean}(S)}$ (dùng làm hệ số nhân vào điểm bài tập chung của nhóm để ra điểm cá nhân).
+- **Phân loại Đóng góp (Classification):**
+  - **High Contributor** ($G_{ind} \ge 1.2$): Đóng góp xuất sắc.
+  - **Normal Contributor** ($0.8 \le G_{ind} < 1.2$): Đóng góp đạt yêu cầu.
+  - **Low Contributor** ($0.5 \le G_{ind} < 0.8$): Đóng góp mức thấp.
+  - **Free-rider** ($G_{ind} < 0.5$): Cảnh báo ăn bám / đóng góp quá yếu.
+- **Biểu đồ Radar Năng lực (Group Radar Chart):** Quy đổi các chỉ số C1 (0-100) và C2-C4 (1-5 $\rightarrow$ 0-100%) lên cùng một hệ tọa độ Radar 4 chiều, hỗ trợ Giảng viên và Sinh viên so sánh trực quan độ lệch năng lực trong nhóm.
+- **Cơ chế Đóng băng Snapshot Bất biến (Immutable Snapshot & Publish Flow):**
+  - Khi Giảng viên duyệt & bấm **Publish Analytics**, hệ thống sẽ đóng băng kết quả (snapshot) và lưu vào bảng `contribution_metrics`.
+  - Giúp bảo vệ dữ liệu đóng góp khỏi bị thay đổi sau khi đã chốt điểm. Sinh viên chỉ truy cập được bảng phân tích và biểu đồ sau khi Giảng viên công bố.
 
 ### 6.3. Cảnh báo sớm rủi ro (Early Warning / Collaboration Risk)
 - Nếu nhóm không có hoạt động gì suốt nhiều ngày (Inactivity).

@@ -24,12 +24,12 @@ export const AuthIllustrationPanel: React.FC<AuthIllustrationPanelProps> = ({
         </p>
       </div>
 
-      {/* Center Official Logo Display (Sleek 200px Max-Width) */}
-      <div className="relative z-10 my-auto py-3 flex flex-col items-center justify-center">
+      {/* Center Official Logo Display (Sleek Max-Width) */}
+      <div className="relative z-10 my-auto py-4 flex flex-col items-center justify-center">
         <img
-          src="/logo_PeerReview-AI.png"
+          src="/logo_trimmed.png"
           alt="PeerReview-AI Official Logo"
-          className="max-w-[170px] lg:max-w-[200px] w-full h-auto object-contain drop-shadow-sm hover:scale-105 transition-transform duration-300"
+          className="max-w-[200px] lg:max-w-[240px] w-full h-auto object-contain drop-shadow-sm hover:scale-105 transition-transform duration-300"
         />
       </div>
 
@@ -37,7 +37,7 @@ export const AuthIllustrationPanel: React.FC<AuthIllustrationPanelProps> = ({
       <div className="relative z-10">
         <div className="inline-flex items-center gap-1.5 text-[10px] sm:text-[11px] font-bold text-brand-heavy-text bg-white/95 backdrop-blur-md px-3 py-1 rounded-lg border border-brand-soft-border shadow-xs">
           <Sparkles className="w-3 h-3 text-brand-primary shrink-0" />
-          <span>Đánh giá peer • Học hỏi cùng AI • Vươn xa cùng nhau</span>
+          <span>Hệ thống AI Hỗ trợ Giảng dạy & Chấm chéo</span>
         </div>
       </div>
 

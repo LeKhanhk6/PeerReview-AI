@@ -146,13 +146,24 @@ export const calculateGroupContributions = async (groupId, timeframe) => {
  * NEW: Expanded MVP - Group Internal Evaluation Algorithm (C1, C2, C3, C4)
  */
 
-export const calculateC1 = async (groupId, userId) => {
-    // 0.7 * (tasks done / total assigned tasks) + 0.3 * (user activity / group activity)
+export const calculateC1 = async (groupId, userId, groupSize = 1) => {
+    // 1. Task Ratio
+    const allGroupTasksRes = await pool.query('SELECT COUNT(*) as count FROM tasks WHERE group_id = $1', [groupId]);
+    const groupHasTasks = parseInt(allGroupTasksRes.rows[0].count, 10) > 0;
+
     const taskRes = await pool.query('SELECT status FROM tasks WHERE group_id = $1 AND assignee_id = $2', [groupId, userId]);
     const totalTasks = taskRes.rows.length;
     const doneTasks = taskRes.rows.filter(t => t.status === 'DONE').length;
-    const taskRatio = totalTasks === 0 ? 0 : (doneTasks / totalTasks);
+    
+    let taskRatio = 0;
+    if (totalTasks > 0) {
+        taskRatio = doneTasks / totalTasks;
+    } else if (!groupHasTasks) {
+        // Nhóm không dùng task -> Mặc định neutral (1.0) để không bị kéo điểm
+        taskRatio = 1.0;
+    }
 
+    // 2. Activity Ratio
     const groupActRes = await pool.query('SELECT user_id, COUNT(*) as count FROM activity_logs WHERE group_id = $1 GROUP BY user_id', [groupId]);
     let groupTotalAct = 0;
     let userAct = 0;
@@ -163,11 +174,24 @@ export const calculateC1 = async (groupId, userId) => {
             userAct = cnt;
         }
     }
-    const actRatio = groupTotalAct === 0 ? 0 : (userAct / groupTotalAct);
+    
+    // Normalization: Nếu làm đúng phần của mình (1/groupSize) -> được 100% (1.0)
+    let actRatio = 0;
+    if (groupTotalAct > 0) {
+        actRatio = Math.min(1.0, (userAct / groupTotalAct) * groupSize);
+    }
 
     // C1 is 0-100 scale
-    const c1 = (0.7 * taskRatio + 0.3 * actRatio) * 100;
-    return c1;
+    let c1 = 0;
+    if (!groupHasTasks && groupTotalAct === 0) {
+        c1 = 0; // Nhóm hoàn toàn inactive
+    } else if (!groupHasTasks) {
+        c1 = actRatio * 100; // Nhóm không dùng task -> 100% dựa vào activity
+    } else {
+        c1 = (0.7 * taskRatio + 0.3 * actRatio) * 100;
+    }
+    
+    return Math.round(c1);
 };
 
 export const calculateAssignmentContributions = async (assignmentId, groupId) => {
@@ -205,7 +229,7 @@ export const calculateAssignmentContributions = async (assignmentId, groupId) =>
     let sumS = 0;
 
     for (const userId of members) {
-        const c1 = await calculateC1(groupId, userId);
+        const c1 = await calculateC1(groupId, userId, M);
         const evals = evalMap.get(userId) || { c2: 0, c3: 0, c4: 0, votes: 0 };
         
         // S_i formula: 0.35*(C1/100) + 0.30*(C2/5) + 0.20*(C3/5) + 0.15*(C4/5)

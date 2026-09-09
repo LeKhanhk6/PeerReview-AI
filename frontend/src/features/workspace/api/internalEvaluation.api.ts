@@ -30,9 +30,15 @@ export const submitInternalEvaluation = async (
 export const getMyEvaluations = async (
   assignmentId: string, 
   groupId: string
-): Promise<InternalEvaluationResponse[]> => {
+): Promise<{ evaluations: InternalEvaluationResponse[]; isPublished: boolean }> => {
   const response: any = await api.get(
     `/assignments/${assignmentId}/groups/${groupId}/internal-evaluations`
   );
-  return response.evaluations || response;
+  if (Array.isArray(response)) {
+    return { evaluations: response, isPublished: false };
+  }
+  return {
+    evaluations: response?.evaluations || response?.data || [],
+    isPublished: Boolean(response?.isPublished)
+  };
 };

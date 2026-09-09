@@ -149,7 +149,9 @@ export const calculateGroupContributions = async (groupId, timeframe) => {
 export const calculateC1 = async (groupId, userId, groupSize = 1) => {
     // 1. Task Ratio
     const allGroupTasksRes = await pool.query('SELECT COUNT(*) as count FROM tasks WHERE group_id = $1', [groupId]);
-    const groupHasTasks = parseInt(allGroupTasksRes.rows[0].count, 10) > 0;
+    const groupHasTasks = (allGroupTasksRes?.rows?.[0]?.count !== undefined && allGroupTasksRes?.rows?.[0]?.count !== null)
+        ? parseInt(allGroupTasksRes.rows[0].count, 10) > 0
+        : false;
 
     const taskRes = await pool.query('SELECT status FROM tasks WHERE group_id = $1 AND assignee_id = $2', [groupId, userId]);
     const totalTasks = taskRes.rows.length;
@@ -353,7 +355,8 @@ export const getAssignmentGroupAnalytics = async (assignmentId, groupId) => {
                 'SELECT id, full_name as name FROM users WHERE id = ANY($1)',
                 [userIds]
             );
-            userMap = new Map(usersRes.rows.map(u => [u.id, u.name]));
+            const userRows = usersRes?.rows || [];
+            userMap = new Map(userRows.map(u => [u.id, u.name]));
         }
 
         // Return snapshot

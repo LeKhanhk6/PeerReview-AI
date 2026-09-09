@@ -32,20 +32,20 @@ export const AssignmentContributionTable: React.FC<AssignmentContributionTablePr
                   <ContributionBadge category={m.classification} />
                 </td>
                 <td className="px-4 py-3 text-center">
-                  <span className="font-mono font-bold text-brand-primary bg-brand-primary/10 px-2 py-1 rounded-md">
-                    x{m.multiplier?.toFixed(2)}
+                  <span className="font-mono font-bold text-indigo-600 bg-indigo-50 px-2 py-1 rounded-md">
+                    x{Number(m.multiplier || 0).toFixed(2)}
                   </span>
                 </td>
                 <td className="px-4 py-3 text-center font-mono text-gray-600">
-                  {m.c1?.toFixed(1)}/100
+                  {Number(m.c1 || 0).toFixed(1)}/100
                 </td>
                 <td className="px-4 py-3 text-center font-mono text-gray-600">
                   <div className="flex gap-1 justify-center text-xs">
-                    <span title="Artifact Quality">C2:{m.c2?.toFixed(1)}</span>
+                    <span title="Artifact Quality">C2:{Number(m.c2 || 0).toFixed(1)}</span>
                     <span className="text-gray-300">|</span>
-                    <span title="Timeliness">C3:{m.c3?.toFixed(1)}</span>
+                    <span title="Timeliness">C3:{Number(m.c3 || 0).toFixed(1)}</span>
                     <span className="text-gray-300">|</span>
-                    <span title="Teamwork">C4:{m.c4?.toFixed(1)}</span>
+                    <span title="Teamwork">C4:{Number(m.c4 || 0).toFixed(1)}</span>
                   </div>
                 </td>
                 <td className="px-4 py-3 text-center">

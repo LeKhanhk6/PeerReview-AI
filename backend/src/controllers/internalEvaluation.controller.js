@@ -18,16 +18,21 @@ export const submitEvaluation = async (req, res) => {
         if (assignmentRes.rows.length === 0) return res.status(404).json({ message: 'Assignment not found' });
         
         const assignment = assignmentRes.rows[0];
+        const rawDeadline = assignment.deadline || assignment.due_date;
 
-        // 1.5 Check Group Belongs to Assignment's Class
-        const groupRes = await pool.query('SELECT class_id FROM groups WHERE id = $1', [groupId]);
-        if (groupRes.rows.length === 0) return res.status(404).json({ message: 'Group not found' });
-        if (groupRes.rows[0].class_id !== assignment.class_id) {
-            return res.status(400).json({ message: 'Nhóm không thuộc lớp học của bài tập này' });
+        // 1.5 Check Group Belongs to Assignment's Class (if class_id exists in assignment record)
+        if (assignment.class_id) {
+            const groupRes = await pool.query('SELECT class_id FROM groups WHERE id = $1', [groupId]);
+            if (groupRes.rows.length > 0 && groupRes.rows[0].class_id && groupRes.rows[0].class_id !== assignment.class_id) {
+                return res.status(400).json({ message: 'Nhóm không thuộc lớp học của bài tập này' });
+            }
         }
+
         const now = new Date();
-        const submissionDeadline = new Date(assignment.deadline);
-        const reviewDeadline = new Date(submissionDeadline.getTime() + 24 * 60 * 60 * 1000); // Mặc định +24h
+        const submissionDeadline = new Date(rawDeadline);
+        const reviewDeadline = assignment.review_deadline 
+            ? new Date(assignment.review_deadline) 
+            : new Date(submissionDeadline.getTime() + 24 * 60 * 60 * 1000); // Mặc định +24h
 
         if (now < submissionDeadline) {
             return res.status(400).json({ message: 'Chưa đến thời gian chấm nội bộ (Chưa qua hạn nộp bài)' });

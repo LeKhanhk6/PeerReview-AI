@@ -123,13 +123,17 @@ export const publishGroupAnalytics = async (req, res, next) => {
             WHERE assignment_id = $1 AND group_id = $2
         `, [assignmentId, groupId]);
 
-        if (parseInt(evalsRes.rows[0].count, 10) === 0) {
+        if (!evalsRes?.rows?.[0] || parseInt(evalsRes.rows[0].count, 10) === 0) {
             return res.status(400).json({ message: 'Không thể công bố vì nhóm chưa có phiếu chấm nào' });
         }
 
         const results = await contributionService.publishAssignmentContributions(assignmentId, groupId);
         return res.ok(results);
     } catch (error) {
-        next(error);
+        if (typeof next === 'function') {
+            next(error);
+        } else {
+            return res.status(500).json({ message: error.message });
+        }
     }
 };

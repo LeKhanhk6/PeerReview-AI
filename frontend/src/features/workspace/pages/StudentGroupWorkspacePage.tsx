@@ -61,13 +61,22 @@ export const StudentGroupWorkspacePage: React.FC = () => {
     enabled: isValidGroup,
   });
 
-  // Group assignments filter
+  // Group assignments filter (deduplicated by assignment_id)
   const groupAssignments = assignmentsList.filter((a: any) => 
     String(a.group_id) === String(resolvedGroupId) || 
     (groupData && String(a.class_id) === String((groupData as any)?.data?.class_id || (groupData as any)?.class_id))
   );
 
-  const activeAssignmentId = selectedAssignmentId || matchedAssignment?.assignment_id || resolvedAssignmentId || (groupAssignments.length > 0 ? groupAssignments[0].assignment_id : '');
+  const availableAssignmentsMap = new Map<string, any>();
+  groupAssignments.forEach((a: any) => {
+    const id = a.assignment_id || a.id;
+    if (id && !availableAssignmentsMap.has(id)) {
+      availableAssignmentsMap.set(id, a);
+    }
+  });
+  const availableGroupAssignments = Array.from(availableAssignmentsMap.values());
+
+  const activeAssignmentId = selectedAssignmentId || matchedAssignment?.assignment_id || resolvedAssignmentId || (availableGroupAssignments.length > 0 ? availableGroupAssignments[0].assignment_id : '');
   const activeAssignment = assignmentsList.find((a: any) => String(a.assignment_id) === String(activeAssignmentId)) || matchedAssignment;
 
   const { data: tasksResult } = useGroupTasks(resolvedGroupId);
@@ -241,7 +250,7 @@ export const StudentGroupWorkspacePage: React.FC = () => {
               dueDate={activeAssignment?.deadline || new Date().toISOString()}
               reviewDeadline={activeAssignment?.review_deadline} 
               assignmentTitle={activeAssignment?.title}
-              availableAssignments={groupAssignments}
+              availableAssignments={availableGroupAssignments}
               onSelectAssignment={(id) => setSelectedAssignmentId(id)}
             />
           </div>
@@ -255,7 +264,7 @@ export const StudentGroupWorkspacePage: React.FC = () => {
               currentUserId={user?.id || ''}
               groupMembers={members}
               assignmentTitle={activeAssignment?.title}
-              availableAssignments={groupAssignments}
+              availableAssignments={availableGroupAssignments}
               onSelectAssignment={(id) => setSelectedAssignmentId(id)}
             />
           </div>

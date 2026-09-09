@@ -35,8 +35,9 @@ describe('Task 5: Teacher Analytics & Immutable Snapshot', () => {
 
             const results = await getAssignmentGroupAnalytics('assig1', 'group1');
             
-            expect(pool.query).toHaveBeenCalledTimes(1);
+            expect(pool.query).toHaveBeenCalledTimes(2);
             expect(pool.query.mock.calls[0][0]).toContain('SELECT * FROM contribution_metrics');
+            expect(pool.query.mock.calls[1][0]).toContain('SELECT id, full_name as name FROM users');
             
             // Verify snapshot is parsed correctly
             expect(results.length).toBe(1);
@@ -92,17 +93,20 @@ describe('Task 5: Teacher Analytics & Immutable Snapshot', () => {
             expect(res.json).toHaveBeenCalledWith({ message: expect.stringContaining('Bạn không có quyền') });
         });
 
-        it('4. Publish khi chưa đóng window -> 400', async () => {
+        it('4. Publish khi nhóm chưa có phiếu chấm nào -> 400', async () => {
             pool.query.mockResolvedValueOnce({
                 rowCount: 1,
-                // Deadline in the future
                 rows: [{ teacher_id: 'teacher1', deadline: new Date(Date.now() + 100000) }]
+            });
+            pool.query.mockResolvedValueOnce({
+                rowCount: 1,
+                rows: [{ count: '0' }]
             });
 
             await publishGroupAnalytics(req, res);
             
             expect(res.status).toHaveBeenCalledWith(400);
-            expect(res.json).toHaveBeenCalledWith({ message: expect.stringContaining('chưa kết thúc') });
+            expect(res.json).toHaveBeenCalledWith({ message: expect.stringContaining('chưa có phiếu chấm') });
         });
         
         it('5. Republish -> ghi đè dữ liệu cũ bằng ON CONFLICT DO UPDATE', async () => {

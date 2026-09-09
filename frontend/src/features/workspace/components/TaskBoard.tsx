@@ -26,8 +26,6 @@ const KANBAN_COLUMNS: Array<{ status: TaskStatus; title: string; icon: React.Rea
 
 export const TaskBoard: React.FC<TaskBoardProps> = ({
   groupId,
-  userRole = 'MEMBER',
-  currentUserId,
   members = [],
 }) => {
   const { data: rawTasks, isLoading, isError, refetch } = useGroupTasks(groupId);
@@ -42,8 +40,6 @@ export const TaskBoard: React.FC<TaskBoardProps> = ({
   const [formError, setFormError] = useState<string>('');
 
   const [deleteTaskId, setDeleteTaskId] = useState<string | number | null>(null);
-
-  const isLeader = userRole === 'LEADER';
 
   const handleCreateTaskSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

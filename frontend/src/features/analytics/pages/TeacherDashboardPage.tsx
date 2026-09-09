@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Plus, ArrowRight, Siren, FolderOpen, Sparkles, AlertTriangle } from 'lucide-react';
 import { useAuthStore } from '@/features/auth/store/authStore';

@@ -13,6 +13,15 @@ export const submitEvaluation = async (req, res) => {
     }
 
     try {
+        // 0. Check if snapshot is already published by teacher
+        const pubCheck = await pool.query(
+            'SELECT 1 FROM contribution_metrics WHERE assignment_id = $1 AND group_id = $2',
+            [assignmentId, groupId]
+        );
+        if (pubCheck.rowCount > 0) {
+            return res.status(400).json({ message: 'Giảng viên đã công bố kết quả đánh giá. Không thể chỉnh sửa hoặc lưu mới.' });
+        }
+
         // 1. Check window
         const assignmentRes = await pool.query('SELECT class_id, deadline FROM assignments WHERE id = $1', [assignmentId]);
         if (assignmentRes.rows.length === 0) return res.status(404).json({ message: 'Assignment not found' });
@@ -93,7 +102,13 @@ export const getMyEvaluations = async (req, res) => {
             WHERE assignment_id = $1 AND group_id = $2 AND evaluator_id = $3
         `, [assignmentId, groupId, evaluatorId]);
 
-        res.json({ evaluations: evalsRes.rows });
+        const pubCheck = await pool.query(
+            'SELECT 1 FROM contribution_metrics WHERE assignment_id = $1 AND group_id = $2',
+            [assignmentId, groupId]
+        );
+        const isPublished = pubCheck.rowCount > 0;
+
+        res.json({ evaluations: evalsRes.rows, isPublished });
     } catch (error) {
         console.error('Get evaluations error:', error);
         res.status(500).json({ message: 'Server error' });

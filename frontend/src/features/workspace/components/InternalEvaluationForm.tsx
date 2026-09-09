@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { Loader2, ClipboardCheck, Clock, Send, AlertCircle, CheckCircle2 } from 'lucide-react';
+import { Loader2, ClipboardCheck, Clock, Send, AlertCircle, CheckCircle2, Lock } from 'lucide-react';
 import { StarRating } from '@/components/ui/StarRating';
 import { layoutMessages } from '@/constants/messages/layout';
 import { submitInternalEvaluation, getMyEvaluations } from '../api/internalEvaluation.api';
@@ -40,6 +40,7 @@ export const InternalEvaluationForm: React.FC<InternalEvaluationFormProps> = ({
   const [loading, setLoading] = useState(false);
   const [fetching, setFetching] = useState(true);
   const [hasSavedData, setHasSavedData] = useState(false);
+  const [isPublished, setIsPublished] = useState(false);
   
   // For error-driven state correction
   const [serverForcedClosed, setServerForcedClosed] = useState(false);
@@ -53,7 +54,11 @@ export const InternalEvaluationForm: React.FC<InternalEvaluationFormProps> = ({
       try {
         setFetching(true);
         setHasSavedData(false);
-        const data = await getMyEvaluations(assignmentId, groupId);
+        const resData: any = await getMyEvaluations(assignmentId, groupId);
+        const data = Array.isArray(resData) ? resData : resData?.evaluations || [];
+        const publishedFlag = Boolean(resData?.isPublished);
+        setIsPublished(publishedFlag);
+
         const newEvals: Record<string, { c2: number; c3: number; c4: number }> = {};
         
         // Initialize all peers with 0 (no default rating)
@@ -63,7 +68,7 @@ export const InternalEvaluationForm: React.FC<InternalEvaluationFormProps> = ({
 
         // Override with existing data
         let foundExisting = false;
-        data.forEach(item => {
+        data.forEach((item: any) => {
           if (newEvals[item.evaluatee_id]) {
             newEvals[item.evaluatee_id] = {
               c2: item.c2_score,
@@ -89,6 +94,7 @@ export const InternalEvaluationForm: React.FC<InternalEvaluationFormProps> = ({
   }, [assignmentId, groupId, currentUserId]); // Intentionally omitting peers to avoid refetch loops
 
   const windowState = useMemo(() => {
+    if (isPublished) return 'PUBLISHED';
     if (serverForcedNotOpen) return 'NOT_OPEN';
     if (serverForcedClosed) return 'CLOSED';
 
@@ -103,7 +109,7 @@ export const InternalEvaluationForm: React.FC<InternalEvaluationFormProps> = ({
     if (now < submissionDate) return 'NOT_OPEN';
     if (now > reviewDate) return 'CLOSED';
     return 'OPEN';
-  }, [dueDate, reviewDeadline, serverForcedNotOpen, serverForcedClosed]);
+  }, [dueDate, reviewDeadline, serverForcedNotOpen, serverForcedClosed, isPublished]);
 
   const isFormComplete = useMemo(() => {
     if (peers.length === 0) return false;
@@ -239,6 +245,7 @@ export const InternalEvaluationForm: React.FC<InternalEvaluationFormProps> = ({
             {windowState === 'NOT_OPEN' && messages.notOpen}
             {windowState === 'OPEN' && `${messages.openUntil} ${effectiveReviewDeadline}`}
             {windowState === 'CLOSED' && messages.closed}
+            {windowState === 'PUBLISHED' && 'Giảng viên đã công bố kết quả đánh giá cho bài tập này.'}
           </span>
 
           {windowState === 'OPEN' && (
@@ -246,8 +253,21 @@ export const InternalEvaluationForm: React.FC<InternalEvaluationFormProps> = ({
               Đang mở chấm
             </span>
           )}
+
+          {windowState === 'PUBLISHED' && (
+            <span className="px-2.5 py-0.5 rounded-full font-bold bg-amber-500/20 text-amber-300 border border-amber-500/30 flex items-center gap-1">
+              <Lock className="w-3.5 h-3.5" /> Đã công bố & Khóa
+            </span>
+          )}
         </div>
       </div>
+
+      {windowState === 'PUBLISHED' && (
+        <div className="p-4 bg-amber-50 border border-amber-200 text-amber-900 text-xs md:text-sm rounded-xl font-medium flex items-center gap-2.5 shadow-2xs">
+          <Lock className="w-4 h-4 text-amber-600 shrink-0" />
+          <span>Giảng viên đã công bố kết quả đánh giá bài tập này. Tất cả phiếu chấm nội bộ đã được đóng băng và khóa chỉnh sửa.</span>
+        </div>
+      )}
 
       {windowState !== 'NOT_OPEN' && (
         <div className="space-y-6">

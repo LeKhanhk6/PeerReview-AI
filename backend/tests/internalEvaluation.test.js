@@ -136,6 +136,7 @@ describe('Internal Evaluation & Contribution Tests', () => {
         it('5. Window chưa mở → 400', async () => {
             const futureDate = new Date();
             futureDate.setDate(futureDate.getDate() + 1);
+            pool.query.mockResolvedValueOnce({ rowCount: 0, rows: [] }); // pubCheck
             pool.query.mockResolvedValueOnce({ rows: [{ due_date: futureDate }] });
             
             await submitEvaluation(req, res);
@@ -149,6 +150,7 @@ describe('Internal Evaluation & Contribution Tests', () => {
             const reviewPast = new Date();
             reviewPast.setDate(reviewPast.getDate() - 1);
             
+            pool.query.mockResolvedValueOnce({ rowCount: 0, rows: [] }); // pubCheck
             pool.query.mockResolvedValueOnce({ rows: [{ due_date: pastDate, review_deadline: reviewPast }] });
             
             await submitEvaluation(req, res);
@@ -159,6 +161,7 @@ describe('Internal Evaluation & Contribution Tests', () => {
         it('6. Member ngoài group → 403', async () => {
             const past = new Date(Date.now() - 10000);
             const future = new Date(Date.now() + 1000000);
+            pool.query.mockResolvedValueOnce({ rowCount: 0, rows: [] }); // pubCheck
             pool.query.mockResolvedValueOnce({ rows: [{ due_date: past, review_deadline: future }] });
             
             // Evaluator not in group
@@ -172,16 +175,25 @@ describe('Internal Evaluation & Contribution Tests', () => {
         it('9. Chấm trùng → ON CONFLICT DO UPDATE', async () => {
             const past = new Date(Date.now() - 10000);
             const future = new Date(Date.now() + 1000000);
+            pool.query.mockResolvedValueOnce({ rowCount: 0, rows: [] }); // pubCheck
             pool.query.mockResolvedValueOnce({ rows: [{ due_date: past, review_deadline: future }] });
             pool.query.mockResolvedValueOnce({ rows: [{ user_id: 'u1' }, { user_id: 'u2' }] });
 
             await submitEvaluation(req, res);
             
             expect(res.status).toHaveBeenCalledWith(201);
-            const insertQuery = pool.query.mock.calls[2][0];
+            const insertQuery = pool.query.mock.calls[3][0];
             expect(insertQuery).toContain('ON CONFLICT (assignment_id, evaluator_id, evaluatee_id)');
             expect(insertQuery).toContain('DO UPDATE SET');
             expect(insertQuery).toContain('updated_at = NOW()');
+        });
+
+        it('10. Đã công bố kết quả -> 400 (Không cho chỉnh sửa)', async () => {
+            pool.query.mockResolvedValueOnce({ rowCount: 1, rows: [{ id: 'metric-1' }] }); // pubCheck published
+
+            await submitEvaluation(req, res);
+            expect(res.status).toHaveBeenCalledWith(400);
+            expect(res.json).toHaveBeenCalledWith({ message: expect.stringContaining('đã công bố') });
         });
     });
 });

@@ -224,6 +224,19 @@ export const calculateAssignmentContributions = async (assignmentId, groupId) =>
         });
     }
 
+    // 2.5 Get how many votes each user SUBMITTED (for early warning)
+    const submittedRes = await pool.query(`
+        SELECT evaluator_id, COUNT(*) as submitted_votes
+        FROM internal_evaluations
+        WHERE assignment_id = $1 AND group_id = $2
+        GROUP BY evaluator_id
+    `, [assignmentId, groupId]);
+
+    const submittedMap = new Map();
+    for (const row of submittedRes.rows) {
+        submittedMap.set(row.evaluator_id, parseInt(row.submitted_votes, 10));
+    }
+
     // 3. Calculate S_i for each member
     const results = [];
     let sumS = 0;
@@ -236,6 +249,9 @@ export const calculateAssignmentContributions = async (assignmentId, groupId) =>
         const si = 0.35 * (c1 / 100) + 0.30 * (evals.c2 / 5) + 0.20 * (evals.c3 / 5) + 0.15 * (evals.c4 / 5);
         sumS += si;
 
+        const submittedVotes = submittedMap.get(userId) || 0;
+        const expectedVotes = M > 1 ? M - 1 : 0;
+
         results.push({
             userId,
             c1,
@@ -243,7 +259,10 @@ export const calculateAssignmentContributions = async (assignmentId, groupId) =>
             c3: evals.c3,
             c4: evals.c4,
             si,
-            votes: evals.votes
+            votes: evals.votes,
+            submittedVotes,
+            expectedVotes,
+            isMissingEvaluation: expectedVotes > 0 && submittedVotes < expectedVotes
         });
     }
 
@@ -264,10 +283,6 @@ export const calculateAssignmentContributions = async (assignmentId, groupId) =>
         else if (r.multiplier >= 0.8) r.classification = 'NORMAL_CONTRIBUTOR';
         else if (r.multiplier >= 0.5) r.classification = 'LOW_CONTRIBUTOR';
         else r.classification = 'FREE_RIDER';
-
-        if (r.votes === 0) {
-            r.classification = 'MISSING_EVALUATION'; // Flag for early warning
-        }
     }
 
     return results;
@@ -301,7 +316,10 @@ export const publishAssignmentContributions = async (assignmentId, groupId) => {
                 c4: r.c4,
                 si: r.si,
                 votes: r.votes,
-                multiplier: r.multiplier
+                submittedVotes: r.submittedVotes,
+                expectedVotes: r.expectedVotes,
+                multiplier: r.multiplier,
+                isMissingEvaluation: r.isMissingEvaluation
             });
             await client.query(insertQ, [groupId, assignmentId, r.userId, r.multiplier * 100, r.classification, metadata]);
         }
@@ -332,6 +350,9 @@ export const getAssignmentGroupAnalytics = async (assignmentId, groupId) => {
                 c4: meta.c4 || 0,
                 si: meta.si || 0,
                 votes: meta.votes || 0,
+                submittedVotes: meta.submittedVotes || 0,
+                expectedVotes: meta.expectedVotes || 0,
+                isMissingEvaluation: meta.isMissingEvaluation || false,
                 multiplier: meta.multiplier || (r.contribution_score / 100),
                 classification: r.classification,
                 isPublished: true,

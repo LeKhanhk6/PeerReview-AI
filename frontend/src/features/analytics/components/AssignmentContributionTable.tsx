@@ -23,7 +23,7 @@ export const AssignmentContributionTable: React.FC<AssignmentContributionTablePr
         </thead>
         <tbody className="divide-y divide-gray-100 bg-white">
           {members.map((m) => {
-            const hasMissingVotes = m.votes === 0;
+            const hasMissingVotes = m.isMissingEvaluation === true;
 
             return (
               <tr key={m.userId} className="hover:bg-indigo-50/30 transition-colors">

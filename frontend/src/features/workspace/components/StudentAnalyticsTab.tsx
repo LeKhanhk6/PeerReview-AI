@@ -63,7 +63,13 @@ export const StudentAnalyticsTab: React.FC<StudentAnalyticsTabProps> = ({ assign
   }
 
   // Chỉ lấy radar data của chính sinh viên đó để vẽ, hoặc vẽ cả nhóm để so sánh (đề bài: "SV xem radar sau publish")
-  // Tôi sẽ truyền toàn bộ members vào để có cái nhìn tổng quan, nhưng highlight current user
+  // Tôi sẽ truyền toàn bộ members vào để có cái nhìn tổng quan, nhưng highlight current user và ẩn danh những người khác
+  const maskedMembers = members.map((m: any, index: number) => ({
+    ...m,
+    name: m.userId === currentUserId ? m.name + ' (Bạn)' : `Thành viên ${index + 1}`,
+    color: m.userId === currentUserId ? '#4f46e5' : '#94a3b8'
+  }));
+
   return (
     <div className="p-4 md:p-6 max-w-5xl mx-auto w-full space-y-6">
       <div className="bg-indigo-50 border border-indigo-100 rounded-xl p-4 text-sm text-indigo-800">
@@ -71,14 +77,10 @@ export const StudentAnalyticsTab: React.FC<StudentAnalyticsTabProps> = ({ assign
       </div>
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 bg-white p-6 border border-gray-200 rounded-2xl shadow-sm">
          <div className="col-span-1 border-r border-gray-100 pr-4">
-            <GroupRadarChart data={members.map((m: any) => ({
-                ...m,
-                // Highlight current user with a strong color, others with a muted color
-                color: m.userId === currentUserId ? '#4f46e5' : '#94a3b8'
-            }))} />
+            <GroupRadarChart data={maskedMembers} />
          </div>
          <div className="col-span-2">
-            <AssignmentContributionTable members={members} />
+            <AssignmentContributionTable members={maskedMembers} />
          </div>
       </div>
     </div>

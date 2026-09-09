@@ -14,10 +14,17 @@ export const submitEvaluation = async (req, res) => {
 
     try {
         // 1. Check window
-        const assignmentRes = await pool.query('SELECT deadline FROM assignments WHERE id = $1', [assignmentId]);
+        const assignmentRes = await pool.query('SELECT class_id, deadline FROM assignments WHERE id = $1', [assignmentId]);
         if (assignmentRes.rows.length === 0) return res.status(404).json({ message: 'Assignment not found' });
         
         const assignment = assignmentRes.rows[0];
+
+        // 1.5 Check Group Belongs to Assignment's Class
+        const groupRes = await pool.query('SELECT class_id FROM groups WHERE id = $1', [groupId]);
+        if (groupRes.rows.length === 0) return res.status(404).json({ message: 'Group not found' });
+        if (groupRes.rows[0].class_id !== assignment.class_id) {
+            return res.status(400).json({ message: 'Nhóm không thuộc lớp học của bài tập này' });
+        }
         const now = new Date();
         const submissionDeadline = new Date(assignment.deadline);
         const reviewDeadline = new Date(submissionDeadline.getTime() + 24 * 60 * 60 * 1000); // Mặc định +24h

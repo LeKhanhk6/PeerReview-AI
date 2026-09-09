@@ -15,8 +15,9 @@ import { Crown, User, Rocket } from 'lucide-react';
 
 import { useApiQuery } from '@/hooks/useApiQuery';
 import { getStudentDashboardAssignmentsApi } from '@/features/student-dashboard/api/studentDashboardApi';
+import { InternalEvaluationForm } from '../components/InternalEvaluationForm';
 
-type WorkspaceTab = 'kanban' | 'discussions' | 'timeline' | 'files';
+type WorkspaceTab = 'kanban' | 'discussions' | 'timeline' | 'files' | 'evaluation';
 
 export const StudentGroupWorkspacePage: React.FC = () => {
   const { assignmentId, groupId } = useParams<{ assignmentId?: string; groupId?: string }>();
@@ -159,6 +160,18 @@ export const StudentGroupWorkspacePage: React.FC = () => {
         >
           {workspaceMessages.tabs.files}
         </button>
+
+        <button
+          type="button"
+          onClick={() => setActiveTab('evaluation')}
+          className={`pb-2.5 text-xs md:text-sm font-bold border-b-2 transition-colors whitespace-nowrap px-1 ${
+            activeTab === 'evaluation'
+              ? 'border-blue-600 text-blue-600'
+              : 'border-transparent text-slate-500 hover:text-slate-700'
+          }`}
+        >
+          {workspaceMessages.tabs.evaluation}
+        </button>
       </div>
 
       {/* Tab Panels */}
@@ -177,6 +190,19 @@ export const StudentGroupWorkspacePage: React.FC = () => {
         {activeTab === 'timeline' && <ActivityTimeline groupId={resolvedGroupId} />}
 
         {activeTab === 'files' && <GroupFileManager groupId={resolvedGroupId} />}
+
+        {activeTab === 'evaluation' && (
+          <div className="p-4 md:p-6 max-w-4xl mx-auto w-full">
+            <InternalEvaluationForm 
+              assignmentId={matchedAssignment?.assignment_id || assignmentId || ''}
+              groupId={resolvedGroupId}
+              groupMembers={members}
+              currentUserId={user?.id || ''}
+              dueDate={matchedAssignment?.due_date || new Date().toISOString()} // fallback if missing
+              reviewDeadline={matchedAssignment?.review_deadline} 
+            />
+          </div>
+        )}
       </div>
     </div>
   );

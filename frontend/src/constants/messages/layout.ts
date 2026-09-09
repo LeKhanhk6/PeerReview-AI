@@ -28,5 +28,14 @@ export const layoutMessages = {
     logout: 'Đăng xuất',
     confirm: 'Xác nhận',
     cancel: 'Hủy',
+  },
+  internalEvaluation: {
+    notOpen: 'Chấm nội bộ sẽ mở sau thời hạn nộp bài',
+    openUntil: 'Chấm nội bộ mở đến: ',
+    closed: 'Đã hết hạn chấm. Kết quả sẽ hiển thị sau khi giảng viên công bố.',
+    saveSuccess: 'Đã lưu đánh giá',
+    savePartialSuccess: 'Đã lưu {successCount}/{total} đánh giá, vui lòng thử lại',
+    loading: 'Đang lưu...',
+    submitBtn: 'Lưu đánh giá'
   }
 };

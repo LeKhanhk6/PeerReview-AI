@@ -7,6 +7,7 @@ export const workspaceMessages = {
     discussions: 'Thảo Luận Nhóm',
     timeline: 'Nhật Ký Hoạt Động',
     files: 'Tài Liệu Nhóm',
+    evaluation: 'Chấm Nội Bộ',
   },
 
   autoRefreshInfo: 'Dữ liệu được tự động làm mới',

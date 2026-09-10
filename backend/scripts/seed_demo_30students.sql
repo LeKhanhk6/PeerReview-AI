@@ -1,0 +1,290 @@
+-- ==============================================================================
+-- PEERREVIEW-AI: DEMO SEED DATA SCRIPT (30 SINH VIÊN + 1 GIÁO VIÊN)
+-- Mô phỏng Lớp CS201 - Lập trình Nâng cao (6 Nhóm x 5 Sinh viên)
+-- Dùng để phục vụ quay Video Demo Sản phẩm và Kiểm thử Hệ thống
+-- LƯU Ý: TẤT CẢ CHUỖI UUID SỬ DỤNG KÝ TỰ HEX HỢP LỆ (0-9, a-f)
+-- MẬT KHẨU CHO TOÀN BỘ TÀI KHOẢN LÀ: Password123!
+-- ==============================================================================
+
+BEGIN;
+
+-- 0. KHỞI TẠO EXTENSION UUID
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+
+-- 1. TẠO HOẶC LẤY VAI TRÒ (ROLES)
+INSERT INTO roles (id, name)
+VALUES 
+  ('a0000000-0000-0000-0000-000000000001', 'TEACHER'),
+  ('a0000000-0000-0000-0000-000000000002', 'STUDENT'),
+  ('a0000000-0000-0000-0000-000000000003', 'ADMIN')
+ON CONFLICT (name) DO NOTHING;
+
+-- 2. TẠO TÀI KHOẢN GIÁO VIÊN (1 TEACHER)
+-- Mật khẩu: Password123!
+INSERT INTO users (id, role_id, full_name, email, student_id, password_hash, status)
+VALUES (
+  'b0000000-0000-0000-0000-000000000001',
+  (SELECT id FROM roles WHERE name = 'TEACHER'),
+  'Thầy Nguyễn Văn A',
+  'teacher.nguyen@peerreview.ai',
+  NULL,
+  '$2b$10$4t38Tmdjh.kDgQ8t7I9pce.iikZOxOhz81KHd//yP/8f3mQ9EnBga',
+  'ACTIVE'
+) ON CONFLICT (email) DO UPDATE SET 
+  password_hash = '$2b$10$4t38Tmdjh.kDgQ8t7I9pce.iikZOxOhz81KHd//yP/8f3mQ9EnBga',
+  role_id = (SELECT id FROM roles WHERE name = 'TEACHER'),
+  status = 'ACTIVE';
+
+-- 3. TẠO 30 TÀI KHOẢN SINH VIÊN (SV01 -> SV30)
+INSERT INTO users (id, role_id, full_name, email, student_id, password_hash, status)
+VALUES 
+-- Nhóm 1 (Học viên xuất sắc)
+('b0000000-0000-0000-0000-000000000101', (SELECT id FROM roles WHERE name='STUDENT'), 'Trần Thị Mai', 'tranmai.sv01@peerreview.ai', 'SV202601', '$2b$10$4t38Tmdjh.kDgQ8t7I9pce.iikZOxOhz81KHd//yP/8f3mQ9EnBga', 'ACTIVE'),
+('b0000000-0000-0000-0000-000000000102', (SELECT id FROM roles WHERE name='STUDENT'), 'Lê Văn C', 'levanc.sv02@peerreview.ai', 'SV202602', '$2b$10$4t38Tmdjh.kDgQ8t7I9pce.iikZOxOhz81KHd//yP/8f3mQ9EnBga', 'ACTIVE'),
+('b0000000-0000-0000-0000-000000000103', (SELECT id FROM roles WHERE name='STUDENT'), 'Phạm Minh D', 'phamminhd.sv03@peerreview.ai', 'SV202603', '$2b$10$4t38Tmdjh.kDgQ8t7I9pce.iikZOxOhz81KHd//yP/8f3mQ9EnBga', 'ACTIVE'),
+('b0000000-0000-0000-0000-000000000104', (SELECT id FROM roles WHERE name='STUDENT'), 'Hoàng Anh E', 'tuananh.sv04@peerreview.ai', 'SV202604', '$2b$10$4t38Tmdjh.kDgQ8t7I9pce.iikZOxOhz81KHd//yP/8f3mQ9EnBga', 'ACTIVE'),
+('b0000000-0000-0000-0000-000000000105', (SELECT id FROM roles WHERE name='STUDENT'), 'Đỗ Kim F', 'vuquoch.sv05@peerreview.ai', 'SV202605', '$2b$10$4t38Tmdjh.kDgQ8t7I9pce.iikZOxOhz81KHd//yP/8f3mQ9EnBga', 'ACTIVE'),
+
+-- Nhóm 2
+('b0000000-0000-0000-0000-000000000106', (SELECT id FROM roles WHERE name='STUDENT'), 'Nguyễn Tuấn G', 'baohai.sv06@peerreview.ai', 'SV202606', '$2b$10$4t38Tmdjh.kDgQ8t7I9pce.iikZOxOhz81KHd//yP/8f3mQ9EnBga', 'ACTIVE'),
+('b0000000-0000-0000-0000-000000000107', (SELECT id FROM roles WHERE name='STUDENT'), 'Vũ Quốc H', 'ducminh.sv07@peerreview.ai', 'SV202607', '$2b$10$4t38Tmdjh.kDgQ8t7I9pce.iikZOxOhz81KHd//yP/8f3mQ9EnBga', 'ACTIVE'),
+('b0000000-0000-0000-0000-000000000108', (SELECT id FROM roles WHERE name='STUDENT'), 'Đặng Bảo I', 'thungan.sv08@peerreview.ai', 'SV202608', '$2b$10$4t38Tmdjh.kDgQ8t7I9pce.iikZOxOhz81KHd//yP/8f3mQ9EnBga', 'ACTIVE'),
+('b0000000-0000-0000-0000-000000000109', (SELECT id FROM roles WHERE name='STUDENT'), 'Bùi Thanh K', 'vanf.sv09@peerreview.ai', 'SV202609', '$2b$10$4t38Tmdjh.kDgQ8t7I9pce.iikZOxOhz81KHd//yP/8f3mQ9EnBga', 'ACTIVE'),
+('b0000000-0000-0000-0000-000000000110', (SELECT id FROM roles WHERE name='STUDENT'), 'Đinh Hải L', 'dinhhail.sv10@peerreview.ai', 'SV202610', '$2b$10$4t38Tmdjh.kDgQ8t7I9pce.iikZOxOhz81KHd//yP/8f3mQ9EnBga', 'ACTIVE'),
+
+-- Nhóm 3
+('b0000000-0000-0000-0000-000000000111', (SELECT id FROM roles WHERE name='STUDENT'), 'Ngô Đức M', 'ngoducm.sv11@peerreview.ai', 'SV202611', '$2b$10$4t38Tmdjh.kDgQ8t7I9pce.iikZOxOhz81KHd//yP/8f3mQ9EnBga', 'ACTIVE'),
+('b0000000-0000-0000-0000-000000000112', (SELECT id FROM roles WHERE name='STUDENT'), 'Dương Thu N', 'duongthun.sv12@peerreview.ai', 'SV202612', '$2b$10$4t38Tmdjh.kDgQ8t7I9pce.iikZOxOhz81KHd//yP/8f3mQ9EnBga', 'ACTIVE'),
+('b0000000-0000-0000-0000-000000000113', (SELECT id FROM roles WHERE name='STUDENT'), 'Hồ Khánh O', 'hokhanho.sv13@peerreview.ai', 'SV202613', '$2b$10$4t38Tmdjh.kDgQ8t7I9pce.iikZOxOhz81KHd//yP/8f3mQ9EnBga', 'ACTIVE'),
+('b0000000-0000-0000-0000-000000000114', (SELECT id FROM roles WHERE name='STUDENT'), 'Phan Trọng P', 'phantrongp.sv14@peerreview.ai', 'SV202614', '$2b$10$4t38Tmdjh.kDgQ8t7I9pce.iikZOxOhz81KHd//yP/8f3mQ9EnBga', 'ACTIVE'),
+('b0000000-0000-0000-0000-000000000115', (SELECT id FROM roles WHERE name='STUDENT'), 'Trịnh Như Q', 'trinhnhuq.sv15@peerreview.ai', 'SV202615', '$2b$10$4t38Tmdjh.kDgQ8t7I9pce.iikZOxOhz81KHd//yP/8f3mQ9EnBga', 'ACTIVE'),
+
+-- Nhóm 4
+('b0000000-0000-0000-0000-000000000116', (SELECT id FROM roles WHERE name='STUDENT'), 'Mai Văn R', 'maivanr.sv16@peerreview.ai', 'SV202616', '$2b$10$4t38Tmdjh.kDgQ8t7I9pce.iikZOxOhz81KHd//yP/8f3mQ9EnBga', 'ACTIVE'),
+('b0000000-0000-0000-0000-000000000117', (SELECT id FROM roles WHERE name='STUDENT'), 'Lý Thị S', 'lythis.sv17@peerreview.ai', 'SV202617', '$2b$10$4t38Tmdjh.kDgQ8t7I9pce.iikZOxOhz81KHd//yP/8f3mQ9EnBga', 'ACTIVE'),
+('b0000000-0000-0000-0000-000000000118', (SELECT id FROM roles WHERE name='STUDENT'), 'Tạ Quang T', 'taquangt.sv18@peerreview.ai', 'SV202618', '$2b$10$4t38Tmdjh.kDgQ8t7I9pce.iikZOxOhz81KHd//yP/8f3mQ9EnBga', 'ACTIVE'),
+('b0000000-0000-0000-0000-000000000119', (SELECT id FROM roles WHERE name='STUDENT'), 'Cao Phương U', 'caophuongu.sv19@peerreview.ai', 'SV202619', '$2b$10$4t38Tmdjh.kDgQ8t7I9pce.iikZOxOhz81KHd//yP/8f3mQ9EnBga', 'ACTIVE'),
+('b0000000-0000-0000-0000-000000000120', (SELECT id FROM roles WHERE name='STUDENT'), 'Vương Khắc V', 'vuongkhacv.sv20@peerreview.ai', 'SV202620', '$2b$10$4t38Tmdjh.kDgQ8t7I9pce.iikZOxOhz81KHd//yP/8f3mQ9EnBga', 'ACTIVE'),
+
+-- Nhóm 5 (Có Free-rider SV21)
+('b0000000-0000-0000-0000-000000000121', (SELECT id FROM roles WHERE name='STUDENT'), 'Vũ Văn F', 'vuvanf.sv21@peerreview.ai', 'SV202621', '$2b$10$4t38Tmdjh.kDgQ8t7I9pce.iikZOxOhz81KHd//yP/8f3mQ9EnBga', 'ACTIVE'),
+('b0000000-0000-0000-0000-000000000122', (SELECT id FROM roles WHERE name='STUDENT'), 'Trần Hoàng X', 'tranhoangx.sv22@peerreview.ai', 'SV202622', '$2b$10$4t38Tmdjh.kDgQ8t7I9pce.iikZOxOhz81KHd//yP/8f3mQ9EnBga', 'ACTIVE'),
+('b0000000-0000-0000-0000-000000000123', (SELECT id FROM roles WHERE name='STUDENT'), 'Lê Thị Y', 'lethiy.sv23@peerreview.ai', 'SV202623', '$2b$10$4t38Tmdjh.kDgQ8t7I9pce.iikZOxOhz81KHd//yP/8f3mQ9EnBga', 'ACTIVE'),
+('b0000000-0000-0000-0000-000000000124', (SELECT id FROM roles WHERE name='STUDENT'), 'Nguyễn Văn Z', 'nguyenvanz.sv24@peerreview.ai', 'SV202624', '$2b$10$4t38Tmdjh.kDgQ8t7I9pce.iikZOxOhz81KHd//yP/8f3mQ9EnBga', 'ACTIVE'),
+('b0000000-0000-0000-0000-000000000125', (SELECT id FROM roles WHERE name='STUDENT'), 'Phạm Công W', 'phamcongw.sv25@peerreview.ai', 'SV202625', '$2b$10$4t38Tmdjh.kDgQ8t7I9pce.iikZOxOhz81KHd//yP/8f3mQ9EnBga', 'ACTIVE'),
+
+-- Nhóm 6
+('b0000000-0000-0000-0000-000000000126', (SELECT id FROM roles WHERE name='STUDENT'), 'Hoàng Minh K1', 'hoangminhk1.sv26@peerreview.ai', 'SV202626', '$2b$10$4t38Tmdjh.kDgQ8t7I9pce.iikZOxOhz81KHd//yP/8f3mQ9EnBga', 'ACTIVE'),
+('b0000000-0000-0000-0000-000000000127', (SELECT id FROM roles WHERE name='STUDENT'), 'Vũ Đức K2', 'vuduck2.sv27@peerreview.ai', 'SV202627', '$2b$10$4t38Tmdjh.kDgQ8t7I9pce.iikZOxOhz81KHd//yP/8f3mQ9EnBga', 'ACTIVE'),
+('b0000000-0000-0000-0000-000000000128', (SELECT id FROM roles WHERE name='STUDENT'), 'Đỗ Thanh K3', 'dothanhk3.sv28@peerreview.ai', 'SV202628', '$2b$10$4t38Tmdjh.kDgQ8t7I9pce.iikZOxOhz81KHd//yP/8f3mQ9EnBga', 'ACTIVE'),
+('b0000000-0000-0000-0000-000000000129', (SELECT id FROM roles WHERE name='STUDENT'), 'Ngô Bảo K4', 'ngobaok4.sv29@peerreview.ai', 'SV202629', '$2b$10$4t38Tmdjh.kDgQ8t7I9pce.iikZOxOhz81KHd//yP/8f3mQ9EnBga', 'ACTIVE'),
+('b0000000-0000-0000-0000-000000000130', (SELECT id FROM roles WHERE name='STUDENT'), 'Dương Gia K5', 'giak5.sv30@peerreview.ai', 'SV202630', '$2b$10$4t38Tmdjh.kDgQ8t7I9pce.iikZOxOhz81KHd//yP/8f3mQ9EnBga', 'ACTIVE')
+ON CONFLICT (email) DO UPDATE SET 
+  password_hash = '$2b$10$4t38Tmdjh.kDgQ8t7I9pce.iikZOxOhz81KHd//yP/8f3mQ9EnBga',
+  role_id = (SELECT id FROM roles WHERE name = 'STUDENT'),
+  status = 'ACTIVE';
+
+-- 4. TẠO LỚP HỌC (CLASS CS201)
+INSERT INTO classes (id, teacher_id, course_code, course_name, name, invite_code, semester)
+VALUES (
+  'c0000000-0000-0000-0000-000000000001',
+  'b0000000-0000-0000-0000-000000000001',
+  'CS201',
+  'Lập trình Nâng cao',
+  'Lớp CS201 - HK1 2025-2026',
+  'CS201DEMO',
+  'HK1-2025-2026'
+) ON CONFLICT (invite_code) DO NOTHING;
+
+-- Gắn 30 Sinh viên vào Lớp học
+INSERT INTO class_members (class_id, user_id, role)
+SELECT 'c0000000-0000-0000-0000-000000000001', id, 'STUDENT'
+FROM users WHERE email LIKE '%.sv%@peerreview.ai'
+ON CONFLICT (class_id, user_id) DO NOTHING;
+
+-- 5. TẠO 6 NHÓM SINH VIÊN (GROUPS)
+INSERT INTO groups (id, class_id, name)
+VALUES 
+  ('e0000000-0000-0000-0000-000000000001', 'c0000000-0000-0000-0000-000000000001', 'Nhóm 01 - Alpha Team'),
+  ('e0000000-0000-0000-0000-000000000002', 'c0000000-0000-0000-0000-000000000001', 'Nhóm 02 - Beta Innovators'),
+  ('e0000000-0000-0000-0000-000000000003', 'c0000000-0000-0000-0000-000000000001', 'Nhóm 03 - Gamma Coders'),
+  ('e0000000-0000-0000-0000-000000000004', 'c0000000-0000-0000-0000-000000000001', 'Nhóm 04 - Delta Builders'),
+  ('e0000000-0000-0000-0000-000000000005', 'c0000000-0000-0000-0000-000000000001', 'Nhóm 05 - Epsilon Tech'),
+  ('e0000000-0000-0000-0000-000000000006', 'c0000000-0000-0000-0000-000000000001', 'Nhóm 06 - Zeta Solutions')
+ON CONFLICT DO NOTHING;
+
+-- Gắn THÀNH VIÊN VÀO NHÓM (5 SV/Nhóm)
+INSERT INTO group_members (group_id, user_id, is_leader) VALUES
+-- Nhóm 1
+('e0000000-0000-0000-0000-000000000001', 'b0000000-0000-0000-0000-000000000101', TRUE),
+('e0000000-0000-0000-0000-000000000001', 'b0000000-0000-0000-0000-000000000102', FALSE),
+('e0000000-0000-0000-0000-000000000001', 'b0000000-0000-0000-0000-000000000103', FALSE),
+('e0000000-0000-0000-0000-000000000001', 'b0000000-0000-0000-0000-000000000104', FALSE),
+('e0000000-0000-0000-0000-000000000001', 'b0000000-0000-0000-0000-000000000105', FALSE),
+
+-- Nhóm 2
+('e0000000-0000-0000-0000-000000000002', 'b0000000-0000-0000-0000-000000000106', TRUE),
+('e0000000-0000-0000-0000-000000000002', 'b0000000-0000-0000-0000-000000000107', FALSE),
+('e0000000-0000-0000-0000-000000000002', 'b0000000-0000-0000-0000-000000000108', FALSE),
+('e0000000-0000-0000-0000-000000000002', 'b0000000-0000-0000-0000-000000000109', FALSE),
+('e0000000-0000-0000-0000-000000000002', 'b0000000-0000-0000-0000-000000000110', FALSE),
+
+-- Nhóm 3
+('e0000000-0000-0000-0000-000000000003', 'b0000000-0000-0000-0000-000000000111', TRUE),
+('e0000000-0000-0000-0000-000000000003', 'b0000000-0000-0000-0000-000000000112', FALSE),
+('e0000000-0000-0000-0000-000000000003', 'b0000000-0000-0000-0000-000000000113', FALSE),
+('e0000000-0000-0000-0000-000000000003', 'b0000000-0000-0000-0000-000000000114', FALSE),
+('e0000000-0000-0000-0000-000000000003', 'b0000000-0000-0000-0000-000000000115', FALSE),
+
+-- Nhóm 4
+('e0000000-0000-0000-0000-000000000004', 'b0000000-0000-0000-0000-000000000116', TRUE),
+('e0000000-0000-0000-0000-000000000004', 'b0000000-0000-0000-0000-000000000117', FALSE),
+('e0000000-0000-0000-0000-000000000004', 'b0000000-0000-0000-0000-000000000118', FALSE),
+('e0000000-0000-0000-0000-000000000004', 'b0000000-0000-0000-0000-000000000119', FALSE),
+('e0000000-0000-0000-0000-000000000004', 'b0000000-0000-0000-0000-000000000120', FALSE),
+
+-- Nhóm 5 (Có Free-rider SV21)
+('e0000000-0000-0000-0000-000000000005', 'b0000000-0000-0000-0000-000000000122', TRUE),
+('e0000000-0000-0000-0000-000000000005', 'b0000000-0000-0000-0000-000000000121', FALSE),
+('e0000000-0000-0000-0000-000000000005', 'b0000000-0000-0000-0000-000000000123', FALSE),
+('e0000000-0000-0000-0000-000000000005', 'b0000000-0000-0000-0000-000000000124', FALSE),
+('e0000000-0000-0000-0000-000000000005', 'b0000000-0000-0000-0000-000000000125', FALSE),
+
+-- Nhóm 6
+('e0000000-0000-0000-0000-000000000006', 'b0000000-0000-0000-0000-000000000126', TRUE),
+('e0000000-0000-0000-0000-000000000006', 'b0000000-0000-0000-0000-000000000127', FALSE),
+('e0000000-0000-0000-0000-000000000006', 'b0000000-0000-0000-0000-000000000128', FALSE),
+('e0000000-0000-0000-0000-000000000006', 'b0000000-0000-0000-0000-000000000129', FALSE),
+('e0000000-0000-0000-0000-000000000006', 'b0000000-0000-0000-0000-000000000130', FALSE)
+ON CONFLICT (group_id, user_id) DO NOTHING;
+
+-- 6. TẠO BÀI TẬP (ASSIGNMENT) VÀ RUBRIC
+INSERT INTO assignments (id, class_id, title, description, requirements, deadline)
+VALUES (
+  'd0000000-0000-0000-0000-000000000001',
+  'c0000000-0000-0000-0000-000000000001',
+  'Đồ án Giữa kỳ: Xây dựng Hệ thống Web Ecommerce',
+  'Xây dựng ứng dụng Web bán hàng full-stack hỗ trợ đăng ký, đăng nhập, giỏ hàng, thanh toán và quản lý đơn hàng.',
+  'Frontend bằng React + TailwindCSS, Backend Node.js/Express REST API, PostgreSQL Database.',
+  NOW() + INTERVAL '7 days'
+) ON CONFLICT DO NOTHING;
+
+INSERT INTO rubrics (id, assignment_id, description)
+VALUES (
+  'f0000000-0000-0000-0000-000000000001',
+  'd0000000-0000-0000-0000-000000000001',
+  'Khung tiêu chuẩn đánh giá đồ án lập trình web giữa kỳ'
+) ON CONFLICT (assignment_id) DO NOTHING;
+
+INSERT INTO rubric_criteria (id, rubric_id, name, description, weight)
+VALUES 
+  ('f1000000-0000-0000-0000-000000000001', 'f0000000-0000-0000-0000-000000000001', 'Kiến trúc & Chất lượng Code Backend', 'Xử lý RESTful API đúng chuẩn, sạch sẽ, bảo mật và phân tầng logic tốt.', 40.00),
+  ('f1000000-0000-0000-0000-000000000002', 'f0000000-0000-0000-0000-000000000001', 'Giao diện UI/UX & Trải nghiệm', 'Giao diện hiện đại, dễ thao tác, có responsive và mượt mà.', 30.00),
+  ('f1000000-0000-0000-0000-000000000003', 'f0000000-0000-0000-0000-000000000001', 'Báo cáo & Tài liệu Kỹ thuật', 'Tài liệu README, sơ đồ ERD và hướng dẫn cài đặt chạy ứng dụng rõ ràng.', 30.00)
+ON CONFLICT DO NOTHING;
+
+-- 7. NỘP BÀI TẬP (SUBMISSIONS DÀNH CHO 6 NHÓM)
+INSERT INTO submissions (id, assignment_id, group_id, status, submitted_at) VALUES
+('f2000000-0000-0000-0000-000000000001', 'd0000000-0000-0000-0000-000000000001', 'e0000000-0000-0000-0000-000000000001', 'SUBMITTED', NOW() - INTERVAL '2 days'),
+('f2000000-0000-0000-0000-000000000002', 'd0000000-0000-0000-0000-000000000001', 'e0000000-0000-0000-0000-000000000002', 'SUBMITTED', NOW() - INTERVAL '2 days'),
+('f2000000-0000-0000-0000-000000000003', 'd0000000-0000-0000-0000-000000000001', 'e0000000-0000-0000-0000-000000000003', 'SUBMITTED', NOW() - INTERVAL '1 day'),
+('f2000000-0000-0000-0000-000000000004', 'd0000000-0000-0000-0000-000000000001', 'e0000000-0000-0000-0000-000000000004', 'SUBMITTED', NOW() - INTERVAL '1 day'),
+('f2000000-0000-0000-0000-000000000005', 'd0000000-0000-0000-0000-000000000001', 'e0000000-0000-0000-0000-000000000005', 'SUBMITTED', NOW() - INTERVAL '12 hours'),
+('f2000000-0000-0000-0000-000000000006', 'd0000000-0000-0000-0000-000000000001', 'e0000000-0000-0000-0000-000000000006', 'SUBMITTED', NOW() - INTERVAL '6 hours')
+ON CONFLICT DO NOTHING;
+
+INSERT INTO submission_versions (submission_id, version_number, file_url, created_at) VALUES
+('f2000000-0000-0000-0000-000000000001', 1, 'https://storage.peerreview.ai/submissions/group01_v1.pdf', NOW() - INTERVAL '2 days'),
+('f2000000-0000-0000-0000-000000000002', 1, 'https://storage.peerreview.ai/submissions/group02_v1.pdf', NOW() - INTERVAL '2 days'),
+('f2000000-0000-0000-0000-000000000003', 1, 'https://storage.peerreview.ai/submissions/group03_v1.pdf', NOW() - INTERVAL '1 day'),
+('f2000000-0000-0000-0000-000000000004', 1, 'https://storage.peerreview.ai/submissions/group04_v1.pdf', NOW() - INTERVAL '1 day'),
+('f2000000-0000-0000-0000-000000000005', 1, 'https://storage.peerreview.ai/submissions/group05_v1.pdf', NOW() - INTERVAL '12 hours'),
+('f2000000-0000-0000-0000-000000000006', 1, 'https://storage.peerreview.ai/submissions/group06_v1.pdf', NOW() - INTERVAL '6 hours')
+ON CONFLICT DO NOTHING;
+
+-- 8. TẠO HOẠT ĐỘNG (ACTIVITY LOGS MẪU)
+-- Nhóm 1: Nhiều hoạt động (Tích cực)
+INSERT INTO activity_logs (group_id, user_id, action_type, content_summary, created_at) VALUES
+('e0000000-0000-0000-0000-000000000001', 'b0000000-0000-0000-0000-000000000101', 'CREATE_TASK', 'Tạo nhiệm vụ Thiết kế CSDL Postgres', NOW() - INTERVAL '5 days'),
+('e0000000-0000-0000-0000-000000000001', 'b0000000-0000-0000-0000-000000000102', 'DISCUSSION', 'Đã góp ý cấu trúc bảng Users và Orders', NOW() - INTERVAL '4 days'),
+('e0000000-0000-0000-0000-000000000001', 'b0000000-0000-0000-0000-000000000103', 'UPLOAD_FILE', 'Đính kèm link sơ đồ Figma', NOW() - INTERVAL '3 days'),
+('e0000000-0000-0000-0000-000000000001', 'b0000000-0000-0000-0000-000000000104', 'COMPLETE_TASK', 'Hoàn thành viết API Authentication', NOW() - INTERVAL '2 days'),
+
+-- Nhóm 5: SV21 (Vũ Văn F) hầu như không có activity log
+('e0000000-0000-0000-0000-000000000005', 'b0000000-0000-0000-0000-000000000122', 'CREATE_TASK', 'Phân công làm slide báo cáo', NOW() - INTERVAL '4 days'),
+('e0000000-0000-0000-0000-000000000005', 'b0000000-0000-0000-0000-000000000121', 'DISCUSSION', 'Dạ em nghe ạ', NOW() - INTERVAL '3 days')
+ON CONFLICT DO NOTHING;
+
+-- 9. PEER REVIEW ALLOCATION (DOUBLE-BLIND ALLOCATION)
+-- Phân công xoay vòng: G1->G2, G2->G3, G3->G4, G4->G5, G5->G6, G6->G1
+INSERT INTO review_assignments (id, submission_id, reviewer_group_id, status) VALUES
+('f3000000-0000-0000-0000-000000000001', 'f2000000-0000-0000-0000-000000000002', 'e0000000-0000-0000-0000-000000000001', 'COMPLETED'),
+('f3000000-0000-0000-0000-000000000002', 'f2000000-0000-0000-0000-000000000003', 'e0000000-0000-0000-0000-000000000002', 'COMPLETED'),
+('f3000000-0000-0000-0000-000000000003', 'f2000000-0000-0000-0000-000000000004', 'e0000000-0000-0000-0000-000000000003', 'COMPLETED'),
+('f3000000-0000-0000-0000-000000000004', 'f2000000-0000-0000-0000-000000000005', 'e0000000-0000-0000-0000-000000000004', 'COMPLETED'),
+('f3000000-0000-0000-0000-000000000005', 'f2000000-0000-0000-0000-000000000006', 'e0000000-0000-0000-0000-000000000005', 'COMPLETED'),
+('f3000000-0000-0000-0000-000000000006', 'f2000000-0000-0000-0000-000000000001', 'e0000000-0000-0000-0000-000000000006', 'COMPLETED')
+ON CONFLICT DO NOTHING;
+
+-- 10. REVIEWS & REVIEW CRITERIA
+INSERT INTO reviews (id, review_assignment_id, overall_comment, total_score, submitted_at) VALUES
+('f4000000-0000-0000-0000-000000000001', 'f3000000-0000-0000-0000-000000000001', 'Nhóm làm bài rất chỉn chu, code backend chia layer chuẩn, giao diện đẹp có đủ responsive.', 9.20, NOW() - INTERVAL '1 day'),
+('f4000000-0000-0000-0000-000000000002', 'f3000000-0000-0000-0000-000000000002', 'Bài làm hoàn thiện đầy đủ chức năng nhưng tài liệu README còn hơi sơ sài.', 8.50, NOW() - INTERVAL '1 day'),
+('f4000000-0000-0000-0000-000000000003', 'f3000000-0000-0000-0000-000000000003', 'Chức năng ổn, tuy nhiên API giỏ hàng còn thiếu try-catch nên có thể bị crash server.', 7.80, NOW() - INTERVAL '12 hours'),
+('f4000000-0000-0000-0000-000000000004', 'f3000000-0000-0000-0000-000000000004', 'Giao diện tương đối cơ bản, cần cải thiện thêm màu sắc và font chữ.', 7.00, NOW() - INTERVAL '10 hours'),
+('f4000000-0000-0000-0000-000000000005', 'f3000000-0000-0000-0000-000000000005', 'Bài nộp đúng hạn, code chạy được nhưng thiếu trang admin quản lý sản phẩm.', 7.50, NOW() - INTERVAL '8 hours'),
+('f4000000-0000-0000-0000-000000000006', 'f3000000-0000-0000-0000-000000000006', 'Nhóm làm xuất sắc, có tích hợp đính kèm file và xác thực JWT chặt chẽ.', 9.50, NOW() - INTERVAL '5 hours')
+ON CONFLICT DO NOTHING;
+
+-- 11. INTERNAL EVALUATIONS (CHẤM CHÉO NỘI BỘ C2-C4 LỚP 30 SV)
+-- Nhóm 1: Điểm chấm nội bộ cao (4-5 sao)
+INSERT INTO internal_evaluations (group_id, assignment_id, evaluator_id, evaluatee_id, c2_score, c3_score, c4_score) VALUES
+('e0000000-0000-0000-0000-000000000001', 'd0000000-0000-0000-0000-000000000001', 'b0000000-0000-0000-0000-000000000101', 'b0000000-0000-0000-0000-000000000102', 5, 5, 5),
+('e0000000-0000-0000-0000-000000000001', 'd0000000-0000-0000-0000-000000000001', 'b0000000-0000-0000-0000-000000000101', 'b0000000-0000-0000-0000-000000000103', 5, 4, 5),
+('e0000000-0000-0000-0000-000000000001', 'd0000000-0000-0000-0000-000000000001', 'b0000000-0000-0000-0000-000000000102', 'b0000000-0000-0000-0000-000000000101', 5, 5, 5),
+
+-- Nhóm 5: Sinh viên 21 (Vũ Văn F) bị các bạn chấm thấp (1-2 sao)
+('e0000000-0000-0000-0000-000000000005', 'd0000000-0000-0000-0000-000000000001', 'b0000000-0000-0000-0000-000000000122', 'b0000000-0000-0000-0000-000000000121', 1, 2, 1),
+('e0000000-0000-0000-0000-000000000005', 'd0000000-0000-0000-0000-000000000001', 'b0000000-0000-0000-0000-000000000123', 'b0000000-0000-0000-0000-000000000121', 2, 1, 1),
+('e0000000-0000-0000-0000-000000000005', 'd0000000-0000-0000-0000-000000000001', 'b0000000-0000-0000-0000-000000000124', 'b0000000-0000-0000-0000-000000000122', 5, 5, 4)
+ON CONFLICT (assignment_id, evaluator_id, evaluatee_id) DO UPDATE 
+SET c2_score = EXCLUDED.c2_score, c3_score = EXCLUDED.c3_score, c4_score = EXCLUDED.c4_score;
+
+-- 12. CONTRIBUTION METRICS (SNAPSHOT CHO LỚP 30 SV)
+INSERT INTO contribution_metrics (group_id, user_id, contribution_score, classification) VALUES
+('e0000000-0000-0000-0000-000000000001', 'b0000000-0000-0000-0000-000000000101', 1.15, 'High Contributor'),
+('e0000000-0000-0000-0000-000000000001', 'b0000000-0000-0000-0000-000000000102', 1.05, 'High Contributor'),
+('e0000000-0000-0000-0000-000000000001', 'b0000000-0000-0000-0000-000000000103', 0.98, 'Balanced Contributor'),
+('e0000000-0000-0000-0000-000000000001', 'b0000000-0000-0000-0000-000000000104', 1.00, 'Balanced Contributor'),
+('e0000000-0000-0000-0000-000000000001', 'b0000000-0000-0000-0000-000000000105', 0.92, 'Balanced Contributor'),
+
+-- Nhóm 5: Free-rider
+('e0000000-0000-0000-0000-000000000005', 'b0000000-0000-0000-0000-000000000121', 0.45, 'Potential Free-rider'),
+('e0000000-0000-0000-0000-000000000005', 'b0000000-0000-0000-0000-000000000122', 1.25, 'High Contributor')
+ON CONFLICT DO NOTHING;
+
+-- 13. AI REVIEW SYNTHESIS (BẢN TỔNG HỢP REVIEW CHO GIÁO VIÊN)
+INSERT INTO review_summaries (id, submission_id, status, updated_by)
+VALUES (
+  'f5000000-0000-0000-0000-000000000001',
+  'f2000000-0000-0000-0000-000000000001',
+  'APPROVED',
+  'b0000000-0000-0000-0000-000000000001'
+) ON CONFLICT (submission_id) DO NOTHING;
+
+INSERT INTO review_summary_items (summary_id, topic_category, content, frequency_count) VALUES
+('f5000000-0000-0000-0000-000000000001', 'STRENGTHS', 'Cấu trúc thư mục dự án và RESTful API được chia tầng rõ ràng, chuẩn mực.', 5),
+('f5000000-0000-0000-0000-000000000001', 'WEAKNESSES', 'Một số API xử lý dữ liệu chưa có try-catch middleware dễ gây crash server.', 3),
+('f5000000-0000-0000-0000-000000000001', 'SUGGESTIONS', 'Nên bổ sung hướng dẫn cài đặt chi tiết trong file README và bài kiểm thử tự động.', 4)
+ON CONFLICT DO NOTHING;
+
+-- 14. EARLY WARNINGS (CẢNH BÁO SỚM RỦI RO CHO THẦY NGUYỄN VĂN A)
+INSERT INTO early_warnings (class_id, group_id, user_id, risk_type, description, is_resolved) VALUES
+('c0000000-0000-0000-0000-000000000001', 'e0000000-0000-0000-0000-000000000005', 'b0000000-0000-0000-0000-000000000121', 'Potential Free-rider', 'Sinh viên Vũ Văn F có tỷ lệ đóng góp C1 cực thấp (0.12) và nhận đánh giá kém từ các bạn trong nhóm.', FALSE),
+('c0000000-0000-0000-0000-000000000001', 'e0000000-0000-0000-0000-000000000003', NULL, 'Unbalanced Contribution', 'Nhóm 03 có sự lệch pha lớn về số lượng task hoàn thành giữa Nhóm trưởng và các thành viên.', FALSE)
+ON CONFLICT DO NOTHING;
+
+COMMIT;
+
+-- Thông báo nạp dữ liệu hoàn tất
+SELECT 'Đã nạp thành công bộ dữ liệu Seed mẫu Lớp CS201 (30 sinh viên, 6 nhóm, 1 giáo viên) phục vụ Demo!' AS result;

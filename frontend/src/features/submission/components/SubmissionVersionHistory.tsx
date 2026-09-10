@@ -4,7 +4,7 @@ import { EmptyState } from '@/components/ui/EmptyState';
 import { submissionMessages } from '@/constants/messages/submission';
 import { useSubmissionHistory } from '../hooks/useSubmission';
 import { toast } from 'sonner';
-import { History, FileText, Download } from 'lucide-react';
+import { History, FileText, Download, GitBranch, ExternalLink } from 'lucide-react';
 
 interface SubmissionVersionHistoryProps {
   assignmentId: string;
@@ -80,16 +80,26 @@ export const SubmissionVersionHistory: React.FC<SubmissionVersionHistoryProps> =
                   year: 'numeric',
                 });
 
+                const isGithub = ver.file_url?.includes('github.com');
+                const isUrl = ver.file_url?.startsWith('http://') || ver.file_url?.startsWith('https://');
+                const isStorageFile = ver.file_url?.includes('/storage/') || ver.file_url?.includes('googleapis.com') || ver.file_url?.includes('supabase.co');
+
                 let displayFileName = ver.file_name;
                 if (!displayFileName && ver.file_url) {
-                  try {
-                    const urlObj = new URL(ver.file_url);
-                    const downloadParam = urlObj.searchParams.get('download');
-                    if (downloadParam) {
-                      displayFileName = decodeURIComponent(downloadParam);
+                  if (isGithub) {
+                    displayFileName = ver.file_url.replace('https://github.com/', 'github.com/');
+                  } else if (isUrl && !isStorageFile) {
+                    displayFileName = ver.file_url;
+                  } else {
+                    try {
+                      const urlObj = new URL(ver.file_url);
+                      const downloadParam = urlObj.searchParams.get('download');
+                      if (downloadParam) {
+                        displayFileName = decodeURIComponent(downloadParam);
+                      }
+                    } catch (e) {
+                      // Ignore
                     }
-                  } catch (e) {
-                    // Ignore
                   }
                 }
                 displayFileName = displayFileName || `Bản_Nộp_v${ver.version_number}.pdf`;
@@ -121,13 +131,22 @@ export const SubmissionVersionHistory: React.FC<SubmissionVersionHistoryProps> =
                       </div>
                     </td>
                     <td className="p-3 text-gray-900 truncate max-w-xs" title={displayFileName}>
-                      <span className="flex items-center gap-1.5"><FileText className="w-4 h-4 text-gray-500" /> {displayFileName}</span>
+                      <span className="flex items-center gap-1.5">
+                        {isGithub ? (
+                          <GitBranch className="w-4 h-4 text-slate-800 shrink-0" />
+                        ) : isUrl && !isStorageFile ? (
+                          <ExternalLink className="w-4 h-4 text-blue-600 shrink-0" />
+                        ) : (
+                          <FileText className="w-4 h-4 text-gray-500 shrink-0" />
+                        )}
+                        <span className="truncate">{displayFileName}</span>
+                      </span>
                     </td>
                     <td className="p-3 text-xs text-gray-500 font-mono">{dateStr}</td>
                     <td className="p-3 text-right">
                       <a
                         href={ver.file_url}
-                        download={displayFileName}
+                        download={!isUrl || isStorageFile ? displayFileName : undefined}
                         target="_blank"
                         rel="noopener noreferrer"
                         onClick={(e) => {
@@ -138,7 +157,19 @@ export const SubmissionVersionHistory: React.FC<SubmissionVersionHistoryProps> =
                         }}
                         className="inline-flex items-center gap-1 text-xs font-bold text-blue-600 hover:text-blue-800 bg-white px-2.5 py-1 rounded border border-gray-200 shadow-sm transition-colors"
                       >
-                        <Download className="w-4 h-4 mr-1" /> {submissionMessages.history.downloadColumn}
+                        {isGithub ? (
+                          <>
+                            <GitBranch className="w-3.5 h-3.5 mr-1" /> Mở GitHub ↗
+                          </>
+                        ) : isUrl && !isStorageFile ? (
+                          <>
+                            <ExternalLink className="w-3.5 h-3.5 mr-1" /> Mở Link ↗
+                          </>
+                        ) : (
+                          <>
+                            <Download className="w-4 h-4 mr-1" /> {submissionMessages.history.downloadColumn}
+                          </>
+                        )}
                       </a>
                     </td>
                   </tr>
@@ -151,3 +182,4 @@ export const SubmissionVersionHistory: React.FC<SubmissionVersionHistoryProps> =
     </div>
   );
 };
+

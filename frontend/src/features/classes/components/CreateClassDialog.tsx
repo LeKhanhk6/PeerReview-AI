@@ -68,11 +68,11 @@ export const CreateClassDialog: React.FC<Props> = ({ open, onClose }) => {
         </div>
 
         <div>
-          <label className="block text-sm font-bold text-slate-700">Mã lớp <span className="text-rose-500">*</span></label>
+          <label className="block text-sm font-bold text-slate-700">Tên / Mã lớp học <span className="text-rose-500">*</span></label>
           <input
             {...register('name')}
             className={`mt-1 block w-full border ${errors.name ? 'border-rose-300 text-rose-900 focus:ring-rose-500' : 'border-slate-200 focus:ring-brand-primary focus:border-brand-primary'} rounded-lg shadow-sm py-2 px-3 focus:outline-none focus:ring-2 sm:text-sm transition-colors`}
-            placeholder="VD: L02"
+            placeholder="VD: Lớp SE301 - Kỹ thuật Phần mềm HK1"
           />
           {errors.name && <p className="mt-1.5 text-xs font-medium text-rose-600">{errors.name.message}</p>}
         </div>

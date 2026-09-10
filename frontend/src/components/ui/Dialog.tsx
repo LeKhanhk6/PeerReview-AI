@@ -125,8 +125,18 @@ export const Dialog: React.FC<DialogProps> = ({
     return () => document.removeEventListener('keydown', handleKeyDown);
   }, [open, onClose, closeOnEscape]);
 
+  const mouseDownTargetRef = useRef<EventTarget | null>(null);
+
+  const handleMouseDown = (e: React.MouseEvent) => {
+    mouseDownTargetRef.current = e.target;
+  };
+
   const handleBackdropClick = (e: React.MouseEvent) => {
-    if (e.target === e.currentTarget && closeOnBackdrop) {
+    if (
+      e.target === e.currentTarget &&
+      mouseDownTargetRef.current === e.currentTarget &&
+      closeOnBackdrop
+    ) {
       onClose();
     }
   };
@@ -136,6 +146,7 @@ export const Dialog: React.FC<DialogProps> = ({
   const content = (
     <div
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 sm:p-6"
+      onMouseDown={handleMouseDown}
       onClick={handleBackdropClick}
     >
       <div

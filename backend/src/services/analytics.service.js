@@ -75,7 +75,7 @@ export const getDashboardOverview = async (currentUser, classId) => {
     // 1. Validate ownership if classId is provided
     if (classId) {
         validClassId = validateId(classId, 'class ID');
-        const classRes = await pool.query(`SELECT teacher_id FROM classes WHERE id = $1`, [validClassId]);
+        const classRes = await pool.query(`SELECT teacher_id FROM classes WHERE id = $1 AND deleted_at IS NULL`, [validClassId]);
         if (classRes.rowCount === 0) {
             throw new AppError('Class not found', 404);
         }
@@ -90,6 +90,7 @@ export const getDashboardOverview = async (currentUser, classId) => {
             FROM classes
             WHERE ($2::boolean OR teacher_id = $1)
               AND ($3::uuid IS NULL OR id = $3::uuid)
+              AND deleted_at IS NULL
         )
     `;
 
@@ -315,7 +316,7 @@ export const getClassContributions = async (currentUser, classId) => {
     const classRes = await pool.query(`
         SELECT teacher_id 
         FROM classes
-        WHERE id = $1
+        WHERE id = $1 AND deleted_at IS NULL
     `, [validClassId]);
 
     if (classRes.rowCount === 0) {
@@ -672,7 +673,7 @@ export const getClassReviewAnalytics = async (currentUser, classId) => {
     const validClassId = validateId(classId, 'class ID');
     const isAdmin = currentUser.role === 'ADMIN';
 
-    const classRes = await pool.query(`SELECT teacher_id FROM classes WHERE id = $1`, [validClassId]);
+    const classRes = await pool.query(`SELECT teacher_id FROM classes WHERE id = $1 AND deleted_at IS NULL`, [validClassId]);
     if (classRes.rowCount === 0) {
         throw new AppError('Class not found', 404);
     }
@@ -893,7 +894,7 @@ export const getCollaborationRisks = async (currentUser, classId) => {
     const isAdmin = currentUser.role === 'ADMIN';
 
     // 1. Validate ownership
-    const classRes = await pool.query(`SELECT teacher_id FROM classes WHERE id = $1`, [validClassId]);
+    const classRes = await pool.query(`SELECT teacher_id FROM classes WHERE id = $1 AND deleted_at IS NULL`, [validClassId]);
     if (classRes.rowCount === 0) {
         throw new AppError('Class not found', 404);
     }

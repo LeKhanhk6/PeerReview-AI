@@ -120,49 +120,42 @@ export const TeacherSubmissionsMonitorPage: React.FC = () => {
           </p>
         </div>
 
-        <div className="flex flex-wrap items-center gap-3">
+        <div className="flex items-center gap-2.5 shrink-0 flex-wrap">
           <Button
             type="button"
             variant="outline"
             size="sm"
             onClick={handleExportCSV}
             disabled={!groups.length}
-            className="gap-2"
+            className="gap-1.5 text-xs font-semibold whitespace-nowrap"
           >
-            <Download className="w-4 h-4 mr-1" /> Xuất CSV danh sách
+            <Download className="w-4 h-4 mr-0.5" /> Xuất CSV danh sách
           </Button>
 
           {(() => {
             const safeReviewsPerGroup = Math.min(2, Math.max(1, groups.length - 1));
             return (
-              <div className="flex items-center gap-2">
-                {groups.length > 0 && (
-                  <span className="text-xs font-medium text-indigo-700 bg-indigo-50 border border-indigo-200 rounded-lg px-2.5 py-1.5 whitespace-nowrap">
-                    {safeReviewsPerGroup} bài/nhóm
-                  </span>
+              <Button
+                type="button"
+                variant="default"
+                size="sm"
+                onClick={() => {
+                  generateReviews.mutate({ assignmentId, reviewsPerGroup: safeReviewsPerGroup });
+                }}
+                disabled={!groups.length || generateReviews.isPending}
+                className="gap-1.5 bg-indigo-600 hover:bg-indigo-700 text-xs font-semibold whitespace-nowrap"
+              >
+                {generateReviews.isPending ? (
+                  <span className="flex items-center gap-1.5"><Hourglass className="w-4 h-4" /> Đang phân công...</span>
+                ) : (
+                  <span className="flex items-center gap-1.5"><Dices className="w-4 h-4" /> Phân công chấm chéo</span>
                 )}
-                <Button
-                  type="button"
-                  variant="default"
-                  size="sm"
-                  onClick={() => {
-                    generateReviews.mutate({ assignmentId, reviewsPerGroup: safeReviewsPerGroup });
-                  }}
-                  disabled={!groups.length || generateReviews.isPending}
-                  className="gap-2 bg-indigo-600 hover:bg-indigo-700"
-                >
-                  {generateReviews.isPending ? (
-                    <span className="flex items-center gap-2"><Hourglass className="w-4 h-4" /> Đang phân công...</span>
-                  ) : (
-                    <span className="flex items-center gap-2"><Dices className="w-4 h-4" /> Phân công chấm chéo</span>
-                  )}
-                </Button>
-              </div>
+              </Button>
             );
           })()}
 
           <Link to={`/teacher/assignments/${assignment.id}/synthesis`}>
-            <Button variant="outline" size="sm" className="border-indigo-200 text-indigo-700 hover:bg-indigo-50 gap-2">
+            <Button variant="outline" size="sm" className="border-indigo-200 text-indigo-700 hover:bg-indigo-50 gap-1.5 text-xs font-semibold whitespace-nowrap">
               <Bot className="w-4 h-4" /> AI Synthesis →
             </Button>
           </Link>

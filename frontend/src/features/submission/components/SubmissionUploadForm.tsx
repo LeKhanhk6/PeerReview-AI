@@ -232,18 +232,6 @@ export const SubmissionUploadForm: React.FC<SubmissionUploadFormProps> = ({
             <p className="text-[11px] text-gray-500">
               Đính kèm link kho chứa GitHub, slide báo cáo (Google Drive / Canva) hoặc sản phẩm chạy thử nghiệm.
             </p>
-
-            {/* Quick Demo Fill Buttons */}
-            <div className="pt-1 flex items-center gap-2">
-              <span className="text-[11px] text-slate-400">Gợi ý mẫu:</span>
-              <button
-                type="button"
-                onClick={() => setUrlInput('https://github.com/peerreview-ai/se301-web-project')}
-                className="text-[11px] font-mono text-blue-600 hover:underline bg-blue-50 px-2 py-0.5 rounded border border-blue-200"
-              >
-                GitHub Demo Link
-              </button>
-            </div>
           </div>
         )}
 

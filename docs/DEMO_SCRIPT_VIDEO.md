@@ -219,18 +219,20 @@ Chứng minh tính mở rộng, độ chính xác của thuật toán phân tíc
 
 ---
 
-### 📍 MÀN 3: BẢNG CẢNH BÁO SỚM (EARLY WARNING BOARD - 3 CẢNH BÁO RỦI RO)
-- **Góc quay:** Màn hình Early Warnings Panel.
+### 📍 MÀN 3: BẢNG CẢNH BÁO SỚM (EARLY WARNING BOARD - 5 CẢNH BÁO RỦI RO ĐA DẠNG)
+- **Góc quay:** Màn hình Early Warnings Panel & Overview Widget.
 - **Tài khoản:** `teacher.nguyen@peerreview.ai`
 - **Hành động trên UI:**
   1. Mở Bảng điều khiển **Early Warning Board / Collaboration Risks**.
-  2. Trình bày **3 Cảnh báo Rủi ro thực tế** được thuật toán phát hiện tự động:
-     - 🔴 **Warning 1 (Free-rider Alert):** Sinh viên `Vũ Văn F` (`vanf.sv21` - Nhóm 5) — *Tỷ lệ đóng góp $S_i = 0.45$, Activity Log chiếm dưới 5% cả nhóm.*
-     - 🟠 **Warning 2 (Unbalanced Contribution):** Nhóm 03 — *Chênh lệch đóng góp quá lớn giữa Trưởng nhóm (đảm nhận 70% công việc) và các thành viên.*
-     - 🟡 **Warning 3 (Review Inactivity):** Sinh viên `student14` — *Bỏ quên nhiệm vụ chấm chéo quá hạn 24 giờ.*
-  3. Thao tác nhấp nút **Send Notification** để phát thông báo nhắc nhở tự động tới các sinh viên rủi ro.
+  2. Trình bày **5 Cảnh báo Rủi ro thực tế** được thuật toán Rule Engine tự động quét và phát hiện:
+     - 🔴 **Warning 1 (Bỏ quên chấm chéo - `REVIEW_INACTIVITY`):** Nhóm 04 (*Delta Builders*) — *Chưa thực hiện chấm chéo bài nộp Vòng 1.*
+     - 🔴 **Warning 2 (Free-rider Alert - `LOW_CONTRIBUTION`):** Sinh viên `Vũ Văn F` (`vanf.sv21` - Nhóm 05) — *Tỷ lệ đóng góp $S_i = 0.45$, Activity Log chiếm dưới 5% cả nhóm.*
+     - 🔴 **Warning 3 (Trễ tiến độ task - `INCOMPLETE_TASKS`):** Nhóm 06 (*Zeta Solutions*) — *Mới hoàn thành 1/5 task trong khi chỉ còn 36 giờ tới deadline.*
+     - 🔴 **Warning 4 (Nhóm không hoạt động - `DEAD_GROUP`):** Nhóm 02 (*Beta Innovators*) — *Không có bất kỳ hoạt động hay thảo luận nào trên hệ thống.*
+     - 🟠 **Warning 5 (Phân chia công việc mất cân bằng - `UNBALANCED_CONTRIBUTION`):** Nhóm 03 (*Gamma Coders*) — *Trưởng nhóm đảm nhận 70%+ khối lượng công việc.*
+  3. Thao tác nhấp nút **Gửi thông báo (Send Alert)** để phát thông báo can thiệp tự động tới các sinh viên / nhóm rủi ro.
 - **Lời thoại / Thuyết minh:**
-  > *"Bảng Early Warning Board quét tự động 30 sinh viên và đưa ra ngay 3 cảnh báo rủi ro chính xác: Cảnh báo Free-rider, Cảnh báo lệch pha đóng góp trong nhóm, và Cảnh báo bỏ quên nhiệm vụ chấm chéo. Giáo viên có thể gửi thông báo can thiệp chỉ với 1 click."*
+  > *"Bảng Early Warning Board quét tự động toàn bộ 30 sinh viên và đưa ra ngay 5 cảnh báo rủi ro cực kỳ phong phú theo thời gian thực: từ Cảnh báo Free-rider, Cảnh báo trễ tiến độ cận deadline, Cảnh báo bỏ quên chấm chéo cho tới Cảnh báo nhóm đóng băng. Giáo viên có thể gửi thông báo can thiệp trực tiếp chỉ với 1 click."*
 
 ---
 

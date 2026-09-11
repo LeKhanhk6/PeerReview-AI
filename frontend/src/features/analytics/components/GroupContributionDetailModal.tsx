@@ -66,9 +66,9 @@ export const GroupContributionDetailModal: React.FC<GroupContributionDetailModal
       onClose={onClose}
       title={title}
       description="Kết quả đánh giá từ công cụ AI Mentor và phiếu chấm nội bộ."
-      className="max-w-5xl"
+      className="max-w-5xl max-h-[90vh] flex flex-col"
     >
-      <div className="space-y-6">
+      <div className="space-y-6 max-h-[calc(85vh-120px)] overflow-y-auto pr-1 scrollbar-thin">
         {/* Assignment Selector if class has multiple assignments */}
         {assignments.length > 1 && (
           <div className="flex items-center gap-3 bg-slate-50 p-3 rounded-xl border border-slate-200">

@@ -22,11 +22,7 @@ export const TeacherDashboardPage: React.FC = () => {
   const { user } = useAuthStore();
   const [selectedClassId, setSelectedClassId] = useState<string>('');
 
-  React.useEffect(() => {
-    try {
-      localStorage.removeItem('peerreview_risk_statuses');
-    } catch (e) {}
-  }, []);
+
 
   // 1. Fetch Teacher Classes
   const { data: rawClasses = [] } = useApiQuery(

@@ -25,17 +25,17 @@ async function seed() {
     const g3 = groups.find(g => g.name.includes('3'));
 
     // Users
-    const u1 = 'b0000000-0000-4000-8000-000000000101'; // tranmai.sv01 (Nhóm 1)
-    const u2 = 'b0000000-0000-4000-8000-000000000102'; // levanc.sv02 (Nhóm 1)
-    const u9 = 'b0000000-4000-8000-0000-000000000109'; // vanf.sv09 (Nhóm 1 - Hoàng Văn Lười)
+    const u1 = 'b0000000-4000-4000-8000-000000000101'; // tranmai.sv01 (Nhóm 1)
+    const u2 = 'b0000000-4000-4000-8000-000000000102'; // levanc.sv02 (Nhóm 1)
+    const u9 = 'b0000000-4000-4000-8000-000000000109'; // vanf.sv09 (Nhóm 1 - Hoàng Văn Lười)
 
-    const u3 = 'b0000000-0000-4000-8000-000000000103'; // phamminhd.sv03 (Nhóm 2 - Phạm Minh Dũng)
-    const u4 = 'b0000000-4000-8000-0000-000000000104'; // tuananh.sv04 (Nhóm 2)
-    const u5 = 'b0000000-4000-8000-0000-000000000105'; // vuquoch.sv05 (Nhóm 2)
+    const u3 = 'b0000000-4000-4000-8000-000000000103'; // phamminhd.sv03 (Nhóm 2 - Phạm Minh Dũng)
+    const u4 = 'b0000000-4000-4000-8000-000000000104'; // tuananh.sv04 (Nhóm 2)
+    const u5 = 'b0000000-4000-4000-8000-000000000105'; // vuquoch.sv05 (Nhóm 2)
 
-    const u6 = 'b0000000-4000-8000-0000-000000000106'; // baohai.sv06 (Nhóm 3)
-    const u7 = 'b0000000-4000-8000-0000-000000000107'; // ducminh.sv07 (Nhóm 3)
-    const u8 = 'b0000000-4000-8000-0000-000000000108'; // thungan.sv08 (Nhóm 3 - Free-rider)
+    const u6 = 'b0000000-4000-4000-8000-000000000106'; // baohai.sv06 (Nhóm 3)
+    const u7 = 'b0000000-4000-4000-8000-000000000107'; // ducminh.sv07 (Nhóm 3)
+    const u8 = 'b0000000-4000-4000-8000-000000000108'; // thungan.sv08 (Nhóm 3 - Free-rider)
 
     // Re-arrange group members strictly as specified by user:
     // Nhóm 1: u1 (sv01), u2 (sv02), u9 (sv09)

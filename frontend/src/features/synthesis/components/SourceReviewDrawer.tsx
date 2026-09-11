@@ -115,7 +115,7 @@ export const SourceReviewDrawer: React.FC<SourceReviewDrawerProps> = ({
                     <Lock className="w-3.5 h-3.5 text-gray-500" /> {synthesisMessages.drawer.anonymousReviewerLabel} #{(page - 1) * 10 + index + 1}
                   </span>
                   <span className="font-extrabold text-blue-600">
-                    {synthesisMessages.drawer.scoreLabel} {review.total_score}/100
+                    {synthesisMessages.drawer.scoreLabel} {Number(review.total_score || 0).toFixed(1)}/100
                   </span>
                 </div>
 

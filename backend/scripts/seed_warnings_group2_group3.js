@@ -159,11 +159,10 @@ async function seed() {
       ($1, 'Lập trình Backend', 'DONE', $3)
     `, [g3.id, u6, u7]);
 
-    // Activity logs for Group 3 (u6 and u7 active, u8 has 1 minor activity to avoid LOW_ACTIVITY double warning)
+    // Activity logs for Group 3: u6 active (6 activities), u8 has 1 activity (triggers LOW_CONTRIBUTION free-rider), u7 has 0 activities (triggers LOW_ACTIVITY)
     await pool.query('DELETE FROM activity_logs WHERE group_id = $1', [g3.id]);
     for (let i = 0; i < 6; i++) {
       await pool.query('INSERT INTO activity_logs (group_id, user_id, action_type, content_summary) VALUES ($1, $2, $3, $4)', [g3.id, u6, 'TASK_CREATE', 'Tạo task']);
-      await pool.query('INSERT INTO activity_logs (group_id, user_id, action_type, content_summary) VALUES ($1, $2, $3, $4)', [g3.id, u7, 'TASK_UPDATE', 'Cập nhật task']);
     }
     await pool.query('INSERT INTO activity_logs (group_id, user_id, action_type, content_summary) VALUES ($1, $2, $3, $4)', [g3.id, u8, 'DISCUSSION_POST', 'Chào cả nhà']);
 

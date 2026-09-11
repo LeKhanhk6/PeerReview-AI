@@ -69,7 +69,7 @@ export const getSourceReviews = async (currentUser, submissionId) => {
 
     const result = await pool.query(`
         SELECT r.id, 
-               (CASE WHEN r.total_score > 10 THEN r.total_score / 10.0 ELSE r.total_score END) as total_score, 
+               (CASE WHEN r.total_score <= 10 THEN r.total_score * 10.0 ELSE r.total_score END) as total_score, 
                r.overall_comment, r.submitted_at, 
                ra.reviewer_group_id, ra.status
         FROM reviews r

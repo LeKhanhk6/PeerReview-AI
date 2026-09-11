@@ -286,6 +286,7 @@ describe('submission.service (MVP)', () => {
                         group_name: 'Group 1',
                         submission_id: 'sub-1',
                         initial_submitted_at: '2026-05-20T10:00:00Z', // On time
+                        raw_submission_status: 'SUBMITTED',
                         latest_version_number: 2,
                         latest_file_url: 'http://example.com/sub1_v2.pdf',
                         latest_version_created_at: '2026-05-21T10:00:00Z',
@@ -296,11 +297,13 @@ describe('submission.service (MVP)', () => {
                         group_name: 'Group 2',
                         submission_id: 'sub-2',
                         initial_submitted_at: '2026-06-05T10:00:00Z', // Late
+                        raw_submission_status: 'LATE',
                         latest_version_number: 1,
                         latest_file_url: 'http://example.com/sub2_v1.pdf',
                         latest_version_created_at: '2026-06-05T10:00:00Z',
                         total_versions: 1
                     },
+
                     {
                         group_id: 'g3',
                         group_name: 'Group 3',

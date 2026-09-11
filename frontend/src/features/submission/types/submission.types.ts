@@ -72,6 +72,7 @@ export interface TeacherSubmissionsMonitorData {
     id: string;
     title: string;
     deadline: string;
+    allow_early_internal_eval?: boolean;
     classId: string;
     className: string;
   };
@@ -83,4 +84,5 @@ export interface TeacherSubmissionsMonitorData {
   };
   groups: TeacherSubmissionGroupItem[];
 }
+
 

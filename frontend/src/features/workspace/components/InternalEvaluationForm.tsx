@@ -41,6 +41,7 @@ export const InternalEvaluationForm: React.FC<InternalEvaluationFormProps> = ({
   const [fetching, setFetching] = useState(true);
   const [hasSavedData, setHasSavedData] = useState(false);
   const [isPublished, setIsPublished] = useState(false);
+  const [allowEarlyInternalEval, setAllowEarlyInternalEval] = useState(false);
   
   // For error-driven state correction
   const [serverForcedClosed, setServerForcedClosed] = useState(false);
@@ -57,7 +58,9 @@ export const InternalEvaluationForm: React.FC<InternalEvaluationFormProps> = ({
         const resData: any = await getMyEvaluations(assignmentId, groupId);
         const data = Array.isArray(resData) ? resData : resData?.evaluations || [];
         const publishedFlag = Boolean(resData?.isPublished);
+        const earlyFlag = Boolean(resData?.allowEarlyInternalEval);
         setIsPublished(publishedFlag);
+        setAllowEarlyInternalEval(earlyFlag);
 
         const newEvals: Record<string, { c2: number; c3: number; c4: number }> = {};
         
@@ -106,10 +109,11 @@ export const InternalEvaluationForm: React.FC<InternalEvaluationFormProps> = ({
       ? new Date(reviewDeadline) 
       : new Date(submissionDate.getTime() + 24 * 60 * 60 * 1000);
 
-    if (now < submissionDate) return 'NOT_OPEN';
     if (now > reviewDate) return 'CLOSED';
+    if (!allowEarlyInternalEval && now < submissionDate) return 'NOT_OPEN';
     return 'OPEN';
-  }, [dueDate, reviewDeadline, serverForcedNotOpen, serverForcedClosed, isPublished]);
+  }, [dueDate, reviewDeadline, serverForcedNotOpen, serverForcedClosed, isPublished, allowEarlyInternalEval]);
+
 
   const isFormComplete = useMemo(() => {
     if (peers.length === 0) return false;

@@ -55,6 +55,13 @@ const updateSchema = {
     })
 };
 
+const toggleEarlyInternalEvalSchema = {
+    params: idParamSchema,
+    body: z.object({
+        allow: z.boolean()
+    })
+};
+
 // Upload attachment
 router.post('/upload-attachment', authorizeRoles('TEACHER', 'ADMIN'), upload.single('file'), assignmentController.uploadAttachment);
 
@@ -66,6 +73,8 @@ router.get('/:id', validate({ params: idParamSchema }), assignmentController.get
 // Chỉ giáo viên và admin được thao tác (quyền sở hữu được kiểm tra trong Controller)
 router.post('/', authorizeRoles('TEACHER', 'ADMIN'), validate(createSchema), assignmentController.create);
 router.put('/:id', authorizeRoles('TEACHER', 'ADMIN'), validate(updateSchema), assignmentController.update);
+router.patch('/:id/early-internal-eval', authorizeRoles('TEACHER', 'ADMIN'), validate(toggleEarlyInternalEvalSchema), assignmentController.toggleEarlyInternalEval);
 router.delete('/:id', authorizeRoles('TEACHER', 'ADMIN'), validate({ params: idParamSchema }), assignmentController.remove);
 
 export default router;
+

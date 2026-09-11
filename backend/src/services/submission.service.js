@@ -497,7 +497,7 @@ export const getTeacherSubmissionsMonitor = async (assignmentId, currentUser, st
 
     // 1. Fetch assignment and verify ownership
     const assignmentQuery = `
-        SELECT a.id, a.title, a.deadline, a.class_id, c.teacher_id, c.name as class_name
+        SELECT a.id, a.title, a.deadline, a.allow_early_internal_eval, a.class_id, c.teacher_id, c.name as class_name
         FROM assignments a
         JOIN classes c ON c.id = a.class_id
         WHERE a.id = $1
@@ -544,29 +544,26 @@ export const getTeacherSubmissionsMonitor = async (assignmentId, currentUser, st
         ORDER BY g.name ASC
     `;
 
-    const result = await pool.query(monitorQuery, [validAssignmentId]);
-    const deadlineDate = new Date(assignment.deadline);
+    const monitorResult = await pool.query(monitorQuery, [validAssignmentId]);
 
     let submittedCount = 0;
-    let notStartedCount = 0;
     let lateCount = 0;
+    let notStartedCount = 0;
 
-    const mappedGroups = result.rows.map(row => {
-        let status = SUBMISSION_STATUS.NOT_STARTED;
-        let isLate = false;
+    const mappedGroups = monitorResult.rows.map((row) => {
+        const hasSubmission = Boolean(row.submission_id);
+        const isLate = row.raw_submission_status === 'LATE';
 
-        if (row.submission_id && row.initial_submitted_at) {
-            const initialSubmittedAt = new Date(row.initial_submitted_at);
-            if (initialSubmittedAt > deadlineDate) {
-                status = SUBMISSION_STATUS.LATE;
-                isLate = true;
+        let status = 'NOT_STARTED';
+        if (hasSubmission) {
+            if (isLate) {
+                status = 'LATE';
                 lateCount++;
             } else {
-                status = SUBMISSION_STATUS.SUBMITTED;
+                status = 'SUBMITTED';
                 submittedCount++;
             }
         } else {
-            status = SUBMISSION_STATUS.NOT_STARTED;
             notStartedCount++;
         }
 
@@ -575,7 +572,7 @@ export const getTeacherSubmissionsMonitor = async (assignmentId, currentUser, st
             groupName: row.group_name,
             status,
             isLate,
-            submission: row.submission_id ? {
+            submission: hasSubmission ? {
                 id: row.submission_id,
                 initialSubmittedAt: row.initial_submitted_at,
                 latestVersionNumber: row.latest_version_number,
@@ -597,6 +594,7 @@ export const getTeacherSubmissionsMonitor = async (assignmentId, currentUser, st
             id: assignment.id,
             title: assignment.title,
             deadline: assignment.deadline,
+            allow_early_internal_eval: Boolean(assignment.allow_early_internal_eval),
             classId: assignment.class_id,
             className: assignment.class_name
         },

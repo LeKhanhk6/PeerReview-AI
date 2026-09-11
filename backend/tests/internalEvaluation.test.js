@@ -195,5 +195,18 @@ describe('Internal Evaluation & Contribution Tests', () => {
             expect(res.status).toHaveBeenCalledWith(400);
             expect(res.json).toHaveBeenCalledWith({ message: expect.stringContaining('đã công bố') });
         });
+
+        it('11. allow_early_internal_eval = true -> Cho phép chấm ngay cả khi chưa đến deadline', async () => {
+            const futureDate = new Date();
+            futureDate.setDate(futureDate.getDate() + 1);
+            pool.query.mockResolvedValueOnce({ rowCount: 0, rows: [] }); // pubCheck
+            pool.query.mockResolvedValueOnce({ rows: [{ deadline: futureDate, allow_early_internal_eval: true }] });
+            pool.query.mockResolvedValueOnce({ rows: [{ user_id: 'u1' }, { user_id: 'u2' }] }); // members
+
+            await submitEvaluation(req, res);
+            expect(res.status).toHaveBeenCalledWith(201);
+            expect(res.json).toHaveBeenCalledWith({ message: 'Lưu đánh giá thành công' });
+        });
     });
 });
+

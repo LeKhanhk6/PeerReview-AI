@@ -7,8 +7,9 @@ import { Skeleton } from '@/components/ui/Skeleton';
 import { assignmentMessages } from '@/constants/messages/assignment';
 import { useAssignmentsList, useClassesList, useDeleteAssignment } from '../hooks/useAssignments';
 import type { Assignment } from '../types/assignment.types';
-import { CheckCircle2, AlertTriangle } from 'lucide-react';
+import { CheckCircle2, AlertTriangle, Eye } from 'lucide-react';
 import { toast } from 'sonner';
+
 
 
 export const AssignmentList: React.FC = () => {
@@ -165,7 +166,16 @@ export const AssignmentList: React.FC = () => {
                 </div>
 
                 {/* Actions */}
-                <div className="flex items-center gap-2 pt-4 md:pt-0 border-t md:border-t-0 border-slate-100 mt-2 md:mt-0">
+                <div className="flex items-center gap-2 pt-4 md:pt-0 border-t md:border-t-0 border-slate-100 mt-2 md:mt-0 flex-wrap">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => navigate(`/teacher/assignments/${assignment.id}/submissions`)}
+                    className="border-indigo-200 text-indigo-700 hover:bg-indigo-50 font-bold flex items-center gap-1.5"
+                  >
+                    <Eye className="w-3.5 h-3.5" /> Theo dõi bài nộp
+                  </Button>
+
                   {!hasRubric && (
                     <Button
                       variant="outline"
@@ -176,6 +186,7 @@ export const AssignmentList: React.FC = () => {
                       + Rubric
                     </Button>
                   )}
+
 
                   <Button
                     variant="outline"

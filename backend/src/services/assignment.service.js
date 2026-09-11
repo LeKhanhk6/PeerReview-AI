@@ -434,6 +434,7 @@ export const getAssignmentDetailById = async (id, user) => {
             description: assignment.description,
             requirements: assignment.requirements,
             deadline: assignment.deadline,
+            allow_early_internal_eval: Boolean(assignment.allow_early_internal_eval),
             is_overdue,
             time_left_days,
             deadline_status,
@@ -453,3 +454,36 @@ export const getAssignmentDetailById = async (id, user) => {
         throw error;
     }
 };
+
+export const toggleEarlyInternalEval = async (id, allow, user) => {
+    const validId = validateId(id, 'assignment ID');
+    if (!user || !user.role || !user.userId) {
+        throw new AppError('Invalid user context', 400);
+    }
+    if (user.role !== 'TEACHER' && user.role !== 'ADMIN') {
+        throw new AppError('Forbidden: Only teachers can update assignment settings', 403);
+    }
+
+    if (user.role === 'TEACHER') {
+        const assignmentOwnership = await getAssignmentOwnershipInfo(validId);
+        if (!assignmentOwnership) {
+            throw new AppError(NOT_FOUND_MSG, 404);
+        }
+        if (assignmentOwnership.teacher_id !== user.userId) {
+            throw new AppError('Forbidden: You do not have permission to edit this assignment', 403);
+        }
+    }
+
+    const query = `
+        UPDATE assignments
+        SET allow_early_internal_eval = $1
+        WHERE id = $2
+        RETURNING id, allow_early_internal_eval;
+    `;
+    const result = await pool.query(query, [Boolean(allow), validId]);
+    if (result.rowCount === 0) {
+        throw new AppError(NOT_FOUND_MSG, 404);
+    }
+    return result.rows[0];
+};
+

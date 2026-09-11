@@ -143,3 +143,17 @@ export const remove = async (req, res, next) => {
         next(error);
     }
 };
+
+export const toggleEarlyInternalEval = async (req, res, next) => {
+    try {
+        const { id } = req.params;
+        const { allow } = req.body;
+        const user = req.user;
+
+        const updated = await assignmentService.toggleEarlyInternalEval(id, allow, user);
+        return res.ok(updated);
+    } catch (error) {
+        next(error);
+    }
+};
+

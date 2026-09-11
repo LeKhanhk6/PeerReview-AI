@@ -1,19 +1,20 @@
 import React from 'react';
 import { useParams, useNavigate, useSearchParams, Link } from 'react-router-dom';
-import { useTeacherSubmissionsMonitor } from '../hooks/useSubmission';
+import { useTeacherSubmissionsMonitor, useToggleEarlyInternalEval } from '../hooks/useSubmission';
 import { Button } from '@/components/ui/Button';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { calculateDaysLeftStatus } from '@/utils/date.utils';
 import { toast } from 'sonner';
 import { useGenerateReviews } from '@/features/review/hooks/useGenerateReviews';
-import { Download, Hourglass, Dices, Bot, CheckCircle2, AlertTriangle, FileDown } from 'lucide-react';
+import { Download, Hourglass, Dices, Bot, CheckCircle2, AlertTriangle, FileDown, Unlock, Lock } from 'lucide-react';
 
 export const TeacherSubmissionsMonitorPage: React.FC = () => {
   const { assignmentId = '' } = useParams<{ assignmentId: string }>();
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const generateReviews = useGenerateReviews();
+  const toggleEarlyEval = useToggleEarlyInternalEval(assignmentId);
 
   const currentStatusFilter = searchParams.get('status') || 'ALL';
 
@@ -114,6 +115,11 @@ export const TeacherSubmissionsMonitorPage: React.FC = () => {
             <span className={`px-2.5 py-0.5 rounded-full text-xs font-semibold border ${deadlineDaysStatus.badgeClasses}`}>
               {deadlineDaysStatus.label}
             </span>
+            {assignment.allow_early_internal_eval && (
+              <span className="px-2.5 py-0.5 rounded-full text-xs font-extrabold bg-emerald-50 text-emerald-700 border border-emerald-200 inline-flex items-center gap-1">
+                <Unlock className="w-3.5 h-3.5 text-emerald-600" /> Đã mở chấm nội bộ sớm
+              </span>
+            )}
           </div>
           <p className="text-sm text-slate-600 mt-1">
             Lớp học: <strong className="text-slate-800">{assignment.className}</strong> | Hạn nộp chính thức: {new Date(assignment.deadline).toLocaleString('vi-VN')}
@@ -130,6 +136,37 @@ export const TeacherSubmissionsMonitorPage: React.FC = () => {
             className="gap-1.5 text-xs font-semibold whitespace-nowrap"
           >
             <Download className="w-4 h-4 mr-0.5" /> Xuất CSV danh sách
+          </Button>
+
+          <Button
+            type="button"
+            variant={assignment.allow_early_internal_eval ? "outline" : "default"}
+            size="sm"
+            onClick={() => {
+              const nextState = !assignment.allow_early_internal_eval;
+              toggleEarlyEval.mutate(nextState, {
+                onSuccess: () => {
+                  toast.success(nextState ? 'Đã mở chấm nội bộ sớm cho sinh viên!' : 'Đã đóng chấm nội bộ sớm!');
+                },
+                onError: (err: any) => {
+                  toast.error(`Lỗi: ${err?.message || 'Không thể thay đổi trạng thái'}`);
+                }
+              });
+            }}
+            disabled={toggleEarlyEval.isPending}
+            className={`gap-1.5 text-xs font-semibold whitespace-nowrap ${
+              assignment.allow_early_internal_eval
+                ? 'border-amber-300 text-amber-800 hover:bg-amber-50'
+                : 'bg-emerald-600 hover:bg-emerald-700 text-white'
+            }`}
+          >
+            {toggleEarlyEval.isPending ? (
+              <span className="flex items-center gap-1.5"><Hourglass className="w-4 h-4 animate-spin" /> Đang xử lý...</span>
+            ) : assignment.allow_early_internal_eval ? (
+              <span className="flex items-center gap-1.5"><Lock className="w-4 h-4" /> Đóng chấm nội bộ sớm</span>
+            ) : (
+              <span className="flex items-center gap-1.5"><Unlock className="w-4 h-4" /> Mở chấm nội bộ sớm</span>
+            )}
           </Button>
 
           {(() => {
@@ -161,6 +198,7 @@ export const TeacherSubmissionsMonitorPage: React.FC = () => {
           </Link>
         </div>
       </div>
+
 
       {/* 4 Stats Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">

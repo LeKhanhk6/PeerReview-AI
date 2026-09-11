@@ -23,11 +23,12 @@ export const submitEvaluation = async (req, res) => {
         }
 
         // 1. Check window
-        const assignmentRes = await pool.query('SELECT class_id, deadline FROM assignments WHERE id = $1', [assignmentId]);
+        const assignmentRes = await pool.query('SELECT class_id, deadline, allow_early_internal_eval FROM assignments WHERE id = $1', [assignmentId]);
         if (assignmentRes.rows.length === 0) return res.status(404).json({ message: 'Assignment not found' });
         
         const assignment = assignmentRes.rows[0];
         const rawDeadline = assignment.deadline || assignment.due_date;
+        const allowEarly = Boolean(assignment.allow_early_internal_eval);
 
         // 1.5 Check Group Belongs to Assignment's Class (if class_id exists in assignment record)
         if (assignment.class_id) {
@@ -43,7 +44,7 @@ export const submitEvaluation = async (req, res) => {
             ? new Date(assignment.review_deadline) 
             : new Date(submissionDeadline.getTime() + 24 * 60 * 60 * 1000); // Mặc định +24h
 
-        if (now < submissionDeadline) {
+        if (!allowEarly && now < submissionDeadline) {
             return res.status(400).json({ message: 'Chưa đến thời gian chấm nội bộ (Chưa qua hạn nộp bài)' });
         }
         if (now > reviewDeadline) {
@@ -93,6 +94,10 @@ export const getMyEvaluations = async (req, res) => {
         const checkMember = await pool.query('SELECT 1 FROM group_members WHERE group_id = $1 AND user_id = $2', [groupId, evaluatorId]);
         if (checkMember.rows.length === 0) return res.status(403).json({ message: 'Bạn không thuộc nhóm này' });
 
+        // Fetch assignment allow_early_internal_eval flag
+        const assignmentRes = await pool.query('SELECT allow_early_internal_eval FROM assignments WHERE id = $1', [assignmentId]);
+        const allowEarlyInternalEval = Boolean(assignmentRes.rows[0]?.allow_early_internal_eval);
+
         // Raw per-evaluator data never exposed — MVP: teacher xem aggregate only.
         // Chỉ trả về các phiếu MÀ USER NÀY ĐÃ CHẤM cho người khác để UI có thể hiển thị state và cho update lại.
         // Tuyệt đối KHÔNG trả về evaluator_id của người khác hay điểm mà user này nhận được từ người khác.
@@ -108,9 +113,10 @@ export const getMyEvaluations = async (req, res) => {
         );
         const isPublished = pubCheck.rowCount > 0;
 
-        res.json({ evaluations: evalsRes.rows, isPublished });
+        res.json({ evaluations: evalsRes.rows, isPublished, allowEarlyInternalEval });
     } catch (error) {
         console.error('Get evaluations error:', error);
         res.status(500).json({ message: 'Server error' });
     }
 };
+

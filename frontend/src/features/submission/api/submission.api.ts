@@ -39,4 +39,14 @@ export const submissionApi = {
     const res: any = await api.get(`/submissions/assignments/${assignmentId}/monitor`, { params });
     return res.data || res;
   },
+
+  // Toggle Early Internal Evaluation
+  toggleEarlyInternalEval: async (
+    assignmentId: string,
+    allow: boolean
+  ): Promise<{ id: string; allow_early_internal_eval: boolean }> => {
+    const res: any = await api.patch(`/assignments/${assignmentId}/early-internal-eval`, { allow });
+    return res.data || res;
+  },
 };
+

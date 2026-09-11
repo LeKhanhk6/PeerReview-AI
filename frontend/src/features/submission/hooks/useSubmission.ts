@@ -58,3 +58,17 @@ export const useSubmitAssignment = (assignmentId: string) => {
     },
   });
 };
+
+export const useToggleEarlyInternalEval = (assignmentId: string) => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (allow: boolean) =>
+      submissionApi.toggleEarlyInternalEval(assignmentId, allow),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: submissionKeys.monitor(assignmentId) });
+      queryClient.invalidateQueries({ queryKey: ['internal-evaluations', assignmentId] });
+      queryClient.invalidateQueries({ queryKey: ['assignment-detail', assignmentId] });
+    },
+  });
+};
+

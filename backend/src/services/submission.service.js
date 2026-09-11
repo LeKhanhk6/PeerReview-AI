@@ -75,6 +75,7 @@ export const getStudentDashboardData = async (userId, limit, offset, sortColumn,
                     a.class_id,
                     a.title,
                     a.deadline,
+                    a.allow_early_internal_eval,
                     a.created_at as assignment_created_at,
                     g.id as group_id,
                     g.name as group_name,
@@ -147,6 +148,7 @@ export const getStudentDashboardData = async (userId, limit, offset, sortColumn,
                 class_id: row.class_id,
                 title: row.title,
                 deadline: row.deadline,
+                allow_early_internal_eval: Boolean(row.allow_early_internal_eval),
                 group_id: row.group_id,
                 group_name: row.group_name,
                 is_late,
@@ -163,6 +165,7 @@ export const getStudentDashboardData = async (userId, limit, offset, sortColumn,
                     status: review_status
                 }
             };
+
         });
 
         return {

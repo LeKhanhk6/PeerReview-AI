@@ -66,9 +66,11 @@ export const useToggleEarlyInternalEval = (assignmentId: string) => {
       submissionApi.toggleEarlyInternalEval(assignmentId, allow),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: submissionKeys.monitor(assignmentId) });
-      queryClient.invalidateQueries({ queryKey: ['internal-evaluations', assignmentId] });
+      queryClient.invalidateQueries({ queryKey: ['internal-evaluations'] });
       queryClient.invalidateQueries({ queryKey: ['assignment-detail', assignmentId] });
+      queryClient.invalidateQueries({ queryKey: ['student-dashboard-assignments'] });
     },
   });
 };
+
 

@@ -30,15 +30,18 @@ export const submitInternalEvaluation = async (
 export const getMyEvaluations = async (
   assignmentId: string, 
   groupId: string
-): Promise<{ evaluations: InternalEvaluationResponse[]; isPublished: boolean }> => {
+): Promise<{ evaluations: InternalEvaluationResponse[]; isPublished: boolean; allowEarlyInternalEval: boolean }> => {
   const response: any = await api.get(
     `/assignments/${assignmentId}/groups/${groupId}/internal-evaluations`
   );
   if (Array.isArray(response)) {
-    return { evaluations: response, isPublished: false };
+    return { evaluations: response, isPublished: false, allowEarlyInternalEval: false };
   }
+  const data = response?.data || response;
   return {
-    evaluations: response?.evaluations || response?.data || [],
-    isPublished: Boolean(response?.isPublished)
+    evaluations: data?.evaluations || [],
+    isPublished: Boolean(data?.isPublished),
+    allowEarlyInternalEval: Boolean(data?.allowEarlyInternalEval)
   };
 };
+

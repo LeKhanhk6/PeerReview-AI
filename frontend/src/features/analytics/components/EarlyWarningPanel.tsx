@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { SkeletonCard } from '@/components/ui/Skeleton';
-import { Lightbulb, AlertTriangle } from 'lucide-react';
+import { Lightbulb, AlertTriangle, RotateCcw } from 'lucide-react';
 
 import { EmptyState } from '@/components/ui/EmptyState';
 import { analyticsMessages } from '@/constants/messages/analytics';
@@ -41,6 +41,17 @@ export const EarlyWarningPanel: React.FC<EarlyWarningPanelProps> = ({ classId, o
       return updated;
     });
     toast.success(analyticsMessages.earlyWarning.statusUpdatedToast);
+  };
+
+  const handleResetRiskStatuses = () => {
+    try {
+      localStorage.removeItem('peerreview_risk_statuses');
+    } catch (e) {
+      // ignore
+    }
+    setRiskStatuses({});
+    setStatusFilter('ACTIVE');
+    toast.success('Đã khôi phục tất cả cảnh báo rủi ro về trạng thái ban đầu!');
   };
 
   const processedRisks: CollaborationRiskItem[] = rawRisks.map((r, index) => {
@@ -137,6 +148,16 @@ export const EarlyWarningPanel: React.FC<EarlyWarningPanelProps> = ({ classId, o
               <option value="">-- Tất cả trạng thái --</option>
             </select>
           </div>
+
+          {/* Reset All Statuses Button */}
+          <button
+            type="button"
+            onClick={handleResetRiskStatuses}
+            className="px-3 py-1.5 border border-gray-300 hover:bg-gray-50 text-gray-700 rounded-md text-xs font-medium flex items-center gap-1.5 transition-colors shadow-sm"
+            title="Khôi phục tất cả cảnh báo về trạng thái ban đầu"
+          >
+            <RotateCcw className="w-3.5 h-3.5 text-gray-500" /> Đặt lại tất cả
+          </button>
         </div>
       </div>
 

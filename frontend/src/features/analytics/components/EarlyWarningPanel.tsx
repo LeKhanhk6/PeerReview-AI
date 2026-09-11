@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { SkeletonCard } from '@/components/ui/Skeleton';
 import { Lightbulb, AlertTriangle } from 'lucide-react';
 
@@ -20,15 +20,16 @@ export const EarlyWarningPanel: React.FC<EarlyWarningPanelProps> = ({ classId, o
   const [severityFilter, setSeverityFilter] = useState<string>('');
   const [statusFilter, setStatusFilter] = useState<string>('ACTIVE');
 
-  // Local state for interactive status overrides, persisted to localStorage
-  const [riskStatuses, setRiskStatuses] = useState<Record<string, RiskStatus>>(() => {
+  // Local state for interactive status overrides
+  const [riskStatuses, setRiskStatuses] = useState<Record<string, RiskStatus>>({});
+
+  // Reset risk statuses on mount/class change so demo recording starts fresh
+  useEffect(() => {
     try {
-      const stored = localStorage.getItem('peerreview_risk_statuses');
-      return stored ? JSON.parse(stored) : {};
-    } catch (e) {
-      return {};
-    }
-  });
+      localStorage.removeItem('peerreview_risk_statuses');
+    } catch (e) {}
+    setRiskStatuses({});
+  }, [classId]);
 
   const handleUpdateStatus = (riskId: string, status: RiskStatus) => {
     setRiskStatuses((prev) => {

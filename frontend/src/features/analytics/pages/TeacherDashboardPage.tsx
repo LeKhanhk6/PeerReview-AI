@@ -43,13 +43,15 @@ export const TeacherDashboardPage: React.FC = () => {
   );
 
   // 3. Fetch Early Warning Collaboration Risks
+  const effectiveRiskClassId = selectedClassId || (classes.length > 0 ? classes[0].id : '');
+
   const {
     data: rawRisks = [],
     isLoading: isRisksLoading,
   } = useApiQuery(
-    ['teacher-dashboard-risks', selectedClassId],
-    () => getClassCollaborationRisksApi(selectedClassId),
-    { enabled: Boolean(selectedClassId) }
+    ['teacher-dashboard-risks', effectiveRiskClassId],
+    () => getClassCollaborationRisksApi(effectiveRiskClassId),
+    { enabled: Boolean(effectiveRiskClassId) }
   );
 
   const risksList = Array.isArray(rawRisks) ? rawRisks : [];

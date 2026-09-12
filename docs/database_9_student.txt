@@ -1,6 +1,6 @@
 -- ==============================================================================
--- PEERREVIEW-AI: TEST SEED DATA SCRIPT (9 SINH VIÊN + 1 GIÁO VIÊN)
--- Mô phỏng Lớp SE301 - Kỹ thuật Phần mềm (3 Nhóm x 3 Sinh viên)
+-- PEERREVIEW-AI: BASE SEED DATA SCRIPT (9 SINH VIÊN + 1 GIÁO VIÊN - CHO QUAY LIVE DEMO PHẦN 1)
+-- Mô phỏng Lớp SE301 - Kỹ thuật Phần mềm (9 Sinh viên chưa phân nhóm, 0 bài tập, 0 cảnh báo)
 -- MẬT KHẨU CHO TOÀN BỘ TÀI KHOẢN LÀ: Password123!
 -- ==============================================================================
 
@@ -8,8 +8,26 @@ BEGIN;
 
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
--- Xóa dữ liệu test SE301 cũ nếu đã tồn tại
-DELETE FROM classes WHERE invite_code = 'SE301TEST';
+-- Xóa sạch toàn bộ dữ liệu test cũ để chuẩn bị quay Live Demo Phần 1
+DELETE FROM notifications WHERE user_id IN (SELECT id FROM users WHERE email LIKE '%.sv%@peerreview.ai' OR email = 'teacher.nguyen@peerreview.ai');
+DELETE FROM early_warnings WHERE class_id IN (SELECT id FROM classes WHERE invite_code IN ('CS201DEMO', 'SE301TEST'));
+DELETE FROM review_summary_items WHERE summary_id IN (SELECT id FROM review_summaries WHERE submission_id IN (SELECT id FROM submissions WHERE assignment_id IN (SELECT id FROM assignments WHERE class_id IN (SELECT id FROM classes WHERE invite_code IN ('CS201DEMO', 'SE301TEST')))));
+DELETE FROM review_summaries WHERE submission_id IN (SELECT id FROM submissions WHERE assignment_id IN (SELECT id FROM assignments WHERE class_id IN (SELECT id FROM classes WHERE invite_code IN ('CS201DEMO', 'SE301TEST'))));
+DELETE FROM reviews WHERE review_assignment_id IN (SELECT id FROM review_assignments WHERE submission_id IN (SELECT id FROM submissions WHERE assignment_id IN (SELECT id FROM assignments WHERE class_id IN (SELECT id FROM classes WHERE invite_code IN ('CS201DEMO', 'SE301TEST')))));
+DELETE FROM review_assignments WHERE submission_id IN (SELECT id FROM submissions WHERE assignment_id IN (SELECT id FROM assignments WHERE class_id IN (SELECT id FROM classes WHERE invite_code IN ('CS201DEMO', 'SE301TEST'))));
+DELETE FROM submission_versions WHERE submission_id IN (SELECT id FROM submissions WHERE assignment_id IN (SELECT id FROM assignments WHERE class_id IN (SELECT id FROM classes WHERE invite_code IN ('CS201DEMO', 'SE301TEST'))));
+DELETE FROM submissions WHERE assignment_id IN (SELECT id FROM assignments WHERE class_id IN (SELECT id FROM classes WHERE invite_code IN ('CS201DEMO', 'SE301TEST')));
+DELETE FROM rubric_criteria WHERE rubric_id IN (SELECT id FROM rubrics WHERE assignment_id IN (SELECT id FROM assignments WHERE class_id IN (SELECT id FROM classes WHERE invite_code IN ('CS201DEMO', 'SE301TEST'))));
+DELETE FROM rubrics WHERE assignment_id IN (SELECT id FROM rubrics WHERE assignment_id IN (SELECT id FROM assignments WHERE class_id IN (SELECT id FROM classes WHERE invite_code IN ('CS201DEMO', 'SE301TEST'))));
+DELETE FROM assignments WHERE class_id IN (SELECT id FROM classes WHERE invite_code IN ('CS201DEMO', 'SE301TEST'));
+DELETE FROM internal_evaluations WHERE group_id IN (SELECT id FROM groups WHERE class_id IN (SELECT id FROM classes WHERE invite_code IN ('CS201DEMO', 'SE301TEST')));
+DELETE FROM contribution_metrics WHERE group_id IN (SELECT id FROM groups WHERE class_id IN (SELECT id FROM classes WHERE invite_code IN ('CS201DEMO', 'SE301TEST')));
+DELETE FROM tasks WHERE group_id IN (SELECT id FROM groups WHERE class_id IN (SELECT id FROM classes WHERE invite_code IN ('CS201DEMO', 'SE301TEST')));
+DELETE FROM activity_logs WHERE group_id IN (SELECT id FROM groups WHERE class_id IN (SELECT id FROM classes WHERE invite_code IN ('CS201DEMO', 'SE301TEST')));
+DELETE FROM group_members WHERE group_id IN (SELECT id FROM groups WHERE class_id IN (SELECT id FROM classes WHERE invite_code IN ('CS201DEMO', 'SE301TEST')));
+DELETE FROM groups WHERE class_id IN (SELECT id FROM classes WHERE invite_code IN ('CS201DEMO', 'SE301TEST'));
+DELETE FROM class_members WHERE class_id IN (SELECT id FROM classes WHERE invite_code IN ('CS201DEMO', 'SE301TEST'));
+DELETE FROM classes WHERE invite_code IN ('CS201DEMO', 'SE301TEST');
 
 -- 1. VAI TRÒ
 INSERT INTO roles (id, name) VALUES 
@@ -71,116 +89,6 @@ FROM users WHERE email IN (
   'ducminh.sv07@peerreview.ai', 'thungan.sv08@peerreview.ai', 'vanf.sv09@peerreview.ai'
 ) ON CONFLICT (class_id, user_id) DO NOTHING;
 
--- 5. TẠO 3 NHÓM SINH VIÊN
-INSERT INTO groups (id, class_id, name) VALUES 
-  ('e0000000-4000-4000-8000-000000000091', 'c0000000-4000-4000-8000-000000000099', 'Nhóm 01 - Alpha Team'),
-  ('e0000000-4000-4000-8000-000000000092', 'c0000000-4000-4000-8000-000000000099', 'Nhóm 02 - Beta Innovators'),
-  ('e0000000-4000-4000-8000-000000000093', 'c0000000-4000-4000-8000-000000000099', 'Nhóm 03 - Gamma Coders')
-ON CONFLICT DO NOTHING;
-
--- Gắn thành viên vào nhóm
-INSERT INTO group_members (group_id, user_id, is_leader) VALUES
-('e0000000-4000-4000-8000-000000000091', (SELECT id FROM users WHERE email='tranmai.sv01@peerreview.ai'), TRUE),
-('e0000000-4000-4000-8000-000000000091', (SELECT id FROM users WHERE email='levanc.sv02@peerreview.ai'), FALSE),
-('e0000000-4000-4000-8000-000000000091', (SELECT id FROM users WHERE email='phamminhd.sv03@peerreview.ai'), FALSE),
-
-('e0000000-4000-4000-8000-000000000092', (SELECT id FROM users WHERE email='tuananh.sv04@peerreview.ai'), TRUE),
-('e0000000-4000-4000-8000-000000000092', (SELECT id FROM users WHERE email='vuquoch.sv05@peerreview.ai'), FALSE),
-('e0000000-4000-4000-8000-000000000092', (SELECT id FROM users WHERE email='baohai.sv06@peerreview.ai'), FALSE),
-
-('e0000000-4000-4000-8000-000000000093', (SELECT id FROM users WHERE email='ducminh.sv07@peerreview.ai'), TRUE),
-('e0000000-4000-4000-8000-000000000093', (SELECT id FROM users WHERE email='thungan.sv08@peerreview.ai'), FALSE),
-('e0000000-4000-4000-8000-000000000093', (SELECT id FROM users WHERE email='vanf.sv09@peerreview.ai'), FALSE)
-ON CONFLICT DO NOTHING;
-
--- 6. BÀI TẬP VÀ RUBRIC
-INSERT INTO assignments (id, class_id, title, description, requirements, deadline)
-VALUES (
-  'd0000000-4000-4000-8000-000000000099',
-  'c0000000-4000-4000-8000-000000000099',
-  'Đồ án Kỹ thuật Phần mềm: Xây dựng Web Học tập Trực tuyến',
-  'Xây dựng ứng dụng Web Full-stack hỗ trợ đăng ký học phần, nộp bài tập và tương tác nhóm.',
-  'Frontend dùng ReactJS, Backend Node.js REST API, CSDL PostgreSQL. Đính kèm link Github và Slide báo cáo.',
-  NOW() + INTERVAL '7 days'
-) ON CONFLICT DO NOTHING;
-
-INSERT INTO rubrics (id, assignment_id, description)
-VALUES (
-  'f0000000-4000-4000-8000-000000000099',
-  'd0000000-4000-4000-8000-000000000099',
-  'Khung tiêu chuẩn đánh giá đồ án môn Kỹ thuật Phần mềm SE301'
-) ON CONFLICT DO NOTHING;
-
-INSERT INTO rubric_criteria (id, rubric_id, name, description, weight) VALUES 
-  ('f1000000-4000-4000-8000-000000000091', 'f0000000-4000-4000-8000-000000000099', 'Kiến trúc & RESTful API Backend', 'API thiết kế chuẩn RESTful, xử lý ngoại lệ tốt, phân tầng logic rõ ràng.', 40.00),
-  ('f1000000-4000-4000-8000-000000000092', 'f0000000-4000-4000-8000-000000000099', 'Giao diện UI/UX & Trải nghiệm', 'Giao diện mượt mà, phối màu hài hòa, đáp ứng responsive trên điện thoại.', 30.00),
-  ('f1000000-4000-4000-8000-000000000093', 'f0000000-4000-4000-8000-000000000099', 'Tài liệu Kỹ thuật & Sơ đồ CSDL', 'Tài liệu README chi tiết, sơ đồ ERD CSDL và hướng dẫn chạy ứng dụng.', 30.00)
-ON CONFLICT DO NOTHING;
-
--- 7. SUBMISSIONS
-INSERT INTO submissions (id, assignment_id, group_id, status, submitted_at) VALUES
-('f2000000-4000-4000-8000-000000000091', 'd0000000-4000-4000-8000-000000000099', 'e0000000-4000-4000-8000-000000000091', 'SUBMITTED', NOW() - INTERVAL '2 days'),
-('f2000000-4000-4000-8000-000000000092', 'd0000000-4000-4000-8000-000000000099', 'e0000000-4000-4000-8000-000000000092', 'SUBMITTED', NOW() - INTERVAL '1 day'),
-('f2000000-4000-4000-8000-000000000093', 'd0000000-4000-4000-8000-000000000099', 'e0000000-4000-4000-8000-000000000093', 'SUBMITTED', NOW() - INTERVAL '12 hours')
-ON CONFLICT DO NOTHING;
-
-INSERT INTO submission_versions (submission_id, version_number, file_url, created_at) VALUES
-('f2000000-4000-4000-8000-000000000091', 1, 'https://storage.peerreview.ai/submissions/se301_group01_v1.pdf', NOW() - INTERVAL '2 days'),
-('f2000000-4000-4000-8000-000000000092', 1, 'https://storage.peerreview.ai/submissions/se301_group02_v1.pdf', NOW() - INTERVAL '1 day'),
-('f2000000-4000-4000-8000-000000000093', 1, 'https://storage.peerreview.ai/submissions/se301_group03_v1.pdf', NOW() - INTERVAL '12 hours')
-ON CONFLICT DO NOTHING;
-
--- 8. TASKS & ACTIVITIES
-INSERT INTO tasks (group_id, assignee_id, title, status, completed_at) VALUES
-('e0000000-4000-4000-8000-000000000091', (SELECT id FROM users WHERE email='tranmai.sv01@peerreview.ai'), 'Thiết kế CSDL PostgreSQL', 'DONE', NOW() - INTERVAL '3 days'),
-('e0000000-4000-4000-8000-000000000091', (SELECT id FROM users WHERE email='levanc.sv02@peerreview.ai'), 'Viết API Auth JWT', 'DONE', NOW() - INTERVAL '2 days'),
-('e0000000-4000-4000-8000-000000000091', (SELECT id FROM users WHERE email='phamminhd.sv03@peerreview.ai'), 'Xây dựng UI Dashboard', 'DONE', NOW() - INTERVAL '1 day'),
-
-('e0000000-4000-4000-8000-000000000092', (SELECT id FROM users WHERE email='tuananh.sv04@peerreview.ai'), 'Viết Module sản phẩm', 'DONE', NOW() - INTERVAL '3 days'),
-('e0000000-4000-4000-8000-000000000092', (SELECT id FROM users WHERE email='vuquoch.sv05@peerreview.ai'), 'Xây dựng UI giỏ hàng', 'DONE', NOW() - INTERVAL '2 days'),
-('e0000000-4000-4000-8000-000000000092', (SELECT id FROM users WHERE email='baohai.sv06@peerreview.ai'), 'Tạo file README', 'DONE', NOW() - INTERVAL '1 day'),
-
-('e0000000-4000-4000-8000-000000000093', (SELECT id FROM users WHERE email='ducminh.sv07@peerreview.ai'), 'Gánh team làm backend & frontend', 'DONE', NOW() - INTERVAL '3 days'),
-('e0000000-4000-4000-8000-000000000093', (SELECT id FROM users WHERE email='thungan.sv08@peerreview.ai'), 'Hỗ trợ làm slide', 'DONE', NOW() - INTERVAL '2 days');
-
-INSERT INTO activity_logs (group_id, user_id, action_type, content_summary, created_at) VALUES
-('e0000000-4000-4000-8000-000000000091', (SELECT id FROM users WHERE email='tranmai.sv01@peerreview.ai'), 'DISCUSSION', 'Đã khởi tạo repo Github', NOW() - INTERVAL '4 days'),
-('e0000000-4000-4000-8000-000000000091', (SELECT id FROM users WHERE email='levanc.sv02@peerreview.ai'), 'DISCUSSION', 'Báo cáo phần API Auth', NOW() - INTERVAL '3 days'),
-('e0000000-4000-4000-8000-000000000091', (SELECT id FROM users WHERE email='phamminhd.sv03@peerreview.ai'), 'DISCUSSION', 'Đã hoàn thành UI Dashboard', NOW() - INTERVAL '2 days'),
-
-('e0000000-4000-4000-8000-000000000092', (SELECT id FROM users WHERE email='tuananh.sv04@peerreview.ai'), 'DISCUSSION', 'Bắt đầu họp làm đồ án', NOW() - INTERVAL '4 days'),
-('e0000000-4000-4000-8000-000000000092', (SELECT id FROM users WHERE email='vuquoch.sv05@peerreview.ai'), 'DISCUSSION', 'Giao diện React mượt mà', NOW() - INTERVAL '3 days'),
-('e0000000-4000-4000-8000-000000000092', (SELECT id FROM users WHERE email='baohai.sv06@peerreview.ai'), 'DISCUSSION', 'Cập nhật xong tài liệu', NOW() - INTERVAL '2 days'),
-
-('e0000000-4000-4000-8000-000000000093', (SELECT id FROM users WHERE email='ducminh.sv07@peerreview.ai'), 'DISCUSSION', 'Alo sao Lười không làm task nào vậy?', NOW() - INTERVAL '3 days'),
-('e0000000-4000-4000-8000-000000000093', (SELECT id FROM users WHERE email='thungan.sv08@peerreview.ai'), 'DISCUSSION', 'Dạ Lười offline không nhắn tin nhóm ạ', NOW() - INTERVAL '2 days')
-ON CONFLICT DO NOTHING;
-
--- 9. PHÂN CÔNG CHẤM CHÉO (G1->G2, G2->G3, G3->G1)
-INSERT INTO review_assignments (id, submission_id, reviewer_group_id, status) VALUES
-('f3000000-4000-4000-8000-000000000091', 'f2000000-4000-4000-8000-000000000092', 'e0000000-4000-4000-8000-000000000091', 'COMPLETED'),
-('f3000000-4000-4000-8000-000000000092', 'f2000000-4000-4000-8000-000000000093', 'e0000000-4000-4000-8000-000000000092', 'COMPLETED'),
-('f3000000-4000-4000-8000-000000000093', 'f2000000-4000-4000-8000-000000000091', 'e0000000-4000-4000-8000-000000000093', 'COMPLETED')
-ON CONFLICT DO NOTHING;
-
--- 10. BÀI ĐÁNH GIÁ CHẤM CHÉO
-INSERT INTO reviews (id, review_assignment_id, overall_comment, total_score, submitted_at) VALUES
-('f4000000-4000-4000-8000-000000000091', 'f3000000-4000-4000-8000-000000000091', 'Bài nộp làm rất chỉn chu, code backend Express REST API chia layer sạch sẽ, giao diện đẹp có đủ responsive.', 9.00, NOW() - INTERVAL '1 day'),
-('f4000000-4000-4000-8000-000000000092', 'f3000000-4000-4000-8000-000000000092', 'Bài làm hoàn thiện đầy đủ chức năng nhưng tài liệu README còn hơi sơ sài, cần bổ sung sơ đồ ERD.', 8.20, NOW() - INTERVAL '1 day'),
-('f4000000-4000-4000-8000-000000000093', 'f3000000-4000-4000-8000-000000000093', 'Bài nộp đúng hạn, chức năng chạy ổn định nhưng chưa có giao diện trang admin quản lý sản phẩm.', 7.80, NOW() - INTERVAL '12 hours')
-ON CONFLICT DO NOTHING;
-
--- 11. ĐÁNH GIÁ NỘI BỘ (C2-C4)
-INSERT INTO internal_evaluations (group_id, assignment_id, evaluator_id, evaluatee_id, c2_score, c3_score, c4_score) VALUES
-('e0000000-4000-4000-8000-000000000093', 'd0000000-4000-4000-8000-000000000099', (SELECT id FROM users WHERE email='ducminh.sv07@peerreview.ai'), (SELECT id FROM users WHERE email='vanf.sv09@peerreview.ai'), 1, 1, 1),
-('e0000000-4000-4000-8000-000000000093', 'd0000000-4000-4000-8000-000000000099', (SELECT id FROM users WHERE email='thungan.sv08@peerreview.ai'), (SELECT id FROM users WHERE email='vanf.sv09@peerreview.ai'), 1, 1, 1)
-ON CONFLICT DO NOTHING;
-
--- 12. CẢNH BÁO SỚM
-INSERT INTO early_warnings (class_id, group_id, user_id, risk_type, description, is_resolved) VALUES
-('c0000000-4000-4000-8000-000000000099', 'e0000000-4000-4000-8000-000000000093', (SELECT id FROM users WHERE email='vanf.sv09@peerreview.ai'), 'Potential Free-rider', 'Sinh viên Hoàng Văn Lười có tỷ lệ đóng góp cực thấp (0.00) và nhận đánh giá kém từ các bạn trong nhóm.', FALSE)
-ON CONFLICT DO NOTHING;
-
 COMMIT;
 
-SELECT 'Đã nạp thành công bộ dữ liệu Seed kiểm thử Lớp SE301 (9 sinh viên, 3 nhóm, 1 giáo viên) với Email đồng bộ 100%!' AS result;
+SELECT 'Đã xóa toàn bộ dữ liệu bài tập/chấm chéo/cảnh báo. Khởi tạo thành công 1 Lớp SE301 sạch + 9 Tài khoản Sinh viên + 1 Giáo viên sẵn sàng quay Live Demo Phần 1!' AS result;

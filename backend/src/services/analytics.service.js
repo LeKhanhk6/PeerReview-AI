@@ -114,10 +114,10 @@ export const getDashboardOverview = async (currentUser, classId) => {
             (SELECT COALESCE(SUM(cg.group_count * ca.assignment_count), 0)
              FROM class_groups cg
              JOIN class_assignments ca ON cg.class_id = ca.class_id) as expected_submissions,
-            (SELECT COUNT(DISTINCT gm.user_id)
+            (SELECT COUNT(DISTINCT cm.user_id)
              FROM filtered_classes c
-             JOIN groups g ON c.id = g.class_id
-             JOIN group_members gm ON g.id = gm.group_id) as total_students,
+             JOIN class_members cm ON c.id = cm.class_id
+             WHERE cm.role = 'STUDENT') as total_students,
             (SELECT COALESCE(SUM(assignment_count), 0) FROM class_assignments) as total_assignments
     `;
 

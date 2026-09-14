@@ -1,0 +1,180 @@
+1
+00:00:00,000 --> 00:00:03,000
+Kính chào Quý giám khảo.
+
+2
+00:00:03,000 --> 00:00:06,000
+PeerReview-AI giúp giải quyết ba thách thức lớn khi học nhóm:
+
+3
+00:00:06,000 --> 00:00:09,000
+Tình trạng Free-rider, khi một số thành viên không đóng góp tương xứng,
+
+4
+00:00:09,000 --> 00:00:12,000
+Chất lượng phản biện chéo chưa cao và áp lực kiểm soát dành cho giảng viên.
+
+5
+00:00:12,000 --> 00:00:15,000
+Quy trình bắt đầu khi giảng viên khởi tạo bài tập đồ án,
+
+6
+00:00:15,000 --> 00:00:18,000
+Đồng thời thiết lập Rubric chấm chéo một cách minh bạch.
+
+7
+00:00:18,000 --> 00:00:23,000
+Các tiêu chí được phân chia rõ ràng theo từng nội dung chuyên môn,
+
+8
+00:00:23,000 --> 00:00:29,000
+Như Kiến trúc Backend, UI/UX và Tài liệu Kỹ thuật.
+
+9
+00:00:29,000 --> 00:00:40,000
+Sau khi hoàn tất các tiêu chí và trọng số của Rubric,
+
+10
+00:00:40,000 --> 00:00:51,000
+Bài tập chính thức được mở để các nhóm sinh viên bắt đầu thực hiện.
+
+11
+00:00:51,000 --> 00:00:57,000
+Sinh viên truy cập Group Workspace để cùng nhau làm việc.
+
+12
+00:00:57,000 --> 00:01:05,000
+Từ việc phân công Task trên bảng Kanban,
+
+13
+00:01:05,000 --> 00:01:14,000
+Đến các cuộc thảo luận nhóm và những lần commit code,
+
+14
+00:01:14,000 --> 00:01:20,000
+Mọi hoạt động đều được hệ thống tự động ghi nhận và minh bạch hóa,
+
+15
+00:01:20,000 --> 00:01:26,000
+Tạo thành Activity Log, làm cơ sở tính chỉ số đóng góp C1.
+
+16
+00:01:26,000 --> 00:01:33,000
+Khi hoàn thành bài, sinh viên chỉ cần đính kèm link Repository GitHub,
+
+17
+00:01:33,000 --> 00:01:41,000
+Đồng thời có thể dễ dàng theo dõi toàn bộ lịch sử các phiên bản bài nộp.
+
+18
+00:01:41,000 --> 00:01:46,000
+Sau khi nhận bài, giảng viên kiểm tra danh sách bài nộp của các nhóm,
+
+19
+00:01:46,000 --> 00:01:51,000
+Và kích hoạt cơ chế phân công chấm chéo ẩn danh Double-Blind.
+
+20
+00:01:51,000 --> 00:01:56,000
+Hệ thống tự động ẩn tên sinh viên, MSSV và thông tin nhóm,
+
+21
+00:01:56,000 --> 00:02:04,000
+Giúp sinh viên thực hiện chấm bài một cách khách quan và ẩn danh,
+
+22
+00:02:04,000 --> 00:02:12,000
+Dựa trên từng tiêu chí Rubric và kèm theo nhận xét phản biện.
+
+23
+00:02:12,000 --> 00:02:17,000
+Nếu nhận xét có ngôn ngữ tiêu cực hoặc chưa đủ chiều sâu,
+
+24
+00:02:17,000 --> 00:02:22,000
+Trợ lý AI Peer-Review Mentor sẽ phát hiện và cảnh báo Toxicity.
+
+25
+00:02:22,000 --> 00:02:27,000
+AI đồng thời đưa ra gợi ý nhận xét văn minh và mang tính xây dựng.
+
+26
+00:02:27,000 --> 00:02:32,000
+Sinh viên chỉ cần một cú click để áp dụng gợi ý từ AI.
+
+27
+00:02:32,000 --> 00:02:38,000
+Khi nhận xét đáp ứng tốt các tiêu chí của Rubric,
+
+28
+00:02:38,000 --> 00:02:43,000
+AI sẽ ghi nhận và khuyến khích sinh viên hoàn thành phiếu phản biện.
+
+29
+00:02:43,000 --> 00:02:54,000
+Toàn bộ kết quả chấm được ghi nhận một cách bảo mật và công bằng.
+
+30
+00:02:54,000 --> 00:03:05,000
+Bên cạnh đó, sinh viên thực hiện Chấm Nội Bộ một cách bảo mật,
+
+31
+00:03:05,000 --> 00:03:16,000
+Đánh giá ba khía cạnh quan trọng: C2 - Chất lượng, C3 - Đúng hạn và C4 - Teamwork.
+
+32
+00:03:16,000 --> 00:03:22,000
+Từ góc nhìn của giảng viên, hệ thống cung cấp một bức tranh tổng quan về cả lớp,
+
+33
+00:03:22,000 --> 00:03:28,000
+Bằng cách tổng hợp dữ liệu hoạt động, bài nộp và kết quả chấm chéo.
+
+34
+00:03:28,000 --> 00:03:35,000
+Thuật toán tổng hợp bốn chỉ số C1 đến C4 để tính điểm đóng góp Si,
+
+35
+00:03:35,000 --> 00:03:42,000
+Sau đó trực quan hóa kết quả bằng biểu đồ Radar bốn chiều.
+
+36
+00:03:42,000 --> 00:03:48,000
+Nhờ đó, giảng viên có thể nhanh chóng nhận diện những trường hợp có dấu hiệu Free-rider.
+
+37
+00:03:48,000 --> 00:03:55,000
+Ví dụ, sinh viên Vũ Văn F có điểm Si = 0.35, cho thấy mức đóng góp đang sụt giảm nghiêm trọng.
+
+38
+00:03:55,000 --> 00:04:00,000
+Bên cạnh đó, hệ thống Cảnh báo Sớm tự động phát hiện ba nhóm rủi ro:
+
+39
+00:04:00,000 --> 00:04:05,000
+Trễ hạn chấm, Free-rider và chậm tiến độ Task.
+
+40
+00:04:05,000 --> 00:04:21,000
+Giảng viên có thể tiếp nhận và xử lý các cảnh báo kịp thời,
+trước khi vấn đề ảnh hưởng đến kết quả chung của nhóm.
+
+41
+00:04:21,000 --> 00:04:31,000
+Đặc biệt, tính năng AI Review Synthesis có thể tổng hợp 10 phiếu chấm chỉ trong khoảng 3 giây.
+
+42
+00:04:31,000 --> 00:04:36,000
+AI phân tích các Ưu điểm, Nhược điểm và Gợi ý phát triển,
+
+43
+00:04:36,000 --> 00:04:41,000
+Đồng thời cung cấp Độ tin cậy 85% và cho phép xem lại các nhận xét phản biện gốc.
+
+44
+00:04:41,000 --> 00:04:50,000
+Cuối cùng, giảng viên vẫn giữ vai trò Human-in-the-loop để kiểm tra và phê duyệt kết quả.
+
+45
+00:04:50,000 --> 00:04:58,000
+PeerReview-AI — hỗ trợ giảng viên đánh giá công bằng, minh bạch và hiệu quả hơn.

@@ -42,8 +42,11 @@ Thumbs.db
 !.vscode/extensions.json
 
 .idea/
-*.suo
-*.ntvs*
-*.njsproj
-*.sln
-*.sw?
+# ========================
+# Large Media Files (>100MB)
+# ========================
+*.mp4
+*.mov
+*.avi
+*.mkv
+

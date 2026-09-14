@@ -1,0 +1,88 @@
+WEBVTT - PeerReview-AI Video Demo Subtitles (Full Voiceover Script - Synced with PeerReview Video Demo.mp4)
+
+00:00:00.000 --> 00:00:03.000
+Kính chào Quý giám khảo. PeerReview-AI ra đời giải quyết 3 thách thức lớn khi học nhóm:
+
+00:00:03.000 --> 00:00:06.000
+Tình trạng Free-rider không công bằng, phản biện chéo hời hợt và quá tải kiểm soát.
+
+00:00:06.000 --> 00:00:12.000
+Quy trình bắt đầu từ phía Giảng viên khởi tạo bài tập đồ án mới cho lớp học,
+
+00:00:12.000 --> 00:00:18.000
+Thiết lập mô tả chi tiết, yêu cầu công nghệ và hạn nộp bài.
+
+00:00:18.000 --> 00:00:24.000
+Giảng viên thiết lập khung Rubric chấm chéo minh bạch với trọng số rõ ràng:
+
+00:00:24.000 --> 00:00:30.000
+40% API Backend, 30% Giao diện UI/UX và 30% Tài liệu Kỹ thuật.
+
+00:00:30.000 --> 00:00:51.000
+Sau khi hoàn tất đính kèm tài liệu hướng dẫn, bài tập chính thức được xuất bản.
+
+00:00:51.000 --> 00:00:57.000
+Về phía Sinh viên, người dùng truy cập Group Workspace để làm việc nhóm.
+
+00:00:57.000 --> 00:01:14.000
+Sinh viên khởi tạo và phân công các Task công việc trên bảng Kanban trực quan.
+
+00:01:14.000 --> 00:01:20.000
+Mọi tương tác thảo luận nhóm thời gian thực, phân task và commit code...
+
+00:01:20.000 --> 00:01:26.000
+...đều được tự động lưu vết vào Activity Log làm căn cứ tính chỉ số C1.
+
+00:01:26.000 --> 00:01:33.000
+Khi nộp bài, sinh viên đính kèm liên kết Repository GitHub đồ án
+
+00:01:33.000 --> 00:01:41.000
+Và dễ dàng theo dõi lịch sử các phiên bản bài nộp của nhóm.
+
+00:01:41.000 --> 00:01:51.000
+Giáo viên kiểm tra danh sách nộp bài và kích hoạt Phân công Chấm chéo Ẩn danh Double-Blind.
+
+00:01:51.000 --> 00:01:56.000
+Mọi thông tin Tên sinh viên, MSSV và Nhóm đều được Backend ẩn danh 100%.
+
+00:01:56.000 --> 00:02:12.000
+Sinh viên chấm điểm bài làm của nhóm bạn theo từng tiêu chí Rubric minh bạch.
+
+00:02:12.000 --> 00:02:22.000
+Nếu sinh viên nhập câu nhận xét tiêu cực, AI Peer-Review Mentor phát hiện cảnh báo Toxicity.
+
+00:02:22.000 --> 00:02:32.000
+AI đề xuất cụm câu gợi ý văn minh. Sinh viên chỉ cần 1 click để áp dụng câu gợi ý từ AI.
+
+00:02:32.000 --> 00:02:43.000
+Khi nhận xét bám sát Rubric, AI khen ngợi và động viên sinh viên nộp bài phản biện.
+
+00:02:43.000 --> 00:02:54.000
+Đánh giá được ghi nhận bảo mật, công bằng và giúp các nhóm học hỏi lẫn nhau.
+
+00:02:54.000 --> 00:03:16.000
+Sinh viên thực hiện Chấm Nội Bộ 1-5 sao bảo mật cho đồng đội theo chỉ số C2, C3, C4.
+
+00:03:16.000 --> 00:03:28.000
+Chuyển sang góc nhìn Giảng viên trên quy mô thực tế 30 sinh viên.
+
+00:03:28.000 --> 00:03:42.000
+Thuật toán hợp nhất 4 chỉ số C1 đến C4 tính ra điểm Si và vẽ Biểu đồ Ra-đa 4 trục.
+
+00:03:42.000 --> 00:03:55.000
+Biểu đồ Ra-đa phát hiện chính xác sinh viên Free-rider Vũ Văn F (Si = 0.35).
+
+00:03:55.000 --> 00:04:05.000
+Bảng Cảnh Báo Sớm tự động phát hiện 3 rủi ro: trễ hạn chấm, Free-rider và chậm tiến độ Task.
+
+00:04:05.000 --> 04:21.000
+Giảng viên tiếp nhận và xử lý cảnh báo kịp thời để hỗ trợ các nhóm hiệu quả hơn.
+
+00:04:21.000 --> 00:04:31.000
+Tính năng AI Review Synthesis tổng hợp toàn bộ 10 phiếu chấm chéo cả lớp trong 3 giây.
+
+00:04:31.000 --> 00:04:41.000
+AI phân tích Ưu điểm, Nhược điểm, Gợi ý phát triển và xem Vết Ngôn Phản Biện gốc.
+
+00:04:41.000 --> 00:04:58.000
+Giảng viên giữ vai trò Human-in-the-loop phê duyệt bản tổng hợp. PeerReview-AI nâng cao 80% hiệu quả!

@@ -12,18 +12,6 @@
 
 ---
 
-## 🎬 VIDEO DEMO & BỘ PHỤ ĐỀ (DEMO VIDEO & CAPTIONS)
-
-Dự án cung cấp trọn bộ Video Demo sản phẩm quy mô thực tế **30 sinh viên (Lớp CS201)** cùng các tài liệu kịch bản và bộ phụ đề được đồng bộ chính xác 100% từng giây:
-
-* 🎥 **Video Demo Sản phẩm (04:58):** [PeerReview Video Demo.mp4](docs/PeerReview%20Video%20Demo.mp4)
-* 📖 **Kịch bản Quay Video:** [DEMO_SCRIPT_VIDEO.md](docs/DEMO_SCRIPT_VIDEO.md)
-* 🎙️ **Kịch bản Thuyết minh Chi tiết (Voiceover Script):** [VOICEOVER_SCRIPT_DEMO.md](docs/VOICEOVER_SCRIPT_DEMO.md)
-* 📄 **Bộ Phụ đề Đơn dòng Chuẩn SRT:** [demo_captions.srt](docs/demo_captions.srt) *(Import trực tiếp vào CapCut / Premiere Pro / Camtasia)*
-* 📄 **Bộ Phụ đề WebVTT:** [demo_captions.vtt](docs/demo_captions.vtt) *(Nhúng trực tiếp vào Web HTML5 Player)*
-
----
-
 ## 🌟 TÍNH NĂNG CỐT LÕI (CORE FEATURES)
 
 ### 1. 👥 Quản lý Lớp học & Nhóm (Group Workspace & Activity Tracking)
@@ -163,11 +151,6 @@ Mở trình duyệt tại [http://localhost:5173](http://localhost:5173) để t
 
 | Tên Tài liệu | Đường dẫn File | Mô tả Nội dung |
 | :--- | :--- | :--- |
-| 🎥 **Video Demo Sản phẩm** | [PeerReview Video Demo.mp4](docs/PeerReview%20Video%20Demo.mp4) | Video quay demo 5 phút trên quy mô 30 sinh viên |
-| 📖 **Kịch bản Quay Video** | [DEMO_SCRIPT_VIDEO.md](docs/DEMO_SCRIPT_VIDEO.md) | Kịch bản 5 phút chuẩn hóa 5 tiêu chí cuộc thi |
-| 🎙️ **Kịch bản Thuyết minh** | [VOICEOVER_SCRIPT_DEMO.md](docs/VOICEOVER_SCRIPT_DEMO.md) | Lời thoại thuyết minh kèm mô tả thao tác UI từng giây |
-| 📄 **Phụ đề Chuẩn SRT** | [demo_captions.srt](docs/demo_captions.srt) | File phụ đề đơn dòng đồng bộ 100% video demo |
-| 📄 **Phụ đề WebVTT** | [demo_captions.vtt](docs/demo_captions.vtt) | File phụ đề HTML5 Web Player |
 | 🏗 **Kiến trúc Hệ thống** | [10_Kien_Truc_He_Thong_Va_Phuong_An_Trien_Khai.md](docs/10_Kien_Truc_He_Thong_Va_Phuong_An_Trien_Khai.md) | Phân tích chi tiết kiến trúc & triển khai Cloud |
 | 📖 **Hướng dẫn Local** | [SETUP_GUIDE.md](docs/SETUP_GUIDE.md) | Hướng dẫn cài đặt & cấu hình môi trường Local |
 | ☁️ **Deploy Cloud Guide** | [DEPLOYMENT_GUIDE.md](docs/DEPLOYMENT_GUIDE.md) | Hướng dẫn vận hành Vercel, Render & Supabase |
